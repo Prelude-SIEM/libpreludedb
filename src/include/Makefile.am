@@ -1,7 +1,6 @@
 includedir = $(prefix)/include/libpreludedb
 
 include_HEADERS = 		\
-	db.h			\
 	db-message-ident.h	\
 	db-interface.h		\
 	db-interface-string.h   \
@@ -14,6 +13,8 @@ include_HEADERS = 		\
 	param-string.h		\
 	plugin-sql.h		\
 	plugin-format.h
+
+nodist_include_HEADERS = db.h
 
 noinst_HEADERS = 		\
 	db-message-cache.h	\

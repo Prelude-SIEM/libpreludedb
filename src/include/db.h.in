@@ -24,7 +24,7 @@
 #ifndef _LIBPRELUDEDB_DB_H
 #define _LIBPRELUDEDB_DB_H
 
-#define LIBPRELUDEDB_VERSION "0.1.0-svn"
+#define LIBPRELUDEDB_VERSION @VERSION@
 
 int prelude_db_init(void);
 void prelude_db_shutdown(void);
