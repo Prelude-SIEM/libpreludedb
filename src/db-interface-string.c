@@ -41,92 +41,46 @@
 #include "param-string.h"
 #include "db-interface-string.h"
 
-#define is_empty(x) (*(x) == '\0') 
 
-static void *get_sql_connection_data(const char *config)
+
+static prelude_sql_connection_data_t *get_sql_connection_data(const char *config)
 {
-	prelude_sql_connection_data_t *data;
-	char *val;
-	int ret;
-	
-	data = prelude_sql_connection_data_new();
-	if ( ! data )
-		return NULL;
-	
-	val = parameter_value(config, "type");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_type(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
+        char *val;
+        int ret, i;
+        prelude_sql_connection_data_t *data;
+        struct {
+                const char *entry;
+                int (*func)(prelude_sql_connection_data_t *data, const char *value);
+        } tbl[] = {
+                { "type", prelude_sql_connection_data_set_type },
+                { "host", prelude_sql_connection_data_set_host },
+                { "name", prelude_sql_connection_data_set_name },
+                { "user", prelude_sql_connection_data_set_user },
+                { "pass", prelude_sql_connection_data_set_pass },
+                { "port", prelude_sql_connection_data_set_port },
+                { NULL  , NULL                                 },
+        };
 
-	val = parameter_value(config, "host");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_host(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
-	
-	val = parameter_value(config, "name");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_name(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
-	
-	val = parameter_value(config, "user");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_user(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
-	
-	
-	val = parameter_value(config, "pass");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_pass(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
+        data = prelude_sql_connection_data_new();
+        if ( ! data )
+                return NULL;
+        
+        for ( i = 0; tbl[i].entry != NULL; i++ ) {
 
-	val = parameter_value(config, "port");
-	if ( val ) {
-		ret = prelude_sql_connection_data_set_port(data, val);
-		if ( ret < 0 ) {
-			prelude_sql_connection_data_destroy(data);
-			free(val);
-			return NULL;
-		}
-		
-		free(val);
-	}
+                val = parameter_value(config, tbl[i].entry);
+                if ( ! val )
+                        continue;
 
-	
+                ret = tbl[i].func(data, val);
+
+                free(val);
+                
+                if ( ret < 0 ) {
+                        prelude_sql_connection_data_destroy(data);
+                        return NULL;
+                }
+        }
+        
 	return data;
 }
 
@@ -138,16 +92,16 @@ prelude_db_interface_t *prelude_db_interface_new_string(const char *config)
 	char *name = NULL;
 	char *class = NULL;
 	char *format = NULL;
-	prelude_db_connection_data_t *data;
 	void *specific = NULL;
 	prelude_db_type_t type;
+        prelude_db_connection_data_t *data;
 	prelude_db_interface_t *iface = NULL;
-	
-	name = parameter_value(config, "interface");
-	format = parameter_value(config, "format");
+        
 	class = parameter_value(config, "class");
-	
-	if ( ! class || is_empty(class) ) {
+        format = parameter_value(config, "format");
+	name = parameter_value(config, "interface");
+        
+	if ( ! class || ! *class ) {
 		log(LOG_ERR, "Interface class not specified!\n");
 		goto end;
 	}
@@ -156,7 +110,7 @@ prelude_db_interface_t *prelude_db_interface_new_string(const char *config)
 		specific = get_sql_connection_data(config);
 		type = prelude_db_type_sql;
 	} else {
-		log(LOG_ERR, "Unknown interface class \"\"\n", class);
+		log(LOG_ERR, "Unknown interface class \"%s\"\n", class);
 		goto end;
 	}
 	

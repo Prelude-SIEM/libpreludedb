@@ -1,3 +1,11 @@
+2003-09-02  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* src/db-interface-string.c (get_sql_connection_data): 
+	reworked this function so that it is easy to add new 
+	parameters. You now just have to add a parameters name and
+	handling function to the array of structure in order for
+	the parameter to be taken into account.
+
 2003-08-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.i:
