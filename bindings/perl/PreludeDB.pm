@@ -94,7 +94,7 @@ sub	get_sql_connection
 
     return undef if ( prelude_db_connection_get_type($dbconn) != $PreludeDB::prelude_db_type_sql );
 
-    $sqlconn = prelude_db_connection_get($dbconn);
+    $sqlconn = _prelude_db_connection_get($dbconn);
 
     return $sqlconn ? bless(\$sqlconn, "PreludeDBSQL") : undef;
 }
@@ -107,7 +107,7 @@ sub	get_alert_uident_list
      my	@uident_list;
      my	$uident;
 
-    $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$crit) or return ();
+     $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$crit) or return ();
 
      while ( ($uident = PreludeDB::prelude_db_interface_get_next_alert_uident($uident_list_handle)) ) {
 	 push(@uident_list, $uident);
@@ -325,11 +325,11 @@ sub	row_fetch_array
     my	$cnt;
     my	@array;
 
-    $row = prelude_sql_row_fetch($$self) or return ();
-    $fields = prelude_sql_fields_num($$self);
+    $row = PreludeDB::prelude_sql_row_fetch($$self) or return ();
+    $fields = PreludeDB::prelude_sql_fields_num($$self);
 
     for ( $cnt = 0; $cnt < $fields; $cnt++ ) {
-	push(@array, PreludeDBSQLRow::prelude_sql_field_fetch($row, $cnt));
+	push(@array, PreludeDB::prelude_sql_field_fetch($row, $cnt));
     }
 
     return @array;
@@ -347,7 +347,7 @@ sub	row_fetch_hash
     $fields = PreludeDB::prelude_sql_fields_num($$self);
 
     for ( $cnt = 0; $cnt < $fields; $cnt++ ) {
-	$hash{prelude_sql_field_name($$self, $cnt)} = PreludeDBSQLRow::prelude_sql_field_fetch($row, $cnt);
+	$hash{PreludeDB::prelude_sql_field_name($$self, $cnt)} = PreludeDB::prelude_sql_field_fetch($row, $cnt);
     }
 
     return %hash;

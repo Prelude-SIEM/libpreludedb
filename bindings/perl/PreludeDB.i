@@ -35,6 +35,19 @@
 #include "db-connection-data.h"
 #include "db-interface.h"
 #include "db-interface-string.h"
+
+/*
+ * workaround, the function prelude_db_connection_get returns a (void *)
+ * and prelude_sql_* function take a (prelude_sql_connection_t *), once 
+ * perl bless those types, there are not compatible anymore, so we create
+ * this function to get a (prelude_sql_connection_t *) type and not a (void *)
+ */
+
+static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connection_t *dbconn)
+{
+	return prelude_db_connection_get(dbconn);
+}
+
 %}
 
 %typemap(in) char ** {
@@ -99,19 +112,10 @@
 };
 
 %typemap(in) uint64_t {
-/* 	$1 = (uint64_t) SvUV($input); */
-/* 	if ( SvIOK($input) ) { */
-/* 		printf("debug1.1: %u\n", SvUV($input)); */
-/* 		$1 = (uint64_t) SvUV($input); */
-
-/* 	} else { */
-/* 		printf("debug1.2: %s\n", SvPV_nolen($input)); */
 	sscanf(SvPV_nolen($input), "%llu", &($1));
-/* 	} */
 };
 
 %typemap(out) uint64_t {
-/* 	$result = newSViv($1); */
 	char tmp[32];
 	int len;
 
@@ -212,66 +216,11 @@
 	argvi++;
 };
 
-typedef enum {
-        prelude_db_type_invalid = 0,
-        prelude_db_type_sql = 1
-} prelude_db_type_t;
+%include "../../src/include/db-type.h"
+%include "../../src/include/db.h"
+%include "../../src/include/db-interface.h"
+%include "../../src/include/db-interface-string.h"
+%include "../../src/include/db-connection.h"
+%include "../../src/include/sql.h"
 
-int prelude_db_init(void);
-int prelude_db_shutdown(void);
-
-prelude_db_interface_t *prelude_db_interface_new_string(const char *conn_string);
-int prelude_db_interface_connect(prelude_db_interface_t *interface);
-int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
-prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
-void prelude_db_interface_destroy(prelude_db_interface_t *iface);
-
-prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-									     idmef_criterion_t *criterion);
-prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
-										 idmef_criterion_t *criterion);
-
-void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list);
-void prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list);
-
-prelude_db_alert_uident_t *prelude_db_interface_get_next_alert_uident(prelude_db_alert_uident_list_t *uident_list);
-prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(prelude_db_heartbeat_uident_list_t *uident_list);
-
-idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface, 
-                                                prelude_db_alert_uident_t *uident,
-                                                idmef_selection_t *selection);
-idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
-                                                    prelude_db_heartbeat_uident_t *uident,
-                                                    idmef_selection_t *selection);
-int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident);
-int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident);
-int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
-void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
-                                         int distinct,
-                                         idmef_selection_t *selection, 
-                                         idmef_criterion_t *criteria);
-idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
-                                                           void *data,
-                                                           idmef_selection_t *selection);
-
-int prelude_db_connection_get_type(prelude_db_connection_t *dbconn);
-prelude_sql_connection_t *prelude_db_connection_get(prelude_db_connection_t *dbconn);
-
-int prelude_sql_errno(prelude_sql_connection_t *sqlconn);
-const char *prelude_sql_error(prelude_sql_connection_t *sqlconn);
-prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *sqlconn, const char *query_string);
-int prelude_sql_begin(prelude_sql_connection_t *sqlconn);
-int prelude_sql_commit(prelude_sql_connection_t *sqlconn);
-int prelude_sql_rollback(prelude_sql_connection_t *sqlconn);
-char *prelude_sql_escape(prelude_sql_connection_t *sqlconn, const char *string);
-void prelude_sql_close(prelude_sql_connection_t *sqlconn);
-
-const char *prelude_sql_field_name(prelude_sql_table_t *table, int i);
-int prelude_sql_field_num(prelude_sql_table_t *table, const char *name);
-unsigned int prelude_sql_fields_num(prelude_sql_table_t *table);
-unsigned int prelude_sql_rows_num(prelude_sql_table_t *table);
-prelude_sql_row_t *prelude_sql_row_fetch(prelude_sql_table_t *table);
-void prelude_sql_table_free(prelude_sql_table_t *table);
-
-prelude_sql_field_t *prelude_sql_field_fetch(prelude_sql_row_t *row, unsigned int i);
-prelude_sql_field_t *prelude_sql_field_fetch_by_name(prelude_sql_row_t *row, const char *name);
+prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connection_t *dbconn);
