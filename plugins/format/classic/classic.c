@@ -158,7 +158,7 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	table = idmef_db_select(connection, selection, criteria, -1);
+	table = idmef_db_select(connection, selection, criteria, -1, 0);
 
 	idmef_selection_destroy(selection);
 
@@ -252,7 +252,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	table = idmef_db_select(connection, selection, criteria, -1);
+	table = idmef_db_select(connection, selection, criteria, -1, 0);
 
 	idmef_criteria_destroy(criteria);
 
@@ -401,7 +401,7 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 				   idmef_criteria_t *criteria,
 				   int limit)
 {
-	return idmef_db_select(connection, selection, criteria, limit);
+	return idmef_db_select(connection, selection, criteria, limit, 1);
 }
 
 

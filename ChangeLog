@@ -1,3 +1,18 @@
+2003-10-21  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(table_list_to_strbuf): renamed to table_list_to_strbuf_for_alerts().
+	(table_list_to_strbuf_for_values): implemented. This function uses
+	right joins as opposed to table_list_to_strbuf_for_alerts(). 
+	(build_request): 
+	(idmef_db_select): take a parameter specifying if we are extracting
+	complete alerts or values accross the alerts; use left and right 
+	joins respectively
+	
+	* plugins/format/classic/idmef-db-select.h:
+	* plugins/format/classic/classic.c:
+	modified accordingly. 
+
 2003-10-20  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.i:

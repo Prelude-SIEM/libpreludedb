@@ -229,7 +229,7 @@ static void table_list_destroy(table_list_t *tlist)
 
 
 
-static strbuf_t *table_list_to_strbuf(table_list_t *tlist)
+static strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
 {
 	strbuf_t *buf;
 	int ret;
@@ -255,6 +255,58 @@ static strbuf_t *table_list_to_strbuf(table_list_t *tlist)
 
 		if ( entry->condition ) {
 			ret = strbuf_sprintf(buf, " AND (%s)", entry->condition);
+			if ( ret < 0 )
+				goto error;
+		}
+	}
+
+	return buf;
+
+error:
+	strbuf_destroy(buf);
+	return NULL;
+}
+
+
+
+
+static strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, strbuf_t *where)
+{
+	strbuf_t *buf;
+	int ret;
+	struct list_head *tmp;
+	table_entry_t *entry;
+
+	buf = strbuf_new();
+	if ( ! buf )
+		return NULL;
+
+	/* 
+	 * We must always join with top table, otherwise e.g. a request for
+	 * all source/target address pairs would give us all possible 
+	 * source/target combinations, even the ones that never appeared
+	 * in one alert. 
+	 */
+	ret = strbuf_sprintf(buf, "%s", tlist->top_table);
+	if ( ret < 0 ) 
+		goto error;
+
+	list_for_each(tmp, &tlist->tables) {
+		entry = list_entry(tmp, table_entry_t, list);
+		ret = strbuf_sprintf(buf, ", %s AS %s",
+					  entry->table, entry->alias);
+		if ( ret < 0 )
+			goto error;
+		
+		ret = strbuf_sprintf(where, "%s%s.%s = %s.%s",
+				     strbuf_empty(where) ? "" : " AND ",
+				     tlist->top_table, entry->top_field, 
+				     entry->alias, entry->ident_field);
+		if ( ret < 0 )
+			goto error;
+
+		if ( entry->condition ) {
+			ret = strbuf_sprintf(where, " AND (%s)", entry->condition);
 			if ( ret < 0 )
 				goto error;
 		}
@@ -810,16 +862,35 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 
 
 
+static int join_wheres(strbuf_t *out, strbuf_t *in)
+{
+	int ret = 0;
+
+	if ( ! strbuf_empty(in) ) {
+		ret = strbuf_sprintf(out, "%s(%s) ",
+				     strbuf_empty(out) ? "" : "AND ",
+				     strbuf_string(in));
+	}
+	
+	return ret;
+}
+
+
+
+
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       idmef_selection_t *selection,
 			       idmef_criteria_t *criteria,
-			       int limit)
+			       int limit,
+			       int as_values)
 {
 	strbuf_t *request = NULL;
 	strbuf_t 
 		*str_tables = NULL,
 		*where1 = NULL,
 		*where2 = NULL,
+		*where3 = NULL,
+		*where = NULL,
 		*fields = NULL,
 		*group = NULL,
 		*order = NULL,
@@ -845,6 +916,14 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 
 	where2 = strbuf_new();
 	if ( ! where2 )
+		goto error;
+	
+	where3 = strbuf_new();
+	if ( ! where3 )
+		goto error;
+	
+	where = strbuf_new();
+	if ( ! where )
 		goto error;
 
 	group = strbuf_new();
@@ -875,22 +954,40 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			goto error;
 	}
 
-	str_tables = table_list_to_strbuf(tables);
+	if ( as_values )
+		str_tables = table_list_to_strbuf_for_values(tables, where3);
+	else
+		str_tables = table_list_to_strbuf_for_alerts(tables);
+
 	if ( ! str_tables )
 		goto error;
 
-	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s %s %s %s %s %s;",
+	/* build a complete WHERE statement */
+	ret = join_wheres(where, where1);
+	if ( ret < 0 )
+		goto error;
+
+	ret = join_wheres(where, where2);
+	if ( ret < 0 )
+		goto error;
+
+	ret = join_wheres(where, where3);
+	if ( ret < 0 )
+		goto error;	
+
+	/* build the query */
+	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s %s;",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),
-			     ( strbuf_empty(where1) && strbuf_empty(where2) ) ? "" : "WHERE",
-		             strbuf_string(where1),
-		             ( strbuf_empty(where1) || strbuf_empty(where2) ? "" : "AND" ),
-		             strbuf_string(where2),
+			     strbuf_empty(where) ? "" : "WHERE",
+		             strbuf_string(where),
 			     strbuf_empty(group) ? "" : "GROUP BY", strbuf_string(group),
 			     strbuf_empty(order) ? "" : "ORDER BY", strbuf_string(order),
 			     lim ? strbuf_string(lim) : "");
 	if ( ret < 0 )
 		goto error;
+
+	/* done, finally :-) */
 
 error:
 
@@ -908,6 +1005,12 @@ error:
 
 	if ( where2 )
 		strbuf_destroy(where2);
+
+	if ( where3 )
+		strbuf_destroy(where3);
+	
+	if ( where )
+		strbuf_destroy(where);
 
 	if ( group )
 		strbuf_destroy(group);
@@ -933,7 +1036,8 @@ error:
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     idmef_selection_t *selection,
 				     idmef_criteria_t *criteria,
-				     int limit)
+				     int limit, 
+				     int as_values)
 {
 	prelude_sql_connection_t *sql;
 	strbuf_t *request;
@@ -946,7 +1050,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, selection, criteria, limit);
+	request = build_request(sql, selection, criteria, limit, as_values);
 	if ( ! request )
 		return NULL;
 

@@ -28,7 +28,8 @@
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     idmef_selection_t *selection, 
 				     idmef_criteria_t *criteria,
-				     int limit);
+				     int limit,
+				     int as_values);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H */
 
