@@ -123,6 +123,7 @@ constraint PK_PRELUDE_ANALYZER primary key (parent_ident, parent_type, ident)
 create table Prelude_AnalyzerTime (
 parent_ident         NUMERIC(20)                 not null,
 parent_type          VARCHAR(1)           not null,
+gmt_offset           INT8                 not null,
 time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_ANALYZERTIME primary key (parent_ident, parent_type)
@@ -163,6 +164,7 @@ constraint PK_PRELUDE_CORRELATIONALERT_AL primary key (ident, alert_ident)
 create table Prelude_CreateTime (
 parent_ident         NUMERIC(20)                 not null,
 parent_type          VARCHAR(1)           not null,
+gmt_offset           INT8                 not null,
 time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_CREATETIME primary key (parent_ident, parent_type)
@@ -170,6 +172,7 @@ constraint PK_PRELUDE_CREATETIME primary key (parent_ident, parent_type)
 
 create table Prelude_DetectTime (
 alert_ident          NUMERIC(20)                 not null,
+gmt_offset           INT8                 not null,
 time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_DETECTTIME primary key (alert_ident)
