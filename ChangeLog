@@ -1,3 +1,8 @@
+2003-11-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	bug fix (IDMEFSelection did not longer exist)
+
 2003-11-17  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/db-object-selection.c:

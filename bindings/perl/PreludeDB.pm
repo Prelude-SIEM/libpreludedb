@@ -252,20 +252,47 @@ sub	get_heartbeat_uident_list
     return @uident_list;
 }
 
+sub	_build_object_list
+{
+    my	@object_list = @_;
+    my	$object_list_handle;
+    my	$object;
+    
+    $object_list_handle = Prelude::idmef_object_list_new() or return undef;
+
+    foreach ( @object_list ) {
+	unless ( $_ ) {
+	    Prelude::idmef_object_list_destroy($object_list_handle);
+	    return undef;
+	}
+
+	$object = Prelude::idmef_object_new_fast($_);
+	unless ( $object ) {
+	    Prelude::idmef_object_list_destroy($object_list_handle);
+	    return undef;
+	}
+
+	Prelude::idmef_object_list_add($object_list_handle, $object);
+    }
+
+    return $object_list_handle;
+}
+
 sub	get_alert
 {
     my	$self = shift;
     my	$uident = shift || return undef;
-    my	@selected_object_list = @_;
-    my	$selection;
+    my	@object_list = @_;
+    my	$object_list_handle;
     my	$message;
 
-    if ( @selected_object_list ) {
-	$selection = new IDMEFSelection(@selected_object_list) or return undef;
+    if ( @object_list ) {
+	$object_list_handle = _build_object_list(@object_list) or return undef;
     }
 
-    $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident,
-							 $selection ? $$selection : undef);
+    $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident, $object_list_handle);
+
+    Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
@@ -274,16 +301,17 @@ sub	get_heartbeat
 {
     my	$self = shift;
     my	$uident = shift || return undef;
-    my	@selected_object_list = @_;
-    my	$selection;
+    my	@object_list = @_;
+    my	$object_list_handle;
     my	$message;
 
-    if ( @selected_object_list ) {
-	$selection = new IDMEFSelection(@selected_object_list) or return undef;
+    if ( @object_list ) {
+	$object_list_handle = _build_object_list(@object_list) or return undef;
     }
 
-    $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident,
-							     $selection ? $$selection : undef);
+    $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident, $object_list_handle);
+
+    Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
