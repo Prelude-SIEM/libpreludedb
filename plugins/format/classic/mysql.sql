@@ -1,9 +1,10 @@
 DROP TABLE IF EXISTS _format;
 
 CREATE TABLE _format (
- name VARCHAR(255) NOT NULL
+ name VARCHAR(255) NOT NULL,
+ version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name) VALUES("classic");
+INSERT INTO _format (name, version) VALUES('classic', '14');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
