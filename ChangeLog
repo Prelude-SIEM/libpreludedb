@@ -1,5 +1,10 @@
 2002-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/sql-table.c:
+	add missing copyright notice.
+
+2002-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-interface.c:
 	allow interface specification with format = NULL
 
