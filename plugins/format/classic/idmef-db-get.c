@@ -35,7 +35,6 @@
 
 #include "sql-connection-data.h"
 #include "sql.h"
-#include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
