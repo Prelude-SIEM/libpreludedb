@@ -757,7 +757,7 @@ static int join_wheres(prelude_string_t *out, prelude_string_t *in)
 
 	if ( ! prelude_string_is_empty(in) ) {
 		ret = prelude_string_sprintf(out, "%s(%s) ",
-				    prelude_string_is_empty(out) ? "" : "AND ", get_string(in));
+				    prelude_string_is_empty(out) ? "" : " AND ", get_string(in));
 	}
 	
 	return ret;
