@@ -54,19 +54,17 @@ typedef struct {
 
 	void (*format_heartbeat_ident_list_destroy)(prelude_db_connection_t *connection,
 						    void *res);
-
+        
 	unsigned int (*format_get_alert_ident_list_len)(prelude_db_connection_t *connection, void *res);
 
 	unsigned int (*format_get_heartbeat_ident_list_len)(prelude_db_connection_t *connection, void *res);
 
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
-					     prelude_db_message_ident_t *uident,
-					     idmef_object_list_t *object_list);
+					     prelude_db_message_ident_t *uident);
 
 	idmef_message_t *(*format_get_heartbeat)(prelude_db_connection_t *connection,
-						 prelude_db_message_ident_t *uident,
-						 idmef_object_list_t *object_list);
-
+						 prelude_db_message_ident_t *uident);
+        
 	int (*format_delete_alert)(prelude_db_connection_t *connection,
 				   prelude_db_message_ident_t *uident);
 

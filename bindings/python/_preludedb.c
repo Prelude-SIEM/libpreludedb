@@ -684,32 +684,31 @@ SWIG_Python_InstallConstants(PyObject *d, swig_const_info constants[]) {
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define  SWIGTYPE_p_idmef_object_value_list_t swig_types[0] 
-#define  SWIGTYPE_p_idmef_object_list_t swig_types[1] 
-#define  SWIGTYPE_p_prelude_db_message_ident_list_t swig_types[2] 
-#define  SWIGTYPE_p_size_t swig_types[3] 
-#define  SWIGTYPE_p_int16_t swig_types[4] 
-#define  SWIGTYPE_p_uint16_t swig_types[5] 
-#define  SWIGTYPE_p_prelude_sql_field_t swig_types[6] 
-#define  SWIGTYPE_p_prelude_db_selected_object_t swig_types[7] 
-#define  SWIGTYPE_p_idmef_object_t swig_types[8] 
-#define  SWIGTYPE_p_prelude_sql_row_t swig_types[9] 
-#define  SWIGTYPE_p_void swig_types[10] 
-#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[11] 
-#define  SWIGTYPE_p_prelude_db_connection_t swig_types[12] 
-#define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[13] 
-#define  SWIGTYPE_p_idmef_message_t swig_types[14] 
-#define  SWIGTYPE_p_idmef_value_relation_t swig_types[15] 
-#define  SWIGTYPE_p_prelude_db_interface_t swig_types[16] 
-#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[17] 
-#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[18] 
+#define  SWIGTYPE_p_prelude_db_message_ident_list_t swig_types[1] 
+#define  SWIGTYPE_p_size_t swig_types[2] 
+#define  SWIGTYPE_p_int16_t swig_types[3] 
+#define  SWIGTYPE_p_uint16_t swig_types[4] 
+#define  SWIGTYPE_p_prelude_sql_field_t swig_types[5] 
+#define  SWIGTYPE_p_prelude_db_selected_object_t swig_types[6] 
+#define  SWIGTYPE_p_idmef_object_t swig_types[7] 
+#define  SWIGTYPE_p_prelude_sql_row_t swig_types[8] 
+#define  SWIGTYPE_p_void swig_types[9] 
+#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[10] 
+#define  SWIGTYPE_p_prelude_db_connection_t swig_types[11] 
+#define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[12] 
+#define  SWIGTYPE_p_idmef_message_t swig_types[13] 
+#define  SWIGTYPE_p_idmef_value_relation_t swig_types[14] 
+#define  SWIGTYPE_p_prelude_db_interface_t swig_types[15] 
+#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[16] 
+#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[17] 
+#define  SWIGTYPE_p_prelude_sql_table_t swig_types[18] 
 #define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[19] 
 #define  SWIGTYPE_p_idmef_criteria_t swig_types[20] 
-#define  SWIGTYPE_p_prelude_sql_table_t swig_types[21] 
-#define  SWIGTYPE_p_prelude_strbuf_t swig_types[22] 
-#define  SWIGTYPE_p_idmef_string_t swig_types[23] 
-#define  SWIGTYPE_p_idmef_criterion_value_t swig_types[24] 
-#define  SWIGTYPE_p_idmef_value_t swig_types[25] 
-static swig_type_info *swig_types[27];
+#define  SWIGTYPE_p_prelude_strbuf_t swig_types[21] 
+#define  SWIGTYPE_p_idmef_string_t swig_types[22] 
+#define  SWIGTYPE_p_idmef_criterion_value_t swig_types[23] 
+#define  SWIGTYPE_p_idmef_value_t swig_types[24] 
+static swig_type_info *swig_types[26];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -1254,17 +1253,14 @@ static PyObject *_wrap_prelude_db_interface_get_alert(PyObject *self, PyObject *
     PyObject *resultobj;
     prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
     prelude_db_message_ident_t *arg2 = (prelude_db_message_ident_t *) 0 ;
-    idmef_object_list_t *arg3 = (idmef_object_list_t *) 0 ;
     idmef_message_t *result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOO:prelude_db_interface_get_alert",&obj0,&obj1,&obj2)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OO:prelude_db_interface_get_alert",&obj0,&obj1)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj1,(void **) &arg2, SWIGTYPE_p_prelude_db_message_ident_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,(void **) &arg3, SWIGTYPE_p_idmef_object_list_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = (idmef_message_t *)prelude_db_interface_get_alert(arg1,arg2,arg3);
+    result = (idmef_message_t *)prelude_db_interface_get_alert(arg1,arg2);
     
     resultobj = SWIG_NewPointerObj((void *) result, SWIGTYPE_p_idmef_message_t, 0);
     return resultobj;
@@ -1277,17 +1273,14 @@ static PyObject *_wrap_prelude_db_interface_get_heartbeat(PyObject *self, PyObje
     PyObject *resultobj;
     prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
     prelude_db_message_ident_t *arg2 = (prelude_db_message_ident_t *) 0 ;
-    idmef_object_list_t *arg3 = (idmef_object_list_t *) 0 ;
     idmef_message_t *result;
     PyObject * obj0 = 0 ;
     PyObject * obj1 = 0 ;
-    PyObject * obj2 = 0 ;
     
-    if(!PyArg_ParseTuple(args,(char *)"OOO:prelude_db_interface_get_heartbeat",&obj0,&obj1,&obj2)) goto fail;
+    if(!PyArg_ParseTuple(args,(char *)"OO:prelude_db_interface_get_heartbeat",&obj0,&obj1)) goto fail;
     if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
     if ((SWIG_ConvertPtr(obj1,(void **) &arg2, SWIGTYPE_p_prelude_db_message_ident_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    if ((SWIG_ConvertPtr(obj2,(void **) &arg3, SWIGTYPE_p_idmef_object_list_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
-    result = (idmef_message_t *)prelude_db_interface_get_heartbeat(arg1,arg2,arg3);
+    result = (idmef_message_t *)prelude_db_interface_get_heartbeat(arg1,arg2);
     
     resultobj = SWIG_NewPointerObj((void *) result, SWIGTYPE_p_idmef_message_t, 0);
     return resultobj;
@@ -2390,7 +2383,6 @@ static PyMethodDef SwigMethods[] = {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_idmef_object_value_list_t[] = {{"_p_idmef_object_value_list_t", 0, "idmef_object_value_list_t *", 0},{"_p_idmef_object_value_list_t"},{0}};
-static swig_type_info _swigt__p_idmef_object_list_t[] = {{"_p_idmef_object_list_t", 0, "idmef_object_list_t *", 0},{"_p_idmef_object_list_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_message_ident_list_t[] = {{"_p_prelude_db_message_ident_list_t", 0, "prelude_db_message_ident_list_t *", 0},{"_p_prelude_db_message_ident_list_t"},{0}};
 static swig_type_info _swigt__p_size_t[] = {{"_p_size_t", 0, "size_t *", 0},{"_p_size_t"},{0}};
 static swig_type_info _swigt__p_int16_t[] = {{"_p_int16_t", 0, "int16_t *", 0},{"_p_int16_t"},{0}};
@@ -2408,9 +2400,9 @@ static swig_type_info _swigt__p_idmef_value_relation_t[] = {{"_p_idmef_value_rel
 static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_connection_data_t[] = {{"_p_prelude_db_connection_data_t", 0, "prelude_db_connection_data_t *", 0},{"_p_prelude_db_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_connection_data_t[] = {{"_p_prelude_sql_connection_data_t", 0, "prelude_sql_connection_data_t *", 0},{"_p_prelude_sql_connection_data_t"},{0}};
+static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_message_ident_t[] = {{"_p_prelude_db_message_ident_t", 0, "prelude_db_message_ident_t *", 0},{"_p_prelude_db_message_ident_t"},{0}};
 static swig_type_info _swigt__p_idmef_criteria_t[] = {{"_p_idmef_criteria_t", 0, "idmef_criteria_t *", 0},{"_p_idmef_criteria_t"},{0}};
-static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
 static swig_type_info _swigt__p_prelude_strbuf_t[] = {{"_p_prelude_strbuf_t", 0, "prelude_strbuf_t *", 0},{"_p_prelude_strbuf_t"},{0}};
 static swig_type_info _swigt__p_idmef_string_t[] = {{"_p_idmef_string_t", 0, "idmef_string_t *", 0},{"_p_idmef_string_t"},{0}};
 static swig_type_info _swigt__p_idmef_criterion_value_t[] = {{"_p_idmef_criterion_value_t", 0, "idmef_criterion_value_t *", 0},{"_p_idmef_criterion_value_t"},{0}};
@@ -2418,7 +2410,6 @@ static swig_type_info _swigt__p_idmef_value_t[] = {{"_p_idmef_value_t", 0, "idme
 
 static swig_type_info *swig_types_initial[] = {
 _swigt__p_idmef_object_value_list_t, 
-_swigt__p_idmef_object_list_t, 
 _swigt__p_prelude_db_message_ident_list_t, 
 _swigt__p_size_t, 
 _swigt__p_int16_t, 
@@ -2436,9 +2427,9 @@ _swigt__p_idmef_value_relation_t,
 _swigt__p_prelude_db_interface_t, 
 _swigt__p_prelude_db_connection_data_t, 
 _swigt__p_prelude_sql_connection_data_t, 
+_swigt__p_prelude_sql_table_t, 
 _swigt__p_prelude_db_message_ident_t, 
 _swigt__p_idmef_criteria_t, 
-_swigt__p_prelude_sql_table_t, 
 _swigt__p_prelude_strbuf_t, 
 _swigt__p_idmef_string_t, 
 _swigt__p_idmef_criterion_value_t, 

@@ -358,8 +358,7 @@ prelude_db_message_ident_t *prelude_db_interface_get_next_heartbeat_ident(prelud
 
 
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface,
-						prelude_db_message_ident_t *ident,
-						idmef_object_list_t *object_list)
+						prelude_db_message_ident_t *ident)
 {
 	idmef_message_t *message;
 
@@ -372,7 +371,7 @@ idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interfac
 	if ( ! interface->format->format_get_alert )
 		return NULL;
 
-	message = interface->format->format_get_alert(interface->db_connection, ident, object_list);
+	message = interface->format->format_get_alert(interface->db_connection, ident);
 	if ( ! message )
 		return NULL;
 
@@ -387,8 +386,7 @@ idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interfac
 
 
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
-						    prelude_db_message_ident_t *ident,
-						    idmef_object_list_t *object_list)
+						    prelude_db_message_ident_t *ident)
 {
 	idmef_message_t *message;
 
@@ -401,7 +399,7 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 	if ( ! interface->format->format_get_heartbeat )
 		return NULL;
 
-	message = interface->format->format_get_heartbeat(interface->db_connection, ident, object_list);
+	message = interface->format->format_get_heartbeat(interface->db_connection, ident);
 	if ( ! message )
 		return NULL;
 
