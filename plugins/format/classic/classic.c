@@ -406,10 +406,10 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 			           prelude_db_object_selection_t *selection, 
 				   idmef_criteria_t *criteria,
 				   int distinct,
-				   int limit)
+				   int limit, int offset)
 {
 	return idmef_db_select(connection, selection, criteria, 
-			       distinct, limit, NO_OFFSET, AS_VALUES);
+			       distinct, limit, offset, AS_VALUES);
 }
 
 

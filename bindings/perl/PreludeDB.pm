@@ -371,6 +371,7 @@ sub	get_values
     my	$criteria;
     my	$distinct;
     my	$limit;
+    my	$offset;
     my	$res;
     my	$objval_list;
     my	$objval;
@@ -385,10 +386,11 @@ sub	get_values
     }
 
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
-
+    $offset = defined($opt{-offset}) ? $opt{-offset} : -1;
     $distinct = defined($opt{-distinct}) ? $opt{-distinct} : 0;
 
-    $res = PreludeDB::prelude_db_interface_select_values($$self, $$selection, $$criteria, $distinct, $limit) or return ();
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $$selection, $$criteria, $distinct, $limit, $offset)
+	or return ();
 
     while ( ($objval_list = PreludeDB::prelude_db_interface_get_values($$self, $res, $$selection)) ) {
 	my @tmp_list;

@@ -512,7 +512,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 prelude_db_object_selection_t *object_selection,
 					 idmef_criteria_t *criteria,
 					 int distinct,
-					 int limit)
+					 int limit, int offset)
 {
 	if ( ! interface || 
 	     ! interface->format || 
@@ -520,7 +520,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 		return NULL;
 	
 	return interface->format->format_select_values
-                (interface->db_connection, object_selection, criteria, distinct, limit);
+                (interface->db_connection, object_selection, criteria, distinct, limit, offset);
 }
 
 

@@ -8,6 +8,8 @@
 	* plugins/format/classic/classic.c:
 	add a "limit" and an "offset" parameter to the
 	prelude_db_interface_get_{alert,heartbeat}_ident_list functions
+	and add an "offset" parameter to the prelude_db_interface_select_values
+	function
 
 	* bindings/perl/PreludeDB.c:
 	regenerated

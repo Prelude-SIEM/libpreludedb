@@ -70,7 +70,7 @@ typedef struct {
 			              prelude_db_object_selection_t *object_selection,
 				      idmef_criteria_t *criteria,
 				      int distinct,
-				      int limit);
+				      int limit, int offset);
 
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,
 							void *data,

@@ -82,7 +82,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 prelude_db_object_selection_t *object_selection,
 					 idmef_criteria_t *criteria,
 					 int distinct,
-					 int limit);
+					 int limit, int offset);
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
 							   void *data,
