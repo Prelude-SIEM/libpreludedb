@@ -429,8 +429,14 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 		}
 
 		objval = idmef_object_value_new(idmef_object_ref(object), value);
+		if ( ! objval ) {
+			idmef_object_destroy(object); /* destroy the new created reference */
+			idmef_value_destroy(value);
+			goto error;
+		}
 
 		if ( idmef_object_value_list_add(objval_list, objval) < 0 ) {
+			idmef_object_value_destroy(objval);
 			log(LOG_ERR, "could not add to value list\n");
 			goto error;
 		}
@@ -446,7 +452,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 error:
 	idmef_object_value_list_destroy(objval_list);
 	prelude_sql_table_free(table);
-	
+
 	return NULL;
 
 }

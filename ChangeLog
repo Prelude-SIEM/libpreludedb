@@ -1,3 +1,15 @@
+2003-09-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* bindings/perl/PreludeDB.pm:
+	add the get_values function
+
+	* plugins/format/classic/classic.c:
+	check idmef_object_value_new's return value and destroy objval
+	when idmef_object_value_list_add failed
+
 2003-09-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.c:

@@ -684,13 +684,13 @@ static int object_to_field(strbuf_t *fields,
 	if ( ( idmef_object_compare(object, alert) == 0 ) ||
 	     ( idmef_object_compare(object, heartbeat) == 0 ) )
 		retval = add_field(fields, table, field, "ident",
-				idmef_selected_object_get_function(selected));
+				   idmef_selected_object_get_function(selected));
 	else
 		retval = add_field(fields,
-				field ? table_alias : NULL,
-				field ? field : function,
-				NULL, 
-				idmef_selected_object_get_function(selected));
+				   field ? table_alias : NULL,
+				   field ? field : function,
+				   NULL, 
+				   idmef_selected_object_get_function(selected));
 
 	idmef_object_destroy(alert);
 	idmef_object_destroy(heartbeat);

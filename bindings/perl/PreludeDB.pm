@@ -141,25 +141,87 @@ sub	_convert_object_list
 {
     my	@object_list = @_;
     my	$object;
-    my	$object_list_handle;
+    my	$selection;
 
-    $object_list_handle = Prelude::idmef_selection_new();
+    $selection = Prelude::idmef_selection_new() or return undef;
 
     foreach ( @object_list ) {
 	$object = Prelude::idmef_object_new_fast($_);
 	unless ( $object ) {
-	    Prelude::idmef_selection_destroy($object_list_handle);
+	    Prelude::idmef_selection_destroy($selection);
 	    return undef;
 	}
 
-	if ( Prelude::idmef_selection_add_object($object_list_handle, $object) < 0 ) {
+	if ( Prelude::idmef_selection_add_object($selection, $object) < 0 ) {
 	    Prelude::idmef_object_destroy($object);
-	    Prelude::idmef_selection_destroy($object_list_handle);
+	    Prelude::idmef_selection_destroy($selection);
 	    return undef;
 	}
     }
 
-    return $object_list_handle;
+    return $selection;
+}
+
+sub	_convert_selected_object_list
+{
+    my	@selected_list = @_;
+    my	$selection;
+
+    $selection = Prelude::idmef_selection_new() or return undef;
+
+    foreach ( @selected_list ) {
+
+	if ( ref eq "HASH" ) {
+	    my $selected;
+	    my $object;
+
+	    unless ( $_->{-object} ) {
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
+	    $object = Prelude::idmef_object_new_fast($_->{-object});
+	    unless ( $object ) {
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
+	    $selected = Prelude::idmef_selected_object_new
+		($object,
+		 defined($_->{-function}) ? $_->{-function} : $Prelude::function_none,
+		 defined($_->{-group}) ? $_->{-group} : $Prelude::group_by_none,
+		 defined($_->{-order}) ? $_->{-order} : $Prelude::order_none);
+
+	    unless ( $selected ) {
+		Prelude::idmef_object_destroy($object);
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
+	    if ( Prelude::idmef_selection_add_selected_object($selection, $selected) < 0 ) {
+		Prelude::idmef_selected_object_destroy($selected);
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
+	} else {
+	    my $object;
+
+	    $object = Prelude::idmef_object_new_fast($_);
+	    unless ( $object ) {
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
+	    if ( Prelude::idmef_selection_add_object($selection, $object) < 0 ) {
+		Prelude::idmef_object_destroy($object);
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+	}
+    }
+    
+    return $selection;
 }
 
 sub	get_alert
@@ -214,6 +276,67 @@ sub	delete_heartbeat
     my	$uident = shift;
 
     return (PreludeDB::prelude_db_interface_delete_heartbeat($$self, $uident) < 0) ? 0 : 1;
+}
+
+sub	get_values
+{
+    my	$self = shift;
+    my	%opt = @_;
+    my	$selection;
+    my	$criteria;
+    my	$limit;
+    my	$res;
+    my	$objval_list;
+    my	$objval;
+    my	$value;
+    my	@result_list;
+
+    return () if ( not defined $opt{-object_list} || @{ $opt{-object_list} } == 0 );
+
+    $selection = _convert_selected_object_list(@{ $opt{-object_list} }) or return ();
+    $criteria = $opt{-criteria} if ( defined $opt{-criteria} );
+    $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
+
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $criteria, $limit);
+
+    unless ( $res ) {
+	Prelude::idmef_selection_destroy($selection);
+	return ();
+    }
+
+    while ( ($objval_list = PreludeDB::prelude_db_interface_get_values($$self, $res, $selection)) ) {
+	my @tmp_list;
+
+	while ( ($objval = Prelude::idmef_object_value_list_get_next($objval_list)) ) {
+	    my $tmp;
+
+	    $value = Prelude::idmef_object_value_get_value($objval);
+	    unless ( $value ) {
+		Prelude::idmef_selection_destroy($selection);
+		Prelude::idmef_object_value_list_destroy($objval_list);
+		# FIXME: we should also free res, however this is not possible, the API is broken in that way
+		return ();
+	    }
+
+	    $tmp = Prelude::value2scalar($value);
+	    unless ( defined $tmp ) {
+		Prelude::idmef_selection_destroy($selection);
+		Prelude::idmef_object_value_list_destroy($objval_list);
+		Prelude::idmef_value_destroy($value);
+		return ();
+	    }
+
+	    push(@tmp_list, $tmp);
+	}
+
+	Prelude::idmef_object_value_list_destroy($objval_list);
+
+	push(@result_list, \@tmp_list);
+    }
+
+    Prelude::idmef_selection_destroy($selection);
+
+    return @result_list;
 }
 
 sub	DESTROY
