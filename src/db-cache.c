@@ -156,7 +156,9 @@ static int msg_to_heartbeat(idmef_message_t *idmef, prelude_msg_t *msg)
 static idmef_message_t *read_message_from_cache(prelude_io_t *fd) 
 {
         int ret;
+        void *buf;
         uint8_t tag;
+        uint32_t len;
         idmef_message_t *idmef;
         prelude_msg_t *msg = NULL;
         
@@ -169,14 +171,16 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
                 prelude_msg_destroy(msg);
                 return NULL;
         }
-        
-        tag = prelude_msg_get_tag(msg);
 
-        if ( tag == MSG_ALERT_TAG ) 
-                ret = msg_to_alert(idmef, msg);
-        
-        else if ( tag == MSG_HEARTBEAT_TAG )
-                ret = msg_to_heartbeat(idmef, msg);
+        ret = -1;
+        while ( (prelude_msg_get(msg, &tag, &len, &buf)) > 0 ) {
+
+                if ( tag == MSG_ALERT_TAG ) 
+                        ret = msg_to_alert(idmef, msg);
+
+                else if ( tag == MSG_HEARTBEAT_TAG )
+                        ret = msg_to_heartbeat(idmef, msg);
+        }
 
         if ( ret == 0 )
                 return idmef;
