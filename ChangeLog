@@ -1,3 +1,14 @@
+2004-01-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/pgsql.sql:
+	bug fix, switch all time field in TIMESTAMP type
+	(instead of VARCHAR or DATE types)
+
+	* plugins/sql/pgsql/pgsql.c:
+	(db_field_fetch)
+	(db_field_fetch_by_name)
+	bug fix, return NULL if the field contains NULL
+
 2004-01-14  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* plugins/sql/pgsql/pgsql.c (db_escape): 

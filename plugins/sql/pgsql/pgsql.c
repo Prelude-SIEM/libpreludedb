@@ -509,19 +509,20 @@ static void *db_row_fetch(void *s, void *t)
 
 
 
-static void *db_field_fetch(void *s, void *t, void *r, unsigned int i)
+static void *db_field_fetch(void *s, void *t, void *r, unsigned int field)
 {
 	session_t *session = s;
 	PGresult *res = t;
+	unsigned int row = (unsigned int) r - 1;
 
 	session->dberrno = 0;
 	
-	if ( i >= PQnfields(res) ) {
+	if ( field >= PQnfields(res) ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
 		return NULL;
 	}
 
-	return ((void *) i + 1);
+	return PQgetisnull(res, row, field) ? NULL : ((void *) field + 1);
 }
 
 
@@ -530,17 +531,17 @@ static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
 {
 	session_t *session = s;
 	PGresult *res = t;
-	int i;
+	int field;
 
 	session->dberrno = 0;
 
-	i = PQfnumber(res, name);
-	if ( i == -1 ) {
+	field = PQfnumber(res, name);
+	if ( field == -1 ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
 		return NULL;
 	}
 
-	return db_field_fetch(session, res, r, i);
+	return db_field_fetch(session, res, r, field);
 }
 
 
