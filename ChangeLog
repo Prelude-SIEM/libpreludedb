@@ -1,3 +1,8 @@
+2002-12-31  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/db-interface-string.c(get_sql_connection_data):
+	add handling of "port" keyword. 
+
 2002-12-20  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/sql/pgsql.c(db_query):
