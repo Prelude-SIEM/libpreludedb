@@ -153,113 +153,20 @@ sub	get_heartbeat_uident_list
     return @uident_list;
 }
 
-sub	_convert_object_list
-{
-    my	@object_list = @_;
-    my	$object;
-    my	$selection;
-
-    $selection = Prelude::idmef_selection_new() or return undef;
-
-    foreach ( @object_list ) {
-	$object = Prelude::idmef_object_new_fast($_);
-	unless ( $object ) {
-	    Prelude::idmef_selection_destroy($selection);
-	    return undef;
-	}
-
-	if ( Prelude::idmef_selection_add_object($selection, $object) < 0 ) {
-	    Prelude::idmef_object_destroy($object);
-	    Prelude::idmef_selection_destroy($selection);
-	    return undef;
-	}
-    }
-
-    return $selection;
-}
-
-sub	_convert_selected_object_list
-{
-    my	@selected_list = @_;
-    my	$selection;
-
-    $selection = Prelude::idmef_selection_new() or return undef;
-
-    foreach ( @selected_list ) {
-
-	if ( ref eq "HASH" ) {
-	    my $selected;
-	    my $object;
-
-	    unless ( $_->{-object} ) {
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	    $object = Prelude::idmef_object_new_fast($_->{-object});
-	    unless ( $object ) {
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	    $selected = Prelude::idmef_selected_object_new
-		($object,
-		 defined($_->{-function}) ? $_->{-function} : $Prelude::function_none,
-		 defined($_->{-group}) ? $_->{-group} : $Prelude::group_by_none,
-		 defined($_->{-order}) ? $_->{-order} : $Prelude::order_none);
-
-	    unless ( $selected ) {
-		Prelude::idmef_object_destroy($object);
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	    if ( Prelude::idmef_selection_add_selected_object($selection, $selected) < 0 ) {
-		Prelude::idmef_selected_object_destroy($selected);
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	} else {
-	    my $object;
-
-	    unless ( $_ ) {
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	    $object = Prelude::idmef_object_new_fast($_);
-	    unless ( $object ) {
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-
-	    if ( Prelude::idmef_selection_add_object($selection, $object) < 0 ) {
-		Prelude::idmef_object_destroy($object);
-		Prelude::idmef_selection_destroy($selection);
-		return undef;
-	    }
-	}
-    }
-    
-    return $selection;
-}
-
 sub	get_alert
 {
     my	$self = shift;
     my	$uident = shift || return undef;
-    my	@object_list = @_;
-    my	$object_list_handle;
+    my	@selected_object_list = @_;
+    my	$selection;
     my	$message;
 
-    if ( @object_list ) {
-	$object_list_handle = _convert_object_list(@object_list) or return undef;
+    if ( @selected_object_list ) {
+	$selection = new IDMEFSelection(@selected_object_list) or return undef;
     }
 
-    $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident, $object_list_handle);
-
-    Prelude::idmef_selection_destroy($object_list_handle) if ( $object_list_handle );
+    $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident,
+							 $selection ? $$selection : undef);
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
@@ -268,17 +175,16 @@ sub	get_heartbeat
 {
     my	$self = shift;
     my	$uident = shift || return undef;
-    my	@object_list = @_;
-    my	$object_list_handle;
+    my	@selected_object_list = @_;
+    my	$selection;
     my	$message;
 
-    if ( @object_list ) {
-	$object_list_handle = _convert_object_list(@object_list) or return undef;
+    if ( @selected_object_list ) {
+	$selection = new IDMEFSelection(@selected_object_list) or return undef;
     }
 
-    $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident, $object_list_handle);
-
-    Prelude::idmef_selection_destroy($object_list_handle) if ( $object_list_handle );
+    $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident,
+							     $selection ? $$selection : undef);
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
@@ -314,27 +220,19 @@ sub	get_values
     my	@result_list;
 
     (defined $opt{-object_list} && @{ $opt{-object_list} } > 0) or return ();
-    $selection = _convert_selected_object_list(@{ $opt{-object_list} }) or return ();
+    $selection = new IDMEFSelection(@{ $opt{-object_list} }) or return ();
 
     if ( defined $opt{-criteria} ) {
-	$criteria = _get_criteria($opt{-criteria});
-	unless ( $criteria ) {
-	    Prelude::idmef_selection_destroy($selection);
-	    return ();
-	}
+	$criteria = _get_criteria($opt{-criteria}) or return ();
     }
 
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
 
     $distinct = defined($opt{-distinct}) ? $opt{-distinct} : 0;
 
-    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $distinct, $limit);
-    unless ( $res ) {
-	Prelude::idmef_selection_destroy($selection);
-	return ();
-    }
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $$selection, $$criteria, $distinct, $limit) or return ();
 
-    while ( ($objval_list = PreludeDB::prelude_db_interface_get_values($$self, $res, $selection)) ) {
+    while ( ($objval_list = PreludeDB::prelude_db_interface_get_values($$self, $res, $$selection)) ) {
 	my @tmp_list;
 
 	while ( ($objval = Prelude::idmef_object_value_list_get_next($objval_list)) ) {
@@ -342,7 +240,6 @@ sub	get_values
 
 	    $value = Prelude::idmef_object_value_get_value($objval);
 	    unless ( $value ) {
-		Prelude::idmef_selection_destroy($selection);
 		Prelude::idmef_object_value_list_destroy($objval_list);
 		# FIXME: we should also free res, however this is not possible, the API is broken in that way
 		return ();
@@ -350,7 +247,6 @@ sub	get_values
 
 	    $tmp = Prelude::value2scalar($value);
 	    unless ( defined $tmp ) {
-		Prelude::idmef_selection_destroy($selection);
 		Prelude::idmef_object_value_list_destroy($objval_list);
 		return ();
 	    }
@@ -362,8 +258,6 @@ sub	get_values
 
 	push(@result_list, \@tmp_list);
     }
-
-    Prelude::idmef_selection_destroy($selection);
 
     return @result_list;
 }

@@ -1,6 +1,12 @@
 2003-10-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:
+	remove idmef_selection build related code
+	use new libprelude perl's IDMEFSelection
+
+2003-10-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
 	(PreludeDB::get_values)
 	updated to use distinct stuff
 
