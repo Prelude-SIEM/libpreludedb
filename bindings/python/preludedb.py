@@ -312,13 +312,13 @@ class PreludeDB:
                 value = _prelude.idmef_object_value_get_value(objval)
                 if not value:
                     _preludedb.prelude_db_object_selection_destroy(selection_handle)
-                    _prelude.idmef_object_value_list_destroy(objval)
+                    _prelude.idmef_object_value_list_destroy(objval_list)
                     raise Error()
 
                 tmp = idmef_value_c_to_python(value)
-                if not tmp:
+                if tmp is None:
                     _preludedb.prelude_db_object_selection_destroy(selection_handle)
-                    _prelude.idmef_object_value_list_destroy(objval)
+                    _prelude.idmef_object_value_list_destroy(objval_list)
                     raise Error()
 
                 row.append(tmp)
