@@ -1159,23 +1159,49 @@ static int build_criterion_fixed_sql_value(prelude_sql_connection_t *conn,
 					   idmef_value_t *value,
 					   idmef_value_relation_t relation)
 {
-	char buf[SQL_MAX_VALUE_LEN];
-	char *tmp;
 	int ret;
+	char buf[SQL_MAX_VALUE_LEN];
+	prelude_string_t *string;
+	char *tmp;
 
-	if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME )
+	if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME ) {
 		ret = build_criterion_fixed_sql_time_value(value, buf, sizeof (buf));
+		if ( ret < 0 )
+			return ret;
 
-	else if ( relation == IDMEF_VALUE_RELATION_SUBSTR )
+		return prelude_string_cat(output, buf);
+	}
+
+	if ( relation == IDMEF_VALUE_RELATION_SUBSTR ) {
 		ret = build_criterion_fixed_sql_like_value(value, buf, sizeof (buf));
+		if ( ret < 0 )
+			return ret;
 
-	else
-		ret = idmef_value_to_string(value, buf, sizeof (buf));
+		tmp = prelude_sql_escape(conn, buf);
+		if ( ! tmp )
+			return -1;
 
-	if ( ret < 0 )
+		ret = prelude_string_cat(output, tmp);
+
+		free(tmp);
+
+		return ret;		
+	}
+
+	string = prelude_string_new();
+	if ( ! string )
 		return -1;
 
-	tmp = prelude_sql_escape(conn, buf);
+	ret = idmef_value_to_string(value, string);
+	if ( ret < 0 ) {
+		prelude_string_destroy(string);
+		return ret;
+	}
+
+	tmp = prelude_sql_escape(conn, prelude_string_get_string(string));
+
+	prelude_string_destroy(string);
+
 	if ( ! tmp )
 		return -1;
 
@@ -1183,7 +1209,7 @@ static int build_criterion_fixed_sql_value(prelude_sql_connection_t *conn,
 
 	free(tmp);
 
-	return ret;
+	return 0;
 }
 
 

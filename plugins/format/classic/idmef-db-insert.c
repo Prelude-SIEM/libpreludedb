@@ -72,11 +72,23 @@ static inline char *get_data(prelude_sql_connection_t *conn, idmef_data_t *data)
 		return prelude_sql_escape_fast(conn, idmef_data_get_data(data), idmef_data_get_len(data));
 
 	default: {
-		char buf[32];
+		prelude_string_t *string;
+		char *ptr;
 
-		if ( idmef_data_to_string(data, buf, sizeof (buf)) < 0 )
+		string = prelude_string_new();
+		if ( ! string )
 			return NULL;
-		return strdup(buf);		
+
+		if ( idmef_data_to_string(data, string) < 0 ) {
+			prelude_string_destroy(string);
+			return NULL;
+		}
+
+		ptr = prelude_string_get_string_released(string);
+
+		prelude_string_destroy(string);
+
+		return ptr;
 	}
 	}
 
