@@ -611,7 +611,7 @@ static int insert_source(prelude_sql_connection_t *conn, uint64_t alert_ident, i
 
 	ident = idmef_source_get_ident(source);
 
-        spoofed = idmef_source_spoofed_to_string(idmef_source_get_spoofed(source));
+        spoofed = idmef_spoofed_to_string(idmef_source_get_spoofed(source));
         if ( ! spoofed )
                 return -1;
 
@@ -658,7 +658,7 @@ static int insert_target(prelude_sql_connection_t *conn, uint64_t alert_ident, i
 
 	ident = idmef_target_get_ident(target);
 
-        decoy = idmef_target_decoy_to_string(idmef_target_get_decoy(target));
+        decoy = idmef_spoofed_to_string(idmef_target_get_decoy(target));
         if ( ! decoy )
                 return -1;
 

@@ -1,3 +1,10 @@
+2003-11-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-insert.c:
+	bug fix, idmef_source_spoofed_to_string does not
+	exist anymore, replace it by idmef_spoofed_to_string
+	thanks to John Green for pointing that out
+
 2003-11-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:
