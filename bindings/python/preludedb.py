@@ -229,6 +229,9 @@ class PreludeDB:
         
         _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
+        if not message_handle:
+            return None
+
         return IDMEFMessage(message_handle)
 
     def get_alert(self, analyzerid, ident):

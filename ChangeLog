@@ -1,3 +1,23 @@
+2004-01-11  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/python/preludedb.py:
+	(PreludeDB.__get_message)
+	bug fix, return None if the underlying C function returns
+	NULL
+
+	* plugins/format/classic/idmef-db-get.c:
+	(get_userid)
+	bug fix, did not check correctly the return value of a
+	get_uint32
+	(get_user)
+	(get_process)
+	bug fix, forgot to set table to NULL after destroying it that could lead
+	to a double free
+	(get_alert)
+	(get_heartbeat)
+	check if the alert/heartbeat is present in the DB before trying to fetch it instead 
+	of returning an empty idmef_message if it is not present
+
 2004-01-10  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:

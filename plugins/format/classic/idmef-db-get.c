@@ -432,7 +432,7 @@ static int get_userid(prelude_sql_connection_t *sql,
 		if ( get_string(sql, row, 1, userid, idmef_userid_new_name) < 0 )
 			goto error;
 
-		if ( get_uint32(sql, row, 2, userid, idmef_userid_new_number) )
+		if ( get_uint32(sql, row, 2, userid, idmef_userid_new_number) < 0 )
 			goto error;
 
 		cnt++;
@@ -489,6 +489,7 @@ static int get_user(prelude_sql_connection_t *sql,
 		goto error;
 
 	prelude_sql_table_free(table);
+	table = NULL;
 
 	if ( get_userid(sql, alert_ident, parent_ident, parent_type, user,
 			(idmef_userid_t *(*)(void *)) idmef_user_new_userid) < 0 )
@@ -660,6 +661,7 @@ static int get_process(prelude_sql_connection_t *sql,
 		goto error;
 
 	prelude_sql_table_free(table);
+	table = NULL;
 
 	if ( get_process_arg(sql, alert_ident, parent_ident, parent_type, process,
 			     (idmef_string_t *(*)(void *)) idmef_process_new_arg) < 0 )
@@ -2083,6 +2085,50 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	return -1;
 }
 
+static int message_exists(prelude_sql_connection_t *sql,
+			  const char *table_name, uint64_t ident)
+{
+	prelude_sql_table_t *table;
+	int ret;
+
+	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE ident = %llu",
+				  table_name, ident);
+
+	if ( table ) {
+		ret = 1;
+		prelude_sql_table_free(table);
+
+	} else {
+		if ( prelude_sql_errno(sql) ) {
+			db_log(sql);
+			ret = -1;
+
+		} else {
+			ret = 0;
+		}
+	}
+
+	return ret;
+}
+
+
+
+static int alert_exists(prelude_sql_connection_t *sql,
+			uint64_t ident)
+{
+	return message_exists(sql, "Prelude_Alert", ident);
+}
+
+
+
+static int heartbeat_exists(prelude_sql_connection_t *sql,
+			    uint64_t ident)
+{
+	return message_exists(sql, "Prelude_Heartbeat", ident);
+}
+
+
+
 idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 			   uint64_t ident)
 {
@@ -2095,6 +2141,9 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 		log(LOG_ERR, "not an SQL connection !\n");
 		return NULL;
 	}
+
+	if ( alert_exists(sql, ident) <= 0 )
+		return NULL;
 
 	message = idmef_message_new();
 	if ( ! message ) {
@@ -2166,6 +2215,9 @@ idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
 		log(LOG_ERR, "not an SQL connection !\n");
 		return NULL;
 	}
+
+	if ( heartbeat_exists(sql, ident) <= 0 )
+		return NULL;
 
 	message = idmef_message_new();
 	if ( ! message ) {
