@@ -360,6 +360,7 @@ create table Prelude_WebService (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
+service_ident        INT8                 not null,
 url                  VARCHAR(255)         not null,
 cgi                  VARCHAR(255)         null,
 http_method          VARCHAR(255)         null,

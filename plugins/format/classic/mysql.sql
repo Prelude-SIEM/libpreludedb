@@ -370,6 +370,7 @@ CREATE TABLE Prelude_WebService (
  alert_ident INT(8) NOT NULL,
  parent_type ENUM('S','T') NOT NULL DEFAULT 'S', # T=Target S=Source
  parent_ident INT(8) NOT NULL,
+ service_ident INT(8) NOT NULL,
  url VARCHAR(255) NOT NULL, # size problem ?
  cgi VARCHAR(255) NULL,
  http_method VARCHAR(255) NULL,	# CHANGED FROM method TO http-method IN THE IDMEF v6 (written http"_"method here, problems with "-" symbol)
