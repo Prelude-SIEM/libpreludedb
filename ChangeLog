@@ -1,6 +1,11 @@
 2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c:
+	(get_message): add some log() statements to help debugging.  
+
+2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic.c:
 	(get_message): handle NULL fields correctly. 
 
 	* plugins/format/classic/idmef-db-select.c:

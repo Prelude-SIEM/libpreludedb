@@ -215,13 +215,34 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 			/* FIXME: handle enumeration */
 			object = idmef_object_ref(idmef_selection_get_next_object(selection));
 
+#ifdef DEBUG
+			log(LOG_INFO, "object: %s\n", idmef_object_get_name(object));
+#endif
+
 			field = prelude_sql_field_fetch(row, field_cnt);
-			if ( ! field )
+			if ( ! field ) 
 				continue;
-			
+
 			char_val = prelude_sql_field_value(field);
+
+#ifdef DEBUG
+			log(LOG_INFO, "read a non-NULL field value\n");
+#endif
+
+
 			value = idmef_value_new_for_object(object, char_val);
+
+#ifdef DEBUG
+			if ( ! value )
+				log(LOG_ERR, "could not create container!\n");
+#endif
+
 			if ( idmef_message_set(message, object, value) < 0 ) {
+
+#ifdef DEBUG
+				log(LOG_INFO, "idmef_message_set() failed\n");
+#endif
+
 				prelude_sql_table_free(table);
 				idmef_message_destroy(message);
 				return NULL;
