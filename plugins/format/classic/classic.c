@@ -114,7 +114,7 @@ static int build_heartbeat_uident_list(prelude_sql_table_t *table, prelude_db_he
 
 
 static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
-					    idmef_criterion_t *criterion,
+					    idmef_criteria_t *criteria,
 					    const char *object_prefix)
 {
 	idmef_selection_t *selection;
@@ -158,7 +158,7 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	table = idmef_db_select(connection, selection, criterion, -1);
+	table = idmef_db_select(connection, selection, criteria, -1);
 
 	idmef_selection_destroy(selection);
 
@@ -168,13 +168,13 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 
 
 static int classic_get_alert_uident_list(prelude_db_connection_t *connection,
-					 idmef_criterion_t *criterion,
+					 idmef_criteria_t *criteria,
 					 prelude_db_alert_uident_t **uidents)
 {
 	prelude_sql_table_t *table;
 	int retval;
 
-	table = get_uident_list(connection, criterion, "alert");
+	table = get_uident_list(connection, criteria, "alert");
 	if ( ! table )
 		return -1;
 
@@ -187,13 +187,13 @@ static int classic_get_alert_uident_list(prelude_db_connection_t *connection,
 
 
 static int classic_get_heartbeat_uident_list(prelude_db_connection_t *connection,
-					     idmef_criterion_t *criterion,
+					     idmef_criteria_t *criteria,
 					     prelude_db_heartbeat_uident_t **uidents)
 {
 	prelude_sql_table_t *table;
 	int retval;
 
-	table = get_uident_list(connection, criterion, "heartbeat");
+	table = get_uident_list(connection, criteria, "heartbeat");
 	if ( ! table )
 		return -1;
 
@@ -219,16 +219,42 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 	idmef_object_t *object;
 	idmef_value_t *value;
 	idmef_criterion_t *criterion;
+	idmef_criteria_t *criteria;
 	const char *char_val;
 	int cnt = 0;
 
 	object = idmef_object_new_fast(object_name);
+	if ( ! object )
+		return NULL;
+	
 	value = idmef_value_new_uint64(ident);
+	if ( ! value ) {
+		idmef_object_destroy(object);
+		return NULL;
+	}
+
 	criterion = idmef_criterion_new(object, relation_equal, value);
+	if ( ! criterion ) {
+		idmef_object_destroy(object);
+		idmef_value_destroy(value);
+		return NULL;
+	}
 
-	table = idmef_db_select(connection, selection, criterion, -1);
+	criteria = idmef_criteria_new();
+	if ( ! criteria ) {
+		idmef_criterion_destroy(criterion);
+		return NULL;
+	}
 
-	idmef_criterion_destroy(criterion);
+	if ( idmef_criteria_add_criterion(criteria, criterion, operator_and) < 0 ) {
+		idmef_criterion_destroy(criterion);
+		idmef_criteria_destroy(criteria);
+		return NULL;
+	}
+
+	table = idmef_db_select(connection, selection, criteria, -1);
+
+	idmef_criteria_destroy(criteria);
 
 	if ( ! table )
 		return NULL;
@@ -372,7 +398,7 @@ static int classic_insert_idmef_message(prelude_db_connection_t *connection, con
 
 static void *classic_select_values(prelude_db_connection_t *connection,
 			           idmef_selection_t *selection, 
-				   idmef_criterion_t *criteria,
+				   idmef_criteria_t *criteria,
 				   int limit)
 {
 	return idmef_db_select(connection, selection, criteria, limit);
@@ -387,7 +413,6 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
 	int field_cnt, nfields;
-	const char *char_val;
 	idmef_object_value_list_t *objval_list = NULL;
 	idmef_object_value_t *objval;
 	idmef_object_t *object;

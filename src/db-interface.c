@@ -202,7 +202,7 @@ int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface,
 
 
 prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-                                                                           idmef_criterion_t *criterion)
+                                                                           idmef_criteria_t *criteria)
 {
         int size;
         prelude_db_alert_uident_t *alert_uidents;
@@ -220,7 +220,7 @@ prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelu
 	if ( ! interface->format->format_get_alert_uident_list )
 		return NULL;
 
-	size = interface->format->format_get_alert_uident_list(interface->db_connection, criterion, &alert_uidents);
+	size = interface->format->format_get_alert_uident_list(interface->db_connection, criteria, &alert_uidents);
 	if ( size <= 0 )
 		return NULL;
 
@@ -241,7 +241,7 @@ prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelu
 
 
 prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
-										   idmef_criterion_t *criterion)
+										   idmef_criteria_t *criteria)
 {
         int size;
 	prelude_db_heartbeat_uident_list_t *uident_list;
@@ -259,7 +259,7 @@ prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_li
 	if ( ! interface->format->format_get_heartbeat_uident_list )
 		return NULL;
         
-	size = interface->format->format_get_heartbeat_uident_list(interface->db_connection, criterion, &heartbeat_uidents);
+	size = interface->format->format_get_heartbeat_uident_list(interface->db_connection, criteria, &heartbeat_uidents);
 	if ( size <= 0 )
 		return NULL;
 
@@ -472,7 +472,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 idmef_selection_t *selection,
-					 idmef_criterion_t *criteria,
+					 idmef_criteria_t *criteria,
 					 int limit)
 {
 	if ( ! interface || 

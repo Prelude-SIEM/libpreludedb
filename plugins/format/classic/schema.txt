@@ -1,5 +1,8 @@
 object=heartbeat.ident table=Prelude_Heartbeat field=ident
 
+object=heartbeat.create_time table=Prelude_CreateTime field=time top_table=Prelude_Heartbeat top_field=ident ident_field=parent_ident condition="Prelude_CreateTime.parent_type='H'"
+object=heartbeat.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Heartbeat top_field=ident ident_field=parent_ident condition="Prelude_AnalyzerTime.parent_type='H'"
+
 object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
 object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
 object=heartbeat.analyzer.model 	table=Prelude_Analyzer 		field=model 		top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
@@ -11,6 +14,9 @@ object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	t
 object=alert.ident  table=Prelude_Alert  field=ident  
 
 object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=ident ident_field=alert_ident
+object=alert.create_time table=Prelude_CreateTime field=time top_table=Prelude_Alert top_field=ident ident_field=parent_ident condition="Prelude_CreateTime.parent_type='A'"
+object=alert.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Alert top_field=ident ident_field=parent_ident condition="Prelude_AnalyzerTime.parent_type='A'"
+
 
 object=alert.assessment.impact.description  table=Prelude_Impact  field=description  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.assessment.impact.severity  table=Prelude_Impact  field=severity  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  

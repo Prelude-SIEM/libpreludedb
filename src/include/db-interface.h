@@ -42,10 +42,10 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db);
 int prelude_db_interface_connect(prelude_db_interface_t *interface);
 
 prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-									 idmef_criterion_t *criterion);
+									 idmef_criteria_t *criteria);
 
 prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
-										 idmef_criterion_t *criterion);
+										 idmef_criteria_t *criteria);
 
 void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list);
 
@@ -71,7 +71,7 @@ int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface,
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 idmef_selection_t *selection,
-					 idmef_criterion_t *criteria,
+					 idmef_criteria_t *criteria,
 					 int limit);
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,

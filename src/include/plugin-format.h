@@ -30,11 +30,11 @@ typedef struct {
 	PLUGIN_GENERIC;
 
 	int (*format_get_alert_uident_list)(prelude_db_connection_t *connection,
-					    idmef_criterion_t *criterion,
+					    idmef_criteria_t *criteria,
 					    prelude_db_alert_uident_t **alert_idents);
 
 	int (*format_get_heartbeat_uident_list)(prelude_db_connection_t *connection,
-						idmef_criterion_t *criterion,
+						idmef_criteria_t *criteria,
 						prelude_db_heartbeat_uident_t **heartbeat_idents);
 
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
@@ -56,7 +56,7 @@ typedef struct {
 	
 	void *(*format_select_values)(prelude_db_connection_t *connection,
 			              idmef_selection_t *selection,
-				      idmef_criterion_t *criteria,
+				      idmef_criteria_t *criteria,
 				      int limit);
 
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,

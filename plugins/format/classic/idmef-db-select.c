@@ -544,9 +544,7 @@ static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, 
 	return prelude_sql_escape(conn, buf);
 }
 
-/*
- * FIXME: make this function shorter/cleaner
- */
+
 
 static int criterion_to_sql(prelude_sql_connection_t *conn,
 			    strbuf_t *where,
@@ -558,104 +556,104 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	char buf[VALLEN];
 	char *table, *field, *function, *top_table, *top_field, *ident_field;
 	char *condition, *table_alias;
-	char *operator;
 	idmef_relation_t relation;
-	idmef_criterion_t *entry;
 	char *value;
-	int ret, add_operator;
+	int retval;
 
-	if ( idmef_criterion_is_chain(criterion) ) {
+	object = idmef_criterion_get_object(criterion);
+	db = db_object_find(object);
+	if ( ! db ) {
+		const char *objname = idmef_object_get_name(object);
+		char *objnum = idmef_object_get_numeric(object);
 
-		entry = NULL;
-		add_operator = 0;
-		while ( (entry = idmef_criterion_get_next(criterion, entry)) ) {
+		log(LOG_ERR, "object %s [%s] not handled by database specification!\n",
+		    objname, objnum);
+		free(objnum);
+		return -1;
+	}
 
-			if ( add_operator ) {
-				switch ( idmef_criterion_get_operator(criterion) ) {
-					case operator_or:
-						operator = "OR";
-						break;
+	table = db_object_get_table(db);
+	field = db_object_get_field(db);
+	function = db_object_get_function(db);
+	top_table = db_object_get_top_table(db);
+	top_field = db_object_get_top_field(db);
+	condition = db_object_get_condition(db);
+	ident_field = db_object_get_ident_field(db);
 
-					case operator_and:
-						operator = "AND";
-						break;
+	relation = idmef_criterion_get_relation(criterion);
 
-					default:
-						log(LOG_ERR, "unknown operator!\n");
-						return -1;
-				}
+	/* Add table to JOIN list */
+	table_alias = add_table(tables, table, top_table, top_field,
+				ident_field, condition);
+	if ( ! table_alias )
+		return -1;
 
-				ret = strbuf_sprintf(where, " %s ", operator);
-				if ( ret < 0 )
-					return ret;
-			} else {
-				ret = strbuf_sprintf(where, " ( ");
-				if ( ret < 0 )
-					return ret;
+	value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
+	if ( ! value )
+		return -2;
+
+	retval = relation_to_sql(where,
+				 field ? table_alias : NULL,
+				 field ? field : function,
+				 relation, value);
+
+	free(value);
+
+	return retval;
+}
+
+
+static int criteria_to_sql(prelude_sql_connection_t *conn,
+			   strbuf_t *where,
+			   table_list_t *tables,
+			   idmef_criteria_t *criteria)
+{
+	idmef_criteria_t *criteria_ptr, *criteria_prev;
+	char *operator;
+
+	criteria_ptr = NULL;
+	criteria_prev = NULL;
+	while ( (criteria_ptr = idmef_criteria_get_next(criteria, criteria_ptr)) ) {
+
+		if ( criteria_prev ) {
+			switch ( idmef_criteria_get_operator(criteria_prev) ) {
+			case operator_and:
+				operator = "AND";
+				break;
+
+			case operator_or:
+				operator = "OR";
+				break;
+
+			default:
+				log(LOG_ERR, "unknown operator %d\n", idmef_criteria_get_operator(criteria_prev));
+				return -1;
 			}
 
-			ret = criterion_to_sql(conn, where, tables, entry);
-			if ( ret < 0 )
-				return ret;
-
-			add_operator = 1;
+			if ( strbuf_sprintf(where, " %s ", operator) < 0 )
+				return -1;
 
 		}
 
-		/* add_operator = 0 signifies that the chain was empty */
-		if ( add_operator ) {
-			ret = strbuf_sprintf(where, " ) ");
-			return ret;
+		if ( idmef_criteria_is_criterion(criteria_ptr) ) {
+			if ( criterion_to_sql(conn, where, tables, idmef_criteria_get_criterion(criteria_ptr)) < 0 )
+				return -1;
+
+		} else {
+			if ( strbuf_sprintf(where, " ( ") < 0 )
+				return -1;
+
+			if ( criteria_to_sql(conn, where, tables, criteria_ptr) < 0 )
+				return -1;
+
+			if ( strbuf_sprintf(where, " ) ") < 0 )
+				return -1;
 		}
 
-		return 0;
-
-	} else {
-
-		object = idmef_criterion_get_object(criterion);
-		db = db_object_find(object);
-		if ( ! db ) {
-			const char *objname = idmef_object_get_name(object);
-			char *objnum = idmef_object_get_numeric(object);
-
-			log(LOG_ERR, "object %s [%s] not handled by database specification!\n",
-				     objname, objnum);
-			free(objnum);
-			return -1;
-		}
-
-		table = db_object_get_table(db);
-		field = db_object_get_field(db);
-		function = db_object_get_function(db);
-		top_table = db_object_get_top_table(db);
-		top_field = db_object_get_top_field(db);
-		condition = db_object_get_condition(db);
-		ident_field = db_object_get_ident_field(db);
-
-		relation = idmef_criterion_get_relation(criterion);
-
-		/* Add table to JOIN list */
-		table_alias = add_table(tables, table, top_table, top_field,
-					ident_field, condition);
-		if ( ! table_alias )
-			return -1;
-
-		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
-		if ( ! value )
-			return -2;
-
-		ret = relation_to_sql(where,
-				      field ? table_alias : NULL,
-				      field ? field : function,
-				      relation, value);
-
-		free(value);
-
-		if ( ret < 0 )
-			return ret;
-
-		return 0;
+		criteria_prev = criteria_ptr;
 	}
+
+	return 0;
 }
 
 
@@ -814,7 +812,7 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       idmef_selection_t *selection,
-			       idmef_criterion_t *criterion,
+			       idmef_criteria_t *criteria,
 			       int limit)
 {
 	strbuf_t *request = NULL;
@@ -871,8 +869,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;
 
 	/* criterion is optional */
-	if ( criterion ) {
-		ret = criterion_to_sql(conn, where2, tables, criterion);
+	if ( criteria ) {
+		ret = criteria_to_sql(conn, where2, tables, criteria);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -934,7 +932,7 @@ error:
 
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     idmef_selection_t *selection,
-				     idmef_criterion_t *criterion,
+				     idmef_criteria_t *criteria,
 				     int limit)
 {
 	prelude_sql_connection_t *sql;
@@ -948,7 +946,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, selection, criterion, limit);
+	request = build_request(sql, selection, criteria, limit);
 	if ( ! request )
 		return NULL;
 
