@@ -75,8 +75,6 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_write_func(&plugin, format_write);
         plugin_set_read_func(&plugin, format_read);
        
-	set_state(NULL, NULL);
-       
 	return (plugin_generic_t *) &plugin;
 }
 
