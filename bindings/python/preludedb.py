@@ -269,6 +269,11 @@ class PreludeDB:
         """Delete a heartbeat."""
         self.__delete_message(analyzerid, ident, prelude_db_interface_delete_heartbeat)
 
+    def insert(self, message):
+        "Insert an IDMEF message in the db."
+        if _preludedb.prelude_db_interface_insert_idmef_message(self.res, message.res) < 0:
+            raise DBError(self)
+
     def get_values(self, selection, criteria=None, distinct=0, limit=-1, offset=-1):
         """Get object values from the database."""
         selection_handle = _preludedb.prelude_db_object_selection_new()

@@ -304,6 +304,14 @@ sub	delete_heartbeat
     (shift)->delete_message(\&PreludeDB::prelude_db_interface_delete_heartbeat, @_);
 }
 
+sub	insert
+{
+    my	$self = shift;
+    my	$message = shift;
+
+    return (\&PreludeDB::prelude_db_interface_insert_idmef_message($$self, $$message) < 0) ? 0 : 1;
+}
+
 sub	get_values
 {
     my	$self = shift;

@@ -163,7 +163,7 @@ if test x$enable_perl = xyes; then
    if test -w $perl_privlib; then
         perl_dir=$perl_privlib
    else
-	perl_dir=$libdir/libprelude/bindings/perl
+	perl_dir=$libdir/libpreludedb/bindings/perl
    fi
 
    PERL_CFLAGS="-I$perl_includedir"
@@ -201,7 +201,7 @@ print get_python_lib()'`
    if test -w $python_lib_path; then
         python_dir=$python_lib_path
    else
-	python_dir=$libdir/libprelude/bindings/python 
+	python_dir=$libdir/libpreludedb/bindings/python 
    fi
 
    PYTHON_CFLAGS="-I$python_includedir"
