@@ -577,7 +577,7 @@ static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, 
 		if ( ! time )
 			return NULL;
 
-		if ( idmef_get_db_timestamp(time, buf, size) < 0 )
+		if ( idmef_time_get_db_timestamp(time, buf, size) < 0 )
 			return NULL;
 	} else {
 		if ( idmef_value_to_string(value, buf, size) < 0 )
