@@ -28,6 +28,7 @@
 #include <libprelude/idmef-string.h>
 #include <libprelude/idmef-type.h>
 #include <libprelude/idmef-value.h>
+#include <libprelude/prelude-strbuf.h>
 
 typedef struct prelude_sql_connection prelude_sql_connection_t;
 
@@ -53,6 +54,9 @@ int prelude_sql_errno(prelude_sql_connection_t *conn);
 const char *prelude_sql_error(prelude_sql_connection_t *conn);
 char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string);
 const char *prelude_sql_limit_offset(prelude_sql_connection_t *conn, int limit, int offset);
+int prelude_sql_build_criterion(prelude_sql_connection_t *conn, prelude_strbuf_t *output,
+				const char *field,
+				idmef_relation_t relation, idmef_criterion_value_t *value);
 int prelude_sql_begin(prelude_sql_connection_t *conn);
 int prelude_sql_commit(prelude_sql_connection_t *conn);
 int prelude_sql_rollback(prelude_sql_connection_t *conn);
@@ -60,6 +64,7 @@ void prelude_sql_close(prelude_sql_connection_t *conn);
 prelude_sql_connection_t *prelude_sql_connect(prelude_sql_connection_data_t *data);
 int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const char *fields,
 		       const char *fmt, ...);
+const char *prelude_sql_idmef_relation_to_string(idmef_relation_t relation);
 
 void prelude_sql_table_free(prelude_sql_table_t *table);
 const char *prelude_sql_field_name(prelude_sql_table_t *table, unsigned int i);

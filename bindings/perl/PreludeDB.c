@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.27 2003/12/26 18:30:44 nicolas Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.28 2004/01/25 17:46:15 nicolas Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -573,15 +573,18 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 #define  SWIGTYPE_p_prelude_db_connection_t swig_types[11] 
 #define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[12] 
 #define  SWIGTYPE_p_idmef_message_t swig_types[13] 
-#define  SWIGTYPE_p_prelude_db_interface_t swig_types[14] 
-#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[15] 
-#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[16] 
-#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[17] 
-#define  SWIGTYPE_p_idmef_criteria_t swig_types[18] 
-#define  SWIGTYPE_p_prelude_sql_table_t swig_types[19] 
-#define  SWIGTYPE_p_idmef_string_t swig_types[20] 
-#define  SWIGTYPE_p_idmef_value_t swig_types[21] 
-static swig_type_info *swig_types[23];
+#define  SWIGTYPE_p_idmef_relation_t swig_types[14] 
+#define  SWIGTYPE_p_prelude_db_interface_t swig_types[15] 
+#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[16] 
+#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[17] 
+#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[18] 
+#define  SWIGTYPE_p_idmef_criteria_t swig_types[19] 
+#define  SWIGTYPE_p_prelude_sql_table_t swig_types[20] 
+#define  SWIGTYPE_p_prelude_strbuf_t swig_types[21] 
+#define  SWIGTYPE_p_idmef_string_t swig_types[22] 
+#define  SWIGTYPE_p_idmef_criterion_value_t swig_types[23] 
+#define  SWIGTYPE_p_idmef_value_t swig_types[24] 
+static swig_type_info *swig_types[26];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -1441,6 +1444,64 @@ XS(_wrap_prelude_db_interface_heartbeat_ident_list_destroy) {
 }
 
 
+XS(_wrap_prelude_db_interface_get_alert_ident_list_len) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_message_ident_list_t *arg1 = (prelude_db_message_ident_list_t *) 0 ;
+        unsigned int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_get_alert_ident_list_len(ident_list);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_message_ident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_alert_ident_list_len. Expected _p_prelude_db_message_ident_list_t");
+            }
+        }
+        result = (unsigned int)prelude_db_interface_get_alert_ident_list_len(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setuv(ST(argvi++), (UV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_get_heartbeat_ident_list_len) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_message_ident_list_t *arg1 = (prelude_db_message_ident_list_t *) 0 ;
+        unsigned int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_get_heartbeat_ident_list_len(ident_list);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_message_ident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_heartbeat_ident_list_len. Expected _p_prelude_db_message_ident_list_t");
+            }
+        }
+        result = (unsigned int)prelude_db_interface_get_heartbeat_ident_list_len(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setuv(ST(argvi++), (UV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_prelude_db_interface_get_next_alert_ident) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -2225,6 +2286,95 @@ XS(_wrap_prelude_sql_escape) {
 }
 
 
+XS(_wrap_prelude_sql_limit_offset) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_sql_connection_t *arg1 = (prelude_sql_connection_t *) 0 ;
+        int arg2 ;
+        int arg3 ;
+        char *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 3) || (items > 3)) {
+            SWIG_croak("Usage: prelude_sql_limit_offset(conn,limit,offset);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_sql_connection_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_sql_limit_offset. Expected _p_prelude_sql_connection_t");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        arg3 = (int) SvIV(ST(2));
+        result = (char *)prelude_sql_limit_offset(arg1,arg2,arg3);
+        
+        ST(argvi) = sv_newmortal();
+        if (result) {
+            sv_setpv((SV*)ST(argvi++), (char *) result);
+        }else {
+            sv_setsv((SV*)ST(argvi++), &PL_sv_undef);
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_sql_build_criterion) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_sql_connection_t *arg1 = (prelude_sql_connection_t *) 0 ;
+        prelude_strbuf_t *arg2 = (prelude_strbuf_t *) 0 ;
+        char *arg3 ;
+        idmef_relation_t arg4 ;
+        idmef_criterion_value_t *arg5 = (idmef_criterion_value_t *) 0 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 5) || (items > 5)) {
+            SWIG_croak("Usage: prelude_sql_build_criterion(conn,output,field,relation,value);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_sql_connection_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_sql_build_criterion. Expected _p_prelude_sql_connection_t");
+            }
+        }
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_prelude_strbuf_t,0) < 0) {
+                SWIG_croak("Type error in argument 2 of prelude_sql_build_criterion. Expected _p_prelude_strbuf_t");
+            }
+        }
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        {
+            idmef_relation_t * argp;
+            if (SWIG_ConvertPtr(ST(3),(void **) &argp, SWIGTYPE_p_idmef_relation_t,0) < 0) {
+                SWIG_croak("Type error in argument 4 of prelude_sql_build_criterion. Expected _p_idmef_relation_t");
+            }
+            arg4 = *argp;
+        }
+        {
+            if (SWIG_ConvertPtr(ST(4), (void **) &arg5, SWIGTYPE_p_idmef_criterion_value_t,0) < 0) {
+                SWIG_croak("Type error in argument 5 of prelude_sql_build_criterion. Expected _p_idmef_criterion_value_t");
+            }
+        }
+        result = (int)prelude_sql_build_criterion(arg1,arg2,(char const *)arg3,arg4,arg5);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_prelude_sql_begin) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -2399,6 +2549,41 @@ XS(_wrap_prelude_sql_insert) {
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_sql_idmef_relation_to_string) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        idmef_relation_t arg1 ;
+        char *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_sql_idmef_relation_to_string(relation);");
+        }
+        {
+            idmef_relation_t * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_idmef_relation_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_sql_idmef_relation_to_string. Expected _p_idmef_relation_t");
+            }
+            arg1 = *argp;
+        }
+        result = (char *)prelude_sql_idmef_relation_to_string(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        if (result) {
+            sv_setpv((SV*)ST(argvi++), (char *) result);
+        }else {
+            sv_setsv((SV*)ST(argvi++), &PL_sv_undef);
+        }
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -3203,13 +3388,16 @@ static swig_type_info _swigt__p_prelude_sql_connection_t[] = {{"_p_prelude_sql_c
 static swig_type_info _swigt__p_prelude_db_connection_t[] = {{"_p_prelude_db_connection_t", 0, "prelude_db_connection_t *", 0},{"_p_prelude_db_connection_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_object_selection_t[] = {{"_p_prelude_db_object_selection_t", 0, "prelude_db_object_selection_t *", 0},{"_p_prelude_db_object_selection_t"},{0}};
 static swig_type_info _swigt__p_idmef_message_t[] = {{"_p_idmef_message_t", 0, "idmef_message_t *", 0},{"_p_idmef_message_t"},{0}};
+static swig_type_info _swigt__p_idmef_relation_t[] = {{"_p_idmef_relation_t", 0, "idmef_relation_t *", 0},{"_p_idmef_relation_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_connection_data_t[] = {{"_p_prelude_db_connection_data_t", 0, "prelude_db_connection_data_t *", 0},{"_p_prelude_db_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_connection_data_t[] = {{"_p_prelude_sql_connection_data_t", 0, "prelude_sql_connection_data_t *", 0},{"_p_prelude_sql_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_message_ident_t[] = {{"_p_prelude_db_message_ident_t", 0, "prelude_db_message_ident_t *", 0},{"_p_prelude_db_message_ident_t"},{0}};
 static swig_type_info _swigt__p_idmef_criteria_t[] = {{"_p_idmef_criteria_t", 0, "idmef_criteria_t *", 0},{"_p_idmef_criteria_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
+static swig_type_info _swigt__p_prelude_strbuf_t[] = {{"_p_prelude_strbuf_t", 0, "prelude_strbuf_t *", 0},{"_p_prelude_strbuf_t"},{0}};
 static swig_type_info _swigt__p_idmef_string_t[] = {{"_p_idmef_string_t", 0, "idmef_string_t *", 0},{"_p_idmef_string_t"},{0}};
+static swig_type_info _swigt__p_idmef_criterion_value_t[] = {{"_p_idmef_criterion_value_t", 0, "idmef_criterion_value_t *", 0},{"_p_idmef_criterion_value_t"},{0}};
 static swig_type_info _swigt__p_idmef_value_t[] = {{"_p_idmef_value_t", 0, "idmef_value_t *", 0},{"_p_idmef_value_t"},{0}};
 
 static swig_type_info *swig_types_initial[] = {
@@ -3227,13 +3415,16 @@ _swigt__p_prelude_sql_connection_t,
 _swigt__p_prelude_db_connection_t, 
 _swigt__p_prelude_db_object_selection_t, 
 _swigt__p_idmef_message_t, 
+_swigt__p_idmef_relation_t, 
 _swigt__p_prelude_db_interface_t, 
 _swigt__p_prelude_db_connection_data_t, 
 _swigt__p_prelude_sql_connection_data_t, 
 _swigt__p_prelude_db_message_ident_t, 
 _swigt__p_idmef_criteria_t, 
 _swigt__p_prelude_sql_table_t, 
+_swigt__p_prelude_strbuf_t, 
 _swigt__p_idmef_string_t, 
+_swigt__p_idmef_criterion_value_t, 
 _swigt__p_idmef_value_t, 
 0
 };
@@ -3297,6 +3488,8 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_interface_get_heartbeat_ident_list", _wrap_prelude_db_interface_get_heartbeat_ident_list},
 {"PreludeDB::prelude_db_interface_alert_ident_list_destroy", _wrap_prelude_db_interface_alert_ident_list_destroy},
 {"PreludeDB::prelude_db_interface_heartbeat_ident_list_destroy", _wrap_prelude_db_interface_heartbeat_ident_list_destroy},
+{"PreludeDB::prelude_db_interface_get_alert_ident_list_len", _wrap_prelude_db_interface_get_alert_ident_list_len},
+{"PreludeDB::prelude_db_interface_get_heartbeat_ident_list_len", _wrap_prelude_db_interface_get_heartbeat_ident_list_len},
 {"PreludeDB::prelude_db_interface_get_next_alert_ident", _wrap_prelude_db_interface_get_next_alert_ident},
 {"PreludeDB::prelude_db_interface_get_next_heartbeat_ident", _wrap_prelude_db_interface_get_next_heartbeat_ident},
 {"PreludeDB::prelude_db_interface_get_alert", _wrap_prelude_db_interface_get_alert},
@@ -3321,12 +3514,15 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_sql_errno", _wrap_prelude_sql_errno},
 {"PreludeDB::prelude_sql_error", _wrap_prelude_sql_error},
 {"PreludeDB::prelude_sql_escape", _wrap_prelude_sql_escape},
+{"PreludeDB::prelude_sql_limit_offset", _wrap_prelude_sql_limit_offset},
+{"PreludeDB::prelude_sql_build_criterion", _wrap_prelude_sql_build_criterion},
 {"PreludeDB::prelude_sql_begin", _wrap_prelude_sql_begin},
 {"PreludeDB::prelude_sql_commit", _wrap_prelude_sql_commit},
 {"PreludeDB::prelude_sql_rollback", _wrap_prelude_sql_rollback},
 {"PreludeDB::prelude_sql_close", _wrap_prelude_sql_close},
 {"PreludeDB::prelude_sql_connect", _wrap_prelude_sql_connect},
 {"PreludeDB::prelude_sql_insert", _wrap_prelude_sql_insert},
+{"PreludeDB::prelude_sql_idmef_relation_to_string", _wrap_prelude_sql_idmef_relation_to_string},
 {"PreludeDB::prelude_sql_table_free", _wrap_prelude_sql_table_free},
 {"PreludeDB::prelude_sql_field_name", _wrap_prelude_sql_field_name},
 {"PreludeDB::prelude_sql_field_num", _wrap_prelude_sql_field_num},

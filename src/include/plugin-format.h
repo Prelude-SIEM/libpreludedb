@@ -49,6 +49,10 @@ typedef struct {
 	void (*format_heartbeat_ident_list_destroy)(prelude_db_connection_t *connection,
 						    void *res);
 
+	unsigned int (*format_get_alert_ident_list_len)(prelude_db_connection_t *connection, void *res);
+
+	unsigned int (*format_get_heartbeat_ident_list_len)(prelude_db_connection_t *connection, void *res);
+
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
 					     prelude_db_message_ident_t *uident,
 					     idmef_object_list_t *object_list);
@@ -79,6 +83,8 @@ typedef struct {
 
 #define	plugin_get_alert_ident_list_func(p) (p)->format_get_alert_ident_list
 #define	plugin_get_heartbeat_ident_list_func(p) (p)->format_get_heartbeat_ident_list
+#define	plugin_get_alert_ident_list_len_func(p) (p)->format_get_alert_ident_list_len
+#define	plugin_get_heartbeat_ident_list_len_func(p) (p)->format_get_heartbeat_ident_list_len
 #define plugin_get_next_alert_ident_func(p) (p)->format_get_next_alert_ident
 #define plugin_get_next_heartbeat_ident_func(p) (p)->format_get_next_heartbeat_ident
 #define	plugin_alert_ident_list_destroy_func(p) (p)->format_alert_ident_list_destroy
@@ -93,6 +99,8 @@ typedef struct {
 
 #define	plugin_set_get_alert_ident_list_func(p, f) plugin_get_alert_ident_list_func(p) = (f)
 #define	plugin_set_get_heartbeat_ident_list_func(p, f) plugin_get_heartbeat_ident_list_func(p) = (f)
+#define	plugin_set_get_alert_ident_list_len_func(p, f) plugin_get_alert_ident_list_len_func(p) = (f)
+#define	plugin_set_get_heartbeat_ident_list_len_func(p, f) plugin_get_heartbeat_ident_list_len_func(p) = (f)
 #define plugin_set_get_next_alert_ident_func(p, f) plugin_get_next_alert_ident_func(p) = (f)
 #define plugin_set_get_next_heartbeat_ident_func(p, f) plugin_get_next_heartbeat_ident_func(p) = (f)
 #define	plugin_set_alert_ident_list_destroy_func(p, f) plugin_alert_ident_list_destroy_func(p) = (f)

@@ -78,13 +78,17 @@ class DBMessageDeletionFailed(Error):
 class PreludeDBMessageIdentList:
     """Internal class, should not be used directly"""
     
-    def __init__(self, res, destroy_list_func, get_next_ident_func):
+    def __init__(self, res, destroy_list_func, get_next_ident_func, get_ident_list_len_func):
         self.res = res
         self.destroy_list_func = destroy_list_func
-        self.get_next_ident_func = get_next_ident_func        
+        self.get_next_ident_func = get_next_ident_func
+        self.get_ident_list_len_func = get_ident_list_len_func
 
     def __del__(self):
         self.destroy_list_func(self.res)
+
+    def __len__(self):
+        return self.get_ident_list_len_func(self.res)
 
     def __iter__(self):
         return self
@@ -117,12 +121,13 @@ class PreludeDB:
                  type="mysql",
                  format="classic",
                  host="localhost",
+                 port=0,
                  name="prelude",
                  user="prelude",
                  password="prelude"):
         """PreludeDB constructor"""
-        conn_string = "iface=%s class=%s type=%s format=%s host=%s name=%s user=%s pass=%s" % \
-                      (iface, class_, type, format, host, name, user, password)
+        conn_string = "iface=%s class=%s type=%s format=%s host=%s port=%s name=%s user=%s pass=%s" % \
+                      (iface, class_, type, format, host, port, name, user, password)
         self.res = _preludedb.prelude_db_interface_new_string(conn_string)
         if not self.res:
             raise DBBadInterface(conn_string)
@@ -197,7 +202,8 @@ class PreludeDB:
         
         return PreludeDBMessageIdentList(ident_list_handle,
                                          _preludedb.prelude_db_interface_alert_ident_list_destroy,
-                                         _preludedb.prelude_db_interface_get_next_alert_ident)
+                                         _preludedb.prelude_db_interface_get_next_alert_ident,
+                                         _preludedb.prelude_db_interface_get_alert_ident_list_len)
 
     def get_heartbeat_ident_list(self, criteria=None, limit=-1, offset=-1):
         """Get the heartbeat ident list.
@@ -218,7 +224,8 @@ class PreludeDB:
         
         return PreludeDBMessageIdentList(ident_list_handle,
                                          _preludedb.prelude_db_interface_heartbeat_ident_list_destroy,
-                                         _preludedb.prelude_db_interface_get_next_heartbeat_ident)
+                                         _preludedb.prelude_db_interface_get_next_heartbeat_ident,
+                                         _preludedb.prelude_db_interface_get_heartbeat_ident_list_len)
         
     def __get_message(self, analyzerid, ident, get_message_func):
         ident_handle = _preludedb.prelude_db_message_ident_new(long(analyzerid), long(ident))

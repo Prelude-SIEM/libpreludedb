@@ -136,6 +136,31 @@ static void *classic_get_heartbeat_ident_list(prelude_db_connection_t *connectio
 
 
 
+static unsigned int get_message_ident_list_len(prelude_db_connection_t *connection,
+					       void *res)
+{
+	prelude_sql_table_t *table = res;
+
+	return prelude_sql_rows_num(table);
+}
+
+
+static unsigned int classic_get_alert_ident_list_len(prelude_db_connection_t *connection,
+						     void *res)
+{
+	return get_message_ident_list_len(connection, res);
+}
+
+
+
+static unsigned int classic_get_heartbeat_ident_list_len(prelude_db_connection_t *connection,
+							 void *res)
+{
+	return get_message_ident_list_len(connection, res);
+}
+
+
+
 static prelude_db_message_ident_t *classic_get_next_message_ident(prelude_db_connection_t *connection,
 								  void *res)
 {
@@ -204,6 +229,7 @@ static prelude_db_object_selection_t *object_list_to_selection(idmef_object_list
 }
 
 
+
 /*
  * FIXME: cleanup
  */
@@ -224,7 +250,6 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 	idmef_value_t *value;
 	idmef_criterion_t *criterion;
 	idmef_criteria_t *criteria;
-	const char *char_val;
 	int cnt = 0;
 	int ret;
 
@@ -313,16 +338,6 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 			field = prelude_sql_field_fetch(row, field_cnt);
 			if ( ! field )
 				continue;
-
-			char_val = prelude_sql_field_value(field);
-
-#ifdef DEBUG
-			log(LOG_INFO, " * read value: %s\n", char_val);
-#endif
-
-			value = idmef_value_new_for_object(object, char_val);
-			if ( ! value )
-				log(LOG_ERR, "could not create container!\n");
 
 			ret = idmef_message_set(message, object, value);
 
@@ -416,6 +431,45 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 }
 
 
+
+static idmef_value_t *sql_field_to_idmef_value(idmef_object_t *object,
+					       prelude_sql_field_t *field)
+{
+	const char *char_val;
+	idmef_value_t *value;
+
+	char_val = prelude_sql_field_value(field);
+
+#ifdef DEBUG
+	log(LOG_INFO, " * read value: %s\n", char_val);
+#endif
+
+	switch ( idmef_object_get_type(object) ) {
+	case type_time: {
+		idmef_time_t *time;
+
+		time = idmef_time_new_db_timestamp(char_val);
+		if ( ! time )
+			return NULL;
+
+		value = idmef_value_new_time(time);
+		if ( ! value )
+			idmef_time_destroy(time);
+
+		break;
+	}
+	default:
+		value = idmef_value_new_for_object(object, char_val);
+	}
+
+	if ( ! value )
+		log(LOG_ERR, "could not create container!\n");
+
+	return value;	
+}
+
+
+
 /*
  * FIXME: cleanup
  */
@@ -475,18 +529,9 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 			}
 
 		} else {
-			const char *char_val;
-
-			char_val = prelude_sql_field_value(field);
-			if ( ! char_val )
+			value = sql_field_to_idmef_value(object, field);
+			if ( ! value )
 				goto error;
-
-			value = idmef_value_new_for_object(object, char_val);
-			if ( ! value ) {
-				log(LOG_ERR, "could not build idmef value '%s' from object '%s'\n",
-				    char_val, idmef_object_get_name(object));
-				goto error;
-			}
 		}
 
 		objval = idmef_object_value_new(idmef_object_ref(object), value);
@@ -529,6 +574,8 @@ plugin_generic_t *plugin_init(int argc, char **argv)
 
 	plugin_set_get_alert_ident_list_func(&plugin, classic_get_alert_ident_list);
 	plugin_set_get_heartbeat_ident_list_func(&plugin, classic_get_heartbeat_ident_list);
+	plugin_set_get_alert_ident_list_len_func(&plugin, classic_get_alert_ident_list_len);
+	plugin_set_get_heartbeat_ident_list_len_func(&plugin, classic_get_heartbeat_ident_list_len);
 	plugin_set_get_next_alert_ident_func(&plugin, classic_get_next_message_ident);
 	plugin_set_get_next_heartbeat_ident_func(&plugin, classic_get_next_message_ident);
 	plugin_set_alert_ident_list_destroy_func(&plugin, classic_message_ident_list_destroy);

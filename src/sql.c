@@ -34,6 +34,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <time.h>
 #include <inttypes.h>
 #include <assert.h>
 
@@ -42,13 +43,19 @@
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 #include <libprelude/idmef.h>
-
+#include <libprelude/idmef-util.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
 #include "db-type.h"
 #include "db-connection.h"
+
+
+/* 
+ * maximum length of text representation of object value
+ */
+#define SQL_MAX_VALUE_LEN 262144
 
 
 struct prelude_sql_connection {
@@ -745,4 +752,465 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 	}
 
 	return value;
+}
+
+
+
+const char *prelude_sql_idmef_relation_to_string(idmef_relation_t relation)
+{
+	switch ( relation ) {
+	case relation_substring:
+		return "LIKE";
+
+	case relation_regexp:
+		return NULL;
+
+	case relation_greater:
+		return ">";
+
+	case relation_greater_or_equal:
+		return ">=";
+
+	case relation_less:
+		return "<";
+
+	case relation_less_or_equal:
+		return "<=";
+
+	case relation_equal:
+		return "=";
+
+	case relation_not_equal:
+		return "!=";
+
+	case relation_is_null:
+		return "IS NULL";
+
+	case relation_is_not_null:
+		return "IS NOT NULL";
+
+	default:
+		/* nop */;
+	}
+
+	return NULL;
+}
+
+
+
+static int build_time_constraint(prelude_sql_connection_t *conn,
+				 prelude_strbuf_t *output, const char *field,
+				 prelude_sql_time_constraint_type_t type,
+				 idmef_relation_t relation, int value)
+{
+	int gmt_offset;
+
+	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+		return -1;
+
+	return conn->plugin->db_build_time_constraint(output, field, type, relation, value, gmt_offset);
+}
+
+
+
+static int build_time_interval(prelude_sql_connection_t *conn,
+			       prelude_sql_time_constraint_type_t type, int value,
+			       char *buf, size_t size)
+
+{
+	return conn->plugin->db_build_time_interval(type, value, buf, size);
+}
+
+
+
+static const struct {
+	prelude_sql_time_constraint_type_t type;
+	int (*get_value)(idmef_criterion_value_non_linear_time_t *);
+} non_linear_time_values[] = {
+	{ dbconstraint_year,	idmef_criterion_value_non_linear_time_get_year	},
+	{ dbconstraint_month,	idmef_criterion_value_non_linear_time_get_month	},
+	{ dbconstraint_yday,	idmef_criterion_value_non_linear_time_get_yday	},
+	{ dbconstraint_mday,	idmef_criterion_value_non_linear_time_get_mday	},
+	{ dbconstraint_wday,	idmef_criterion_value_non_linear_time_get_wday	},
+	{ dbconstraint_hour,	idmef_criterion_value_non_linear_time_get_hour	},
+	{ dbconstraint_min,	idmef_criterion_value_non_linear_time_get_min	},
+	{ dbconstraint_sec,	idmef_criterion_value_non_linear_time_get_sec	}
+};
+
+
+
+static int build_criterion_non_linear_time_value_relation_equal(prelude_sql_connection_t *conn,
+								prelude_strbuf_t *output,
+								const char *field,
+								idmef_relation_t relation,
+								idmef_criterion_value_non_linear_time_t *time)
+{
+	int i;
+	int value;
+	int prev = 0;
+
+	for ( i = 0; i < sizeof (non_linear_time_values) / sizeof (non_linear_time_values[0]); i++ ) {
+		value = non_linear_time_values[i].get_value(time);
+		if ( value == -1 )
+			continue;
+
+		if ( prev++ )
+			if ( prelude_strbuf_cat(output, " AND ") < 0 )
+				return -1;
+
+		if ( build_time_constraint(conn, output, field, 
+					   non_linear_time_values[i].type,
+					   relation, value) < 0 )
+			return -1;
+	}
+
+	return 0;
+}
+
+
+static int build_criterion_non_linear_time_value_relation_not_equal(prelude_sql_connection_t *conn,
+								    prelude_strbuf_t *output,
+								    const char *field,
+								    idmef_criterion_value_non_linear_time_t *time)
+{
+	if ( prelude_strbuf_cat(output, "NOT(") < 0 )
+		return -1;
+
+	if ( build_criterion_non_linear_time_value_relation_equal(conn, output,
+								  field, relation_equal, time) < 0 )
+		return -1;
+
+	return prelude_strbuf_cat(output, ")");
+}
+
+
+
+static int build_criterion_timestamp(prelude_sql_connection_t *conn,
+				     prelude_strbuf_t *output,
+				     const char *field,
+				     idmef_relation_t relation,
+				     idmef_criterion_value_non_linear_time_t *time)
+{
+	struct tm tm;
+	int month, day, hour, min, sec;
+	idmef_time_t t;
+	char buf[MAX_UTC_DATETIME_SIZE];
+	int offset = 0;
+
+	if ( relation == relation_greater )
+		offset = 1;
+
+	month = idmef_criterion_value_non_linear_time_get_month(time);
+	day = idmef_criterion_value_non_linear_time_get_mday(time);
+	hour = idmef_criterion_value_non_linear_time_get_hour(time);
+	min = idmef_criterion_value_non_linear_time_get_min(time);
+	sec = idmef_criterion_value_non_linear_time_get_sec(time);
+
+	memset(&tm, 0, sizeof (tm));
+	tm.tm_mday = 1;
+	tm.tm_isdst = -1;
+
+	tm.tm_year = idmef_criterion_value_non_linear_time_get_year(time) - 1900;
+
+	/*
+	 * This is not ascii art ;)
+	 */
+
+	if ( month != -1 ) {
+		tm.tm_mon = month - 1;
+
+		if ( day != -1 ) {
+			tm.tm_mday = day;
+
+			if ( hour != -1 ) {
+				tm.tm_hour = hour;
+
+				if ( min != -1 ) {
+					tm.tm_min = min;
+
+					if ( sec != -1 ) {
+						tm.tm_sec = sec + offset;
+
+					} else {
+						tm.tm_min += offset;
+					}
+				} else {
+					tm.tm_hour += offset;
+				}
+			} else {
+				tm.tm_mday += offset;
+			}
+		} else {
+			tm.tm_mon += offset;
+		}
+	} else {
+		tm.tm_year += offset;
+	}
+
+	if ( relation == relation_less )
+		tm.tm_sec -= 1;
+
+	t.sec = mktime(&tm);
+	t.usec = 0;
+
+	if ( idmef_time_get_db_timestamp(&t, buf, sizeof (buf)) < 0 )
+		return -1;
+
+	if ( prelude_strbuf_sprintf(output, "%s %s %s",
+				    field,
+				    prelude_sql_idmef_relation_to_string(relation | IDMEF_RELATION_EQUAL),
+				    buf) < 0 )
+		return -1;
+
+	return 0;
+}
+
+
+
+static int build_criterion_hour(prelude_sql_connection_t *conn,
+				prelude_strbuf_t *output,
+				const char *field,
+				idmef_relation_t relation,
+				idmef_criterion_value_non_linear_time_t *time)
+{
+	int hour, min, sec;
+	unsigned int total_seconds;
+	int relation_offset;
+	int gmt_offset;
+	char interval[128];
+
+	hour = idmef_criterion_value_non_linear_time_get_hour(time);
+	min = idmef_criterion_value_non_linear_time_get_min(time);
+	sec = idmef_criterion_value_non_linear_time_get_sec(time);
+
+	if ( relation & IDMEF_RELATION_EQUAL )
+		relation_offset = 0;
+	else
+		relation_offset = 1;
+
+	total_seconds = hour * 3600;
+	if ( min != -1 ) {
+		total_seconds += min * 60;
+		if ( sec != -1 ) {
+			total_seconds += sec;
+		} else {
+			total_seconds += relation_offset * 60;
+		}
+	} else {
+		total_seconds += relation_offset * 3600;
+	}
+
+	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+		return -1;
+
+	if ( build_time_interval(conn, dbconstraint_hour, gmt_offset / 3600, interval, sizeof (interval)) < 0 )
+		return -1;
+
+	return prelude_strbuf_sprintf(output,
+				      "EXTRACT(HOUR FROM %s + %s) * 3600 + "
+				      "EXTRACT(MINUTE FROM %s + %s) * 60 + "
+				      "EXTRACT(SECOND FROM %s + %s) %s %d",
+				      field, interval,
+				      field, interval,
+				      field, interval,
+				      prelude_sql_idmef_relation_to_string(relation | IDMEF_RELATION_EQUAL),
+				      total_seconds);
+}
+
+
+
+static int build_criterion_non_linear_time_value_relation_lesser_or_greater(prelude_sql_connection_t *conn,
+									    prelude_strbuf_t *output,
+									    const char *field,
+									    idmef_relation_t relation,
+									    idmef_criterion_value_non_linear_time_t *time)
+{
+	int tmp;
+
+	if ( idmef_criterion_value_non_linear_time_get_year(time) != -1 )
+		return build_criterion_timestamp(conn, output, field, relation, time);
+
+	if ( idmef_criterion_value_non_linear_time_get_hour(time) != -1 )
+		return build_criterion_hour(conn, output, field, relation, time);
+
+	if ( (tmp = idmef_criterion_value_non_linear_time_get_yday(time)) != -1 )
+		return build_time_constraint(conn, output, field, dbconstraint_yday, relation, tmp);
+
+	if ( (tmp = idmef_criterion_value_non_linear_time_get_wday(time)) != -1 )
+		return build_time_constraint(conn, output, field, dbconstraint_wday, relation, tmp);
+
+	if ( (tmp = idmef_criterion_value_non_linear_time_get_month(time)) != -1 )
+		return build_time_constraint(conn, output, field, dbconstraint_month, relation, tmp);
+
+	if ( (tmp = idmef_criterion_value_non_linear_time_get_mday(time)) != -1 )
+		return build_time_constraint(conn, output, field, dbconstraint_mday, relation, tmp);
+
+	return -1;
+}
+
+
+static int build_criterion_non_linear_time_value(prelude_sql_connection_t *conn,
+						 prelude_strbuf_t *output,
+						 const char *field,
+						 idmef_relation_t relation,
+						 idmef_criterion_value_non_linear_time_t *time)
+{
+	if ( relation == relation_equal )
+		return build_criterion_non_linear_time_value_relation_equal
+			(conn, output, field, relation, time);
+
+	if ( relation == relation_not_equal )
+		return build_criterion_non_linear_time_value_relation_not_equal
+			(conn, output, field, time);
+
+	if ( relation & (IDMEF_RELATION_LESSER | IDMEF_RELATION_GREATER) )
+		return build_criterion_non_linear_time_value_relation_lesser_or_greater
+			(conn, output, field, relation, time);
+
+	return -1;
+}
+
+
+
+static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf, size_t size)
+{
+	idmef_time_t *time;
+
+	time = idmef_value_get_time(value);
+	if ( ! time )
+		return -1;
+
+	return idmef_time_get_db_timestamp(time, buf, size);
+}
+
+
+
+static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf, size_t size)
+{
+	idmef_string_t *string;
+	char *output = buf;
+	char *input;
+	int output_offset = 0;
+	int input_offset = 0;
+
+	string = idmef_value_get_string(value);
+	if ( ! string )
+		return -1;
+
+	input = idmef_string_get_string(string);
+
+	while ( input[input_offset] && output_offset < size ) {
+		switch ( input[input_offset] ) {
+		case '*':
+			output[output_offset] = '%';
+			output_offset++;
+			input_offset++;
+			break;
+
+		case '\\':
+			if ( input[input_offset + 1] == '*' ) {
+				output[output_offset] = '*';
+				output_offset++;
+				input_offset += 2;
+				break;
+			}
+
+			/* no break here  */
+
+		default:
+			output[input_offset++] = input[output_offset++];
+		}
+	}
+
+	if ( output_offset >= size )
+		return -1;
+
+	output[output_offset] = 0;
+
+	return 0;
+}
+
+
+
+static int build_criterion_fixed_sql_value(prelude_sql_connection_t *conn,
+					   prelude_strbuf_t *output,
+					   idmef_value_t *value,
+					   idmef_relation_t relation)
+{
+	char buf[SQL_MAX_VALUE_LEN];
+	char *tmp;
+	int ret;
+
+	if ( idmef_value_get_type(value) == type_time )
+		ret = build_criterion_fixed_sql_time_value(value, buf, sizeof (buf));
+
+	else if ( relation == relation_substring )
+		ret = build_criterion_fixed_sql_like_value(value, buf, sizeof (buf));
+
+	else
+		ret = idmef_value_to_string(value, buf, sizeof (buf));
+
+	if ( ret < 0 )
+		return -1;
+
+	tmp = prelude_sql_escape(conn, buf);
+	if ( ! tmp )
+		return -1;
+
+	ret = prelude_strbuf_cat(output, tmp);
+
+	free(tmp);
+
+	return ret;
+}
+
+
+
+static int build_criterion_relation(prelude_strbuf_t *output, idmef_relation_t relation)
+{
+	const char *tmp;
+
+	tmp = prelude_sql_idmef_relation_to_string(relation);
+	if ( ! tmp )
+		return -1;
+
+	return prelude_strbuf_sprintf(output, "%s ", tmp);
+}
+
+
+static int build_criterion_fixed_value(prelude_sql_connection_t *conn,
+				       prelude_strbuf_t *output,
+				       const char *field,
+				       idmef_relation_t relation,
+				       idmef_value_t *value)
+{
+	if ( prelude_strbuf_sprintf(output, "%s ", field) < 0 )
+		return -1;
+
+	if ( build_criterion_relation(output, relation) < 0 )
+		return -1;
+
+	if ( build_criterion_fixed_sql_value(conn, output, value, relation) < 0 )
+		return -1;
+
+	return 0;
+}
+
+
+int prelude_sql_build_criterion(prelude_sql_connection_t *conn,
+				prelude_strbuf_t *output,
+				const char *field,
+				idmef_relation_t relation, idmef_criterion_value_t *value)
+{
+	switch ( idmef_criterion_value_get_type(value) ) {
+	case idmef_criterion_value_type_fixed:
+		return build_criterion_fixed_value(conn, output, field, relation,
+						   idmef_criterion_value_get_fixed(value));
+
+	case idmef_criterion_value_type_non_linear_time:
+		return build_criterion_non_linear_time_value(conn, output, field, relation,
+							     idmef_criterion_value_get_non_linear_time(value));
+	}
+
+	return -1;
 }

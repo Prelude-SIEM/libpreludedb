@@ -297,6 +297,22 @@ prelude_db_message_ident_list_t *prelude_db_interface_get_heartbeat_ident_list(p
 
 
 
+unsigned int prelude_db_interface_get_alert_ident_list_len(prelude_db_message_ident_list_t *ident_list)
+{
+	return ident_list->interface->format->format_get_alert_ident_list_len(ident_list->interface->db_connection,
+									      ident_list->res);
+}
+
+
+
+unsigned int prelude_db_interface_get_heartbeat_ident_list_len(prelude_db_message_ident_list_t *ident_list)
+{
+	return ident_list->interface->format->format_get_heartbeat_ident_list_len(ident_list->interface->db_connection,
+										  ident_list->res);
+}
+
+
+
 static void prelude_db_interface_message_ident_list_destroy(prelude_db_message_ident_list_t *ident_list,
 							    void (*destroy_ident_list_func)(prelude_db_connection_t *connection,
 											    void *res))

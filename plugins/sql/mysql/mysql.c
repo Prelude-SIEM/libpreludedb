@@ -38,6 +38,7 @@
 #include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
+#include <libprelude/idmef-util.h>
 
 #include <libprelude/prelude-io.h>
 #include <libprelude/prelude-message.h>
@@ -606,6 +607,106 @@ static const char *db_field_value(void *s, void *t, void *r, void *f)
 
 
 
+static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
+				    prelude_sql_time_constraint_type_t type,
+				    idmef_relation_t relation, int value, int gmt_offset)
+{
+	int gmt_offset;
+	char buf[128];
+	const char *sql_relation;
+
+	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+		return -1;
+
+	if ( snprintf(buf, sizeof (buf), "DATE_ADD(%s, interval %d hour)", field, gmt_offset / 3600) < 0 )
+		return -1;
+
+	sql_relation = prelude_sql_idmef_relation_to_string(relation);
+	if ( ! sql_relation )
+		return -1;
+
+	switch ( type ) {
+	case dbconstraint_year:
+		return prelude_strbuf_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
+					      buf, sql_relation, value);
+
+	case dbconstraint_month:
+		return  prelude_strbuf_sprintf(output, "EXTRACT(MONTH FROM %s) %s '%d'",
+					       buf, sql_relation, value);
+
+	case dbconstraint_yday:
+		return prelude_strbuf_sprintf(output, "DAYOFYEAR(%s) %s '%d'",
+					      buf, sql_relation, value);
+
+	case dbconstraint_mday:
+		return prelude_strbuf_sprintf(output, "DAYOFMONTH(%s) %s '%d'",
+					      buf, sql_relation, value);
+
+	case dbconstraint_wday:
+		return prelude_strbuf_sprintf(output, "DAYOFWEEK(%s) %s '%d'",
+					      buf, sql_relation, value % 7 + 1);
+
+	case dbconstraint_hour:
+		return prelude_strbuf_sprintf(output, "EXTRACT(HOUR FROM %s) %s '%d'",
+					      buf, sql_relation, value);
+
+	case dbconstraint_min:
+		return prelude_strbuf_sprintf(output, "EXTRACT(MINUTE FROM %s) %s '%d'",
+					      buf, sql_relation, value);
+
+	case dbconstraint_sec:
+		return prelude_strbuf_sprintf(output, "EXTRACT(SECOND FROM %s) %s '%d'",
+					      buf, sql_relation, value);
+	}
+
+	/* not reached */
+
+	return -1;
+}
+
+
+
+static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int value,
+				  char *buf, size_t size)
+{
+	char *type_str;
+	int ret;
+
+	switch ( type ) {
+	case dbconstraint_year:
+		type_str = "YEAR";
+		break;
+
+	case dbconstraint_month:
+		type_str = "MONTH";
+		break;
+
+	case dbconstraint_mday:
+		type_str = "DAY";
+		break;
+
+	case dbconstraint_hour:
+		type_str = "HOUR";
+		break;
+
+	case dbconstraint_min:
+		type_str = "MINUTE";
+		break;
+
+	case dbconstraint_sec:
+		type_str = "SECOND";
+		break;
+
+	default:
+		return -1;
+	}
+
+	ret = snprintf(buf, size, "INTERVAL %d %s", value, type_str);
+
+	return (ret < 0 || ret >= size) ? -1 : 0;
+}
+
+
 plugin_generic_t *plugin_init(int argc, char **argv)
 {               
 	/* system-wide options for the plugin should go in here */
@@ -633,6 +734,8 @@ plugin_generic_t *plugin_init(int argc, char **argv)
 	plugin_set_field_fetch_func(&plugin, db_field_fetch);
 	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
 	plugin_set_field_value_func(&plugin, db_field_value);
+	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
+	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
 
 	return (plugin_generic_t *) &plugin;
 }

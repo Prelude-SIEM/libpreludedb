@@ -1,3 +1,31 @@
+2004-01-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* bindings/python/_preludedb.c:
+	regenerated
+
+	* bindings/python/preludedb.py:
+	add support for prelude_db_interface_get_*_ident_list_len
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	* plugins/format/classic/classic.c:
+	add the ability to get the len of a db message ident list
+
+	* plugins/format/classic/classic.c:
+	(classic_get_values)
+	bug fix, convert from UTC to localtime the time fields retrieved
+
+	* plugins/format/classic/idmef-db-select.c:
+	* src/sql.c:
+	* src/include/sql.h:
+	* src/include/plugin-sql.h
+	* plugins/sql/mysql/mysql.c:
+	add support for idmef-criterion-value
+
 2004-01-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/pgsql.sql:

@@ -602,18 +602,19 @@ static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, 
 
 
 static int criterion_to_sql(prelude_sql_connection_t *conn,
-			   prelude_strbuf_t *where,
+			    prelude_strbuf_t *where,
 			    table_list_t *tables,
 			    idmef_criterion_t *criterion)
 {
 	idmef_object_t *object;
 	db_object_t *db;
 	char buf[VALLEN];
+	char field_name[128];
 	char *table, *field, *function, *top_table, *top_field, *ident_field;
 	char *condition, *table_alias;
 	idmef_relation_t relation;
 	char *value = NULL;
-	int retval;
+	int ret;
 
 	object = idmef_criterion_get_object(criterion);
 	db = db_object_find(object);
@@ -643,20 +644,29 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	if ( ! table_alias )
 		return -1;
 
-	if ( idmef_criterion_get_value(criterion) ) {
-		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
-		if ( ! value )
-			return -2;
-	}
+/* 	if ( idmef_criterion_get_value(criterion) ) { */
+/* 		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN); */
+/* 		if ( ! value ) */
+/* 			return -2; */
+/* 	} */
 
-	retval = relation_to_sql(where,
-				 field ? table_alias : NULL,
-				 field ? field : function,
-				 relation, value);
+/* 	retval = relation_to_sql(where, */
+/* 				 field ? table_alias : NULL, */
+/* 				 field ? field : function, */
+/* 				 relation, value); */
 
-	free(value);
+/* 	free(value); */
 
-	return retval;
+	if ( table_alias )
+		ret = snprintf(field_name, sizeof (field_name), "%s.%s", table_alias, field);
+	else
+		ret = snprintf(field_name, sizeof (field_name), "%s", field);
+
+	if ( ret < -1 || ret >= sizeof (field_name) )
+		return -1;
+
+	return prelude_sql_build_criterion(conn, where, field_name,
+					   relation, idmef_criterion_get_value(criterion));
 }
 
 
@@ -870,7 +880,7 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 
 
 
-static int join_wheres(prelude_strbuf_t *out,prelude_strbuf_t *in)
+static int join_wheres(prelude_strbuf_t *out, prelude_strbuf_t *in)
 {
 	int ret = 0;
 
@@ -1082,7 +1092,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 	if ( ! request )
 		return NULL;
 
-	table = prelude_sql_query(sql, prelude_strbuf_get_string(request));
+	table = prelude_sql_query(sql, "%s", prelude_strbuf_get_string(request));
 	if ( ! table && prelude_sql_errno(sql) ) {
 		log(LOG_ERR, "Query %s failed: %s\n",
 		    prelude_strbuf_get_string(request),

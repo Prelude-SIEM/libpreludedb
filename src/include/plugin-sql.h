@@ -52,6 +52,17 @@
 
 #define ERR_DB_PLUGIN_NOT_FOUND 100
 
+typedef enum {
+	dbconstraint_year,
+	dbconstraint_month,
+	dbconstraint_yday,
+	dbconstraint_mday,
+	dbconstraint_wday,
+	dbconstraint_hour,
+	dbconstraint_min,
+	dbconstraint_sec
+}	prelude_sql_time_constraint_type_t;
+
 typedef struct {
         PLUGIN_GENERIC;
 	/* general functions */
@@ -66,6 +77,11 @@ typedef struct {
         int (*db_rollback)(void *session);
         void (*db_close)(void *session);
 	int (*db_errno)(void *session);
+	int (*db_build_time_constraint)(prelude_strbuf_t *output, const char *field,
+					prelude_sql_time_constraint_type_t type,
+					idmef_relation_t relation, int value, int gmt_offset);
+	int (*db_build_time_interval)(prelude_sql_time_constraint_type_t type, int value,
+				      char *buf, size_t size);
 
 	/* tables related functions */
 	void (*db_table_free)(void *session, void *table);
@@ -105,6 +121,8 @@ typedef struct {
 #define plugin_rollback_func(p) (p)->db_rollback
 #define plugin_close_func(p) (p)->db_close
 #define	plugin_errno_func(p) (p)->db_errno
+#define plugin_build_time_constraint_func(p) (p)->db_build_time_constraint
+#define plugin_build_time_interval_func(p) (p)->db_build_time_interval
 #define	plugin_table_free_func(p) (p)->db_table_free
 #define	plugin_field_name_func(p) (p)->db_field_name
 #define	plugin_field_num_func(p) (p)->db_field_num
@@ -127,6 +145,8 @@ typedef struct {
 #define plugin_set_rollback_func(p, f) plugin_rollback_func(p) = (f)
 #define plugin_set_closing_func(p, f) plugin_close_func(p) = (f)
 #define	plugin_set_errno_func(p, f) plugin_errno_func(p) = (f)
+#define	plugin_set_build_time_constraint_func(p, f) plugin_build_time_constraint_func(p) = (f)
+#define	plugin_set_build_time_interval_func(p, f) plugin_build_time_interval_func(p) = (f)
 #define	plugin_set_table_free_func(p, f) plugin_table_free_func(p) = (f)
 #define	plugin_set_field_name_func(p, f) plugin_field_name_func(p) = (f)
 #define	plugin_set_field_num_func(p, f) plugin_field_num_func(p) = (f)
@@ -144,7 +164,3 @@ int sql_plugins_init(const char *dirname);
 plugin_generic_t *plugin_init(int argc, char **argv);
 
 #endif /* _LIBPRELUDEDB_PLUGIN_DB_H */
-
-
-
-

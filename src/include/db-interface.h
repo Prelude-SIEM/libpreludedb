@@ -60,6 +60,10 @@ void prelude_db_interface_alert_ident_list_destroy(prelude_db_message_ident_list
 
 void prelude_db_interface_heartbeat_ident_list_destroy(prelude_db_message_ident_list_t *ident_list);
 
+unsigned int prelude_db_interface_get_alert_ident_list_len(prelude_db_message_ident_list_t *ident_list);
+
+unsigned int prelude_db_interface_get_heartbeat_ident_list_len(prelude_db_message_ident_list_t *ident_list);
+
 prelude_db_message_ident_t *prelude_db_interface_get_next_alert_ident(prelude_db_message_ident_list_t *ident_list);
 
 prelude_db_message_ident_t *prelude_db_interface_get_next_heartbeat_ident(prelude_db_message_ident_list_t *ident_list);

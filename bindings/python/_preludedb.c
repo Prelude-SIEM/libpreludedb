@@ -655,15 +655,18 @@ SWIG_InstallConstants(PyObject *d, swig_const_info constants[]) {
 #define  SWIGTYPE_p_prelude_db_connection_t swig_types[11] 
 #define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[12] 
 #define  SWIGTYPE_p_idmef_message_t swig_types[13] 
-#define  SWIGTYPE_p_prelude_db_interface_t swig_types[14] 
-#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[15] 
-#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[16] 
-#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[17] 
-#define  SWIGTYPE_p_idmef_criteria_t swig_types[18] 
-#define  SWIGTYPE_p_prelude_sql_table_t swig_types[19] 
-#define  SWIGTYPE_p_idmef_string_t swig_types[20] 
-#define  SWIGTYPE_p_idmef_value_t swig_types[21] 
-static swig_type_info *swig_types[23];
+#define  SWIGTYPE_p_idmef_relation_t swig_types[14] 
+#define  SWIGTYPE_p_prelude_db_interface_t swig_types[15] 
+#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[16] 
+#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[17] 
+#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[18] 
+#define  SWIGTYPE_p_idmef_criteria_t swig_types[19] 
+#define  SWIGTYPE_p_prelude_sql_table_t swig_types[20] 
+#define  SWIGTYPE_p_prelude_strbuf_t swig_types[21] 
+#define  SWIGTYPE_p_idmef_string_t swig_types[22] 
+#define  SWIGTYPE_p_idmef_criterion_value_t swig_types[23] 
+#define  SWIGTYPE_p_idmef_value_t swig_types[24] 
+static swig_type_info *swig_types[26];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -1136,6 +1139,40 @@ static PyObject *_wrap_prelude_db_interface_heartbeat_ident_list_destroy(PyObjec
 }
 
 
+static PyObject *_wrap_prelude_db_interface_get_alert_ident_list_len(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    prelude_db_message_ident_list_t *arg1 = (prelude_db_message_ident_list_t *) 0 ;
+    unsigned int result;
+    PyObject * obj0 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:prelude_db_interface_get_alert_ident_list_len",&obj0)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_db_message_ident_list_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    result = (unsigned int)prelude_db_interface_get_alert_ident_list_len(arg1);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_prelude_db_interface_get_heartbeat_ident_list_len(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    prelude_db_message_ident_list_t *arg1 = (prelude_db_message_ident_list_t *) 0 ;
+    unsigned int result;
+    PyObject * obj0 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:prelude_db_interface_get_heartbeat_ident_list_len",&obj0)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_db_message_ident_list_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    result = (unsigned int)prelude_db_interface_get_heartbeat_ident_list_len(arg1);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
 static PyObject *_wrap_prelude_db_interface_get_next_alert_ident(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     prelude_db_message_ident_list_t *arg1 = (prelude_db_message_ident_list_t *) 0 ;
@@ -1595,6 +1632,54 @@ static PyObject *_wrap_prelude_sql_escape(PyObject *self, PyObject *args) {
 }
 
 
+static PyObject *_wrap_prelude_sql_limit_offset(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    prelude_sql_connection_t *arg1 = (prelude_sql_connection_t *) 0 ;
+    int arg2 ;
+    int arg3 ;
+    char *result;
+    PyObject * obj0 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"Oii:prelude_sql_limit_offset",&obj0,&arg2,&arg3)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_sql_connection_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    result = (char *)prelude_sql_limit_offset(arg1,arg2,arg3);
+    
+    resultobj = result ? PyString_FromString(result) : Py_BuildValue((char*)"");
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
+static PyObject *_wrap_prelude_sql_build_criterion(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    prelude_sql_connection_t *arg1 = (prelude_sql_connection_t *) 0 ;
+    prelude_strbuf_t *arg2 = (prelude_strbuf_t *) 0 ;
+    char *arg3 ;
+    idmef_relation_t arg4 ;
+    idmef_criterion_value_t *arg5 = (idmef_criterion_value_t *) 0 ;
+    int result;
+    idmef_relation_t *argp4 ;
+    PyObject * obj0 = 0 ;
+    PyObject * obj1 = 0 ;
+    PyObject * obj3 = 0 ;
+    PyObject * obj4 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"OOsOO:prelude_sql_build_criterion",&obj0,&obj1,&arg3,&obj3,&obj4)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &arg1, SWIGTYPE_p_prelude_sql_connection_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    if ((SWIG_ConvertPtr(obj1,(void **) &arg2, SWIGTYPE_p_prelude_strbuf_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    if ((SWIG_ConvertPtr(obj3,(void **) &argp4, SWIGTYPE_p_idmef_relation_t,SWIG_POINTER_EXCEPTION) == -1)) SWIG_fail;
+    arg4 = *argp4; 
+    if ((SWIG_ConvertPtr(obj4,(void **) &arg5, SWIGTYPE_p_idmef_criterion_value_t,SWIG_POINTER_EXCEPTION | 0 )) == -1) SWIG_fail;
+    result = (int)prelude_sql_build_criterion(arg1,arg2,(char const *)arg3,arg4,arg5);
+    
+    resultobj = PyInt_FromLong((long)result);
+    return resultobj;
+    fail:
+    return NULL;
+}
+
+
 static PyObject *_wrap_prelude_sql_begin(PyObject *self, PyObject *args) {
     PyObject *resultobj;
     prelude_sql_connection_t *arg1 = (prelude_sql_connection_t *) 0 ;
@@ -1711,6 +1796,25 @@ static PyObject *_wrap_prelude_sql_insert(PyObject *self, PyObject *args) {
     Py_XDECREF(newargs);
     Py_XDECREF(varargs);
     return resultobj;
+}
+
+
+static PyObject *_wrap_prelude_sql_idmef_relation_to_string(PyObject *self, PyObject *args) {
+    PyObject *resultobj;
+    idmef_relation_t arg1 ;
+    char *result;
+    idmef_relation_t *argp1 ;
+    PyObject * obj0 = 0 ;
+    
+    if(!PyArg_ParseTuple(args,(char *)"O:prelude_sql_idmef_relation_to_string",&obj0)) goto fail;
+    if ((SWIG_ConvertPtr(obj0,(void **) &argp1, SWIGTYPE_p_idmef_relation_t,SWIG_POINTER_EXCEPTION) == -1)) SWIG_fail;
+    arg1 = *argp1; 
+    result = (char *)prelude_sql_idmef_relation_to_string(arg1);
+    
+    resultobj = result ? PyString_FromString(result) : Py_BuildValue((char*)"");
+    return resultobj;
+    fail:
+    return NULL;
 }
 
 
@@ -2155,6 +2259,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"prelude_db_interface_get_heartbeat_ident_list", _wrap_prelude_db_interface_get_heartbeat_ident_list, METH_VARARGS },
 	 { (char *)"prelude_db_interface_alert_ident_list_destroy", _wrap_prelude_db_interface_alert_ident_list_destroy, METH_VARARGS },
 	 { (char *)"prelude_db_interface_heartbeat_ident_list_destroy", _wrap_prelude_db_interface_heartbeat_ident_list_destroy, METH_VARARGS },
+	 { (char *)"prelude_db_interface_get_alert_ident_list_len", _wrap_prelude_db_interface_get_alert_ident_list_len, METH_VARARGS },
+	 { (char *)"prelude_db_interface_get_heartbeat_ident_list_len", _wrap_prelude_db_interface_get_heartbeat_ident_list_len, METH_VARARGS },
 	 { (char *)"prelude_db_interface_get_next_alert_ident", _wrap_prelude_db_interface_get_next_alert_ident, METH_VARARGS },
 	 { (char *)"prelude_db_interface_get_next_heartbeat_ident", _wrap_prelude_db_interface_get_next_heartbeat_ident, METH_VARARGS },
 	 { (char *)"prelude_db_interface_get_alert", _wrap_prelude_db_interface_get_alert, METH_VARARGS },
@@ -2179,12 +2285,15 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"prelude_sql_errno", _wrap_prelude_sql_errno, METH_VARARGS },
 	 { (char *)"prelude_sql_error", _wrap_prelude_sql_error, METH_VARARGS },
 	 { (char *)"prelude_sql_escape", _wrap_prelude_sql_escape, METH_VARARGS },
+	 { (char *)"prelude_sql_limit_offset", _wrap_prelude_sql_limit_offset, METH_VARARGS },
+	 { (char *)"prelude_sql_build_criterion", _wrap_prelude_sql_build_criterion, METH_VARARGS },
 	 { (char *)"prelude_sql_begin", _wrap_prelude_sql_begin, METH_VARARGS },
 	 { (char *)"prelude_sql_commit", _wrap_prelude_sql_commit, METH_VARARGS },
 	 { (char *)"prelude_sql_rollback", _wrap_prelude_sql_rollback, METH_VARARGS },
 	 { (char *)"prelude_sql_close", _wrap_prelude_sql_close, METH_VARARGS },
 	 { (char *)"prelude_sql_connect", _wrap_prelude_sql_connect, METH_VARARGS },
 	 { (char *)"prelude_sql_insert", _wrap_prelude_sql_insert, METH_VARARGS },
+	 { (char *)"prelude_sql_idmef_relation_to_string", _wrap_prelude_sql_idmef_relation_to_string, METH_VARARGS },
 	 { (char *)"prelude_sql_table_free", _wrap_prelude_sql_table_free, METH_VARARGS },
 	 { (char *)"prelude_sql_field_name", _wrap_prelude_sql_field_name, METH_VARARGS },
 	 { (char *)"prelude_sql_field_num", _wrap_prelude_sql_field_num, METH_VARARGS },
@@ -2228,13 +2337,16 @@ static swig_type_info _swigt__p_prelude_sql_connection_t[] = {{"_p_prelude_sql_c
 static swig_type_info _swigt__p_prelude_db_connection_t[] = {{"_p_prelude_db_connection_t", 0, "prelude_db_connection_t *", 0},{"_p_prelude_db_connection_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_object_selection_t[] = {{"_p_prelude_db_object_selection_t", 0, "prelude_db_object_selection_t *", 0},{"_p_prelude_db_object_selection_t"},{0}};
 static swig_type_info _swigt__p_idmef_message_t[] = {{"_p_idmef_message_t", 0, "idmef_message_t *", 0},{"_p_idmef_message_t"},{0}};
+static swig_type_info _swigt__p_idmef_relation_t[] = {{"_p_idmef_relation_t", 0, "idmef_relation_t *", 0},{"_p_idmef_relation_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_connection_data_t[] = {{"_p_prelude_db_connection_data_t", 0, "prelude_db_connection_data_t *", 0},{"_p_prelude_db_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_connection_data_t[] = {{"_p_prelude_sql_connection_data_t", 0, "prelude_sql_connection_data_t *", 0},{"_p_prelude_sql_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_message_ident_t[] = {{"_p_prelude_db_message_ident_t", 0, "prelude_db_message_ident_t *", 0},{"_p_prelude_db_message_ident_t"},{0}};
 static swig_type_info _swigt__p_idmef_criteria_t[] = {{"_p_idmef_criteria_t", 0, "idmef_criteria_t *", 0},{"_p_idmef_criteria_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
+static swig_type_info _swigt__p_prelude_strbuf_t[] = {{"_p_prelude_strbuf_t", 0, "prelude_strbuf_t *", 0},{"_p_prelude_strbuf_t"},{0}};
 static swig_type_info _swigt__p_idmef_string_t[] = {{"_p_idmef_string_t", 0, "idmef_string_t *", 0},{"_p_idmef_string_t"},{0}};
+static swig_type_info _swigt__p_idmef_criterion_value_t[] = {{"_p_idmef_criterion_value_t", 0, "idmef_criterion_value_t *", 0},{"_p_idmef_criterion_value_t"},{0}};
 static swig_type_info _swigt__p_idmef_value_t[] = {{"_p_idmef_value_t", 0, "idmef_value_t *", 0},{"_p_idmef_value_t"},{0}};
 
 static swig_type_info *swig_types_initial[] = {
@@ -2252,13 +2364,16 @@ _swigt__p_prelude_sql_connection_t,
 _swigt__p_prelude_db_connection_t, 
 _swigt__p_prelude_db_object_selection_t, 
 _swigt__p_idmef_message_t, 
+_swigt__p_idmef_relation_t, 
 _swigt__p_prelude_db_interface_t, 
 _swigt__p_prelude_db_connection_data_t, 
 _swigt__p_prelude_sql_connection_data_t, 
 _swigt__p_prelude_db_message_ident_t, 
 _swigt__p_idmef_criteria_t, 
 _swigt__p_prelude_sql_table_t, 
+_swigt__p_prelude_strbuf_t, 
 _swigt__p_idmef_string_t, 
+_swigt__p_idmef_criterion_value_t, 
 _swigt__p_idmef_value_t, 
 0
 };
