@@ -212,7 +212,7 @@ static void db_close(void *s)
 static char *db_escape(void *s, const char *str)
 {
         char *ptr;
-        int i, ok;
+        int i, ok = 0;
         size_t len, rlen;
 
         if ( ! str )
