@@ -28,3 +28,5 @@
 char *parameter_value(const char *string, const char *field);
 
 #endif /* _LIBPRELUDEDB_PARAM_STRING_H */
+
+
