@@ -16,7 +16,6 @@ include_HEADERS = 		\
 	plugin-format.h
 
 noinst_HEADERS = 		\
-	gdb.h			\
 	db-message-cache.h	\
 	db-connection.h		\
 	db-connection-data.h	\
