@@ -22,11 +22,11 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
-#define _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
+#ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H
+#define _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H
 
 prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn, idmef_cache_t *cache, 
 				      idmef_criterion_t *criterion);
 
-#endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H */
+#endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H */
 

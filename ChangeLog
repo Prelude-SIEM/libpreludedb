@@ -1,4 +1,10 @@
 2003-05-08  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/include/idmef-db-select.h:
+	* plugins/format/classic/include/idmef-db-insert.h:
+	change #define'd constants names to match file names. 
+
+2003-05-08  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 	
 	(these modifications should have been checked in on 2003-05-05)
 
@@ -8,7 +14,7 @@
 	* plugins/format/classic/include/idmef-db-read.h:
 	renamed to idmef-db-select.h
 
-	* plugins/forma/classic/include/idmef-db-select.h:
+	* plugins/format/classic/include/idmef-db-select.h:
 	apply modifications corresponding to those in
 	idmef-db-select.c 
 
