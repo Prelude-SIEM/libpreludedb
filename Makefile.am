@@ -1,4 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = m4 plugins src bindings
+SUBDIRS = m4 src plugins bindings
 
 bin_SCRIPTS = $(top_builddir)/libpreludedb-config $(top_builddir)/prelude-db-create.sh
