@@ -30,6 +30,7 @@
 
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
+#include <libprelude/idmef-util.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
@@ -524,12 +525,33 @@ static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_rela
 }
 
 
+static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, char *buf, size_t size)
+{
+	if ( idmef_value_get_type(value) == type_time ) {
+		idmef_time_t *time;
 
+		time = idmef_value_get_time(value);
+		if ( ! time )
+			return NULL;
+
+		if ( idmef_get_db_timestamp(time, buf, size) < 0 )
+			return NULL;
+	} else {
+		if ( idmef_value_to_string(value, buf, size) < 0 )
+			return NULL;
+	}
+
+	return prelude_sql_escape(conn, buf);
+}
+
+/*
+ * FIXME: make this function shorter/cleaner
+ */
 
 static int criterion_to_sql(prelude_sql_connection_t *conn,
-		     strbuf_t *where,
-		     table_list_t *tables,
-		     idmef_criterion_t *criterion)
+			    strbuf_t *where,
+			    table_list_t *tables,
+			    idmef_criterion_t *criterion)
 {
 	idmef_object_t *object;
 	db_object_t *db;
@@ -618,9 +640,9 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 		if ( ! table_alias )
 			return -1;
 
-
-		idmef_value_to_string(idmef_criterion_get_value(criterion), buf, VALLEN);
-		value = prelude_sql_escape(conn, buf);
+		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
+		if ( ! value )
+			return -2;
 
 		ret = relation_to_sql(where,
 				      field ? table_alias : NULL,

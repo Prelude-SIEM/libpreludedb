@@ -10,6 +10,8 @@ object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	t
 
 object=alert.ident  table=Prelude_Alert  field=ident  
 
+object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=ident ident_field=alert_ident
+
 object=alert.assessment.impact.description  table=Prelude_Impact  field=description  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.assessment.impact.severity  table=Prelude_Impact  field=severity  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.assessment.impact.completion  table=Prelude_Impact  field=completion  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  

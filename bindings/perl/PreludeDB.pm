@@ -34,6 +34,13 @@ sub	shutdown
     return (prelude_db_shutdown() < 0) ? 0 : 1;
 }
 
+sub	_get_criterion
+{
+    my	$value = shift || return undef;
+
+    return (ref $value eq "IDMEFCriterion") ? $value : new IDMEFCriterion($value);
+}
+
 sub	new
 {
     my	$class = shift;
@@ -102,12 +109,12 @@ sub	get_sql_connection
 sub	get_alert_uident_list
 {
      my	$self = shift;
-     my	$crit = shift;
+     my	$criterion = _get_criterion(shift);
      my	$uident_list_handle;
      my	@uident_list;
      my	$uident;
 
-     $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$crit) or return ();
+     $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$criterion) or return ();
 
      while ( ($uident = PreludeDB::prelude_db_interface_get_next_alert_uident($uident_list_handle)) ) {
 	 push(@uident_list, $uident);
@@ -121,12 +128,12 @@ sub	get_alert_uident_list
 sub	get_heartbeat_uident_list
 {
     my	$self = shift;
-    my	$crit = shift;
+    my	$criterion = _get_criterion(shift);
     my	$uident_list_handle;
     my	@uident_list;
     my	$uident;
 
-    $uident_list_handle = PreludeDB::prelude_db_interface_get_heartbeat_uident_list($$self, $$crit) or return ();
+    $uident_list_handle = PreludeDB::prelude_db_interface_get_heartbeat_uident_list($$self, $$criterion) or return ();
 
     while ( ($uident = PreludeDB::prelude_db_interface_get_next_heartbeat_uident($uident_list_handle)) ) {
 	push(@uident_list, $uident);
@@ -283,7 +290,7 @@ sub	get_values
     my	$self = shift;
     my	%opt = @_;
     my	$selection;
-    my	$criteria;
+    my	$criterion;
     my	$limit;
     my	$res;
     my	$objval_list;
@@ -294,10 +301,10 @@ sub	get_values
     return () if ( not defined $opt{-object_list} || @{ $opt{-object_list} } == 0 );
 
     $selection = _convert_selected_object_list(@{ $opt{-object_list} }) or return ();
-    $criteria = $opt{-criteria} if ( defined $opt{-criteria} );
+    $criterion = _get_criterion($opt{-criterion}) if ( defined $opt{-criterion} );
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
 
-    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $limit);
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criterion, $limit);
 
     unless ( $res ) {
 	Prelude::idmef_selection_destroy($selection);

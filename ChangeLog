@@ -1,3 +1,24 @@
+2003-09-21  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	(get_alert_uident_list)
+	(get_heartbeat_uident_list)
+	(get_values)
+	those functions can accept directly a criterion string
+	as a criterion
+
+	* plugins/format/classic/idmef-db-insert.c:
+	check return value of idmef_get_db_timestamp and
+	idmef_get_ntp_timestamp functions
+
+	* plugins/format/classic/idmef-db-select.c:
+	(value_to_sql)
+	new function
+	support for idmef_date in idmef_criterion
+
+	* plugins/format/classic/schema.txt:
+	add support of alert.detect_time object
+
 2003-09-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm
