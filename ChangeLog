@@ -1,0 +1,5 @@
+2002-08-22  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* Initial commit:
+	  Supports writing data in old Prelude format to PostgreSQL database.
+	  Certain files / directories not (yet) used. Needs cleaning. 
