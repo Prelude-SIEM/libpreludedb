@@ -1,3 +1,10 @@
+2003-08-19  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* src/strbuf.c (strbuf_new): 
+	use similar OOM warning as we have in other place in the code.
+
+	coding style fix.
+
 2003-08-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* bindings/perl/PreludeDB.pm:
