@@ -26,13 +26,13 @@
 
 
 int classic_path_resolve_selected(preludedb_sql_t *sql,
-				  const preludedb_selected_path_t *selected,
+				  preludedb_selected_path_t *selected,
 				  classic_sql_join_t *join, classic_sql_select_t *select);
 int classic_path_resolve_selection(preludedb_sql_t *sql,
-				   const preludedb_path_selection_t *selection,
+				   preludedb_path_selection_t *selection,
 				   classic_sql_join_t *join, classic_sql_select_t *select);
 int classic_path_resolve_criteria(preludedb_sql_t *sql,
-				  const idmef_criteria_t *criteria,
+				  idmef_criteria_t *criteria,
 				  classic_sql_join_t *join, prelude_string_t *output);
 
 

@@ -97,7 +97,7 @@ static int get_message_idents_set_order(preludedb_sql_t *sql,
 
 
 static int get_message_idents(preludedb_sql_t *sql, idmef_class_id_t message_type,
-			      const idmef_criteria_t *criteria, int limit, int offset,
+			      idmef_criteria_t *criteria, int limit, int offset,
 			      preludedb_result_idents_order_t order,
 			      preludedb_sql_table_t **table)
 {

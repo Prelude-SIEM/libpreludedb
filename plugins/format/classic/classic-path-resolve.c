@@ -266,7 +266,7 @@ static int classic_path_resolve(const idmef_path_t *path, int field_context,
 
 
 int classic_path_resolve_selected(preludedb_sql_t *sql,
-				  const preludedb_selected_path_t *selected,
+				  preludedb_selected_path_t *selected,
 				  classic_sql_join_t *join, classic_sql_select_t *select)
 {
 	idmef_path_t *path;
@@ -306,10 +306,10 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
 
 
 int classic_path_resolve_selection(preludedb_sql_t *sql,
-				   const preludedb_path_selection_t *selection,
+				   preludedb_path_selection_t *selection,
 				   classic_sql_join_t *join, classic_sql_select_t *select)
 {
-	const preludedb_selected_path_t *selected = NULL;
+	preludedb_selected_path_t *selected = NULL;
 	int ret;
 
 	while ( (selected = preludedb_path_selection_get_next(selection, selected)) ) {
@@ -324,7 +324,7 @@ int classic_path_resolve_selection(preludedb_sql_t *sql,
 
 
 static int classic_path_resolve_criterion(preludedb_sql_t *sql,
-					  const idmef_criterion_t *criterion,
+					  idmef_criterion_t *criterion,
 					  classic_sql_join_t *join, prelude_string_t *output)
 {
 	prelude_string_t *field_name;
@@ -352,12 +352,12 @@ static int classic_path_resolve_criterion(preludedb_sql_t *sql,
 
 
 int classic_path_resolve_criteria(preludedb_sql_t *sql,
-				  const idmef_criteria_t *criteria,
+				  idmef_criteria_t *criteria,
 				  classic_sql_join_t *join, prelude_string_t *output)
 {
-        idmef_criteria_t *or, *and;
 	int ret;
-
+        idmef_criteria_t *or, *and;
+        
         or = idmef_criteria_get_or(criteria);
         and = idmef_criteria_get_and(criteria);
 
