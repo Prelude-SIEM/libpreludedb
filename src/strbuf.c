@@ -29,13 +29,18 @@
 
 #include "strbuf.h"
 
+#define CHUNK_SIZE 1024
+
+
+
 struct strbuf {
 	char *string;
 	size_t textlen;
 	size_t len;
 };
 
-#define CHUNK_SIZE 1024
+
+
 
 strbuf_t *strbuf_new(void)
 {
@@ -43,13 +48,13 @@ strbuf_t *strbuf_new(void)
 	
 	buf = malloc(sizeof(*buf));
 	if ( ! buf ) {
-		log(LOG_ERR, "out of memory\n");
+		log(LOG_ERR, "memory exhausted.\n");
 		return NULL;
 	}
 	
 	buf->string = malloc(CHUNK_SIZE);
 	if ( ! buf->string ) {
-		log(LOG_ERR, "out of memory\n");
+		log(LOG_ERR, "memory exhausted.\n");
 		free(buf);
 		return NULL;
 	}
@@ -86,15 +91,15 @@ int strbuf_sprintf(strbuf_t *s, const char *fmt, ...)
 		 * the final string if enough space had been available.)
 		 */
 		
-		if ( ( ret >= 0 ) && ( ret < s->len - s->textlen ) ) {
+		if ( (ret >= 0) && ret < (s->len - s->textlen) ) {
 			s->textlen += ret;
 			return ret;
 		}
 		
 		ptr = realloc(s->string, s->len + CHUNK_SIZE);
 		if ( ! ptr ) {
-			log(LOG_ERR, "out of memory!\n");
-			s->string[s->len-1] = '\0';
+			log(LOG_ERR, "memory exhausted.\n");
+			s->string[s->len - 1] = '\0';
 			return -1;
 		}
 		
