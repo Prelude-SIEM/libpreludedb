@@ -45,6 +45,11 @@ typedef struct {
 	int active;
 	int connected;
 	char *name;
+        char *type;
+        char *user;
+        char *pass;
+        char *host;
+        char *port;
 } prelude_db_interface_t;
 
 /* Interface-specific functions */
@@ -54,6 +59,17 @@ prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbf
                                                const char *dbtype, const char *dbhost, 
                                                const char *dbport, const char *dbname, 
                                                const char *dbuser, const char *dbpass);
+
+
+prelude_db_interface_t *prelude_db_interface_new(void);
+int prelude_db_interface_set_name(prelude_db_interface_t *db, const char *name);
+int prelude_db_interface_set_type(prelude_db_interface_t *db, const char *type);
+int prelude_db_interface_set_format(prelude_db_interface_t *db, const char *format);
+int prelude_db_interfave_set_host(prelude_db_interface_t *db, const char *host);
+int prelude_db_interface_set_port(prelude_db_interface_t *db, const char *port);
+int prelude_db_interface_set_user(prelude_db_interface_t *db, const char *user);
+int prelude_db_interface_set_pass(prelude_db_interface_t *db, const char *pass);
+int prelude_db_interface_connect(prelude_db_interface_t *interface);
 int prelude_db_interface_activate(prelude_db_interface_t *interface);
 int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
 int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);

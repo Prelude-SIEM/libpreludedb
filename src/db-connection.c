@@ -39,117 +39,130 @@
 #include "plugin-format.h"
 #include "param-string.h"
 
-#define safe_free(x) if (x) { free(x); x = NULL; }
 
-prelude_db_interface_t *prelude_db_connect(const char *config)
+
+prelude_db_interface_t *prelude_db_interface_new(void) 
 {
-	char *class;
-	
-	class = parameter_value(config, "class");
-	
-	if ( !class ) {
-		log(LOG_ERR, "Interface class not specified\n");
-		goto error;
-	}
-	
-	if ( strcasecmp(class, "SQL") == 0 ) 
-		return prelude_db_connect_sql_config(config);
-	else {
-		log(LOG_ERR, "Unknown interface class %s\n", class);
-		goto error;
-	}
-	
-error:
-	safe_free(class);
-	return NULL;
-}
+        prelude_db_interface_t *interface;
 
-prelude_db_interface_t *prelude_db_connect_sql_config(const char *config)
-{
-	prelude_db_interface_t *ret;
-	
-	char *name;
-	char *dbtype;
-	char *dbformat;
-	char *dbhost;
-	char *dbport;
-	char *dbname;
-	char *dbuser;
-	char *dbpass;
-
-	name = parameter_value(config, "interface");
-	dbtype = parameter_value(config, "type");
-	dbformat = parameter_value(config, "format");
-	dbhost = parameter_value(config, "host");
-	dbport = parameter_value(config, "port");
-	dbname = parameter_value(config, "name");
-	dbuser = parameter_value(config, "user");
-	dbpass = parameter_value(config, "pass");
-
-	ret = prelude_db_connect_sql(name, dbformat, dbtype, dbhost, 
-					dbport, dbname, dbuser, dbpass);
-
-	safe_free(dbtype);
-	safe_free(dbformat);
-	safe_free(dbhost);
-	safe_free(dbport);
-	safe_free(dbname);
-	safe_free(dbuser);
-	safe_free(dbpass);
-
-	return ret;
-}
-
-prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbformat, 
-                                               const char *dbtype, const char *dbhost, 
-                                               const char *dbport, const char *dbname, 
-                                               const char *dbuser, const char *dbpass)
-{
-        plugin_format_t *format;
-	sql_connection_t *sql_conn;
-	prelude_db_interface_t *interface;
-	
-		
-	if ( !dbtype ) {
-		log(LOG_ERR, "Database type not specified\n");
-		return NULL;
-	}
-	
-	if ( !dbformat ) {
-		log(LOG_ERR, "Database format not specified\n");
-		return NULL;
-	}
-	
-	sql_conn = sql_connect(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
-	if ( !sql_conn ) {
-		log(LOG_ERR, "%s on %s: database connection failed\n", dbname, dbhost);
-		return NULL;
-	}
-	
-	format = (plugin_format_t *) plugin_search_by_name(dbformat);
-	if ( !format ) {
-		log(LOG_ERR, "%s: format plugin not found\n");
-		return NULL;
-	}
-	
-	interface = (prelude_db_interface_t *) calloc(1, sizeof(prelude_db_interface_t));
-	if ( !interface ) {
-		log(LOG_ERR, "memory exhausted.\n");
-		return NULL;
-	}
-	
-	interface->name = strdup(name);
-	interface->db_connection.type = sql;
-	interface->db_connection.connection.sql = sql_conn;
-	interface->format = format;
-	interface->active = 1;
-	interface->connected = 1;
+        interface = calloc(1, sizeof(*interface));
+        if ( ! interface ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+        }
+        
 	INIT_LIST_HEAD(&interface->filter_list);
+        
+        return interface;
+}
 
-	log(LOG_INFO, "- DB interface %s connected to database %s on %s format %s\n", 
-            name, dbname, dbhost, interface->format->name);
-	
-	return interface;
+
+
+int prelude_db_interface_set_name(prelude_db_interface_t *db, const char *name) 
+{
+        if ( ! name )
+                return -1;
+        
+        return (db->name = strdup(name)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_set_type(prelude_db_interface_t *db, const char *type) 
+{
+        if ( ! type )
+                return -1;
+        
+        return (db->type = strdup(type)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_set_format(prelude_db_interface_t *db, const char *format) 
+{
+        if ( ! format )
+                return -1;
+        
+        db->format = (plugin_format_t *) plugin_search_by_name(format);
+        if ( ! db->format ) {
+                log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
+                return -1;
+        }
+
+        return 0;
+}
+
+
+
+int prelude_db_interfave_set_host(prelude_db_interface_t *db, const char *host) 
+{
+        if ( ! host )
+                return -1;
+        
+        return (db->host = strdup(host)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_set_port(prelude_db_interface_t *db, const char *port) 
+{
+        if ( ! port )
+                return -1;
+        
+        return (db->port = strdup(port)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_set_user(prelude_db_interface_t *db, const char *user) 
+{
+        if ( ! user )
+                return -1;
+        
+        return (db->user = strdup(user)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_set_pass(prelude_db_interface_t *db, const char *pass)
+{
+        if ( ! pass )
+                return -1;
+        
+        return (db->pass = strdup(pass)) ? 0 : -1;
+}
+
+
+
+int prelude_db_interface_connect(prelude_db_interface_t *db) 
+{
+        sql_connection_t *cnx;
+        
+        if ( ! db->type ) {
+                log(LOG_ERR, "database type not specified.\n");
+                return -1;
+        }
+
+        if ( ! db->format ) {
+                log(LOG_ERR, "database format not specified.\n");
+                return -1;
+        }
+
+        cnx = sql_connect(db->type, db->host, db->port, db->name, db->user, db->pass);
+        if ( ! cnx ) {
+                log(LOG_ERR, "%s on %s: database connection failed.\n", db->name, db->host);
+                return -1;
+        }
+
+        db->active = 1;
+	db->connected = 1;
+        db->db_connection.type = sql;
+	db->db_connection.connection.sql = cnx;
+        
+	log(LOG_INFO, "- DB interface %p connected to database %s on %s format %s\n", 
+            db, db->name, db->host, db->format->name);
+        
+        return 0;
 }
 
 
