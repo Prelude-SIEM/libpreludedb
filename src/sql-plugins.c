@@ -1,0 +1,357 @@
+/*****
+*
+* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* All Rights Reserved
+*
+* This file is part of the Prelude program.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by 
+* the Free Software Foundation; either version 2, or (at your option)
+* any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; see the file COPYING.  If not, write to
+* the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+*
+*****/
+
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#include <dirent.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <sys/time.h>
+#include <inttypes.h>
+#include <assert.h>
+
+#include <libprelude/list.h>
+#include <libprelude/prelude-log.h>
+#include <libprelude/idmef-tree.h>
+#include <libprelude/plugin-common.h>
+#include <libprelude/plugin-common-prv.h>
+
+#include "sql-table.h"
+#include "plugin-sql.h"
+#include "db-connection.h"
+
+/*
+ * define what we believe should be enough for most of our query.
+ */
+#define DB_REQUEST_LENGTH 16384
+
+/*
+ * Maximum value of a dynamically allocated buffer in case
+ * DB_REQUEST_LENGTH isn't enough (the length is computed taking
+ * prelude_string_to_hex() function into account).
+ * 1024 : "INSERT INTO table_name (field_names ...)
+ * 65536 * (3+21/16) + 1 : a 2^16 length segment logged with its hexa dump based on prelude_string_to_hex()
+ * 1 : the ')' at the end of an SQL request
+ */
+#define DB_MAX_INSERT_QUERY_LENGTH (1024 + 65536 * (3+21/16) + 1 + 1)
+
+
+static LIST_HEAD(sql_plugins_list);
+
+static char *null_str = "NULL";
+
+
+/*
+ *
+ */
+static int subscribe(plugin_container_t *pc) 
+{
+        log(LOG_INFO, "- Subscribing %s to active database plugins.\n", pc->plugin->name);
+        return plugin_add(pc, &sql_plugins_list, NULL);
+}
+
+
+static void unsubscribe(plugin_container_t *pc) 
+{
+        log(LOG_INFO, "- Un-subscribing %s from active database plugins.\n", pc->plugin->name);
+        plugin_del(pc);
+}
+
+
+
+
+static char *generate_dynamic_query(const char *old, size_t olen,
+                                    int *nlen, const char *fmt, va_list ap) 
+{
+        int ret;
+        char *query;
+
+        assert(olen < *nlen);
+        
+        query = malloc(*nlen);
+        if ( ! query ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+        }
+                
+        strncpy(query, old, olen);
+        ret = vsnprintf(query + olen, *nlen - olen, fmt, ap);
+        
+        if ( (ret + 1) > (*nlen - olen) || ret < 0 ) {
+                log(LOG_ERR, "Query %s doesn't fit in %d bytes", query, *nlen);
+                free(query);
+                return NULL;
+        }
+
+        *nlen = ret + olen;
+        
+        return query;
+}
+
+
+
+int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
+{
+        int ret;
+        va_list ap;
+        int len, query_length;
+        char *query_dynamic = NULL;
+        char query_static[DB_REQUEST_LENGTH], *query;
+        
+        query = query_static;
+        
+	len = snprintf(query_static, sizeof(query_static), "INSERT INTO %s (%s) VALUES(", table, fields);
+	if ( (len + 1) > sizeof(query_static) || len < 0 ) {
+                log(LOG_ERR, "Start of query (%s) doesn't fit in %d bytes", query, sizeof(query_static));
+                return -1;
+        }
+        
+        /*
+         * These  functions  return  the number of characters printed
+         * (not including the trailing `\0' used  to  end  output  to
+         * strings).   snprintf  and vsnprintf do not write more than
+         * size bytes (including the trailing '\0'), and return -1 if
+         * the  output  was truncated due to this limit.
+         */
+        va_start(ap, fmt);
+        query_length = vsnprintf(query_static + len, sizeof(query_static) - len, fmt, ap);
+        va_end(ap);
+        
+        if ( query_length + 1 > sizeof(query_static) - len || query_length < 0 ) {
+                
+                if ( query_length < 0 )
+                        query_length = DB_MAX_INSERT_QUERY_LENGTH;
+                else 
+                        query_length += len + 2;
+
+                va_start(ap, fmt);
+                query_dynamic = generate_dynamic_query(query_static, len, &query_length, fmt, ap);
+                va_end(ap);
+                
+                if ( ! query_dynamic )
+                        return -1;
+
+                len = 0;
+                query = query_dynamic;
+        }
+
+        query[query_length + len] = ')';
+	query[query_length + len + 1] = '\0';
+	
+        ret = conn->plugin->db_insert(conn->session, query);
+
+	if ( query_dynamic )
+                free(query_dynamic);
+
+        return ret;
+}
+
+
+sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
+{
+        sql_table_t *ret;
+        va_list ap;
+        int len, query_length;
+        char *query_dynamic = NULL;
+        char query_static[DB_REQUEST_LENGTH], *query;
+        
+        query = query_static;
+        
+        len = 0;
+        
+        /*
+         * These  functions  return  the number of characters printed
+         * (not including the trailing `\0' used  to  end  output  to
+         * strings).   snprintf  and vsnprintf do not write more than
+         * size bytes (including the trailing '\0'), and return -1 if
+         * the  output  was truncated due to this limit.
+         */
+        va_start(ap, fmt);
+        query_length = vsnprintf(query_static, sizeof(query_static), fmt, ap);
+        va_end(ap);
+        
+        if ( query_length + 1 > sizeof(query_static) - len || query_length < 0 ) {
+                
+                if ( query_length < 0 )
+                        query_length = DB_MAX_INSERT_QUERY_LENGTH;
+                else 
+                        query_length += len + 2;
+
+                va_start(ap, fmt);
+                query_dynamic = generate_dynamic_query(query_static, len, &query_length, fmt, ap);
+                va_end(ap);
+                
+                if ( ! query_dynamic )
+                        return NULL;
+
+                len = 0;
+                query = query_dynamic;
+        }
+
+	query[query_length + len] = '\0';
+	
+        ret = conn->plugin->db_query(conn->session, query);
+
+	if ( query_dynamic )
+                free(query_dynamic);
+
+        return ret;
+}
+
+
+
+char *sql_escape(sql_connection_t *conn, const char *string) 
+{
+	char *tmp, *new;
+	int len;
+	
+	if (!string) 
+		return null_str;
+	
+	tmp = conn->plugin->db_escape(string);
+	
+	if (!tmp)
+		return NULL;
+	
+	len = strlen(tmp);
+	
+	new = malloc(len+3);
+	new[0] = '\'';
+	strncpy(new+1, tmp, len);
+	new[len+1] = '\'';
+	new[len+2] = '\0';
+	
+	free(tmp);
+	
+	return new;
+}
+
+
+int sql_begin(sql_connection_t *conn)
+{
+	return conn->plugin->db_begin(conn->session);
+}
+
+int sql_commit(sql_connection_t *conn)
+{
+	return conn->plugin->db_commit(conn->session);
+}
+
+int sql_rollback(sql_connection_t *conn)
+{
+	return conn->plugin->db_rollback(conn->session);
+}
+
+
+
+void sql_close(sql_connection_t *conn)
+{
+	conn->plugin->db_close(conn->session);
+}
+
+
+
+sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 
+	const char *dbname, const char *dbuser, const char *dbpass) 
+{
+	plugin_sql_t *plugin;
+	int session;
+	sql_connection_t *conn;
+	int ret;
+	
+	plugin = (plugin_sql_t *) plugin_search_by_name(dbtype);
+	if (!plugin) {
+		errno = -ERR_DB_PLUGIN_NOT_FOUND;
+		return NULL;
+	}
+	
+	/* any needed parameter translation should go in here */
+	
+	session = plugin->db_setup(dbhost, dbport, dbname, dbuser, dbpass);
+	if (session < 0) 
+		return NULL; /* FIXME: better error detection ? */
+	
+	ret = plugin->db_connect(session);
+	if (ret < 0)
+		return NULL; /* FIXME: better error detection ? */
+	
+	conn = calloc(1, sizeof(sql_connection_t));
+	if (conn < 0) {
+		log(LOG_ERR, "out of memory\n");
+		return NULL;
+	}
+	
+	conn->plugin = plugin;
+	conn->session = session;
+	
+	return conn;
+}
+
+
+/**
+ * sql_plugins_init:
+ * @dirname: Pointer to a directory string.
+ * @argc: Number of command line argument.
+ * @argv: Array containing the command line arguments.
+ *
+ * Tell the DB plugins subsystem to load DB plugins from @dirname.
+ *
+ * Returns: 0 on success, -1 if an error occured.
+ */
+int sql_plugins_init(const char *dirname, int argc, char **argv)
+{
+        int ret;
+	
+	ret = access(dirname, F_OK);
+	if ( ret < 0 ) {
+		if ( errno == ENOENT )
+			return 0;
+		log(LOG_ERR, "can't access %s.\n", dirname);
+		return -1;
+	}
+
+        ret = plugin_load_from_dir(dirname, argc, argv, subscribe, unsubscribe);
+        if ( ret < 0 ) {
+                log(LOG_ERR, "couldn't load plugin subsystem.\n");
+                return -1;
+        }
+
+        return ret;
+}
+
+
+
+/**
+ * db_plugins_available:
+ *
+ * Returns: 0 if there is active DB plugins, -1 otherwise.
+ */
+int sql_plugins_available(void) 
+{
+        return list_empty(&sql_plugins_list) ? -1 : 0;
+}
+
