@@ -413,7 +413,7 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 
 
 
-static int classic_insert_idmef_message(prelude_db_connection_t *connection, const idmef_message_t *message)
+static int classic_insert_idmef_message(prelude_db_connection_t *connection, idmef_message_t *message)
 {
 	return idmef_db_insert(connection, message);
 }

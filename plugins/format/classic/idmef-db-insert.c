@@ -432,22 +432,22 @@ static int insert_service(prelude_sql_connection_t *conn, uint64_t alert_ident, 
 
         switch ( idmef_service_get_type(service)) {
 
-        case web_service:
+        case IDMEF_SERVICE_TYPE_DEFAULT:
+                break;
+                
+        case IDMEF_SERVICE_TYPE_WEB:
                 if ( insert_web_service(conn, alert_ident, ident, parent_ident, parent_type, idmef_service_get_web(service)) < 0 )
 			return -5;
                 break;
 
-        case snmp_service:
+        case IDMEF_SERVICE_TYPE_SNMP:
                 if ( insert_snmp_service(conn, alert_ident, ident, parent_ident, parent_type, idmef_service_get_snmp(service)) < 0 )
 			return -6;
                 break;
 
-        case no_specific_service:
-		/* nop */;
-                break;
-                
         default:
-		return -7;
+                log(LOG_ERR, "unknown service type %d.\n");
+                return -1;
         }
 
         return 1;
@@ -1213,27 +1213,23 @@ static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert)
 
         switch ( idmef_alert_get_type(alert) ) {
 
-        case idmef_default:
-		/* nop */
+        case IDMEF_ALERT_TYPE_DEFAULT:
                 break;
-
-        case idmef_tool_alert:
+                
+        case IDMEF_ALERT_TYPE_TOOL:
                 if ( insert_tool_alert(conn, ident, idmef_alert_get_tool_alert(alert)) < 0 )
 			return -7;
                 break;
 
-        case idmef_overflow_alert:
+        case IDMEF_ALERT_TYPE_OVERFLOW:
                 if ( insert_overflow_alert(conn, ident, idmef_alert_get_overflow_alert(alert)) < 0 )
 			return -8;
                 break;
 
-        case idmef_correlation_alert:
+        case IDMEF_ALERT_TYPE_CORRELATION:
 		if ( insert_correlation_alert(conn, ident, idmef_alert_get_correlation_alert(alert)) < 0 )
 			return -9;
                 break;
-
-	default:
-		/* nop */;
         }
 
         tmpid = 0;
@@ -1312,7 +1308,7 @@ static int insert_heartbeat(prelude_sql_connection_t *conn, idmef_heartbeat_t *h
 
 
 
-int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *message)
+int idmef_db_insert(prelude_db_connection_t *conn, idmef_message_t *message)
 {
 	prelude_sql_connection_t *sql;
         int ret, ret2;
@@ -1340,11 +1336,11 @@ int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *messag
         
         switch ( idmef_message_get_type(message) ) {
 
-        case idmef_alert_message:
+        case IDMEF_MESSAGE_TYPE_ALERT:
                 ret = insert_alert(sql, idmef_message_get_alert(message));
                 break;
 
-        case idmef_heartbeat_message:
+        case IDMEF_MESSAGE_TYPE_HEARTBEAT:
                 ret = insert_heartbeat(sql, idmef_message_get_heartbeat(message));
                 break;
 

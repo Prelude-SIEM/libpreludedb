@@ -68,7 +68,7 @@ typedef struct {
 				       prelude_db_message_ident_t *uident);
 
 	int (*format_insert_idmef_message)(prelude_db_connection_t *connection,
-					   const idmef_message_t *message);
+					   idmef_message_t *message);
 	
 	void *(*format_select_values)(prelude_db_connection_t *connection,
 			              prelude_db_object_selection_t *object_selection,

@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
@@ -25,7 +25,7 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H
 
-int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *msg);
+int idmef_db_insert(prelude_db_connection_t *conn, idmef_message_t *msg);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H */
 
