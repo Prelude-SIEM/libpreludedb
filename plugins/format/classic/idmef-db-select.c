@@ -76,42 +76,29 @@ static inline char *get_string(prelude_string_t *string)
 }
 
 
-static char *normalize_condition(char *condition, char *table, char *alias)
+static char *normalize_condition(const char *condition, const char *table, const char *alias)
 {
-	char buf[1024];
-	char *start;
-	char *ret;
+	char *dst, *dst_ptr;
+	unsigned int table_len = strlen(table);
+	unsigned int alias_len = strlen(alias);
 
-	/*
-	 * In Perl, this would be:
-	 * ( $buf = $condition ) =~ s/$table/$alias/ ;
-	 *
-	 * Hm, again, why are we using C here?
-	 */
-	start = strstr(condition, table);
-	if ( ! start ) {
-		/* This shouldn't happen, but we'll handle it cleanly */
-		strncpy(buf, condition, sizeof(buf)-1);
-		buf[sizeof(buf)-1] = '\0';
-	} else {
-		if ( start - condition > sizeof(buf)-1 ) {
-			log(LOG_ERR, "buffer too small?!\n");
-			return NULL;
-		}
-		strncpy(buf, condition, start - condition);
-		buf[start - condition] = '\0';
-		strncat(buf, alias, sizeof(buf)-1);
-		strncat(buf, start + strlen(table), sizeof(buf)-1);
-		buf[sizeof(buf)-1] = '\0';
-	}
-
-	ret = strdup(buf);
-	if ( ! ret ) {
+	dst_ptr = dst = calloc(1, strlen(condition) + 1);
+	if ( ! dst ) {
 		log(LOG_ERR, "out of memory\n");
 		return NULL;
 	}
 
-	return ret;
+	while ( *condition ) {
+		if ( strncmp(condition, table, table_len) == 0 ) {
+			memcpy(dst_ptr, alias, alias_len);
+			condition += table_len;
+			dst_ptr += alias_len;
+		} else {
+			*dst_ptr++ = *condition++;
+		}
+	}
+
+	return dst;
 }
 
 
@@ -627,13 +614,13 @@ static int object_to_field(prelude_string_t *fields,
 	char *function = db_object_get_function(db_object);
 	int retval;
 
-	alert = idmef_object_new_fast("alert.ident");
+	alert = idmef_object_new_fast("alert.messageid");
 	if ( ! alert ) {
 		log(LOG_ERR, "could not create alert.ident object!\n");
 		return -1;
 	}
 
-	heartbeat = idmef_object_new_fast("heartbeat.ident");
+	heartbeat = idmef_object_new_fast("heartbeat.messageid");
 	if ( ! heartbeat ) {
 		log(LOG_ERR, "could not create heartbeat.ident object!\n");
 		idmef_object_destroy(alert);

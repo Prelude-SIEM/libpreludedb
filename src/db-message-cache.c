@@ -98,12 +98,12 @@ static int get_message_infos(idmef_message_t *message, const char **out, uint64_
 
         if ( type == IDMEF_MESSAGE_TYPE_ALERT ) {
                 *out = "alert";
-                *ident = idmef_alert_get_ident(idmef_message_get_alert(message));
+                *ident = idmef_alert_get_messageid(idmef_message_get_alert(message));
         }
 
 	else if ( type == IDMEF_MESSAGE_TYPE_HEARTBEAT ) {
                 *out = "heartbeat";
-                *ident = idmef_heartbeat_get_ident(idmef_message_get_heartbeat(message));
+                *ident = idmef_heartbeat_get_messageid(idmef_message_get_heartbeat(message));
 
         }
 

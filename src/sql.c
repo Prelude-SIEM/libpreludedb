@@ -303,7 +303,7 @@ int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const 
          */
         query[len] = ')';
         query[len + 1] = '\0';
-        
+
         conn->plugin->db_query(conn->session, query);
 	ret = -prelude_sql_errno(conn);
 
@@ -624,6 +624,18 @@ prelude_sql_field_type_t prelude_sql_field_info_type(prelude_sql_field_t *field)
 
 
 
+uint8_t prelude_sql_field_value_uint8(prelude_sql_field_t *field)
+{
+	const char *s;
+	uint8_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%hhd", &i);
+	return i;
+}
+
+
+
 int16_t prelude_sql_field_value_int16(prelude_sql_field_t *field)
 {
 	const char *s;
@@ -810,9 +822,9 @@ static int build_time_constraint(prelude_sql_connection_t *conn,
 				 prelude_sql_time_constraint_type_t type,
 				 idmef_value_relation_t relation, int value)
 {
-	int gmt_offset;
+	uint32_t gmt_offset;
 
-	if ( prelude_get_gmt_offset(time(NULL), &gmt_offset) < 0 )
+	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
 		return -1;
 
 	return conn->plugin->db_build_time_constraint(output, field, type, relation, value, gmt_offset);
@@ -901,7 +913,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 	struct tm tm;
 	int month, day, hour, min, sec;
 	idmef_time_t t;
-	char buf[MAX_UTC_DATETIME_SIZE];
+	char buf[IDMEF_TIME_MAX_STRING_SIZE];
 	int offset = 0;
 
 	if ( relation == IDMEF_VALUE_RELATION_GREATER || relation == (IDMEF_VALUE_RELATION_LESSER|IDMEF_VALUE_RELATION_EQUAL) )
@@ -960,7 +972,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 	t.sec = mktime(&tm);
 	t.usec = 0;
 
-	if ( idmef_time_get_db_timestamp(&t, buf, sizeof (buf)) < 0 )
+	if ( prelude_sql_time_to_timestamp(&t, buf, sizeof (buf), NULL, 0, NULL, 0) < 0 )
 		return -1;
 
 	if ( prelude_string_sprintf(output, "%s %s %s",
@@ -983,7 +995,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 	int hour, min, sec;
 	unsigned int total_seconds;
 	int relation_offset;
-	int gmt_offset;
+	uint32_t gmt_offset;
 	char interval[128];
 
 	hour = idmef_criterion_value_non_linear_time_get_hour(timeval);
@@ -1007,7 +1019,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 		total_seconds += relation_offset * 3600;
 	}
 
-	if ( prelude_get_gmt_offset(time(NULL), &gmt_offset) < 0 )
+	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
 		return -1;
 
 	if ( build_time_interval(conn, dbconstraint_hour, gmt_offset / 3600, interval, sizeof (interval)) < 0 )
@@ -1087,7 +1099,7 @@ static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf,
 	if ( ! time )
 		return -1;
 
-	return idmef_time_get_db_timestamp(time, buf, size);
+	return prelude_sql_time_to_timestamp(time, buf, IDMEF_TIME_MAX_STRING_SIZE, NULL, 0, NULL, 0);
 }
 
 
@@ -1201,6 +1213,12 @@ int prelude_sql_build_criterion(prelude_sql_connection_t *conn,
 				const char *field,
 				idmef_value_relation_t relation, idmef_criterion_value_t *value)
 {
+	if ( relation == IDMEF_VALUE_RELATION_IS_NULL )
+		return prelude_string_sprintf(output, "%s = NULL", field);
+
+	if ( relation == IDMEF_VALUE_RELATION_IS_NOT_NULL )
+		return prelude_string_sprintf(output, "%s != NULL", field);
+
 	switch ( idmef_criterion_value_get_type(value) ) {
 	case idmef_criterion_value_type_fixed:
 		return build_criterion_fixed_value(conn, output, field, relation,
@@ -1212,4 +1230,69 @@ int prelude_sql_build_criterion(prelude_sql_connection_t *conn,
 	}
 
 	return -1;
+}
+
+
+
+int prelude_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, uint32_t gmtoff, uint32_t usec)
+{
+	int ret;
+        struct tm tm;
+        
+        memset(&tm, 0, sizeof (tm));
+        
+        ret = sscanf(time_buf, "%d-%d-%d %d:%d:%d",
+                     &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
+                     &tm.tm_hour, &tm.tm_min, &tm.tm_sec);
+
+        if ( ret < 6 )
+                return -1;
+
+        tm.tm_year -= 1900;
+        tm.tm_mon -= 1;
+	tm.tm_isdst = -1;
+
+        idmef_time_set_sec(time, prelude_timegm(&tm));
+        idmef_time_set_usec(time, usec);
+	idmef_time_set_gmt_offset(time, gmtoff);
+        
+        return 0;
+}
+
+
+int prelude_sql_time_to_timestamp(const idmef_time_t *time,
+				  char *time_buf, size_t time_buf_size,
+				  char *gmtoff_buf, size_t gmtoff_buf_size,
+				  char *usec_buf, size_t usec_buf_size)
+{
+        struct tm utc;
+	time_t t;
+        
+        if ( ! time ) {
+                snprintf(time_buf, time_buf_size,  "NULL");
+		if ( gmtoff_buf )
+			snprintf(gmtoff_buf, gmtoff_buf_size, "NULL");
+		if ( usec_buf )
+			snprintf(usec_buf, usec_buf_size, "NULL");
+		return 0;
+        }
+
+	t = idmef_time_get_sec(time);
+        
+        if ( ! gmtime_r(&t, &utc) ) {
+                log(LOG_ERR, "error converting timestamp to gmt time.\n");
+                return -1;
+        }
+        
+        snprintf(time_buf, time_buf_size, "'%d-%.2d-%.2d %.2d:%.2d:%.2d'",
+		 utc.tm_year + 1900, utc.tm_mon + 1, utc.tm_mday,
+		 utc.tm_hour, utc.tm_min, utc.tm_sec);
+
+	if ( gmtoff_buf )
+		snprintf(gmtoff_buf, gmtoff_buf_size, "%d", idmef_time_get_gmt_offset(time));
+
+	if ( usec_buf )
+		snprintf(usec_buf, usec_buf_size, "%d", idmef_time_get_usec(time));
+        
+        return 0;
 }

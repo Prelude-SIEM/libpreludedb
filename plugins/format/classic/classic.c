@@ -59,7 +59,7 @@ static plugin_format_t plugin;
 
 
 static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident,
-		     const char *table_name, const char *field_name, uint64_t *result)
+		     const char *table_name, uint64_t *result)
 {
 	prelude_sql_connection_t *sql;
 	prelude_sql_table_t *table;
@@ -70,10 +70,9 @@ static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ide
 	if ( ! sql )
 		return -1;
 
-	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE analyzerid = %" PRIu64 " AND %s = %" PRIu64 ";",
+	table = prelude_sql_query(sql, "SELECT _ident FROM %s WHERE analyzerid = %" PRIu64 " AND messageid = %" PRIu64 ";",
 				  table_name,
 				  prelude_db_message_ident_get_analyzerid(ident),
-				  field_name,
 				  prelude_db_message_ident_get_ident(ident));
 	if ( ! table )
 		return prelude_sql_errno(sql) ? -1 : 0;
@@ -99,14 +98,14 @@ static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ide
 
 static int get_alert_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
 {
-	return get_ident(connection, ident, "Prelude_Alert", "alert_ident", result);
+	return get_ident(connection, ident, "Prelude_Alert", result);
 }
 
 
 
 static int get_heartbeat_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
 {
-	return get_ident(connection, ident, "Prelude_Heartbeat", "heartbeat_ident", result);
+	return get_ident(connection, ident, "Prelude_Heartbeat", result);
 }
 
 
@@ -128,9 +127,9 @@ static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	alert_ident = idmef_object_new("%s.ident", object_prefix);
+	alert_ident = idmef_object_new("%s.messageid", object_prefix);
 	if ( ! alert_ident ) {
-		log(LOG_ERR, "could not create %s.ident object.\n", object_prefix);
+		log(LOG_ERR, "could not create %s.messageid object.\n", object_prefix);
 		prelude_db_object_selection_destroy(selection);
 		return NULL;
 	}
@@ -328,11 +327,15 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 
 
 
-static idmef_value_t *sql_field_to_idmef_value(idmef_object_t *object,
-					       prelude_sql_field_t *field)
+static int get_value(prelude_sql_row_t *row, int field_cnt,
+		     idmef_object_t *object, idmef_value_t **value, int flags)
 {
+	prelude_sql_field_t *field;
 	const char *char_val;
-	idmef_value_t *value;
+	
+	field = prelude_sql_field_fetch(row, field_cnt);
+	if ( ! field )
+		return 0;
 
 	char_val = prelude_sql_field_value(field);
 
@@ -340,35 +343,43 @@ static idmef_value_t *sql_field_to_idmef_value(idmef_object_t *object,
 	log(LOG_INFO, " * read value: %s\n", char_val);
 #endif
 
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
+		*value = prelude_sql_field_value_idmef(field);
+		if ( ! *value ) {
+			log(LOG_ERR, "could not get idmef value from sql field\n");
+			return -1;
+		}
+
+		return 1;
+	}
+
 	switch ( idmef_object_get_value_type(object) ) {
 	case IDMEF_VALUE_TYPE_TIME: {
 		idmef_time_t *time;
 
-		time = idmef_time_new_db_timestamp(char_val);
+		field = prelude_sql_field_fetch(row, field_cnt + 1);
+
+		time = idmef_time_new();
 		if ( ! time )
-			return NULL;
+			return -1;
 
-		value = idmef_value_new_time(time);
-		if ( ! value )
+		prelude_sql_time_from_timestamp(time, char_val, 0, 0);
+
+		*value = idmef_value_new_time(time);
+		if ( ! *value ) {
 			idmef_time_destroy(time);
+			return -1;
+		}
 
-		break;
+		return 1;
 	}
 	default:
-		value = idmef_value_new_for_object(object, char_val);
+		*value = idmef_value_new_for_object(object, char_val);
 	}
 
-	if ( ! value )
-		log(LOG_ERR, "could not create container!\n");
-
-	return value;	
+	return 1;
 }
 
-
-
-/*
- * FIXME: cleanup
- */
 
 
 static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *connection,
@@ -377,7 +388,6 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 {
 	prelude_sql_table_t *table = data;
 	prelude_sql_row_t *row;
-	prelude_sql_field_t *field;
 	int field_cnt, nfields;
 	idmef_object_value_list_t *objval_list = NULL;
 	idmef_object_value_t *objval;
@@ -386,6 +396,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	idmef_value_t *value;
 	int flags;
 	int cnt;
+	int ret;
 
 	if ( ! table )
 		return NULL;
@@ -401,15 +412,12 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	selected = NULL;
 
 	cnt = 0;
-	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
+	field_cnt = 0;
+	while ( field_cnt < nfields ) {
 
 		selected = prelude_db_object_selection_get_next(selection, selected);
 		object = prelude_db_selected_object_get_object(selected);
 		flags = prelude_db_selected_object_get_flags(selected);
-
-		field = prelude_sql_field_fetch(row, field_cnt);
-		if ( ! field )
-			continue;
 
 		if ( cnt == 0 ) {
 			objval_list = idmef_object_value_list_new();
@@ -417,17 +425,15 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 				return NULL;
 		}
 
-		if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
-			value = prelude_sql_field_value_idmef(field);
-			if ( ! value ) {
-				log(LOG_ERR, "could not get idmef value from sql field\n");
-				goto error;
-			}
-
-		} else {
-			value = sql_field_to_idmef_value(object, field);
-			if ( ! value )
-				goto error;
+		ret = get_value(row, field_cnt, object, &value, flags);
+		switch ( ret ) {
+		case -1:
+			goto error;
+		case 0:
+			field_cnt++;
+			continue;
+		default:
+			field_cnt += ret;
 		}
 
 		objval = idmef_object_value_new(idmef_object_ref(object), value);
