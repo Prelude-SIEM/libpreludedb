@@ -1,5 +1,19 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/db-interface.c(prelude_db_interface_connect):
+	add missing "break" statement
+
+	* src/db-interface-string.c:
+	* src/include/db-interface-string.h:
+	new file. Reintroducing "ODBC-style" constructor for 
+	prelude_db_interface_t.
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	update accordingly.
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/sql-connection-data.c:
 	handle NULL parameter values correctly in all functions
 

@@ -9,6 +9,7 @@ libpreludedb_la_SOURCES =		\
 	gdb.c				\
 	db.c				\
 	db-interface.c			\
+	db-interface-string.c		\
 	db-connection.c			\
 	db-connection-data.c		\
 	sql-connection-data.c		\

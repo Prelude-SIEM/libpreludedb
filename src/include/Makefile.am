@@ -4,6 +4,7 @@ include_HEADERS = 		\
 	gdb.h			\
 	db.h			\
 	db-interface.h		\
+	db-interface-string.h   \
 	db-type.h		\
 	db-connection.h		\
 	db-connection-data.h	\

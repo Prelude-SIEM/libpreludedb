@@ -137,6 +137,8 @@ int prelude_db_interface_connect(prelude_db_interface_t *db)
                 		return -1;
                 	}
                 	
+                	break;
+                	
                 default:
                 	log(LOG_ERR, "%s: unknown database type %d\n", db->name, 
                 		prelude_db_connection_data_get_type(db->connection_data));
