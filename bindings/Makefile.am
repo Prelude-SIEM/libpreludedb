@@ -24,7 +24,9 @@ endif
 
 
 perl/Makefile: perl/Makefile.PL
+if HAVE_PERL
 	cd perl && DESTDIR=$(DESTDIR) $(PERL) Makefile.PL
+endif
 
 
 # proxy classes are an option for swig <= 1.3.19 and are activated by default with swig > 1.3.19
