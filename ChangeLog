@@ -1,3 +1,18 @@
+2003-02-21  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/sql/mysql/mysql.c:
+	functions prelude_sql_{fields,rows}_num works now,
+	mysql_use_result has been replaced by mysql_store_result
+	Thanks to Vincent Glaume for the bug report.
+
+	* src/include/sql.h:
+	add a comment to explain what does the return value of the
+	prelude_sql_field_fetch mean
+
+	* plugins/format/classic/Makefile.am:
+	link classic.so against libpreludedb in order to make the
+	perl binding working
+
 2003-02-18  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/pgsql.sql:

@@ -219,7 +219,7 @@ static void *db_query(void *s, const char *query)
 		return NULL;
 	}
 
-	res = mysql_use_result(session->mysql);
+	res = mysql_store_result(session->mysql);
 	if ( res )
 		session->status = st_query;
 	else 
@@ -514,9 +514,6 @@ static void *db_row_fetch(void *s, void *t)
 	session->dberrno = 0;
 	
 	row = mysql_fetch_row(res);
-
-	if ( ! row && mysql_errno(session->mysql) )
-		session->dberrno = ERR_PLUGIN_DB_CONNECTION_LOST;
 
 	return row;
 }

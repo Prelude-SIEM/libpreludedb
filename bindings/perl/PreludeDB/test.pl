@@ -70,6 +70,9 @@ $table = $sql->query($QUERY) or die $sql->error;
 
 # First way
 
+print "fields number: ", $table->fields_num, "\n";
+print "rows number: ", $table->rows_num, "\n";
+
 $fields = $table->fields_num;
 while ( $row = $table->row_fetch ) {
     for ( $i = 0; $i < $fields; $i++ ) {
@@ -77,7 +80,6 @@ while ( $row = $table->row_fetch ) {
 	printf("%s: %s\n", $table->field_name($i), $field);
     }
 }
-
 
 # Second way
 

@@ -94,5 +94,14 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field);
  * all the fields instantiated from the row you want to free)
  */
 
+/*
+ * NB for functions prelude_sql_field_fetch*:
+ * the function returns NULL if an error occured (invalid field number / name) or if the field
+ * has a NULL value
+ * you can do the difference between both cases using prelude_sql_errno function, as the first case
+ * is an error but not the second one, the prelude_sql_errno will return a non-zero value in the
+ * first case, and a zero value in the second case
+ */
+
 #endif /* _LIBPRELUDEDB_SQL_H */
 
