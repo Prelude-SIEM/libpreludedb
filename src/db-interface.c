@@ -63,6 +63,9 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
 
 	if ( ! data )
 		return NULL;
+		
+	if ( ! format )
+		return NULL;
 
         interface = calloc(1, sizeof(*interface));
         if ( ! interface ) {
@@ -78,7 +81,11 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
                 return NULL;
         }
         
-        interface->name = strdup(name);
+        if ( name ) 
+        	interface->name = strdup(name);
+        else
+        	interface->name = strdup("(unnamed)");
+     	
         interface->format_name = strdup(format);
         
 	INIT_LIST_HEAD(&interface->filter_list);

@@ -1,5 +1,10 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/db-interface.c(prelude_db_interface_new):
+	avoid problems when 'format' or 'name' parameter is NULL
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/include/db-type.h:
 	new file. prelude_db_type_t moved from db-connection.h
 
