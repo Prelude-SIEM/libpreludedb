@@ -131,6 +131,20 @@ static int db_begin(void *s)
         session_t *session = s;
 
 	session->dberrno = 0;
+
+	switch ( session->status ) {
+
+	case st_connected:
+		break;
+		
+	case st_query:
+		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
+		return NULL;
+
+	default:
+		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
+		return NULL;
+	}
        
 	db_query(session, "BEGIN;");
 		

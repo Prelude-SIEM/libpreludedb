@@ -151,7 +151,6 @@ static table_entry_t *table_entry_new(char *table,  char *top_field,
 	return entry;
 
 error:
-	free(entry);
 	if ( entry->table )
 		free(entry->table);
 
@@ -166,6 +165,8 @@ error:
 
 	if ( entry->condition )
 		free(entry->condition);
+
+	free(entry);
 
 	return NULL;
 }
@@ -804,7 +805,7 @@ prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
 	}
 
 #ifdef DEBUG
-	log(LOG_INFO, "query returned %d rows\n", prelude_sql_rows_num(table));
+	log(LOG_INFO, "query returned %d rows\n", table ? prelude_sql_rows_num(table) : 0);
 #endif
 
 	strbuf_destroy(request);

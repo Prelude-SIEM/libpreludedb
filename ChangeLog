@@ -1,3 +1,23 @@
+2003-08-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(table_entry_new):
+	bug fix: free entry AFTER its fields have been freed
+
+	* plugins/sql/mysql/mysql.c:
+	(db_begin)
+	check session's status before doing anything
+
+	* plugins/sql/pgsql/pgsql.c:
+	(db_begin)
+	check session's status before doing anything
+
+2003-07-26  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(idmef_db_select): fix a possible NULL pointer dereference when
+	compiled with -DDEBUG
+	
 2003-07-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/db-interface.c:
