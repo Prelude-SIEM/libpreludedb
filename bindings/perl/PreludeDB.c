@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.4 2003/07/06 14:24:04 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.5 2003/07/14 10:31:55 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -645,7 +645,7 @@ XS(_wrap_prelude_db_interface_connect) {
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: prelude_db_interface_connect(iface);");
+            SWIG_croak("Usage: prelude_db_interface_connect(interface);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -653,6 +653,35 @@ XS(_wrap_prelude_db_interface_connect) {
             }
         }
         result = (int)prelude_db_interface_connect(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_disconnect) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_disconnect(interface);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_disconnect. Expected _p_prelude_db_interface_t");
+            }
+        }
+        result = (int)prelude_db_interface_disconnect(arg1);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
@@ -1670,6 +1699,7 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_shutdown", _wrap_prelude_db_shutdown},
 {"PreludeDB::prelude_db_interface_new_string", _wrap_prelude_db_interface_new_string},
 {"PreludeDB::prelude_db_interface_connect", _wrap_prelude_db_interface_connect},
+{"PreludeDB::prelude_db_interface_disconnect", _wrap_prelude_db_interface_disconnect},
 {"PreludeDB::prelude_db_interface_get_connection", _wrap_prelude_db_interface_get_connection},
 {"PreludeDB::prelude_db_interface_destroy", _wrap_prelude_db_interface_destroy},
 {"PreludeDB::prelude_db_interface_get_ident_list", _wrap_prelude_db_interface_get_ident_list},

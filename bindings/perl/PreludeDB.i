@@ -126,7 +126,8 @@ int prelude_db_init(void);
 int prelude_db_shutdown(void);
 
 prelude_db_interface_t *prelude_db_interface_new_string(const char *conn_string);
-int prelude_db_interface_connect(prelude_db_interface_t *iface);
+int prelude_db_interface_connect(prelude_db_interface_t *interface);
+int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
 void prelude_db_interface_destroy(prelude_db_interface_t *iface);
 

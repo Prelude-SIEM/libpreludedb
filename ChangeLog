@@ -1,3 +1,18 @@
+2003-07-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/db-interface.c:
+	(prelude_db_interface_disconnect)
+	fix a bug, interface->db_connection was not set to NULL
+	after it has been destroyed
+
+	* bindings/perl/PreludeDB.i:
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB)
+	add the disconnect function
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
 2003-07-09  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:

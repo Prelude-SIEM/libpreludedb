@@ -71,6 +71,13 @@ sub	connect
     return (prelude_db_interface_connect($$self) < 0) ? 0 : 1;
 }
 
+sub	disconnect
+{
+    my	$self = shift;
+
+    return (prelude_db_interface_disconnect($$self) < 0) ? 0 : 1;
+}
+
 sub	get_sql_connection
 {
     my	$self = shift;

@@ -430,6 +430,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 	}
 
 	prelude_db_connection_destroy(interface->db_connection);
+	interface->db_connection = NULL;
 	
 	return 0;
 }
