@@ -338,7 +338,6 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 		   strbuf_t *where, strbuf_t *tables, 
 		   idmef_selection_t *selection)
 {
-	idmef_cached_object_t *cached_obj;
 	idmef_object_t *obj;
 	db_object_t *db;
 	char *table;
