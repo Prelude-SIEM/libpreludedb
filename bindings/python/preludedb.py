@@ -78,7 +78,8 @@ class DBMessageDeletionFailed(Error):
 class PreludeDBMessageIdentList:
     """Internal class, should not be used directly"""
     
-    def __init__(self, res, destroy_list_func, get_next_ident_func, get_ident_list_len_func):
+    def __init__(self, parent, res, destroy_list_func, get_next_ident_func, get_ident_list_len_func):
+        self.parent = parent
         self.res = res
         self.destroy_list_func = destroy_list_func
         self.get_next_ident_func = get_next_ident_func
@@ -199,8 +200,14 @@ class PreludeDB:
         ident_list_handle = _preludedb.prelude_db_interface_get_alert_ident_list(self.res, criteria_res, limit, offset)
         if not ident_list_handle:
             return None
-        
-        return PreludeDBMessageIdentList(ident_list_handle,
+
+        # we must pass the current db object (self) to the PreludeDBMessageIdentList constructor, this constructor
+        # will store the reference to this "parent" object to ensure that the top db object will still exist when
+        # the PreludeDBMessageIdentList will be destroyed (this destructor needs the db top object, and without
+        # this reference trick, the db object could be destroyed before the PreludeDBMessageIdentList object, that will
+        # lead to a crash)
+        return PreludeDBMessageIdentList(self,
+                                         ident_list_handle,
                                          _preludedb.prelude_db_interface_alert_ident_list_destroy,
                                          _preludedb.prelude_db_interface_get_next_alert_ident,
                                          _preludedb.prelude_db_interface_get_alert_ident_list_len)
