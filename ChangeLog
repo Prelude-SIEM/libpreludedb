@@ -1,3 +1,18 @@
+2003-03-16  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-read.c:
+	(build_request): handle queries without WHERE clause
+
+2003-03-16  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-read.c:
+	(criterion_to_sql): handle empty criteria chain correctly
+
+2003-03-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/Makefile.am
+	fix a compilation rule error
+
 2003-02-21  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/sql/mysql/mysql.c:
