@@ -1,3 +1,10 @@
+2002-09-16  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/sql/mysql/mysql.sql:
+	* plugins/sql/pgsql/postgresql.sql:
+	moved to plugins/format/classic (quite logical ;-)). Renamed
+	postgresql.sql to pgsql.sql.
+
 2002-09-15  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugin/sql/mysql.c:
