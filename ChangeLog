@@ -1,5 +1,15 @@
 2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/include/sql.h:
+	* src/include/sql-table.h:
+	* src/include/param-string.h:
+	add missing copyright notice
+
+	* src/include/param-string.h:
+	add missing #ifdef
+
+2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/sql-table.c:
 	* src/include/sql-table.h:
 	prefix public functions and structures with prelude_ 
