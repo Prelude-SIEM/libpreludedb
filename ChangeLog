@@ -1,3 +1,17 @@
+2003-12-13  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* configure.in: 
+	stop overwritting user provided CFLAGS.
+
+	* src/sql-connection-data.c: 
+	remove useless NULL check. 
+	
+	* src/include/Makefile.am (includedir): 
+	* src/Makefile.am (libpreludedb_la_SOURCES): 
+	* src/include/db-cache.h: 
+	* src/db-cache.c: 
+	database caching mechanism implementation.
+
 2003-12-10  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-insert.c:

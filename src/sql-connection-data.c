@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2002, 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * All Rights Reserved
 *
@@ -60,13 +60,7 @@ prelude_sql_connection_data_t *prelude_sql_connection_data_new(void)
 
 int prelude_sql_connection_data_set_type(prelude_sql_connection_data_t *cnx, const char *type) 
 {
-        if ( ! cnx )
-                return -1;
-        
-        if ( type )
-        	return (cnx->type = strdup(type)) ? 0 : -1;
-	
-	return -1;
+        return (cnx->type = strdup(type)) ? 0 : -1;
 }
 
 
@@ -74,21 +68,18 @@ int prelude_sql_connection_data_set_type(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_type(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->type : NULL;
+	return cnx->type;
 }
 
 
 
 int prelude_sql_connection_data_set_name(prelude_sql_connection_data_t *cnx, const char *name) 
 {
-        if ( ! cnx )
-                return -1;
-
-	if ( name )
-        	return (cnx->name = strdup(name)) ? 0 : -1;
+        if ( name )
+                return (cnx->name = strdup(name)) ? 0 : -1;
         else
-        	cnx->name = NULL;
-        	
+                cnx->name = NULL;
+
         return 0;
 }
 
@@ -97,17 +88,14 @@ int prelude_sql_connection_data_set_name(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_name(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->name : NULL;
+	return cnx->name;
 }
 
 
 
 
 int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, const char *host) 
-{
-        if ( ! cnx )
-                return -1;
-        
+{        
         if ( host )
         	return (cnx->host = strdup(host)) ? 0 : -1;
         else
@@ -121,7 +109,7 @@ int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_host(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->host : NULL;
+	return cnx->host;
 }
 
 
@@ -129,9 +117,6 @@ char *prelude_sql_connection_data_get_host(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_port(prelude_sql_connection_data_t *cnx, const char *port) 
 {
-        if ( ! cnx )
-                return -1;
-        
         if ( port )
         	return (cnx->port = strdup(port)) ? 0 : -1;
         else
@@ -144,17 +129,14 @@ int prelude_sql_connection_data_set_port(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_port(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->port : NULL;
+	return cnx->port;
 }
 
 
 
 
 int prelude_sql_connection_data_set_user(prelude_sql_connection_data_t *cnx, const char *user) 
-{
-        if ( ! cnx )
-                return -1;
-        
+{        
         if ( user )
         	return (cnx->user = strdup(user)) ? 0 : -1;
         else
@@ -167,7 +149,7 @@ int prelude_sql_connection_data_set_user(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_user(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->user : NULL;
+	return cnx->user;
 }
 
 
@@ -175,9 +157,6 @@ char *prelude_sql_connection_data_get_user(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_pass(prelude_sql_connection_data_t *cnx, const char *pass)
 {
-        if ( ! cnx )
-                return -1;
-
 	if ( pass )        
         	return (cnx->pass = strdup(pass)) ? 0 : -1;
         else
@@ -191,17 +170,14 @@ int prelude_sql_connection_data_set_pass(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_pass(prelude_sql_connection_data_t *cnx)
 {
-	return cnx ? cnx->pass : NULL;
+	return cnx->pass;
 }
 
 
 
 
 void prelude_sql_connection_data_destroy(prelude_sql_connection_data_t *cnx)
-{
-	if ( ! cnx )
-		return ;
-		
+{		
 	if ( cnx->name ) 
 		free(cnx->name);
 	

@@ -20,6 +20,7 @@ include_HEADERS = 		\
 noinst_HEADERS = 		\
 	strbuf.h		\
 	gdb.h			\
+	db-cache.h		\
 	db-connection.h		\
 	db-connection-data.h	\
 	sql-connection-data.h	\
