@@ -1,3 +1,8 @@
+2003-01-16  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic:
+	removed unnecessary plugin (un)subscription code. 
+
 2003-01-11  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/Makefile.am:

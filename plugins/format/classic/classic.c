@@ -44,48 +44,23 @@
 #include "idmef-db-output.h"
 #include "idmef-db-read.h"
 
-static int is_enabled = 0;
 static plugin_format_t plugin;
 
 
 
 static int format_write(prelude_db_connection_t *connection, idmef_message_t *message)
 {
-	if (is_enabled == 0)
-		return -1;
-				
 	return idmef_db_output(connection, message);
 }
+
+
+
 
 static idmef_db_values_t *format_read(prelude_db_connection_t *connection, 
         	       		      idmef_object_list_t *objects,
         	                      idmef_criterion_t *criterion)
 {
-	if (is_enabled == 0)
-		return NULL;
-				
 	return idmef_db_read(connection, objects, criterion);
-}
-
-static int set_state(prelude_option_t *opt, const char *arg) 
-{       
-	if (is_enabled == 0) {
-		is_enabled = 1;
-		plugin_subscribe((plugin_generic_t *) &plugin);
-	} else {
-		plugin_unsubscribe((plugin_generic_t *) &plugin);
-		is_enabled = 0;
-	}
-        
-        return prelude_option_success;
-}
-
-
-
-static int get_state(char *buf, size_t size) 
-{
-        snprintf(buf, size, "%s", (is_enabled == 1) ? "enabled" : "disabled");
-        return prelude_option_success;
 }
 
 
