@@ -1,5 +1,17 @@
 2002-08-26  Yoann Vandoorselaere  <yoann@mandrakesoft.com>
 
+	* src/sql-plugins.c:
+	if va_copy isn't defined (C99), check for __va_copy (C89).
+
+	If __va_copy isn't available, then fallback on the memcpy()
+	method, but give a compile warning as well explaining this 
+	might result in undefined behavior on certain architecture.
+
+	generate_query(): copy the variable argument list in case
+	generate_dynamic_query() is to be called. This avoid undefined
+	behavior on some architecture, where you can't use a variable
+	argument list twice.
+	
 	* src/sql-plugins.c (sql_query): 
 	(sql_insert): kill code duplication, use generate_query().
 

@@ -44,6 +44,30 @@
 #include "plugin-sql.h"
 #include "db-connection.h"
 
+
+
+/*
+ * va_copy() was introduced in C99.
+ * in C89, it was available throught __va_copy().
+ *
+ * A safe bet is to fallback on memcpy() in case __va_copy()
+ * isn't defined. Thought it won't work with some va_list
+ * implementation.
+ */
+#ifndef va_copy
+
+ #if defined (__va_copy)
+  #define va_copy __va_copy
+#else
+  #warning "Both va_copy (C99) and __va_copy (C89) are undefined: working arround."
+  #warning "Result might be undefined depending on your va_list implementation."
+  #define va_copy(dst, src) memcpy(&(dst), &(src), sizeof(dst))
+ #endif
+
+#endif
+
+
+
 /*
  * define what we believe should be enough for most of our query.
  */
@@ -58,6 +82,7 @@
  * 1 : the ')' at the end of an SQL request
  */
 #define DB_MAX_INSERT_QUERY_LENGTH (1024 + 65536 * (3+21/16) + 1 + 1)
+
 
 
 static LIST_HEAD(sql_plugins_list);
@@ -116,7 +141,10 @@ static char *generate_dynamic_query(const char *old, size_t olen,
 static char *generate_query(char *buf, size_t size, int *len, const char *fmt, va_list ap)
 {
         char *query;
+        va_list copy;
         int query_length;
+
+        va_copy(copy, ap);
         
         /*
          * These  functions  return  the number of characters printed
@@ -129,6 +157,7 @@ static char *generate_query(char *buf, size_t size, int *len, const char *fmt, v
 
         if ( (query_length + 2) <= (size - *len) ) {
                 *len = query_length + *len;
+                va_end(copy);
                 return buf;
         }
         
@@ -137,7 +166,8 @@ static char *generate_query(char *buf, size_t size, int *len, const char *fmt, v
         else 
                 query_length += *len + 2;
 
-        query = generate_dynamic_query(buf, *len, &query_length, fmt, ap);
+        query = generate_dynamic_query(buf, *len, &query_length, fmt, copy);
+        va_end(copy);
         
         if ( ! query )
                 return NULL;
