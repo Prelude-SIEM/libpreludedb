@@ -1,7 +1,6 @@
 /*****
 *
 * Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
-* Copyright (C) 2002, 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
