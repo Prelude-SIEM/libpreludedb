@@ -1041,6 +1041,9 @@ static int insert_classification(prelude_sql_connection_t *conn, uint64_t messag
         char *text;
 	idmef_reference_t *reference;
 
+	if ( ! classification )
+		return 0;
+
 	text = prelude_sql_escape(conn, get_string(idmef_classification_get_text(classification)));
 	if ( ! text )
 		return -1;
