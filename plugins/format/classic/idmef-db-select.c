@@ -288,19 +288,26 @@ static int table_list_to_string_for_values(table_list_t *tlist, prelude_string_t
 	prelude_list_for_each(&tlist->tables, tmp) {
 		entry = prelude_list_entry(tmp, table_entry_t, list);
 
-                ret = prelude_string_sprintf(*string, ", %s AS %s", entry->table, entry->alias);
+/*                 ret = prelude_string_sprintf(*string, ", %s AS %s", entry->table, entry->alias); */
+/* 		if ( ret < 0 ) */
+/* 			goto error; */
+
+                ret = prelude_string_sprintf(*string, " LEFT JOIN %s AS %s ON %s.%s = %s.%s",
+                                             entry->table, entry->alias, tlist->top_table,
+                                             entry->top_field, entry->alias,
+                                             entry->ident_field);
 		if ( ret < 0 )
 			goto error;
 		
-		ret = prelude_string_sprintf(where, "%s%s.%s = %s.%s",
-					     prelude_string_is_empty(where) ? "" : " AND ",
-                                             tlist->top_table, entry->top_field, 
-                                             entry->alias, entry->ident_field);
-		if ( ret < 0 )
-			goto error;
+/* 		ret = prelude_string_sprintf(where, "%s%s.%s = %s.%s", */
+/* 					     prelude_string_is_empty(where) ? "" : " AND ", */
+/*                                              tlist->top_table, entry->top_field,  */
+/*                                              entry->alias, entry->ident_field); */
+/* 		if ( ret < 0 ) */
+/* 			goto error; */
 
 		if ( entry->condition ) {
-			ret = prelude_string_sprintf(where, " AND (%s)", entry->condition);
+			ret = prelude_string_sprintf(*string, " AND (%s)", entry->condition);
 			if ( ret < 0 )
 				goto error;
 		}
