@@ -226,10 +226,12 @@ fi
 AM_CONDITIONAL(HAVE_PYTHON, test x$enable_python = xyes)
 
 
-sql_plugin_dir=$libdir/libpreludedb/plugins/sql
-format_plugin_dir=$libdir/libpreludedb/plugins/formats
+db_plugin_dir=$libdir/libpreludedb/plugins
+sql_plugin_dir=$db_plugin_dir/sql
+format_plugin_dir=$db_plugin_dir/formats
 format_config_dir=$sysconfdir/libpreludedb/plugins/formats
 
+AC_SUBST(db_plugin_dir)
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
 AC_SUBST(format_config_dir)
