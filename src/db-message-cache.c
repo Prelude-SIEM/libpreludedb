@@ -53,18 +53,16 @@ struct db_message_cache {
 
 static prelude_io_t *pio_open(const char *filename, const char *mode) 
 {
+        int ret;
         FILE *fd;
         prelude_io_t *pfd;
 
-        pfd = prelude_io_new();
-        if ( ! pfd ) {
-                log(LOG_ERR, "memory exhausted.\n");
+        ret = prelude_io_new(&pfd);
+        if ( ret < 0 )
                 return NULL;
-        }
 
         fd = fopen(filename, mode);
         if ( ! fd ) {
-                log(LOG_ERR, "couldn't open %s (%s).\n", filename, mode);
                 prelude_io_destroy(pfd);
                 return NULL;
         }
@@ -146,21 +144,14 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
 
 
 
-static prelude_msg_t *cache_write_cb(prelude_msgbuf_t *msgbuf)
+static int cache_write_cb(prelude_msgbuf_t *msgbuf, prelude_msg_t *msg)
 {
         prelude_io_t *fd;
-        prelude_msg_t *msg;
         
         fd = prelude_msgbuf_get_data(msgbuf);
         assert(fd);
-
-        msg = prelude_msgbuf_get_msg(msgbuf);
-        assert(msg);
         
-        prelude_msg_write(msg, fd);
-        prelude_msg_recycle(msg);
-        
-        return msg;
+        return prelude_msg_write(msg, fd);
 }
 
 
@@ -168,10 +159,11 @@ static prelude_msg_t *cache_write_cb(prelude_msgbuf_t *msgbuf)
 
 static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd) 
 {
+        int ret;
         prelude_msgbuf_t *msgbuf;
-        
-        msgbuf = prelude_msgbuf_new(0);
-        if ( ! msgbuf ) 
+
+        ret = prelude_msgbuf_new(&msgbuf);
+        if ( ret < 0 ) 
                 return -1;
 
         prelude_msgbuf_set_data(msgbuf, fd);
@@ -179,7 +171,7 @@ static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd)
         idmef_message_write(idmef, msgbuf);
         
         prelude_msgbuf_mark_end(msgbuf);
-        prelude_msgbuf_close(msgbuf);
+        prelude_msgbuf_destroy(msgbuf);
         
         return 0;
 }
