@@ -415,12 +415,15 @@ prelude_sql_connection_t *prelude_sql_connect(prelude_sql_connection_data_t *dat
 		return NULL; /* FIXME: better error detection ? */
 	
 	ret = plugin->db_connect(session);
-	if ( ret < 0 )
+	if ( ret < 0 ) {
+                plugin->db_close(session);
 		return NULL; /* FIXME: better error detection ? */
-	
+        }
+        
 	conn = calloc(1, sizeof(prelude_sql_connection_t));
 	if ( ! conn ) {
-		log(LOG_ERR, "out of memory\n");
+		log(LOG_ERR, "memory exhausted.\n");
+                plugin->db_close(session);
 		return NULL;
 	}
 	
