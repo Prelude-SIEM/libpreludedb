@@ -45,27 +45,27 @@
 #include "db-connection.h"
 #include "plugin-format.h"
 
-static plugin_format_t *format = NULL;
+
+
 static LIST_HEAD(format_plugins_list);
 
 
-/*
- *
- */
+
 static int subscribe(plugin_container_t *pc) 
 {
         log(LOG_INFO, "- Subscribing %s to active format plugins.\n", pc->plugin->name);
-        format = (plugin_format_t *) pc->plugin;
         return plugin_add(pc, &format_plugins_list, NULL);
 }
+
 
 
 static void unsubscribe(plugin_container_t *pc) 
 {
         log(LOG_INFO, "- Un-subscribing %s from active format plugins.\n", pc->plugin->name);
-        format = NULL;
         plugin_del(pc);
 }
+
+
 
 /**
  * format_plugins_init:
@@ -85,8 +85,10 @@ int format_plugins_init(const char *dirname, int argc, char **argv)
 	if ( ret < 0 ) {
 		if ( errno == ENOENT )
 			return 0;
-		log(LOG_ERR, "can't access %s.\n", dirname);
-		return -1;
+
+                log(LOG_ERR, "can't access %s.\n", dirname);
+
+                return -1;
 	}
 
         ret = plugin_load_from_dir(dirname, argc, argv, subscribe, unsubscribe);
