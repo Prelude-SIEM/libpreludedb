@@ -974,10 +974,10 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 
 	ret = join_wheres(where, where3);
 	if ( ret < 0 )
-		goto error;	
+		goto error;
 
 	/* build the query */
-	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s;",
+	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s;",
 			     distinct ? " DISTINCT" : "",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),

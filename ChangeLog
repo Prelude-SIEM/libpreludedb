@@ -1,3 +1,16 @@
+2003-10-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB::get_values)
+	updated to use distinct stuff
+
+	* plugins/format/classic/idmef-db-select.c:
+	(build_request)
+	fix a bug introduced when "SELECT DISTINCT" has
+	been reintroduced: the two last arguments of
+	strbuf_sprintf where not took into account because
+	two "%s" where missing in the format string
+
 2003-10-23  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-get.c:
@@ -31,12 +44,11 @@
 	(idmef_db_select): take a parameter specifying if we are extracting
 	complete alerts or values accross the alerts; use left and right 
 	joins respectively
-	
+
 	* plugins/format/classic/idmef-db-select.h:
 	* plugins/format/classic/classic.c:
 	modified accordingly. 
 
->>>>>>> 1.92
 2003-10-20  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.i:

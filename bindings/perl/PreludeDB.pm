@@ -305,6 +305,7 @@ sub	get_values
     my	%opt = @_;
     my	$selection;
     my	$criteria;
+    my	$distinct;
     my	$limit;
     my	$res;
     my	$objval_list;
@@ -325,7 +326,9 @@ sub	get_values
 
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
 
-    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $limit);
+    $distinct = defined($opt{-distinct}) ? $opt{-distinct} : 0;
+
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $distinct, $limit);
     unless ( $res ) {
 	Prelude::idmef_selection_destroy($selection);
 	return ();
