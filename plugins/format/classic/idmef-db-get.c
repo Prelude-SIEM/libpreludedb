@@ -305,7 +305,7 @@ static int get_user_id(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, user_id, idmef_user_id_new_ident);
+		ret = get_string(sql, row, 0, user_id, idmef_user_id_new_ident);
 		if ( ret < 0 )
 			goto error;
 
@@ -356,7 +356,7 @@ static int get_user(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint64(sql, row, 0, user, idmef_user_new_ident);
+	ret = get_string(sql, row, 0, user, idmef_user_new_ident);
 	if ( ret < 0 )
 		goto error;
 
@@ -465,7 +465,7 @@ static int get_process(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		return ret;
 
-	ret = get_uint64(sql, row, 0, process, idmef_process_new_ident);
+	ret = get_string(sql, row, 0, process, idmef_process_new_ident);
 	if ( ret < 0 )
 		goto error;
 
@@ -656,7 +656,7 @@ static int get_service(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint64(sql, row, 0, service, idmef_service_new_ident);
+	ret = get_string(sql, row, 0, service, idmef_service_new_ident);
 	if ( ret < 0 )
 		goto error;
 
@@ -722,7 +722,7 @@ static int get_address(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, idmef_address, idmef_address_new_ident);
+		ret = get_string(sql, row, 0, idmef_address, idmef_address_new_ident);
 		if ( ret < 0 )
 			goto error;
 
@@ -781,7 +781,7 @@ static int get_node(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint64(sql, row, 0, node, idmef_node_new_ident);
+	ret = get_string(sql, row, 0, node, idmef_node_new_ident);
 	if ( ret < 0 )
 		goto error;
 
@@ -834,7 +834,7 @@ static int get_analyzer(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint64(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid);
+	ret = get_string(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid);
 	if ( ret < 0 )
 		goto error;
 
@@ -1309,7 +1309,7 @@ static int get_file(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, file, idmef_file_new_ident);
+		ret = get_string(sql, row, 0, file, idmef_file_new_ident);
 		if ( ret < 0 )
 			goto error;
 
@@ -1403,7 +1403,7 @@ static int get_source(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, source, idmef_source_new_ident);
+		ret = get_string(sql, row, 0, source, idmef_source_new_ident);
 		if ( ret < 0 )
 			goto error;
 
@@ -1469,7 +1469,7 @@ static int get_target(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, target, idmef_target_new_ident);
+		ret = get_string(sql, row, 0, target, idmef_target_new_ident);
 		if ( ret < 0 )
 			goto error;
 
@@ -1728,7 +1728,7 @@ static int get_classification(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint64(sql, row, 0, classification, idmef_classification_new_ident);
+	ret = get_string(sql, row, 0, classification, idmef_classification_new_ident);
 	if ( ret < 0 )
 		goto error;
 
@@ -1929,7 +1929,7 @@ static int get_overflow_alert(preludedb_sql_t *sql,
 }
 
 
-static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t ident, uint64_t *messageid)
+static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t ident, prelude_string_t *messageid)
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -1952,7 +1952,7 @@ static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t 
 	if ( ret < 0 )
 		goto error;
 
-	ret = preludedb_sql_field_to_uint64(field, messageid);
+	ret = preludedb_sql_field_to_string(field, messageid);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -1964,7 +1964,7 @@ static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t 
 int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_alert_t *alert;
-	uint64_t *messageid;
+        prelude_string_t *messageid;
 	int ret;
 
 	ret = idmef_message_new(message);
@@ -1982,6 +1982,7 @@ int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 	ret = get_messageid(sql, "Prelude_Alert", ident, messageid);
 	if ( ret < 0 )
 		goto error;
+        
 	if ( ret == 0 ) {
 		ret = preludedb_error(PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT);
 		goto error;
@@ -2049,7 +2050,7 @@ int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_heartbeat_t *heartbeat;
-	uint64_t *messageid;
+	prelude_string_t *messageid;
 	int ret;
 
 	ret = idmef_message_new(message);

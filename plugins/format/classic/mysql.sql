@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS Prelude_Alert;
 
 CREATE TABLE Prelude_Alert (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- messageid BIGINT UNSIGNED NOT NULL
+ messageid VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
@@ -21,7 +21,7 @@ CREATE TABLE Prelude_AlertIdent (
  _parent_type ENUM('T','C') NOT NULL, # T=ToolAlert C=CorrelationAlert
  INDEX (_parent_type, _message_ident),
  alertident BIGINT UNSIGNED NOT NULL,
- analyzerid BIGINT UNSIGNED NULL
+ analyzerid VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
@@ -60,7 +60,8 @@ DROP TABLE IF EXISTS Prelude_Heartbeat;
 
 CREATE TABLE Prelude_Heartbeat (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- messageid BIGINT UNSIGNED NOT NULL
+ messageid VARCHAR(255) NULL,
+ heartbeat_interval INTEGER NULL
 ) TYPE=InnoDB;
 
 
@@ -72,7 +73,7 @@ CREATE TABLE Prelude_Analyzer (
  _parent_type ENUM('A','H') NOT NULL, # A=Alert H=Hearbeat
  _depth TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident,_depth),
- analyzerid BIGINT UNSIGNED NOT NULL,
+ analyzerid VARCHAR(255) NULL,
  INDEX (_parent_type,analyzerid),
  name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
@@ -90,7 +91,7 @@ DROP TABLE IF EXISTS Prelude_Classification;
 
 CREATE TABLE Prelude_Classification (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  text VARCHAR(255) NOT NULL,
  INDEX (text)
 ) TYPE=InnoDB;
@@ -117,7 +118,7 @@ CREATE TABLE Prelude_Source (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_message_ident, _index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  spoofed ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL
 ) TYPE=InnoDB;
@@ -130,7 +131,7 @@ CREATE TABLE Prelude_Target (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_message_ident, _index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  decoy ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL
 ) TYPE=InnoDB;
@@ -144,7 +145,7 @@ CREATE TABLE Prelude_File (
  _target_index TINYINT UNSIGNED NOT NULL,
  _index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_message_ident, _target_index, _index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  path VARCHAR(255) NOT NULL,
  name VARCHAR(255) NOT NULL,
  category ENUM("current", "original") NULL,
@@ -335,7 +336,7 @@ CREATE TABLE Prelude_Node (
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
  _parent_index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY(_parent_type, _message_ident, _parent_index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
  location VARCHAR(255) NULL,
  INDEX(_parent_type,location),
@@ -352,7 +353,7 @@ CREATE TABLE Prelude_Address (
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyser T=Target S=Source H=Heartbeat
  _parent_index TINYINT UNSIGNED NOT NULL,
  INDEX (_parent_type, _message_ident, _parent_index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  category ENUM("unknown","atm","e-mail","lotus-notes","mac","sna","vm","ipv4-addr","ipv4-addr-hex","ipv4-net","ipv4-net-mask","ipv6-addr","ipv6-addr-hex","ipv6-net","ipv6-net-mask") NOT NULL,
  vlan_name VARCHAR(255) NULL,
  vlan_num INTEGER UNSIGNED NULL,
@@ -370,7 +371,7 @@ CREATE TABLE Prelude_User (
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent_index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent_index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  category ENUM("unknown","application","os-device") NOT NULL
 ) TYPE=InnoDB;
 
@@ -385,9 +386,10 @@ CREATE TABLE Prelude_UserId (
  _file_index TINYINT UNSIGNED NOT NULL,
  _file_access_index TINYINT UNSIGNED NOT NULL,
  INDEX (_parent_type, _message_ident, _parent_index, _file_index, _file_access_index), # _file_index and _file_access_index will always be zero if parent_type = 'F'
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  type ENUM("current-user","original-user","target-user","user-privs","current-group","group-privs","other-privs") NOT NULL,
  name VARCHAR(255) NULL,
+ tty VARCHAR(255) NULL,
  number INTEGER UNSIGNED NULL
 ) TYPE=InnoDB;
 
@@ -400,7 +402,7 @@ CREATE TABLE Prelude_Process (
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
  _parent_index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent_index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  name VARCHAR(255) NOT NULL,
  pid INTEGER UNSIGNED NULL,
  path VARCHAR(255) NULL
@@ -439,7 +441,7 @@ CREATE TABLE Prelude_Service (
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent_index BIGINT UNSIGNED NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent_index),
- ident BIGINT UNSIGNED NOT NULL,
+ ident VARCHAR(255) NULL,
  ip_version TINYINT UNSIGNED NULL,
  name VARCHAR(255) NULL,
  port SMALLINT UNSIGNED NULL,
