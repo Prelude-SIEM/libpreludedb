@@ -63,15 +63,35 @@ class DBConnectionFailed(Error):
 
 
 
-class DBMessageDeletionFailed(Error):
+class DBMessageError(Error):
     def __init__(self, analyzerid, ident):
         self.analyzerid = analyzerid
         self.ident = ident
 
+    def __str__(self):
+        return "cannot %s %s %d:%d" % (self.action, self.message_type, self.analyzerid, self.ident)
 
 
-# class DBNoResult(Exception):
-#     pass
+
+class DBAlertDeletionFailed(DBMessageError):
+    action = "delete"
+    message_type = "alert"
+
+
+
+class DBHeartbeatDeletionFailed(DBAlertDeletionFailed):
+    message_type = "heartbeat"
+
+
+
+class DBAlertRetrievingFailed(DBMessageError):
+    action = "retrieve"
+    message_type = "alert"
+
+
+
+class DBHeartbeatRetrievingFailed(DBAlertRetrievingFailed):
+    message_type = "heartbeat"
 
 
 
@@ -235,7 +255,7 @@ class PreludeDB:
                                          _preludedb.prelude_db_interface_get_next_heartbeat_ident,
                                          _preludedb.prelude_db_interface_get_heartbeat_ident_list_len)
         
-    def __get_message(self, analyzerid, ident, get_message_func):
+    def __get_message(self, analyzerid, ident, get_message_func, failure):
         ident_handle = _preludedb.prelude_db_message_ident_new(long(analyzerid), long(ident))
         if not ident_handle:
             raise Error()
@@ -245,19 +265,19 @@ class PreludeDB:
         _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
         if not message_handle:
-            return None
+            raise failure(analyzerid, ident)
 
         return IDMEFMessage(message_handle)
 
     def get_alert(self, analyzerid, ident):
         """Get an alert."""
-        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_alert)
+        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_alert, DBAlertRetrievingFailed)
 
     def get_heartbeat(self, analyzerid, ident):
         """Get a heartbeat."""
-        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_heartbeat)
+        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_heartbeat, DBHeartbeatRetrievingFailed)
 
-    def __delete_message(self, analyzerid, ident, delete_message_func):
+    def __delete_message(self, analyzerid, ident, delete_message_func, failure):
         ident_handle = _preludedb.prelude_db_message_ident_new(long(analyzerid), long(ident))
         if not ident_handle:
             raise Error()
@@ -267,15 +287,15 @@ class PreludeDB:
         _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
         if ret < 0:
-            raise DBError(self)
+            raise failure(analyzerid, ident)
 
     def delete_alert(self, analyzerid, ident):
         """Delete an alert."""
-        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_alert)
+        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_alert, DBAlertDeletionFailed)
 
     def delete_heartbeat(self, analyzerid, ident):
         """Delete a heartbeat."""
-        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_heartbeat)
+        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_heartbeat, DBHeartbeatDeletionFailed)
 
     def insert(self, message):
         "Insert an IDMEF message in the db."
