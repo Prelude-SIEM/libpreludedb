@@ -71,8 +71,8 @@ DROP TABLE IF EXISTS Prelude_Analyzer;
 CREATE TABLE Prelude_Analyzer (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H') NOT NULL, # A=Alert H=Hearbeat
- _depth TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type,_message_ident,_depth),
+ _index TINYINT UNSIGNED NOT NULL,
+ PRIMARY KEY (_parent_type,_message_ident,_index),
  analyzerid VARCHAR(255) NULL,
  INDEX (_parent_type,analyzerid),
  name VARCHAR(255) NULL,

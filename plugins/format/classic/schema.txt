@@ -5,14 +5,14 @@ object=heartbeat.analyzer_time table=Prelude_AnalyzerTime field=time top_table=P
 
 object=heartbeat.heartbeat_interval table=Prelude_Heartbeat field=heartbeat_interval
 
-object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident 
-object=heartbeat.analyzer.name 	table=Prelude_Analyzer 		field=name 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident 
-object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident
-object=heartbeat.analyzer.model 	table=Prelude_Analyzer 		field=model 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident
-object=heartbeat.analyzer.version 	table=Prelude_Analyzer 		field=version 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0" 	ident_field=_message_ident
-object=heartbeat.analyzer.class 	table=Prelude_Analyzer 		field=class 		top_table=Prelude_Heartbeat 	top_field=_ident		condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0" 	ident_field=_message_ident
-object=heartbeat.analyzer.ostype 	table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0" 	ident_field=_message_ident
-object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0" 	ident_field=_message_ident
+object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'"	ident_field=_message_ident 
+object=heartbeat.analyzer.name 	table=Prelude_Analyzer 		field=name 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'"	ident_field=_message_ident 
+object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'"	ident_field=_message_ident
+object=heartbeat.analyzer.model 	table=Prelude_Analyzer 		field=model 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'"	ident_field=_message_ident
+object=heartbeat.analyzer.version 	table=Prelude_Analyzer 		field=version 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'" 	ident_field=_message_ident
+object=heartbeat.analyzer.class 	table=Prelude_Analyzer 		field=class 		top_table=Prelude_Heartbeat 	top_field=_ident		condition="Prelude_Analyzer._parent_type = 'H'" 	ident_field=_message_ident
+object=heartbeat.analyzer.ostype 	table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'" 	ident_field=_message_ident
+object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H'" 	ident_field=_message_ident
 
 object=heartbeat.additional_data.type  table=Prelude_AdditionalData  field=type  top_table=Prelude_Heartbeat  top_field=_ident  ident_field=_message_ident  condition="Prelude_AdditionalData._parent_type='H'"
 object=heartbeat.additional_data.meaning  table=Prelude_AdditionalData  field=meaning  top_table=Prelude_Heartbeat  top_field=_ident  ident_field=_message_ident  condition="Prelude_AdditionalData._parent_type='H'"
@@ -53,14 +53,14 @@ object=alert.additional_data.type  table=Prelude_AdditionalData  field=type  top
 object=alert.additional_data.meaning  table=Prelude_AdditionalData  field=meaning  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_AdditionalData._parent_type='A'"  
 object=alert.additional_data.data  table=Prelude_AdditionalData  field=data  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_AdditionalData._parent_type='A'"  
 
-object=alert.analyzer.analyzerid  table=Prelude_Analyzer  field=analyzerid  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.name  table=Prelude_Analyzer  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.manufacturer  table=Prelude_Analyzer  field=manufacturer  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"
-object=alert.analyzer.version  table=Prelude_Analyzer  field=version  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.model  table=Prelude_Analyzer  field=model  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.class  table=Prelude_Analyzer  field=class  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.ostype  table=Prelude_Analyzer  field=ostype  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
-object=alert.analyzer.osversion  table=Prelude_Analyzer  field=osversion  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 0"  
+object=alert.analyzer.analyzerid  table=Prelude_Analyzer  field=analyzerid  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.name  table=Prelude_Analyzer  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.manufacturer  table=Prelude_Analyzer  field=manufacturer  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"
+object=alert.analyzer.version  table=Prelude_Analyzer  field=version  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.model  table=Prelude_Analyzer  field=model  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.class  table=Prelude_Analyzer  field=class  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.ostype  table=Prelude_Analyzer  field=ostype  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
+object=alert.analyzer.osversion  table=Prelude_Analyzer  field=osversion  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'"  
 
 object=alert.analyzer.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Node._parent_type='A' AND Prelude_Node._parent_index = 0"  
 object=alert.analyzer.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Node._parent_type='A' AND Prelude_Node._parent_index = 0"  
@@ -77,31 +77,6 @@ object=alert.analyzer.process.pid  table=Prelude_Process  field=pid  top_table=P
 object=alert.analyzer.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Process._parent_type='A' AND Prelude_Process._parent_index = 0"
 object=alert.analyzer.process.arg table=Prelude_ProcessArg field=arg top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_ProcessArg._parent_type='A' AND Prelude_ProcessArg._parent_index = 0"
 object=alert.analyzer.process.env table=Prelude_ProcessEnv field=env top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_ProcessEnv._parent_type='A' AND Prelude_ProcessEnv._parent_index = 0"
-
-object=alert.analyzer.analyzer.analyzerid  table=Prelude_Analyzer  field=analyzerid  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.name  table=Prelude_Analyzer  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.manufacturer  table=Prelude_Analyzer  field=manufacturer  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A'" AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.version  table=Prelude_Analyzer  field=version  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.model  table=Prelude_Analyzer  field=model  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.class  table=Prelude_Analyzer  field=class  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.ostype  table=Prelude_Analyzer  field=ostype  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-object=alert.analyzer.analyzer.osversion  table=Prelude_Analyzer  field=osversion  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Analyzer._parent_type='A' AND Prelude_Analyzer._depth = 1"
-
-object=alert.analyzer.analyzer.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Node._parent_type='A' AND Prelude_Node._parent_index = 1"
-object=alert.analyzer.analyzer.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Node._parent_type='A' AND Prelude_Node._parent_index = 1"
-object=alert.analyzer.analyzer.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Node._parent_type='A' AND Prelude_Node._parent_index = 1"
-object=alert.analyzer.analyzer.node.address.category  table=Prelude_Address  field=category  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Address._parent_type='A' AND Prelude_Address._parent_index = 1"
-object=alert.analyzer.analyzer.node.address.vlan_name  table=Prelude_Address  field=vlan_name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Address._parent_type='A' AND Prelude_Address._parent_index = 1"
-object=alert.analyzer.analyzer.node.address.vlan_num  table=Prelude_Address  field=vlan_num  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Address._parent_type='A' AND Prelude_Address._parent_index = 1"
-object=alert.analyzer.analyzer.node.address.address  table=Prelude_Address  field=address  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Address._parent_type='A' AND Prelude_Address._parent_index = 1"
-object=alert.analyzer.analyzer.node.address.netmask  table=Prelude_Address  field=netmask  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Address._parent_type='A' AND Prelude_Address._parent_index = 1"
-
-object=alert.analyzer.analyzer.process.ident  table=Prelude_Process  field=ident  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Process._parent_type='A' AND Prelude_Process._parent_index = 1"
-object=alert.analyzer.analyzer.process.name  table=Prelude_Process  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Process._parent_type='A' AND Prelude_Process._parent_index = 1"
-object=alert.analyzer.analyzer.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Process._parent_type='A' AND Prelude_Process._parent_index = 1"
-object=alert.analyzer.analyzer.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  condition="Prelude_Process._parent_type='A' AND Prelude_Process._parent_index = 1"
-object=alert.analyzer.analyzer.process.arg table=Prelude_ProcessArg field=arg top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_ProcessArg._parent_type='A' AND Prelude_ProcessArg._parent_index = 1"
-object=alert.analyzer.analyzer.process.env table=Prelude_ProcessEnv field=env top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_ProcessEnv._parent_type='A' AND Prelude_ProcessEnv._parent_index = 1"
 
 object=alert.classification.reference.origin  table=Prelude_Reference  field=origin  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident
 object=alert.classification.reference.name  table=Prelude_Reference  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  

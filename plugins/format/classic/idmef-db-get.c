@@ -805,75 +805,77 @@ static int get_node(preludedb_sql_t *sql,
 static int get_analyzer(preludedb_sql_t *sql,
 			uint64_t message_ident,
 			char parent_type,
-			int depth,
 			void *parent,
-			int (*parent_new_child)(void *parent, idmef_analyzer_t **child))
+			int (*parent_new_child)(void *parent, idmef_analyzer_t **child, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
 	idmef_analyzer_t *analyzer;
 	int ret;
-
+	int analyzer_count;
+	int index;
+	
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT analyzerid, name, manufacturer, model, version, class, ostype, osversion "
 					  "FROM Prelude_Analyzer "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _depth = %d",
-					  parent_type, message_ident, depth);
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64, parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
 
-	ret = preludedb_sql_table_fetch_row(table, &row);
-	if ( ret <= 0 )
-		return ret;
+	analyzer_count = ret;
+	
+	for ( index = 0; index < analyzer_count; index++ ) {
+		
+		ret = preludedb_sql_table_fetch_row(table, &row);
+		if ( ret <= 0 )
+			return ret;
 
-	ret = parent_new_child(parent, &analyzer);
-	if ( ret < 0 )
-		goto error;
+		ret = parent_new_child(parent, &analyzer, -1);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 1, analyzer, idmef_analyzer_new_name);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 1, analyzer, idmef_analyzer_new_name);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 2, analyzer, idmef_analyzer_new_manufacturer);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 2, analyzer, idmef_analyzer_new_manufacturer);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 3, analyzer, idmef_analyzer_new_model);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 3, analyzer, idmef_analyzer_new_model);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 4, analyzer, idmef_analyzer_new_version);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 4, analyzer, idmef_analyzer_new_version);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 5, analyzer, idmef_analyzer_new_class);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 5, analyzer, idmef_analyzer_new_class);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 6, analyzer, idmef_analyzer_new_ostype);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 6, analyzer, idmef_analyzer_new_ostype);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_string(sql, row, 7, analyzer, idmef_analyzer_new_osversion);
-	if ( ret < 0 )
-		goto error;
+		ret = get_string(sql, row, 7, analyzer, idmef_analyzer_new_osversion);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_node(sql, message_ident, parent_type, depth, analyzer,
-		       (int (*)(void *, idmef_node_t **)) idmef_analyzer_new_node);
-	if ( ret < 0 )
-		goto error;
+		ret = get_node(sql, message_ident, parent_type, index, analyzer,
+			       (int (*)(void *, idmef_node_t **)) idmef_analyzer_new_node);
+		if ( ret < 0 )
+			goto error;
 
-	ret = get_process(sql, message_ident, parent_type, depth, analyzer,
-			  (int (*)(void *, idmef_process_t **)) idmef_analyzer_new_process);
-	if ( ret < 0 )
-		goto error;
-
-	ret = get_analyzer(sql, message_ident, parent_type, depth + 1, analyzer,
-			   (int (*)(void *, idmef_analyzer_t **)) idmef_analyzer_new_analyzer);
+		ret = get_process(sql, message_ident, parent_type, index, analyzer,
+				  (int (*)(void *, idmef_process_t **)) idmef_analyzer_new_process);
+		if ( ret < 0 )
+			goto error;
+	}
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -1972,7 +1974,7 @@ int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_analyzer(sql, ident, 'A', 0, alert, (int (*)(void *, idmef_analyzer_t **)) idmef_alert_new_analyzer);
+	ret = get_analyzer(sql, ident, 'A', alert, (int (*)(void *, idmef_analyzer_t **, int)) idmef_alert_new_analyzer);
 	if ( ret < 0 )
 		goto error;
 
@@ -2075,7 +2077,7 @@ int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **messag
 	if ( ret <= 0 )
 		goto error;
 
-	ret = get_analyzer(sql, ident, 'H', 0, heartbeat, (int (*)(void *, idmef_analyzer_t **)) idmef_heartbeat_new_analyzer);
+	ret = get_analyzer(sql, ident, 'H', heartbeat, (int (*)(void *, idmef_analyzer_t **, int)) idmef_heartbeat_new_analyzer);
 	if ( ret < 0 )
 		goto error;
 

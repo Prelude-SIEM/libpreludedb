@@ -1001,7 +1001,7 @@ static int insert_target(preludedb_sql_t *sql, uint64_t message_ident, idmef_tar
 
 
 static int insert_analyzer(preludedb_sql_t *sql, uint64_t message_ident, char parent_type,
-			   idmef_analyzer_t *analyzer, int depth) 
+			   idmef_analyzer_t *analyzer, int index) 
 {
         int ret = -1;
         char *name = NULL, *manufacturer = NULL, *model = NULL, *version = NULL, *class = NULL,
@@ -1043,23 +1043,21 @@ static int insert_analyzer(preludedb_sql_t *sql, uint64_t message_ident, char pa
 		goto error;
 	
         ret = preludedb_sql_insert(sql, "Prelude_Analyzer",
-				   "_message_ident, _parent_type, _depth, analyzerid, name, manufacturer, "
+				   "_message_ident, _parent_type, _index, analyzerid, name, manufacturer, "
 				   "model, version, class, "
 				   "ostype, osversion",
 				   "%" PRIu64 ", '%c', %d, %s, %s, %s, %s, %s, %s, %s, %s", 
-				   message_ident, parent_type, depth, analyzerid,
+				   message_ident, parent_type, index, analyzerid,
 				   name, manufacturer, model, version, class, ostype, osversion);
         
         if ( ret < 0 )
                 goto error;
         
-        ret = insert_node(sql, message_ident, parent_type, depth, idmef_analyzer_get_node(analyzer));
+        ret = insert_node(sql, message_ident, parent_type, index, idmef_analyzer_get_node(analyzer));
 	if ( ret < 0 )
                 goto error;
 
-        ret = insert_process(sql, message_ident, parent_type, depth, idmef_analyzer_get_process(analyzer));
-	if ( ret < 0 )
-		goto error;
+        ret = insert_process(sql, message_ident, parent_type, index, idmef_analyzer_get_process(analyzer));
 
  error:
 	if ( class )
@@ -1598,20 +1596,7 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
         ret = insert_message_messageid(sql, "Prelude_Alert", idmef_alert_get_messageid(alert), &ident);
 	if ( ret < 0 )
                 return ret;
-        
-        ret = insert_assessment(sql, ident, idmef_alert_get_assessment(alert));
-	if ( ret < 0 )
-             return ret;
-
-        index = 0;
-        analyzer = NULL;
-        while ( (analyzer = idmef_alert_get_next_analyzer(alert, analyzer)) ) {
                 
-                ret = insert_analyzer(sql, ident, 'A', analyzer, index++);
-		if ( ret < 0 )
-                        return ret;
-        }
-        
         ret = insert_createtime(sql, ident, 'A', idmef_alert_get_create_time(alert));
 	if ( ret < 0 )
                 return ret;
@@ -1623,6 +1608,10 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
         ret = insert_analyzertime(sql, ident, 'A', idmef_alert_get_analyzer_time(alert));
 	if ( ret < 0 )
 		return ret;
+
+        ret = insert_assessment(sql, ident, idmef_alert_get_assessment(alert));
+	if ( ret < 0 )
+             return ret;
 
         switch ( idmef_alert_get_type(alert) ) {
 
@@ -1649,6 +1638,15 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
 
 	default:
 		return -1;
+        }
+
+        index = 0;
+        analyzer = NULL;
+        while ( (analyzer = idmef_alert_get_next_analyzer(alert, analyzer)) ) {
+                
+                ret = insert_analyzer(sql, ident, 'A', analyzer, index++);
+		if ( ret < 0 )
+                        return ret;
         }
 
         index = 0;
