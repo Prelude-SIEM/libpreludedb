@@ -2,11 +2,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include "gdb.h"
 
 static char *gdb_argv0;
 
 
-void gdb_run(int signal)
+static void gdb_run(int signal)
 {
 	char pidbuf[20];
 	int status;

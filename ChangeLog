@@ -1,3 +1,16 @@
+2003-04-27  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-read.c:
+	fix compilation warnings.
+	(objects_to_sql):
+	fix possible use of uninitialized values on error.
+	(criterion_to_sql):
+	modified to reflect recent libprelude API changes
+	(relation_less, relation_greater). 
+
+	* src/gdb.c:
+	fix warnings. 
+
 2003-04-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c(add_criterion):

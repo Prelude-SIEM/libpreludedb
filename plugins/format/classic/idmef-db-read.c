@@ -42,7 +42,7 @@
 #define VALLEN 262144
 
 
-int add_table(strbuf_t *tables, char *table)
+static int add_table(strbuf_t *tables, char *table)
 {
 	int ret;
 	
@@ -69,7 +69,7 @@ int add_table(strbuf_t *tables, char *table)
 
 
 
-int add_field(strbuf_t *fields, char *table, char *field, char *alias)
+static int add_field(strbuf_t *fields, char *table, char *field, char *alias)
 {
 	strbuf_t *tmp;
 	int ret;
@@ -118,7 +118,7 @@ error:
 
 
 /* NOTE: This function assumes thet val is already escaped! */
-int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
+static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
 {	
 	switch (rel) {
 	case relation_substring:
@@ -130,7 +130,7 @@ int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t 
 	case relation_regexp:
 		return -1; /* unsupported */
 
-	case relation_greater_then: 
+	case relation_greater: 
 		if (table)
 			return strbuf_sprintf(where, "%s.%s > '%s'", table, field, val);
 		else
@@ -142,7 +142,7 @@ int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t 
 		else
 			return strbuf_sprintf(where, "%s >= '%s'", field, val);
 
-	case relation_less_then:
+	case relation_less:
 		if (table)
 			return strbuf_sprintf(where, "%s.%s < '%s'", table, field, val);
 		else
@@ -186,7 +186,7 @@ int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t 
 
 
 
-int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *tables, idmef_criterion_t *criterion)
+static int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *tables, idmef_criterion_t *criterion)
 {
 	idmef_object_t *object;
 	db_object_t *db;
@@ -316,7 +316,7 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 }
 
 
-int objects_to_sql(prelude_sql_connection_t *conn, 
+static int objects_to_sql(prelude_sql_connection_t *conn, 
 		   strbuf_t *fields,
 		   strbuf_t *where, strbuf_t *tables, 
 		   idmef_object_t **objects)
@@ -334,7 +334,8 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 	char *ident_field;
 	int written, ret;
 	strbuf_t *tmp;
-	idmef_object_t *alert, *heartbeat;
+	idmef_object_t *alert = NULL;
+	idmef_object_t *heartbeat = NULL;
 
 	tmp = strbuf_new();
 	if ( ! tmp ) {
@@ -410,12 +411,14 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 			
 			if ( ! first_object ) {
 				log(LOG_ERR, "could not get numeric address for object!\n");
+				ret = -1;
 				goto error;
 			}
 			
 			end = strchr(first_object, '.');
 			if ( ! end ) {
 				log(LOG_ERR, "top-level object requested!\n");
+				ret = -1;
 				goto error;
 			}
 			
@@ -496,8 +499,11 @@ error:
 	if ( first_object )
 		free(first_object);
 
-	idmef_object_destroy(alert);
-	idmef_object_destroy(heartbeat);
+	if ( alert )
+		idmef_object_destroy(alert);
+		
+	if ( heartbeat )
+		idmef_object_destroy(heartbeat);
 
 	return ret;
 }
@@ -505,13 +511,13 @@ error:
 
 
 
-strbuf_t *build_request(prelude_sql_connection_t *conn, 
-   		        idmef_object_t **objects, 
-       		        idmef_criterion_t *criterion)
+static strbuf_t *build_request(prelude_sql_connection_t *conn, 
+   		               idmef_object_t **objects, 
+       		               idmef_criterion_t *criterion)
 {
 	strbuf_t *request = NULL;
 	strbuf_t *tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
-	int ret;
+	int ret = -1;
 	
 	request = strbuf_new();
 	if ( ! request )
