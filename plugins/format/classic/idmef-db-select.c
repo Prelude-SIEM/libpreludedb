@@ -325,6 +325,7 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 	idmef_cached_object_t *cached_obj;
 	idmef_object_t *obj;
 	db_object_t *db;
+	char *objname, *objnum;
 	char *table;
 	char *field;
 	char *function;
@@ -372,6 +373,16 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 		obj = idmef_cached_object_get_object(cached_obj);
 
 		db = db_object_find(obj);
+		if ( ! db ) {
+			objname = idmef_object_get_name(obj);
+			objnum = idmef_object_get_numeric(obj);
+			log(LOG_ERR, "object %s [%s] not handled by database specification!\n", objname, objnum);
+			free(objname);
+			free(objnum);
+			ret = -1;
+			goto error;
+		}
+		
 		table = db_object_get_table(db);
 		field = db_object_get_field(db);
 		function = db_object_get_function(db);
