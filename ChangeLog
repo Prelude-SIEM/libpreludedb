@@ -1,3 +1,11 @@
+2003-08-13  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+        * bindings/perl/PreludeDB.i:
+        modified to reflect recent API changes. 
+
+        * bindings/perl/PreludeDB.c:
+        regenerated.
+
 2003-08-12  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-select.c:
@@ -25,7 +33,6 @@
 
 	* src/include/plugin-format.h:
 	added format_select_values and format_get_values callbacks
-	
 
 2003-08-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 

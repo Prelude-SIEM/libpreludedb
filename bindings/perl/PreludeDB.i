@@ -26,6 +26,7 @@
 #include <libprelude/list.h>
 #include <libprelude/idmef.h>
 #include "db-type.h"
+#include "db.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-connection.h"
@@ -144,6 +145,13 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, int ident);
 int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, int ident);
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
+void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
+                                         int distinct,
+                                         idmef_selection_t *selection, 
+                                         idmef_criterion_t *criteria);
+idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
+                                                           void *data,
+                                                           idmef_selection_t *selection);
 
 int prelude_db_connection_get_type(prelude_db_connection_t *dbconn);
 prelude_sql_connection_t *prelude_db_connection_get(prelude_db_connection_t *dbconn);
