@@ -707,8 +707,7 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 		idmef_string_t *string;
 		
 		str = prelude_sql_field_value_string(field);
-		string = idmef_string_new();
-		idmef_string_set(string, str);
+		string = idmef_string_new(str);
 		value = idmef_value_new_string(string);
 		idmef_value_have_own_data(value);
 		break;

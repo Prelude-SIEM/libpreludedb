@@ -1,3 +1,9 @@
+2003-05-05  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/sql.c:
+	(prelude_sql_field_idmef_value):
+	modify to accomodate a change in idmef_string_new() syntax. 
+
 2003-04-27  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-read.c:
