@@ -283,7 +283,7 @@ db_create ()
 				PGPASSWORD=${db_password} psql -h ${db_host} -p ${db_port} -U ${db_user} -d template1
 
 			if [ ! "$?" = "0" ]; then
-				echo "prelude-manager-db-create was unable to create database."
+				echo "prelude-db-create.sh was unable to create database."
 				echo "Please check out your postgresql configuration (pg_hba.conf)"
 				echo "You should have something like that:"
 				echo ${db_host} | grep "^/" >/dev/null
@@ -346,31 +346,23 @@ db_create_users ()
        	echo   
 	echo "-------------- End of Database Support Installation -------------"
 	echo "If it succeeded, you should now be able to launch prelude-manager like that :"
-	echo "==>  prelude-manager --${db_type} --dbhost localhost --dbname ${db_name} --dbuser ${manager_user} --dbpass xxxxxx"
+	echo "==>  prelude-manager --db --type ${db_type} --host localhost --port ${db_port} --name ${db_name} --user ${manager_user} --pass xxxxxx"
 	echo
 	echo "Or you may modify the prelude-manager configuration file (/usr/local/etc/prelude-manager/prelude-manager.conf by default) in order to launch prelude-manager without database arguments:"
 	echo "---------- cut here --->"
-	case $db_type in
-		mysql)
-		    echo "[MySQL]"
-		    ;;
-		pgsql)
-		    echo "[PgSQL]"
-		    ;;
-		*)
-		    exit
-		    ;;
-	esac
+	echo "[db]"
 	echo "# Host the database is listening on."
-        echo "dbhost = ${db_host};"
+        echo "host = ${db_host}"
 	echo "# Port the database is listening on."
-	echo "dbport = ${db_port};"
+	echo "port = ${db_port}"
 	echo "# Name of the database."
-	echo "dbname = ${db_name};"
+	echo "name = ${db_name}"
 	echo "# Username to be used to connect the database."
-	echo "dbuser = ${manager_user};"
+	echo "user = ${manager_user}"
 	echo "# Password used to connect the database."
-	echo "dbpass = xxxxxx;"
+	echo "pass = xxxxxx"
+	echo "# Type of database."
+	echo "type = ${db_type}"
 	echo "<--- cut here ----------"
 	echo 
 	echo "Replace xxxxxx by the password you choose for the manager account"
