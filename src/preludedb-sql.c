@@ -997,7 +997,7 @@ static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf,
 
 
 
-static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf, size_t size)
+static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char **output)
 {
         size_t i = 0;
         const char *input;
@@ -1010,26 +1010,28 @@ static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf,
         input = prelude_string_get_string(string);
         if ( ! input )
                 return -1;
-        
+
+	*output = malloc(strlen(input) + 1);
+	if ( ! *output )
+		return prelude_error_from_errno(errno);
+
         while ( *input ) {
 
-                if ( i == (size - 1) )
-                        return -1;
-                
                 if ( *input == '*' )
-                        buf[i++] = '%';
+                        (*output)[i++] = '%';
                 
                 else if ( *input == '\\' && *(input + 1) == '*' ) {
                         input++;
-                        buf[i++] = '*';
+                        (*output)[i++] = '*';
                 }
                 
-                else buf[i++] = *input;
+                else
+			(*output)[i++] = *input;
 
                 input++;
         }
 
-        buf[i] = 0;
+        (*output)[i] = 0;
         
 	return 0;
 }
@@ -1042,11 +1044,12 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 					   idmef_criterion_operator_t operator)
 {
 	int ret;
-	char buf[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 	prelude_string_t *string;
-	char *tmp;
+	char *escaped;
 
 	if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME ) {
+		char buf[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
+
 		ret = build_criterion_fixed_sql_time_value(value, buf, sizeof (buf));
 		if ( ret < 0 )
 			return ret;
@@ -1055,17 +1058,22 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 	}
 
 	if ( operator == IDMEF_CRITERION_OPERATOR_SUBSTR ) {
-		ret = build_criterion_fixed_sql_like_value(value, buf, sizeof (buf));
+		char *tmp;
+
+		ret = build_criterion_fixed_sql_like_value(value, &tmp);
 		if ( ret < 0 )
 			return ret;
 
-		ret = preludedb_sql_escape(sql, buf, &tmp);
-		if ( ret < 0 )
+		ret = preludedb_sql_escape(sql, tmp, &escaped);
+		if ( ret < 0 ) {
+			free(tmp);
 			return ret;
+		}
 
-		ret = prelude_string_cat(output, tmp);
+		ret = prelude_string_cat(output, escaped);
 
 		free(tmp);
+		free(escaped);
 
 		return ret;		
 	}
@@ -1080,13 +1088,13 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 		return ret;
 	}
 
-	ret = preludedb_sql_escape(sql, prelude_string_get_string(string), &tmp);
+	ret = preludedb_sql_escape(sql, prelude_string_get_string(string), &escaped);
 	prelude_string_destroy(string);
 	if ( ret < 0 )
 		return ret;
 
-	ret = prelude_string_cat(output, tmp);
-	free(tmp);
+	ret = prelude_string_cat(output, escaped);
+	free(escaped);
 
 	return ret;
 }
@@ -1153,10 +1161,11 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 	switch ( idmef_criterion_value_get_type(value) ) {
 	case IDMEF_CRITERION_VALUE_TYPE_VALUE:
 		return build_criterion_fixed_value(sql, output, field, operator,
-						   idmef_criterion_value_get_value(value));
+						  idmef_criterion_value_get_value(value));
 	default:
 		/* nop */;
 	}
+
 	return -1;
 }
 
