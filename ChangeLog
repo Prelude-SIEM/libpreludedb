@@ -7,6 +7,7 @@
 	* bindings/python/preludedb.py:
 	documentation written
 	remove the "close" method (see above)
+	cleanup
 
 2003-12-28  Nicolas Delon  <delon.nicolas@wanado.fr>
 

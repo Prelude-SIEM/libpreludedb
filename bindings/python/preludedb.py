@@ -19,7 +19,9 @@
 
 
 from prelude import *
-from _preludedb import *
+import _prelude
+import _preludedb
+
 
 class Error(Exception):
     def __init__(self, desc="libpreludedb internal error"):
@@ -92,10 +94,10 @@ class PreludeDBMessageIdentList:
         if not ident_handle:
             raise StopIteration
         
-        analyzerid = prelude_db_message_ident_get_analyzerid(ident_handle)
-        ident = prelude_db_message_ident_get_ident(ident_handle)
+        analyzerid = _preludedb.prelude_db_message_ident_get_analyzerid(ident_handle)
+        ident = _preludedb.prelude_db_message_ident_get_ident(ident_handle)
 
-        prelude_db_message_ident_destroy(ident_handle)
+        _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
         return analyzerid, ident
         
@@ -105,7 +107,7 @@ class PreludeDB:
 
     def init():
         """Static method, MUST be called before any instantiation of PreludeDB"""
-        if prelude_db_init() < 0:
+        if _preludedb.prelude_db_init() < 0:
             raise Error()
     init = staticmethod(init)
 
@@ -121,19 +123,19 @@ class PreludeDB:
         """PreludeDB constructor"""
         conn_string = "iface=%s class=%s type=%s format=%s host=%s name=%s user=%s pass=%s" % \
                       (iface, class_, type, format, host, name, user, password)
-        self.res = prelude_db_interface_new_string(conn_string)
+        self.res = _preludedb.prelude_db_interface_new_string(conn_string)
         if not self.res:
             raise DBBadInterface(conn_string)
 
     def __del__(self):
         """PreludeDB destructor"""
-        prelude_db_interface_destroy(self.res)
+        _preludedb.prelude_db_interface_destroy(self.res)
 
     def errno(self):
         """Get the current libpreludedb errno.
 
         The errno is the errno of the underlying database"""
-        errno = prelude_db_interface_errno(self.res)
+        errno = _preludedb.prelude_db_interface_errno(self.res)
         if errno < 0:
             raise Error()
 
@@ -143,7 +145,7 @@ class PreludeDB:
         """Get the current libpreludedb error message.
 
         The error message is the error message of the underlying database"""
-        error = prelude_db_interface_error(self.res)
+        error = _preludedb.prelude_db_interface_error(self.res)
         if not error:
             raise Error()
 
@@ -151,26 +153,26 @@ class PreludeDB:
 
     def connect(self):
         """Connect to the database."""
-        if prelude_db_interface_connect(self.res) < 0:
+        if _preludedb.prelude_db_interface_connect(self.res) < 0:
             raise DBConnectionFailed(self)
 
     def disconnect(self):
         """Disconnect from the database."""
-        if prelude_db_interface_disconnect(self.res) < 0:
+        if _preludedb.prelude_db_interface_disconnect(self.res) < 0:
             raise DBError(self)
 
     def enable_message_cache(self, directory):
         """Enable libpreludedb message cache."""
-        if prelude_db_interface_enable_message_cache(self.res, directory) < 0:
+        if _preludedb.prelude_db_interface_enable_message_cache(self.res, directory) < 0:
             raise Error()
 
     def sql(self):
         """Get the sql handle of the underlying sql database."""
-        dbconn = prelude_db_interface_get_connection(self.res)
+        dbconn = _preludedb.prelude_db_interface_get_connection(self.res)
         if not dbconn:
             raise Error()
 
-        sqlconn = prelude_db_connection_get_sql(dbconn)
+        sqlconn = _preludedb.prelude_db_connection_get_sql(dbconn)
         if not sqlconn:
             raise Error()
 
@@ -189,13 +191,13 @@ class PreludeDB:
         else:
             criteria_res = None
         
-        ident_list_handle = prelude_db_interface_get_alert_ident_list(self.res, criteria_res, limit, offset)
+        ident_list_handle = _preludedb.prelude_db_interface_get_alert_ident_list(self.res, criteria_res, limit, offset)
         if not ident_list_handle:
             return None
         
         return PreludeDBMessageIdentList(ident_list_handle,
-                                         prelude_db_interface_alert_ident_list_destroy,
-                                         prelude_db_interface_get_next_alert_ident)
+                                         _preludedb.prelude_db_interface_alert_ident_list_destroy,
+                                         _preludedb.prelude_db_interface_get_next_alert_ident)
 
     def get_heartbeat_ident_list(self, criteria=None, limit=-1, offset=-1):
         """Get the heartbeat ident list.
@@ -210,41 +212,41 @@ class PreludeDB:
         else:
             criteria_res = None
         
-        ident_list_handle = prelude_db_interface_get_heartbeat_ident_list(self.res, criteria_res, limit, offset)
+        ident_list_handle = _preludedb.prelude_db_interface_get_heartbeat_ident_list(self.res, criteria_res, limit, offset)
         if not ident_list_handle:
             return None
         
         return PreludeDBMessageIdentList(ident_list_handle,
-                                         prelude_db_interface_heartbeat_ident_list_destroy,
-                                         prelude_db_interface_get_next_heartbeat_ident)
+                                         _preludedb.prelude_db_interface_heartbeat_ident_list_destroy,
+                                         _preludedb.prelude_db_interface_get_next_heartbeat_ident)
         
     def __get_message(self, analyzerid, ident, get_message_func):
-        ident_handle = prelude_db_message_ident_new(long(analyzerid), long(ident))
+        ident_handle = _preludedb.prelude_db_message_ident_new(long(analyzerid), long(ident))
         if not ident_handle:
             raise Error()
 
         message_handle = get_message_func(self.res, ident_handle, None)
         
-        prelude_db_message_ident_destroy(ident_handle)
+        _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
         return IDMEFMessage(message_handle)
 
     def get_alert(self, analyzerid, ident):
         """Get an alert."""
-        return self.__get_message(analyzerid, ident, prelude_db_interface_get_alert)
+        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_alert)
 
     def get_heartbeat(self, analyzerid, ident):
         """Get a heartbeat."""
-        return self.__get_message(analyzerid, ident, prelude_db_interface_get_heartbeat)
+        return self.__get_message(analyzerid, ident, _preludedb.prelude_db_interface_get_heartbeat)
 
     def __delete_message(self, analyzerid, ident, delete_message_func):
-        ident_handle = prelude_db_message_ident_new(long(analyzerid), long(ident))
+        ident_handle = _preludedb.prelude_db_message_ident_new(long(analyzerid), long(ident))
         if not ident_handle:
             raise Error()
 
         ret = delete_message_func(self.res, ident_handle)
         
-        prelude_db_message_ident_destroy(ident_handle)
+        _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
         if ret < 0:
             raise DBError(self)
@@ -259,26 +261,26 @@ class PreludeDB:
 
     def get_values(self, selection, criteria=None, distinct=0, limit=-1, offset=-1):
         """Get object values from the database."""
-        selection_handle = prelude_db_object_selection_new()
+        selection_handle = _preludedb.prelude_db_object_selection_new()
         if not selection_handle:
             raise Error()
 
         for selected in selection:
-            selected_handle = prelude_db_selected_object_new_string(selected)
+            selected_handle = _preludedb.prelude_db_selected_object_new_string(selected)
             if not selected_handle:
-                prelude_db_object_selection_destroy(selection_handle)
+                _preludedb.prelude_db_object_selection_destroy(selection_handle)
                 raise Error()
 
-            prelude_db_object_selection_add(selection_handle, selected_handle)
+            _preludedb.prelude_db_object_selection_add(selection_handle, selected_handle)
 
         if criteria:
             criteria_res = criteria.res
         else:
             criteria_res = None
 
-        res = prelude_db_interface_select_values(self.res, selection_handle, criteria_res, distinct, limit, offset)
+        res = _preludedb.prelude_db_interface_select_values(self.res, selection_handle, criteria_res, distinct, limit, offset)
         if not res:
-            prelude_db_object_selection_destroy(selection_handle)
+            _preludedb.prelude_db_object_selection_destroy(selection_handle)
             if self.errno():
                 raise DBError(self)
             return None
@@ -286,36 +288,36 @@ class PreludeDB:
         row_list = [ ]
 
         while True:
-            objval_list = prelude_db_interface_get_values(self.res, res, selection_handle)
+            objval_list = _preludedb.prelude_db_interface_get_values(self.res, res, selection_handle)
             if not objval_list:
                 break
 
             row = [ ]
 
             while True:
-                objval = idmef_object_value_list_get_next(objval_list)
+                objval = _prelude.idmef_object_value_list_get_next(objval_list)
                 if not objval:
                     break
 
-                value = idmef_object_value_get_value(objval)
+                value = _prelude.idmef_object_value_get_value(objval)
                 if not value:
-                    prelude_db_object_selection_destroy(selection_handle)
-                    idmef_object_value_list_destroy(objval)
+                    _preludedb.prelude_db_object_selection_destroy(selection_handle)
+                    _prelude.idmef_object_value_list_destroy(objval)
                     raise Error()
 
                 tmp = idmef_value_c_to_python(value)
                 if not tmp:
-                    prelude_db_object_selection_destroy(selection_handle)
-                    idmef_object_value_list_destroy(objval)
+                    _preludedb.prelude_db_object_selection_destroy(selection_handle)
+                    _prelude.idmef_object_value_list_destroy(objval)
                     raise Error()
 
                 row.append(tmp)
                 
-            idmef_object_value_list_destroy(objval_list)
+            _prelude.idmef_object_value_list_destroy(objval_list)
 
             row_list.append(row)
 
-        prelude_db_object_selection_destroy(selection_handle)
+        _preludedb.prelude_db_object_selection_destroy(selection_handle)
 
         return row_list
 
@@ -332,17 +334,17 @@ class PreludeDBSQL:
 
     def errno(self):
         """Get current errno."""
-        return prelude_sql_errno(self.res)
+        return _preludedb.prelude_sql_errno(self.res)
 
     def error(self):
         """Get current error message."""
-        return prelude_sql_error(self.res)
+        return _preludedb.prelude_sql_error(self.res)
 
     def query(self, query):
         """Execute a query.
 
         Return a PreludeDBSQLTable object if a result a available, None otherwise."""
-        table = prelude_sql_query(self.res, query)
+        table = _preludedb.prelude_sql_query(self.res, query)
         if not table:
             if self.errno():
                 raise SQLError(self)
@@ -352,38 +354,44 @@ class PreludeDBSQL:
 
     def begin(self):
         """Execute an sql begin query."""
-        if prelude_sql_begin(self.res) < 0:
+        if _preludedb.prelude_sql_begin(self.res) < 0:
             raise SQLError(self)
 
     def commit(self):
         """Execute an sql commit query."""
-        if prelude_sql_commit(self.res) < 0:
+        if _preludedb.prelude_sql_commit(self.res) < 0:
             raise SQLError(self)
 
     def rollback(self):
         """Execute an sql rollback query."""
-        if prelude_sql_rollback(self.res) < 0:
+        if _preludedb.prelude_sql_rollback(self.res) < 0:
             raise SQLError(self)
 
 
 
 def _prelude_sql_field_to_python(field):
-     type = prelude_sql_field_info_type(field)
+     type = _preludedb.prelude_sql_field_info_type(field)
 
-     if type == dbtype_int32:
-         return prelude_sql_field_value_int32(field)
-     if type == dbtype_uint32:
-         return prelude_sql_field_value_uint32(field)
-     if type == prelude_int64:
-         return prelude_sql_field_value_int64(field)
-     if type == prelude_uint64:
-         return prelude_sql_field_value_uint64(field)
-     if type == dbtype_float:
-         return prelude_sql_field_value_float(field)
-     if type == dbtype_double:
-         return prelude_sql_field_value_double(field)
-     if type == dbtype_string:
-         return prelude_sql_field_value(field)
+     if type == _preludedb.dbtype_int32:
+         return _preludedb.prelude_sql_field_value_int32(field)
+     
+     if type == _preludedb.dbtype_uint32:
+         return _preludedb.prelude_sql_field_value_uint32(field)
+     
+     if type == _preludedb.dbtype_int64:
+         return _preludedb.prelude_sql_field_value_int64(field)
+     
+     if type == _preludedb.dbtype_uint64:
+         return _preludedb.prelude_sql_field_value_uint64(field)
+     
+     if type == _preludedb.dbtype_float:
+         return _preludedb.prelude_sql_field_value_float(field)
+     
+     if type == _preludedb.dbtype_double:
+         return _preludedb.prelude_sql_field_value_double(field)
+     
+     if type == _preludedb.dbtype_string:
+         return _preludedb.prelude_sql_field_value(field)
 
      raise Error()
 
@@ -399,7 +407,7 @@ class PreludeDBSQLTable:
         self.rows = self.rows_num()
 
     def __del__(self):
-        prelude_sql_table_free(self.res)
+        _preludedb.prelude_sql_table_free(self.res)
 
     def __list__(self):
         """Get the the list of rows contained by the table."""
@@ -410,22 +418,22 @@ class PreludeDBSQLTable:
 
     def field_name(self, i):
         """Get the name of the field number represented by i."""
-        return prelude_sql_field_name(self.res, i)
+        return _preludedb.prelude_sql_field_name(self.res, i)
 
     def fields_num(self):
         """Get the number of fields (columns) in the table."""
-        return prelude_sql_fields_num(self.res)
+        return _preludedb.prelude_sql_fields_num(self.res)
 
     def rows_num(self):
         """Get the number of rows in the table."""
-        return prelude_sql_rows_num(self.res)
+        return _preludedb.prelude_sql_rows_num(self.res)
 
     def row_fetch(self):
         """Fetch the next row from the table.
 
         Return a PreludeDBSQLRow object containing the row or
         None if there is no more rows to fetch"""
-        row = prelude_sql_row_fetch(self.res)
+        row = _preludedb.prelude_sql_row_fetch(self.res)
         if not row:
             return None
 
@@ -467,9 +475,9 @@ class PreludeDBSQLRow:
         """
         
         if type(index) is int:
-            field = prelude_sql_field_fetch(self.res, index)
+            field = _preludedb.prelude_sql_field_fetch(self.res, index)
         elif type(index) is str:
-            field = prelude_sql_field_fetch_by_name(self.res, index)
+            field = _preludedb.prelude_sql_field_fetch_by_name(self.res, index)
         else:
             raise TypeError()
 
