@@ -415,6 +415,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	int field_cnt, nfields;
 	idmef_object_value_list_t *objval_list = NULL;
 	idmef_object_value_t *objval;
+	idmef_selected_object_t *selected_object;
 	idmef_object_t *object;
 	idmef_value_t *value;
 	int cnt;
@@ -435,7 +436,8 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	cnt = 0;
 	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
-		object = idmef_selection_get_next_object(selection);
+		selected_object = idmef_selection_get_next_selected_object(selection);
+		object = idmef_selected_object_get_object(selected_object);
 
 		field = prelude_sql_field_fetch(row, field_cnt);
 		if ( ! field )
@@ -447,10 +449,25 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 				return NULL;
 		}
 
-		value = prelude_sql_field_value_idmef(field);
-		if ( ! value ) {
-			log(LOG_ERR, "could not get idmef value from sql field\n");
-			goto error;
+		if ( idmef_selected_object_get_function(selected_object) == function_count ) {
+			value = prelude_sql_field_value_idmef(field);
+			if ( ! value ) {
+				log(LOG_ERR, "could not get idmef value from sql field\n");
+				goto error;
+			}
+
+		} else {
+			const char *char_val;
+
+			char_val = prelude_sql_field_value(field);
+			if ( ! char_val )
+				goto error;
+
+			value = idmef_value_new_for_object(object, char_val);
+			if ( ! value ) {
+				log(LOG_ERR, "could not build idmef value from object\n");
+				goto error;
+			}
 		}
 
 		objval = idmef_object_value_new(idmef_object_ref(object), value);

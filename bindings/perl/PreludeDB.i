@@ -126,6 +126,10 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 
 /* this piece of code is not thread safe... */
 
+/*
+ * FIXME: do data checking
+ */
+
 %typemap(in) prelude_db_alert_uident_t * {
 	static prelude_db_alert_uident_t uident;
 	HV *hv;

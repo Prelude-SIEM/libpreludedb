@@ -1,3 +1,8 @@
+2003-10-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/classic.c:
+	bug fix: build value the right way
+
 2003-10-12  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:
