@@ -539,7 +539,7 @@ strbuf_t *build_request(prelude_sql_connection_t *conn,
 			goto error;
 	}
 	
-	ret = strbuf_sprintf(request, "SELECT %s FROM %s WHERE %s %s %s ", 
+	ret = strbuf_sprintf(request, "SELECT DISTINCT %s FROM %s WHERE %s %s %s ", 
 		             strbuf_string(fields), 
 		             strbuf_string(tables), 
 		             strbuf_string(where1), 
