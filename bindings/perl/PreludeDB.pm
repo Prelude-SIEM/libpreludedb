@@ -180,7 +180,7 @@ sub	new
 sub	enable_message_cache
 {
     my	$self = shift;
-    my	$directory = shift || "/tmp/.libpreludedb-cache";
+    my	$directory = shift || return 0;
 
     return (prelude_db_interface_enable_message_cache($$self, $directory) < 0) ? 0 : 1;
 }
