@@ -6,6 +6,7 @@ include_HEADERS = 			\
 	preludedb-plugin-format.h	\
 	preludedb-sql-settings.h	\
 	preludedb-sql.h			\
+	preludedb-version.h		\
 	preludedb-error.h		\
 	preludedb.h
 
