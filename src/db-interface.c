@@ -85,6 +85,8 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         	interface->name = strdup(name);
         else
         	interface->name = strdup("(unnamed)");
+
+	interface->active = 1;
         
 	INIT_LIST_HEAD(&interface->filter_list);
         
@@ -247,15 +249,13 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 	if ( ! interface->db_connection )
 		return -2;
 
-	ret = prelude_db_interface_deactivate(interface);
-	if ( ret < 0 )
-		return -3;
+	prelude_db_interface_deactivate(interface);
 	
 	switch ( prelude_db_connection_get_type(interface->db_connection) ) {
             
         	case prelude_db_type_sql:
-         	       prelude_sql_close(prelude_db_connection_get(interface->db_connection));
-                	return 0;
+         		prelude_sql_close(prelude_db_connection_get(interface->db_connection));
+                	break;
                 
         	default:
                 	log(LOG_ERR, "%s: not supported connection type %d\n", interface->name, 
@@ -263,7 +263,8 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
                 	return -4;
 	}
 
-	/* not reached */		
+	prelude_db_connection_destroy(interface->db_connection);
+	
 	return 0;
 }
 
@@ -275,11 +276,10 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 	if ( ! interface )
 		return -1;
 	
-	if ( interface->active )
-		prelude_db_interface_deactivate(interface);
-
 	if ( interface->db_connection )
 		prelude_db_interface_disconnect(interface);
+	
+	prelude_db_connection_data_destroy(interface->connection_data);
 	
 	/* FIXME: when filters are implemented, destroy interface->filter_list here */
 	

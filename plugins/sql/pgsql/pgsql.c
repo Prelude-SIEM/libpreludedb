@@ -56,8 +56,7 @@ typedef enum {
 	allocated = 1,
 	connected = 2,
 	connection_failed = 3,
-	connection_closed = 4,
-	transaction = 5
+	transaction = 4
 } session_status_t;
 
 
@@ -101,12 +100,9 @@ static void *db_setup(const char *dbhost, const char *dbport, const char *dbname
 
 
 
-static int db_cleanup(void *s)
+static void cleanup(void *s)
 {
         session_t *session = s;
-        
-	if ( session->status != connection_closed && session->status != connection_failed )
-                return -ERR_PLUGIN_DB_NOT_CONNECTED;
 	
 	free(session->dbhost);
 	free(session->dbport);
@@ -114,8 +110,6 @@ static int db_cleanup(void *s)
 	free(session->dbuser);
 	free(session->dbpass);
         free(session);
-	
-	return 0;
 }
 
 
@@ -178,9 +172,10 @@ static void db_close(void *s)
 		
 	if ( session->status == transaction )
 		db_rollback(s);
-    
-	session->status = connection_closed;
+
         PQfinish(session->pgsql);
+        
+        cleanup(s);
 }
 
 
@@ -398,8 +393,7 @@ static int db_connect(void *s)
         session_t *session = s;
         
 	if ( session->status != allocated &&
-             session->status != connection_failed &&
-             session->status != connection_closed )
+             session->status != connection_failed )
 		return -ERR_PLUGIN_DB_ALREADY_CONNECTED;
 	
         session->pgsql = PQsetdbLogin(session->dbhost, session->dbport, 

@@ -45,45 +45,67 @@
 static void *get_sql_connection_data(const char *config)
 {
 	prelude_sql_connection_data_t *data;
+	char *val;
 	int ret;
 	
 	data = prelude_sql_connection_data_new();
 	if ( ! data )
 		return NULL;
+	
+	val = parameter_value(config, "type");
+	if ( val ) {
+		ret = prelude_sql_connection_data_set_type(data, val);
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
 		
-	ret = prelude_sql_connection_data_set_type(data, 
-		parameter_value(config, "type"));
-	if ( ret < 0 ) {
-		free(data);
-		return NULL;
+		free(val);
 	}
 
-	ret = prelude_sql_connection_data_set_host(data, 
-		parameter_value(config, "host"));
-	if ( ret < 0 ) {
-		free(data);
-		return NULL;
+	val = parameter_value(config, "host");
+	ret = prelude_sql_connection_data_set_host(data, val);
+	if ( val ) {
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
+		
+		free(val);
 	}
 	
-	ret = prelude_sql_connection_data_set_name(data, 
-		parameter_value(config, "name"));
-	if ( ret < 0 ) {
-		free(data);
-		return NULL;
-	}
+	val = parameter_value(config, "name");
+	if ( val ) {
+		ret = prelude_sql_connection_data_set_name(data, val);
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
 		
-	ret = prelude_sql_connection_data_set_user(data, 
-		parameter_value(config, "user"));
-	if ( ret < 0 ) {
-		free(data);
-		return NULL;
+		free(val);
 	}
+	
+	val = parameter_value(config, "user");
+	if ( val ) {
+		ret = prelude_sql_connection_data_set_user(data, val);
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
 		
-	ret = prelude_sql_connection_data_set_pass(data, 
-		parameter_value(config, "pass"));
-	if ( ret < 0 ) {
-		free(data);
-		return NULL;
+		free(val);
+	}
+	
+	
+	val = parameter_value(config, "pass");
+	if ( val ) {
+		ret = prelude_sql_connection_data_set_pass(data, val);
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
+		
+		free(val);
 	}
 	
 	return data;

@@ -1,5 +1,44 @@
 2002-12-19  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* plugins/sql/mysql.c
+	Remove no longer used connection_closed state. 
+	(db_connect):
+	modify accordingly
+	(db_cleanup):
+	rename to cleanup. Change type to void. Remove unneeded check
+	for connection state. 
+	(db_close):
+	call cleanup().
+
+	* plugins/pgsql/pgsql.c:
+	ditto.
+
+	* src/db-connection-data.c(prelude_db_connection_data_destroy):
+	add missing call to free the structure.
+
+	* src/db-connection.c:
+	* src/include/db-connection.h:
+	(prelude_db_connection_destroy):
+	implemented.
+
+	* src/db-interface-string.c:
+	fix memory leaks related to calls to parameter_value()
+
+	* src/db-interface.c
+	(prelude_db_interface_new):
+	set interface state to active after creating
+	(prelude_db_interface_destroy):
+	don't abort on prelude_db_interface_deactivate() error
+	add missing call to prelude_db_connection_destroy()
+	
+	* src/sql.c
+	(prelude_sql_escape):
+	style fix.
+	(prelude_sql_close):
+	free() the structure
+	
+2002-12-19  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* plugins/sql/mysql/mysql.c:
 	implement handling of queries returning results
 	(this has been done by Nicolas Delon <delon.nicolas@wanadoo.fr>)

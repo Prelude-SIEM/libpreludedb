@@ -85,6 +85,8 @@ void prelude_db_connection_data_destroy(prelude_db_connection_data_t *data)
 			log(LOG_ERR, "unknown database type %d\n", data->type);
 			return ;
 	}
+	
+	free(data);
 }
 
 

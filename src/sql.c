@@ -230,7 +230,7 @@ prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const cha
 
 char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string) 
 {
-	if (!string) 
+	if ( ! string ) 
 		return strdup("NULL");
 	
 	return (conn && conn->plugin) ? 
@@ -264,6 +264,8 @@ void prelude_sql_close(prelude_sql_connection_t *conn)
 {
 	if (conn && conn->plugin)
     		conn->plugin->db_close(conn->session);
+		
+	free(conn);
 }
 
 

@@ -72,3 +72,12 @@ void *prelude_db_connection_get(prelude_db_connection_t *conn)
 
 
 
+void prelude_db_connection_destroy(prelude_db_connection_t *conn)
+{
+	if ( ! conn )
+		return ;
+	
+	free(conn);
+}
+
+
