@@ -130,7 +130,7 @@ sub	init
 
 sub	shutdown
 {
-    return (prelude_db_shutdown() < 0) ? 0 : 1;
+    prelude_db_shutdown();
 }
 
 sub	_get_criteria
@@ -206,50 +206,48 @@ sub	get_sql_connection
     return $sqlconn ? bless(\$sqlconn, "PreludeDBSQL") : undef;
 }
 
-sub	get_alert_uident_list
+sub	get_message_ident_list
 {
      my	$self = shift;
+     my $get_message_ident_list_func = shift;
+     my $message_ident_list_destroy_func = shift;
      my	$criteria;
-     my	$uident_list_handle;
-     my	@uident_list;
-     my	$uident;
+     my	$ident_list_handle;
+     my @ident_list;
+     my	$ident_handle;
 
      if ( defined $_[0] ) {
-	 $criteria = _get_criteria($_[0]) or return();
+	 $criteria = _get_criteria($_[0]) or return ();
      }
 
-     $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$criteria) or return ();
+     $ident_list_handle = &$get_message_ident_list_func($$self, $criteria ? $$criteria : undef) or return ();
 
-     while ( ($uident = PreludeDB::prelude_db_interface_get_next_alert_uident($uident_list_handle)) ) {
-	 push(@uident_list, $uident);
+     while ( $ident_handle = PreludeDB::prelude_db_interface_get_next_alert_ident($ident_list_handle) ) {
+	 my $ident = { };
+
+	 $ident->{ident} = PreludeDB::prelude_db_message_ident_get_ident($ident_handle);
+	 $ident->{analyzerid} = PreludeDB::prelude_db_message_ident_get_analyzerid($ident_handle);
+	 PreludeDB::prelude_db_message_ident_destroy($ident_handle);
+	 push(@ident_list, $ident);
      }
 
-     PreludeDB::prelude_db_interface_free_alert_uident_list($uident_list_handle);
+     &$message_ident_list_destroy_func($ident_list_handle);
 
-     return @uident_list;
+     return @ident_list;
 }
 
-sub	get_heartbeat_uident_list
+sub	get_alert_ident_list
 {
-    my	$self = shift;
-    my	$criteria;
-    my	$uident_list_handle;
-    my	@uident_list;
-    my	$uident;
+    (shift)->get_message_ident_list(\&PreludeDB::prelude_db_interface_get_alert_ident_list,
+				    \&PreludeDB::prelude_db_interface_alert_ident_list_destroy,
+				    @_);
+}
 
-    if ( defined $_[0] ) {
-	$criteria = _get_criteria($_[0]) or return();
-    }
-
-    $uident_list_handle = PreludeDB::prelude_db_interface_get_heartbeat_uident_list($$self, $$criteria) or return ();
-
-    while ( ($uident = PreludeDB::prelude_db_interface_get_next_heartbeat_uident($uident_list_handle)) ) {
-	push(@uident_list, $uident);
-    }
-
-    PreludeDB::prelude_db_interface_free_heartbeat_uident_list($uident_list_handle);
-
-    return @uident_list;
+sub	get_heartbeat_ident_list
+{
+    (shift)->get_message_ident_list(\&PreludeDB::prelude_db_interface_get_heartbeat_ident_list,
+				    \&PreludeDB::prelude_db_interface_heartbeat_ident_list_destroy,
+				    @_);
 }
 
 sub	_build_object_list
@@ -278,42 +276,47 @@ sub	_build_object_list
     return $object_list_handle;
 }
 
-sub	get_alert
+sub	get_message
 {
     my	$self = shift;
-    my	$uident = shift || return undef;
+    my	$get_message_func = shift;
+    my	$ident_hash = shift || return undef;
     my	@object_list = @_;
     my	$object_list_handle;
+    my	$ident_handle;
     my	$message;
+    my	$ident;
+
+    unless ( defined($ident_hash->{analyzerid}) && defined($ident_hash->{ident}) ) {
+	return undef;
+    }
 
     if ( @object_list ) {
 	$object_list_handle = _build_object_list(@object_list) or return undef;
     }
 
-    $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident, $object_list_handle);
+    $ident = PreludeDB::prelude_db_message_ident_new($ident_hash->{analyzerid}, $ident_hash->{ident});
+    unless ( $ident ) {
+	Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
+	return undef;
+    }
 
+    $message = &$get_message_func($$self, $ident, $object_list_handle);
+
+    PreludeDB::prelude_db_message_ident_destroy($ident);
     Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
 
+sub	get_alert
+{
+    (shift)->get_message(\&PreludeDB::prelude_db_interface_get_alert, @_);
+}
+
 sub	get_heartbeat
 {
-    my	$self = shift;
-    my	$uident = shift || return undef;
-    my	@object_list = @_;
-    my	$object_list_handle;
-    my	$message;
-
-    if ( @object_list ) {
-	$object_list_handle = _build_object_list(@object_list) or return undef;
-    }
-
-    $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident, $object_list_handle);
-
-    Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
-
-    return $message ? bless(\$message, "IDMEFMessage") : undef;
+    (shift)->get_message(\&PreludeDB::prelude_db_interface_get_heartbeat, @_);
 }
 
 sub	delete_alert

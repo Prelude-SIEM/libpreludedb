@@ -600,7 +600,7 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	char *table, *field, *function, *top_table, *top_field, *ident_field;
 	char *condition, *table_alias;
 	idmef_relation_t relation;
-	char *value;
+	char *value = NULL;
 	int retval;
 
 	object = idmef_criterion_get_object(criterion);
@@ -631,9 +631,11 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	if ( ! table_alias )
 		return -1;
 
-	value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
-	if ( ! value )
-		return -2;
+	if ( idmef_criterion_get_value(criterion) ) {
+		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN);
+		if ( ! value )
+			return -2;
+	}
 
 	retval = relation_to_sql(where,
 				 field ? table_alias : NULL,

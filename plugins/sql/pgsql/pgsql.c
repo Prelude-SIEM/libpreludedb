@@ -53,9 +53,9 @@
 
 
 typedef enum {
-	st_allocated = 1,
-	st_connected,
+	st_allocated,
 	st_connection_failed,
+	st_connected,
 	st_query
 } session_status_t;
 
@@ -132,18 +132,9 @@ static int db_begin(void *s)
 
 	session->dberrno = 0;
 
-	switch ( session->status ) {
-
-	case st_connected:
-		break;
-		
-	case st_query:
-		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
-		return NULL;
-
-	default:
+	if ( session->status < st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;
+		return -session->dberrno;
 	}
        
 	db_query(session, "BEGIN;");
@@ -244,16 +235,7 @@ static void *db_query(void *s, const char *query)
 
 	session->dberrno = 0;
 
-	switch ( session->status ) {
-
-	case st_connected:
-		break;
-		
-	case st_query:
-		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
-		return NULL;
-
-	default:
+	if ( session->status < st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
 		return NULL;
 	}
@@ -277,6 +259,11 @@ static void *db_query(void *s, const char *query)
 		return NULL;
 
 	case PGRES_TUPLES_OK:
+		if ( PQntuples(res) == 0 ) {
+			PQclear(res);
+			return NULL;
+		}
+
 		session->status = st_query;
 		session->row = 0;
 		return res;
@@ -301,13 +288,12 @@ static int db_connect(void *s)
         session_t *session = s;
 
 	session->dberrno = 0;
-	
-	if ( session->status != st_allocated &&
-             session->status != st_connection_failed ) {
+
+	if ( session->status >= st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_ALREADY_CONNECTED;
 		return -session->dberrno;
 	}
-	
+
         session->pgsql = PQsetdbLogin(session->dbhost, session->dbport, 
                                       NULL, NULL, session->dbname, session->dbuser, session->dbpass);
 
@@ -320,7 +306,7 @@ static int db_connect(void *s)
         }
 
 	session->status = st_connected;
-        
+
         return 0;
 }
 

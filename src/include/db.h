@@ -25,6 +25,6 @@
 #define _LIBPRELUDEDB_DB_H
 
 int prelude_db_init(void);
-int prelude_db_shutdown(void);
+void prelude_db_shutdown(void);
 
 #endif /* LIBPRELUDEDB_DB_H */

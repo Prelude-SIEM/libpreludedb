@@ -41,31 +41,31 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db);
 
 int prelude_db_interface_connect(prelude_db_interface_t *interface);
 
-prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-									 idmef_criteria_t *criteria);
+prelude_db_message_ident_list_t *prelude_db_interface_get_alert_ident_list(prelude_db_interface_t *interface,
+									   idmef_criteria_t *criteria);
 
-prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
-										 idmef_criteria_t *criteria);
+prelude_db_message_ident_list_t *prelude_db_interface_get_heartbeat_ident_list(prelude_db_interface_t *interface,
+									       idmef_criteria_t *criteria);
 
-void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list);
+void prelude_db_interface_alert_ident_list_destroy(prelude_db_message_ident_list_t *ident_list);
 
-void prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list);
+void prelude_db_interface_heartbeat_ident_list_destroy(prelude_db_message_ident_list_t *ident_list);
 
-prelude_db_alert_uident_t *prelude_db_interface_get_next_alert_uident(prelude_db_alert_uident_list_t *uident_list);
+prelude_db_message_ident_t *prelude_db_interface_get_next_alert_ident(prelude_db_message_ident_list_t *ident_list);
 
-prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(prelude_db_heartbeat_uident_list_t *uident_list);
+prelude_db_message_ident_t *prelude_db_interface_get_next_heartbeat_ident(prelude_db_message_ident_list_t *ident_list);
 
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface, 
-						prelude_db_alert_uident_t *uident,
+						prelude_db_message_ident_t *ident,
 						idmef_object_list_t *object_list);
 
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
-						    prelude_db_heartbeat_uident_t *uident,
+						    prelude_db_message_ident_t *ident,
 						    idmef_object_list_t *object_list);
 
-int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident);
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_message_ident_t *ident);
 
-int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident);
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_message_ident_t *ident);
 
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 
@@ -89,6 +89,6 @@ const char * prelude_db_interface_error(prelude_db_interface_t *interface);
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 
-int prelude_db_interface_destroy(prelude_db_interface_t *interface);
+void prelude_db_interface_destroy(prelude_db_interface_t *interface);
 
 #endif /* _LIBPRELUDEDB_DB_INTERFACE_H */

@@ -30,7 +30,7 @@
 #include "db.h"
 #include "sql-connection-data.h"
 #include "sql.h"
-#include "db-uident.h"
+#include "db-message-ident.h"
 #include "db-connection.h"
 #include "db-connection-data.h"
 #include "db-object-selection.h"
@@ -142,149 +142,10 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	}
 };
 
-/* this piece of code is not thread safe... */
-
-%typemap(in) prelude_db_alert_uident_t * {
-	static prelude_db_alert_uident_t uident;
-	HV *hv;
-	SV **alert_ident;
-	SV **analyzerid;
-
-	/* fetch hash */
-	if ( ! SvROK($input) || SvTYPE(SvRV($input)) != SVt_PVHV ) {
-		croak("Argument is not a hash reference value\n");
-	}
-
-	hv = (HV *) SvRV($input);
-	/* *** */
-
-	/* fetch alert_ident field from the hash */
-	alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
-
-	if ( ! alert_ident )
-		croak("Field alert_ident of hash does not exist\n");
-
-	if ( ! SvPOK(*alert_ident) && ! SvIOK(*alert_ident) )
-		croak("Field alert_ident of hash is not a simple scalar as expected\n");
-
-	sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
-	/* *** */
-
-	/* fetch analyzerid from the hash  */
-	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
-
-	if ( ! analyzerid )
-		croak("Field analyzerid of hash does not exist\n");
-
-	if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
-		croak("Field analyzerid of hash is not a simple scalar as expected\n");
-
-	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
-	/* ***  */
-
-	$1 = &uident;
-};
-
-%typemap(out) prelude_db_alert_uident_t * {
-	prelude_db_alert_uident_t *uident = $1;
-	HV *hv;
-	SV *sv;
-	char tmp[32];
-	int len;
-
-	if ( uident ) {
-
-		hv = newHV();
-
-		len = sprintf(tmp, "%llu", uident->alert_ident);
-		sv = newSVpv(tmp, len);
-		hv_store(hv, "alert_ident", sizeof ("alert_ident") - 1, sv, 0);
-
-		len = sprintf(tmp, "%llu", uident->analyzerid);
-		sv = newSVpv(tmp, len);
-		hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
-
-		$result = sv_2mortal(newRV_noinc((SV *) hv));
-
-	} else {
-		$result = &PL_sv_undef;
-	}
-
-	argvi++;
-};
-
-%typemap(in) prelude_db_heartbeat_uident_t * {
-	static prelude_db_heartbeat_uident_t uident;
-	HV *hv;
-	SV **heartbeat_ident;
-	SV **analyzerid;
-
-	/* fetch hash */
-	if ( ! SvROK($input) || SvTYPE(SvRV($input)) != SVt_PVHV ) {
-		croak("Argument is not a hash reference value\n");
-	}
-
-	hv = (HV *) SvRV($input);
-	/* *** */
-
-	/* fetch heartbeat_ident field from the hash */
-	heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
-
-	if ( ! heartbeat_ident )
-		croak("Field heartbeat_ident of hash does not exist\n");
-
-	if ( ! SvPOK(*heartbeat_ident) && ! SvIOK(*heartbeat_ident) )
-		croak("Field heartbeat_ident of hash is not a simple scalar as expected\n");
-
-	sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
-	/* *** */
-
-	/* fetch analyzerid from the hash  */
-	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
-
-	if ( ! analyzerid )
-		croak("Field analyzerid of hash does not exist\n");
-
-	if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
-		croak("Field analyzerid of hash is not a simple scalar as expected\n");
-
-	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
-	/* ***  */
-
-	$1 = &uident;
-};
-
-%typemap(out) prelude_db_heartbeat_uident_t * {
-	prelude_db_heartbeat_uident_t *uident = $1;
-	HV *hv;
-	SV *sv;
-	char tmp[32];
-	int len;
-
-	if ( uident ) {
-
-		hv = newHV();
-
-		len = sprintf(tmp, "%llu", uident->heartbeat_ident);
-		sv = newSVpv(tmp, len);
-		hv_store(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, sv, 0);
-
-		len = sprintf(tmp, "%llu", uident->analyzerid);
-		sv = newSVpv(tmp, len);
-		hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
-
-		$result = sv_2mortal(newRV_noinc((SV *) hv));
-
-	} else {
-		$result = &PL_sv_undef;
-	}
-
-	argvi++;
-};
-
 %include "../../src/include/db-type.h"
 %include "../../src/include/db.h"
 %include "../../src/include/db-object-selection.h"
+%include "../../src/include/db-message-ident.h"
 %include "../../src/include/db-interface.h"
 %include "../../src/include/db-interface-string.h"
 %include "../../src/include/db-connection.h"

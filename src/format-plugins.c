@@ -42,7 +42,7 @@
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
-#include "db-uident.h"
+#include "db-message-ident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object-selection.h"

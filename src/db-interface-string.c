@@ -33,7 +33,7 @@
 #include <libprelude/idmef.h>
 
 #include "db-type.h"
-#include "db-uident.h"
+#include "db-message-ident.h"
 #include "sql-connection-data.h"
 #include "db-object-selection.h"
 #include "db-connection.h" 

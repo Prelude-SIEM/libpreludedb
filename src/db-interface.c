@@ -36,13 +36,15 @@
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
-#include "db-uident.h"
+#include "db-message-ident.h"
 #include "db-connection.h" 
 #include "db-connection-data.h"
 #include "db-object-selection.h"
 #include "plugin-format.h"
 
 #include "db-interface.h"
+
+
 
 struct prelude_db_interface {
 	char *name;
@@ -54,21 +56,11 @@ struct prelude_db_interface {
 
 
 
-struct prelude_db_alert_uident_list {
+struct prelude_db_message_ident_list {
 	prelude_db_interface_t *interface;
-	prelude_db_alert_uident_t *uidents;
-	size_t size;
-	int next_uident;
+	void *res;
 };
 
-
-
-struct prelude_db_heartbeat_uident_list {
-	prelude_db_interface_t *interface;
-	prelude_db_heartbeat_uident_t *uidents;
-	size_t size;
-	int next_uident;
-};
 
 
 prelude_db_interface_t *prelude_db_interface_new(const char *name,
@@ -202,184 +194,151 @@ int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface,
 
 
 
-prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-                                                                           idmef_criteria_t *criteria)
+static prelude_db_message_ident_list_t *
+prelude_db_interface_get_message_ident_list(prelude_db_interface_t *interface,
+					    idmef_criteria_t *criteria,
+					    void *(*get_list_func)(prelude_db_connection_t *,
+								   idmef_criteria_t *))
 {
-        int size;
-        prelude_db_alert_uident_t *alert_uidents;
-        prelude_db_alert_uident_list_t *uident_list;
-        
-	if ( ! interface )
-		return NULL;
-		
+	void *res;
+	prelude_db_message_ident_list_t *ident_list;
+
 	if ( ! interface->db_connection )
 		return NULL;
-		
-	if ( ! interface->format )
-		return NULL;
-	
-	if ( ! interface->format->format_get_alert_uident_list )
-		return NULL;
 
-	size = interface->format->format_get_alert_uident_list(interface->db_connection, criteria, &alert_uidents);
-	if ( size <= 0 )
-		return NULL;
-
-	uident_list = malloc(sizeof(*uident_list));
-        if ( ! uident_list ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
-        }
-         
-	uident_list->interface = interface;
-	uident_list->uidents = alert_uidents;
-	uident_list->size = size;
-	uident_list->next_uident = 0;
-
-	return uident_list;
-}
-
-
-
-prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
-										   idmef_criteria_t *criteria)
-{
-        int size;
-	prelude_db_heartbeat_uident_list_t *uident_list;
-	prelude_db_heartbeat_uident_t *heartbeat_uidents;
-	
-	if ( ! interface )
-		return NULL;
-		
-	if ( ! interface->db_connection )
-		return NULL;
-		
-	if ( ! interface->format )
-		return NULL;
-	
-	if ( ! interface->format->format_get_heartbeat_uident_list )
+	if ( ! get_list_func )
 		return NULL;
         
-	size = interface->format->format_get_heartbeat_uident_list(interface->db_connection, criteria, &heartbeat_uidents);
-	if ( size <= 0 )
+	ident_list = malloc(sizeof (*ident_list));
+	if ( ! ident_list ) {
+		log(LOG_ERR, "memory exhausted.\n");
 		return NULL;
+	}
 
-	uident_list = malloc(sizeof (*uident_list));
-        if ( ! uident_list ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
-        }
-        
-	uident_list->interface = interface;
-	uident_list->uidents = heartbeat_uidents;
-	uident_list->size = size;
-	uident_list->next_uident = 0;
+	res = get_list_func(interface->db_connection, criteria);
+	if ( ! res ) {
+		free(ident_list);
+		return NULL;
+	}
 
-	return uident_list;
+	ident_list->interface = interface;
+	ident_list->res = res;
+
+	return ident_list;
 }
 
 
 
-void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list)
+prelude_db_message_ident_list_t *prelude_db_interface_get_alert_ident_list(prelude_db_interface_t *interface,
+									   idmef_criteria_t *criteria)
 {
-	if ( ! uident_list )
+	if ( ! interface->format )
+		return NULL;
+
+	return prelude_db_interface_get_message_ident_list(interface, criteria,
+							   interface->format->format_get_alert_ident_list);
+}
+
+
+
+prelude_db_message_ident_list_t *prelude_db_interface_get_heartbeat_ident_list(prelude_db_interface_t *interface,
+									       idmef_criteria_t *criteria)
+{
+	if ( ! interface->format )
+		return NULL;
+
+	return prelude_db_interface_get_message_ident_list(interface, criteria,
+							   interface->format->format_get_heartbeat_ident_list);
+}
+
+
+
+static void prelude_db_interface_message_ident_list_destroy(prelude_db_message_ident_list_t *ident_list,
+							    void (*destroy_ident_list_func)(prelude_db_connection_t *connection,
+											    void *res))
+{
+	if ( ! destroy_ident_list_func )
 		return;
 
-	free(uident_list->uidents);
-	free(uident_list);
+	destroy_ident_list_func(ident_list->interface->db_connection, ident_list->res);
+
+	free(ident_list);
 }
 
 
 
-void prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list)
+void prelude_db_interface_alert_ident_list_destroy(prelude_db_message_ident_list_t *ident_list)
 {
-	if ( ! uident_list )
-		return;
-
-	free(uident_list->uidents);
-	free(uident_list);
+	prelude_db_interface_message_ident_list_destroy(ident_list,
+							ident_list->interface->format->format_alert_ident_list_destroy);
 }
 
 
 
-prelude_db_alert_uident_t *prelude_db_interface_get_next_alert_uident(prelude_db_alert_uident_list_t *uident_list)
+void prelude_db_interface_heartbeat_ident_list_destroy(prelude_db_message_ident_list_t *ident_list)
 {
-	prelude_db_alert_uident_t *uident;
-	
-	if ( ! uident_list )
-		return NULL;
-
-	return ((uident_list->next_uident < uident_list->size) ?
-		&uident_list->uidents[uident_list->next_uident++] :
-		NULL);
+	prelude_db_interface_message_ident_list_destroy(ident_list,
+							ident_list->interface->format->format_heartbeat_ident_list_destroy);
 }
 
 
 
-prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(prelude_db_heartbeat_uident_list_t *uident_list)
+prelude_db_message_ident_t *prelude_db_interface_get_next_alert_ident(prelude_db_message_ident_list_t *ident_list)
 {
-	if ( ! uident_list )
-		return NULL;
+	return ident_list->interface->format->format_get_next_alert_ident(ident_list->interface->db_connection,
+									  ident_list->res);
+}
 
-	return ((uident_list->next_uident < uident_list->size) ? 
-		&uident_list->uidents[uident_list->next_uident++] :
-		NULL);
+
+
+prelude_db_message_ident_t *prelude_db_interface_get_next_heartbeat_ident(prelude_db_message_ident_list_t *ident_list)
+{
+	return ident_list->interface->format->format_get_next_heartbeat_ident(ident_list->interface->db_connection,
+									      ident_list->res);
 }
 
 
 
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface,
-						prelude_db_alert_uident_t *uident,
+						prelude_db_message_ident_t *ident,
 						idmef_object_list_t *object_list)
 {
-	if ( ! interface )
-		return NULL;
-
 	if ( ! interface->format->format_get_alert )
 		return NULL;
 
-	return interface->format->format_get_alert(interface->db_connection, uident, object_list);
+	return interface->format->format_get_alert(interface->db_connection, ident, object_list);
 }
 
 
 
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
-						    prelude_db_heartbeat_uident_t *uident,
+						    prelude_db_message_ident_t *ident,
 						    idmef_object_list_t *object_list)
 {
-	if ( ! interface )
-		return NULL;
-
 	if ( ! interface->format->format_get_heartbeat )
 		return NULL;
 
-	return interface->format->format_get_heartbeat(interface->db_connection, uident, object_list);
+	return interface->format->format_get_heartbeat(interface->db_connection, ident, object_list);
 }
 
 
 
-int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident)
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_message_ident_t *ident)
 {
-	if ( ! interface )
-		return -1;
-
 	if ( ! interface->format->format_delete_alert )
-		return -2;
+		return -1;
 
-	return interface->format->format_delete_alert(interface->db_connection, uident);
+	return interface->format->format_delete_alert(interface->db_connection, ident);
 }
 
 
 
-int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident)
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_message_ident_t *ident)
 {
-	if ( ! interface )
+	if ( ! interface->format->format_delete_heartbeat )
 		return -1;
 
-	if ( ! interface->format->format_delete_heartbeat )
-		return -2;
-
-	return interface->format->format_delete_heartbeat(interface->db_connection, uident);
+	return interface->format->format_delete_heartbeat(interface->db_connection, ident);
 }
 
 
@@ -401,7 +360,7 @@ prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_d
 int prelude_db_interface_errno(prelude_db_interface_t *interface)
 {
         int type;
-	prelude_sql_connection_t * sql;
+	prelude_sql_connection_t *sql;
 	
 	if ( ! interface )
 		return -1;
@@ -422,7 +381,7 @@ int prelude_db_interface_errno(prelude_db_interface_t *interface)
 
 const char *prelude_db_interface_error(prelude_db_interface_t *interface)
 {
-	prelude_sql_connection_t * sql;
+	prelude_sql_connection_t *sql;
 	
 	if ( ! interface )
 		return NULL;
@@ -488,7 +447,6 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 
 
 
-
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
 							   void *data,
 							   prelude_db_object_selection_t *object_selection)
@@ -504,12 +462,8 @@ idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_
 
 
 
-
-int prelude_db_interface_destroy(prelude_db_interface_t *interface)
+void prelude_db_interface_destroy(prelude_db_interface_t *interface)
 {
-	if ( ! interface )
-		return -1;
-	
 	if ( interface->db_connection )
 		prelude_db_interface_disconnect(interface);
 	
@@ -521,6 +475,4 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 		free(interface->name);
 		
 	free(interface);
-	
-	return 0;
 }

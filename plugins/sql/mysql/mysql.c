@@ -64,9 +64,9 @@
  */
 
 typedef enum {
-	st_allocated = 1,
-	st_connected,
+	st_allocated,
 	st_connection_failed,
+	st_connected,
 	st_query
 } session_status_t;
 
@@ -195,16 +195,7 @@ static void *db_query(void *s, const char *query)
 
 	session->dberrno = 0;
 	
-	switch ( session->status ) {
-
-	case st_connected:
-		break;
-		
-	case st_query:
-		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
-		return NULL;
-
-	default:
+	if ( session->status < st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
 		return NULL;
 	}
@@ -247,18 +238,9 @@ static int db_begin(void *s)
 
 	session->dberrno = 0;
 
-	switch ( session->status ) {
-
-	case st_connected:
-		break;
-
-	case st_query:
-		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
-		return NULL;
-
-	default:
+	if ( session->status < st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;		
+		return -session->dberrno;
 	}
 
 	db_query(session, "BEGIN;");
@@ -311,13 +293,11 @@ static int db_connect(void *s)
 {
         session_t *session = s;
 	MYSQL *ret;
-        
-	if ( session->status != st_allocated && 
-             session->status != st_connection_failed ) {
+
+	if ( session->status >= st_connected ) {
 		session->dberrno = ERR_PLUGIN_DB_ALREADY_CONNECTED;
 		return -session->dberrno;
 	}
-
 
 	session->mysql = mysql_init(NULL);
 	if ( ! session->mysql ) {

@@ -1,3 +1,60 @@
+2003-11-23  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.i:
+	updated to fit the new db-message-ident.[ch]
+
+	* bindings/perl/PreludeDB.pm:
+	updated to fit the new db-message-ident.c and the API
+	changes of format plugin
+	code cleanup
+
+	* plugins/format/classic/classic.c:
+	updated to fit the new db-message-ident.c
+	code cleanup
+
+	* plugins/format/classic/idmef-db-delete.c:
+	* plugins/format/classic/include/idmef-db-delete.h:
+	updated to fit the new db-message-ident.c
+
+	* plugins/format/classic/idmef-db-select.c:
+	bug fix, handle correctly is_null and is_not_null relations
+
+	* plugins/sql/mysql/mysql.c:
+	remove the double queries limitation
+
+	* plugins/sql/pgsql/pgsql.c:
+	remove the double queries limitation
+	bug fix, db_query did not return NULL for table with 0 row
+
+	* src/db-message-ident.c:
+	* src/include/db-message-ident.h:
+	new files
+	provide message ident manipulation functions
+
+	* src/db-interface-string.c:
+	include db-message-ident.h
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	the API for alert ident list retrieving has been changed in order
+	to be more efficient
+	code cleanup
+
+	* src/db.c:
+	* src/include/db.h:
+	include db-message-ident.h
+	prelude_db_shutdown now returns void instead of int
+
+	* src/format-plugins.c:
+	include db-message-ident.h
+
+	* src/include/plugin-format.h:
+	API has been changed to provide a more efficient to way
+	to handle alert lists
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
 2003-11-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-insert.c:

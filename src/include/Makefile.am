@@ -4,7 +4,7 @@ include_HEADERS = 		\
 	strbuf.h		\
 	gdb.h			\
 	db.h			\
-	db-uident.h		\
+	db-message-ident.h	\
 	db-interface.h		\
 	db-interface-string.h   \
 	db-type.h		\

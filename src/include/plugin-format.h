@@ -29,27 +29,37 @@
 typedef struct {
 	PLUGIN_GENERIC;
 
-	int (*format_get_alert_uident_list)(prelude_db_connection_t *connection,
-					    idmef_criteria_t *criteria,
-					    prelude_db_alert_uident_t **alert_idents);
+	void *(*format_get_alert_ident_list)(prelude_db_connection_t *connection,
+					     idmef_criteria_t *criteria);
 
-	int (*format_get_heartbeat_uident_list)(prelude_db_connection_t *connection,
-						idmef_criteria_t *criteria,
-						prelude_db_heartbeat_uident_t **heartbeat_idents);
+	void *(*format_get_heartbeat_ident_list)(prelude_db_connection_t *connection,
+						 idmef_criteria_t *criteria);
+
+	prelude_db_message_ident_t *(*format_get_next_alert_ident)(prelude_db_connection_t *connection,
+								   void *res);
+
+	prelude_db_message_ident_t *(*format_get_next_heartbeat_ident)(prelude_db_connection_t *connection,
+								       void *res);
+
+	void (*format_alert_ident_list_destroy)(prelude_db_connection_t *connection,
+						void *res);
+
+	void (*format_heartbeat_ident_list_destroy)(prelude_db_connection_t *connection,
+						    void *res);
 
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
-					     prelude_db_alert_uident_t *uident,
+					     prelude_db_message_ident_t *uident,
 					     idmef_object_list_t *object_list);
 
 	idmef_message_t *(*format_get_heartbeat)(prelude_db_connection_t *connection,
-						 prelude_db_heartbeat_uident_t *uident,
+						 prelude_db_message_ident_t *uident,
 						 idmef_object_list_t *object_list);
 
 	int (*format_delete_alert)(prelude_db_connection_t *connection,
-				   prelude_db_alert_uident_t *uident);
+				   prelude_db_message_ident_t *uident);
 
 	int (*format_delete_heartbeat)(prelude_db_connection_t *connection, 
-				       prelude_db_heartbeat_uident_t *uident);
+				       prelude_db_message_ident_t *uident);
 
 	int (*format_insert_idmef_message)(prelude_db_connection_t *connection,
 					   const idmef_message_t *message);
@@ -65,8 +75,12 @@ typedef struct {
 						        prelude_db_object_selection_t *object_selection);
 } plugin_format_t;
 
-#define	plugin_get_alert_uident_list_func(p) (p)->format_get_alert_uident_list
-#define	plugin_get_heartbeat_uident_list_func(p) (p)->format_get_heartbeat_uident_list
+#define	plugin_get_alert_ident_list_func(p) (p)->format_get_alert_ident_list
+#define	plugin_get_heartbeat_ident_list_func(p) (p)->format_get_heartbeat_ident_list
+#define plugin_get_next_alert_ident_func(p) (p)->format_get_next_alert_ident
+#define plugin_get_next_heartbeat_ident_func(p) (p)->format_get_next_heartbeat_ident
+#define	plugin_alert_ident_list_destroy_func(p) (p)->format_alert_ident_list_destroy
+#define	plugin_heartbeat_ident_list_destroy_func(p) (p)->format_heartbeat_ident_list_destroy
 #define plugin_get_alert_func(p) (p)->format_get_alert
 #define plugin_get_heartbeat_func(p) (p)->format_get_heartbeat
 #define plugin_delete_alert_func(p) (p)->format_delete_alert
@@ -75,8 +89,12 @@ typedef struct {
 #define plugin_select_values_func(p) (p)->format_select_values
 #define plugin_get_values_func(p) (p)->format_get_values
 
-#define	plugin_set_get_alert_uident_list_func(p, f) plugin_get_alert_uident_list_func(p) = (f)
-#define	plugin_set_get_heartbeat_uident_list_func(p, f) plugin_get_heartbeat_uident_list_func(p) = (f)
+#define	plugin_set_get_alert_ident_list_func(p, f) plugin_get_alert_ident_list_func(p) = (f)
+#define	plugin_set_get_heartbeat_ident_list_func(p, f) plugin_get_heartbeat_ident_list_func(p) = (f)
+#define plugin_set_get_next_alert_ident_func(p, f) plugin_get_next_alert_ident_func(p) = (f)
+#define plugin_set_get_next_heartbeat_ident_func(p, f) plugin_get_next_heartbeat_ident_func(p) = (f)
+#define	plugin_set_alert_ident_list_destroy_func(p, f) plugin_alert_ident_list_destroy_func(p) = (f)
+#define	plugin_set_heartbeat_ident_list_destroy_func(p, f) plugin_heartbeat_ident_list_destroy_func(p) = (f)
 #define plugin_set_get_alert_func(p, f) plugin_get_alert_func(p) = (f)
 #define plugin_set_get_heartbeat_func(p, f) plugin_get_heartbeat_func(p) = (f)
 #define plugin_set_delete_alert_func(p, f) plugin_delete_alert_func(p) = (f)

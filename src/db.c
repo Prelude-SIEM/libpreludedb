@@ -41,7 +41,7 @@
 #include "db.h"
 #include "db-type.h"
 #include "db-connection.h"
-#include "db-uident.h"
+#include "db-message-ident.h"
 #include "db-object-selection.h"
 #include "plugin-format.h"
 
@@ -90,7 +90,7 @@ int prelude_db_init(void)
 
 
 
-int prelude_db_shutdown(void) 
+void prelude_db_shutdown(void) 
 {
-	return 0;
+	/* nop */
 }
