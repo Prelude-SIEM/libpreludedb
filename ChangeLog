@@ -1,3 +1,9 @@
+2004-01-10  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	(get_message_ident_list)
+	bug fix for criteria argument retrieval
+
 2004-01-07  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/classic.c:

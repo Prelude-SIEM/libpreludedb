@@ -169,7 +169,7 @@ sub	get_message_ident_list
      my	$ident_handle;
 
      if ( defined $opt{-criteria} ) {
-	 $criteria = _get_criteria($_[0]) or return ();
+	 $criteria = _get_criteria($opt{-criteria}) or return ();
      }
 
      $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
