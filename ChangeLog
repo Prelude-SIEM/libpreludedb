@@ -1,3 +1,23 @@
+2003-06-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-get.c:
+	* plugins/format/classic/include/idmef-db-get.h:
+	new files
+	add the support of a whole message fetching
+
+	* plugins/format/classic/classic.c:
+	(classic_get_alert)
+	call get_alert when the selection argument is NULL in order
+	to fetch the whole message
+
+2003-06-27  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/sql.c:
+	* src/include/sql.h:
+	(prelude_sql_field_value_int16)
+	(prelude_sql_field_value_uint16)
+	new functions
+	
 2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c:

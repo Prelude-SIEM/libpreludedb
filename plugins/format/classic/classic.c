@@ -263,7 +263,9 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 					  uint64_t ident,
 					  idmef_selection_t *selection)
 {
-	return get_message(connection, ident, "alert.ident", selection);
+	return (selection ?
+		get_message(connection, ident, "alert.ident", selection) :
+		get_alert(connection, ident));
 }
 
 

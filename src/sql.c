@@ -692,6 +692,8 @@ idmef_string_t *prelude_sql_field_value_string(prelude_sql_field_t *field)
 	return idmef_string_new_dup(s);
 }
 
+
+
 idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 {
 	idmef_value_t *value = NULL;

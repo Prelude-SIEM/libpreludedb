@@ -1140,7 +1140,7 @@ static int insert_correlation_alert(prelude_sql_connection_t *conn, uint64_t ale
 
         list_for_each(tmp, &correlation->alertident_list){
                 ai = list_entry(tmp, idmef_alertident_t, list);
-                prelude_sql_insert(conn, "Prelude_CorrelationAlert_Alerts", "ident, alert_ident", "%llu", alert_ident);
+                prelude_sql_insert(conn, "Prelude_CorrelationAlert_Alerts", "ident, alert_ident", "%llu", alert_ident); /* FIXME: isn't there a bug here ? */
         }
 
         return ret;
