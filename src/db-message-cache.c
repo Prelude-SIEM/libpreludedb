@@ -227,7 +227,7 @@ static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd)
 
         prelude_msgbuf_set_data(msgbuf, fd);
         prelude_msgbuf_set_callback(msgbuf, cache_write_cb);
-        idmef_write_message(msgbuf, idmef);
+        idmef_message_write(idmef, msgbuf);
         
         prelude_msgbuf_mark_end(msgbuf);
         prelude_msgbuf_close(msgbuf);
