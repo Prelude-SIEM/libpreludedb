@@ -124,7 +124,7 @@ static int msg_to_alert(idmef_message_t *message, prelude_msg_t *pmsg)
         if ( ! alert )
                 return -1;
         
-        if ( ! idmef_read_alert(pmsg, alert) )
+        if ( ! idmef_alert_read(alert, pmsg) )
                 return -1;
 
         return 0;
@@ -141,7 +141,7 @@ static int msg_to_heartbeat(idmef_message_t *message, prelude_msg_t *pmsg)
         if ( ! heartbeat )
                 return -1;
 
-        if ( ! idmef_read_heartbeat(pmsg, heartbeat) )
+        if ( ! idmef_heartbeat_read(heartbeat, pmsg) )
                 return -1;
 
         return 0;
