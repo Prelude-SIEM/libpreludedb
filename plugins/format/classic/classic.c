@@ -26,20 +26,23 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-io.h>
 #include <libprelude/prelude-message.h>
 #include <libprelude/prelude-getopt.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 
+#include "idmef-object-list.h"
+#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
 #include "db-connection.h"
-#include "idmef-db-output.h"
 #include "plugin-format.h"
+
+#include "idmef-db-output.h"
+#include "idmef-db-read.h"
 
 static int is_enabled = 0;
 static plugin_format_t plugin;
@@ -50,11 +53,18 @@ static int format_write(prelude_db_connection_t *connection, idmef_message_t *me
 {
 	if (is_enabled == 0)
 		return -1;
-		
-	if ( prelude_db_connection_get_type(connection) != prelude_db_type_sql )
-		return -2;
-		
+				
 	return idmef_db_output(connection, message);
+}
+
+static idmef_db_values_t *format_read(prelude_db_connection_t *connection, 
+        	       		      idmef_object_list_t *objects,
+        	                      idmef_criterion_t *criterion)
+{
+	if (is_enabled == 0)
+		return NULL;
+				
+	return idmef_db_read(connection, objects, criterion);
 }
 
 static int set_state(prelude_option_t *opt, const char *arg) 
@@ -88,6 +98,7 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_name(&plugin, "Classic");
         plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
         plugin_set_write_func(&plugin, format_write);
+        plugin_set_read_func(&plugin, format_read);
        
 	set_state(NULL, NULL);
        

@@ -7,11 +7,14 @@ libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\
 	gdb.c				\
+	strbuf.c			\
 	db.c				\
 	db-interface.c			\
 	db-interface-string.c		\
 	db-connection.c			\
 	db-connection-data.c		\
+	idmef-db-values.c		\
+	idmef-object-list.c		\
 	sql-connection-data.c		\
 	sql.c				\
 	param-string.c			\

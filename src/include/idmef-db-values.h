@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -21,10 +21,13 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H
-#define _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H
+#ifndef _LIBPRELUDEDB_IDMEF_DB_VALUES_H
+#define _LIBPRELUDEDB_IDMEF_DB_VALUES_H
 
-int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg);
+typedef struct idmef_db_values idmef_db_values_t;
 
-#endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H */
+/* Function prototypes to come :) */
+
+#endif /* _LIBPRELUDEDB_IDMEF_DB_VALUES_H */
+
 

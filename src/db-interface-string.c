@@ -30,8 +30,10 @@
 
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 
+#include "idmef-object-list.h"
+#include "idmef-db-values.h"
 #include "db-type.h"
 #include "sql-connection-data.h"
 #include "db-connection.h" 

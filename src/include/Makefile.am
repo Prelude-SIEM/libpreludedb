@@ -1,6 +1,7 @@
 includedir = $(prefix)/include/libpreludedb
 
 include_HEADERS = 		\
+	strbuf.h		\
 	gdb.h			\
 	db.h			\
 	db-interface.h		\
@@ -8,6 +9,8 @@ include_HEADERS = 		\
 	db-type.h		\
 	db-connection.h		\
 	db-connection-data.h	\
+	idmef-db-values.h	\
+	idmef-object-list.h	\
 	sql-connection-data.h	\
 	sql.h			\
 	param-string.h		\
@@ -15,6 +18,7 @@ include_HEADERS = 		\
 	plugin-format.h
 
 noinst_HEADERS = 		\
+	strbuf.h		\
 	gdb.h			\
 	db-connection.h		\
 	db-connection-data.h	\

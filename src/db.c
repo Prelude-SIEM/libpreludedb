@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2002, 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -26,16 +26,17 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+
 #include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
-
+#include <libprelude/idmef.h>
 #include <libprelude/prelude-io.h>
 #include <libprelude/prelude-message.h>
 #include <libprelude/prelude-getopt.h>
 
+#include "idmef-object-list.h"
+#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"

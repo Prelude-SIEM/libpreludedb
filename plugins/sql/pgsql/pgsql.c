@@ -34,7 +34,7 @@
 
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
 
@@ -56,7 +56,6 @@ typedef enum {
 	st_allocated = 1,
 	st_connected,
 	st_connection_failed,
-	st_transaction,
 	st_query
 } session_status_t;
 
@@ -130,22 +129,11 @@ static void cleanup(void *s)
 static int db_begin(void *s) 
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
-	
-	if ( session->status == st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
        
-	ret = db_query(session, "BEGIN;");
+	db_query(session, "BEGIN;");
 		
-	if ( ! session->dberrno ) {
-		session->status = st_transaction;
-		return 0;
-	}
-
 	return -session->dberrno;
 }
 
@@ -157,22 +145,13 @@ static int db_begin(void *s)
 static int db_commit(void *s)
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
-        
-	if ( session->status != st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
-	
-	ret = db_query(session, "COMMIT;");
-	
-	if ( ! session->dberrno ) {
-		session->status = st_connected;
-		return 0;
-	}
-		
+
+	session->status = st_connected;
+        	
+	db_query(session, "COMMIT;");
+
 	return -session->dberrno;
 }
 
@@ -184,22 +163,13 @@ static int db_commit(void *s)
 static int db_rollback(void *s)
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
-        
-	if ( session->status != st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
-		
-	ret = db_query(session, "ROLLBACK;");
+
+	session->status = st_connected;
+        		
+	db_query(session, "ROLLBACK;");
 	
-	if ( ! session->dberrno ) {
-		session->status = st_connected;
-		return 0;
-	}
-		
 	return -session->dberrno;
 }
 
@@ -212,9 +182,6 @@ static void db_close(void *s)
 {
         session_t *session = s;
 		
-	if ( session->status == st_transaction )
-		db_rollback(s);
-
         PQfinish(session->pgsql);
 
         cleanup(s);
@@ -265,7 +232,7 @@ static void *db_query(void *s, const char *query)
 
 	switch ( session->status ) {
 
-	case st_connected: case st_transaction:
+	case st_connected:
 		break;
 		
 	case st_query:
@@ -362,7 +329,8 @@ static void db_table_free(void *s, void *t)
 
 	session->status = st_connected;
 
-	PQclear(res);
+	if ( res )
+		PQclear(res);
 }
 
 
@@ -451,7 +419,7 @@ static prelude_sql_field_type_t db_field_type_by_name(void *s, void *t, const ch
 	session->dberrno = 0;
 
 	i = PQfnumber(res, name);
-	if (i == -1) {
+	if ( i == -1 ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
 		return dbtype_unknown;
 	}

@@ -43,6 +43,10 @@ int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
 
 int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 
+idmef_db_values_t *prelude_db_interface_read_idmef_objects(prelude_db_interface_t *interface,
+        		   		                   idmef_object_list_t *objects,
+        		   		                   idmef_criterion_t *criterion);
+
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
 
 prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_db_interface_t *interface);

@@ -34,12 +34,13 @@
 #include <inttypes.h>
 #include <assert.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 
+#include "idmef-object-list.h"
+#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"

@@ -35,7 +35,7 @@
 
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
 
@@ -55,35 +55,18 @@
 # define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
 
-/*
- * NOTE: Modifications for LibpreludeDB are heavily based on relevant PgSQL code 
- * and thus heavily influenced with the way of thinking used there :-)
- */
 
 /*
- * FIXME: The session finite state automata [cool name, eh?] is currently done
- * the same way as in PostgreSQL; i.e. we assume there's full transaction support. 
- * This is not true for standard MySQL, but transactions are again available in
- * MySQL-Max. So we should either detect if we are using MySQL-Max or not and adjust
- * the behavior accordingly or write separate plugins for MySQL and MySQL-Max. 
- *  
- * And still the great question, how to implement 'ROLLBACK' on standard MySQL. 
- * Either make db_begin(), db_commit(), db_rollback() as no-ops or try to emulate 
- * the stuff ourselves...
- *
- * So there is - for now at least - the reason for code duplication between PgSQL
- * and MySQL plugins. Also note that AFAIK Oracle opens transaction automatically 
- * each time you send query to the backend (and requires 'COMMIT') so it must be 
- * managed differently. 
- *
+ * NOTE: We assume that:
+ *        (1) backend is by default in auto-commit mode
+ *        (2) if backend does not handle transactions, it will report
+ *            no error on BEGIN; COMMIT; ROLLBACK; commands. 
  */
-
 
 typedef enum {
 	st_allocated = 1,
 	st_connected,
 	st_connection_failed,
-	st_transaction,
 	st_query
 } session_status_t;
 
@@ -91,6 +74,7 @@ typedef enum {
 
 typedef struct {
 	session_status_t status;
+	int transaction;
 	int dberrno;
 	char *dbhost;
 	unsigned int dbport;
@@ -213,7 +197,7 @@ static void *db_query(void *s, const char *query)
 	
 	switch ( session->status ) {
 
-	case st_connected: case st_transaction:
+	case st_connected:
 		break;
 		
 	case st_query:
@@ -236,13 +220,13 @@ static void *db_query(void *s, const char *query)
 	}
 
 	res = mysql_use_result(session->mysql);
-	if ( ! res && mysql_errno(session->mysql) ) {
-		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->mysql));
-		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
-		return NULL;
-	}
-
-	session->status = st_query;
+	if ( res )
+		session->status = st_query;
+	else 
+		if ( mysql_errno(session->mysql) ) {
+			log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->mysql));
+			session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
+		}
 
 	return res;
 }
@@ -255,21 +239,10 @@ static void *db_query(void *s, const char *query)
 static int db_begin(void *s) 
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
 
-	if ( session->status == st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
-       
-	ret = db_query(session, "BEGIN;");
-		
-	if ( ! session->dberrno ) {
-		session->status = st_transaction;
-		return 0;
-	}
+	db_query(session, "BEGIN;");
 		
 	return -session->dberrno;
 }
@@ -282,22 +255,13 @@ static int db_begin(void *s)
 static int db_commit(void *s)
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
-	
-	if ( session->status != st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
-	
-	ret = db_query(session, "COMMIT;");
-	
-	if ( ! session->dberrno ) {
-		session->status = st_connected;
-		return 0;
-	}
 
+	session->status = st_connected;
+		
+	db_query(session, "COMMIT;");
+	
 	return -session->dberrno;
 }
 
@@ -309,21 +273,12 @@ static int db_commit(void *s)
 static int db_rollback(void *s)
 {
         session_t *session = s;
-        void *ret;
 
 	session->dberrno = 0;
 	
-	if ( session->status != st_transaction ) {
-		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
-		return -session->dberrno;
-	}
-		
-	ret = db_query(session, "ROLLBACK;");
-	
-	if ( ! session->dberrno ) {
-		session->status = st_connected;
-		return 0;
-	}
+	session->status = st_connected;
+      
+	db_query(session, "ROLLBACK;");
 		
 	return -session->dberrno;
 }
@@ -389,8 +344,9 @@ static void db_table_free(void *s, void *t)
 	session->dberrno = 0;
 
 	session->status = st_connected;
-	
-	mysql_free_result(res);
+
+	if ( res )	
+		mysql_free_result(res);
 }
 
 MYSQL_FIELD *get_field(session_t *session, MYSQL_RES *res, unsigned int i)

@@ -27,12 +27,13 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
+#include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 
+#include "idmef-object-list.h"
+#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
@@ -221,6 +222,33 @@ int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, 
 
 
 
+idmef_db_values_t *prelude_db_interface_read_idmef_objects(prelude_db_interface_t *interface,
+        		   		                   idmef_object_list_t *objects,
+        		   		                   idmef_criterion_t *criterion)
+{
+	if ( ! interface )
+		return NULL;
+		
+	if ( ! objects )
+		return NULL;
+	
+	if ( ! interface->db_connection )
+		return NULL;
+	
+	if ( ! interface->active )
+		return NULL;
+	
+	if ( ! interface->format )
+		return NULL;
+	
+	if ( ! interface->format->format_read )
+		return NULL;
+		
+	return interface->format->format_read(interface->db_connection, objects, criterion);
+}
+
+
+
 
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface)
 {
@@ -240,8 +268,6 @@ prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_d
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 {
-	int ret;
-
 	if ( ! interface )
 		return -1;
 	

@@ -295,7 +295,7 @@ int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const 
         query[len + 1] = '\0';
         
         conn->plugin->db_query(conn->session, query);
-	ret = prelude_sql_errno(conn->session);
+	ret = -prelude_sql_errno(conn);
 
         if ( query != query_static )
                 free(query);
@@ -527,6 +527,9 @@ void prelude_sql_row_free(prelude_sql_row_t *row)
 	struct list_head *next;
 	prelude_sql_field_t *field;
 
+	if ( ! row )
+		return;
+
 	list_for_each_safe(tmp, next, &row->field_list) {
 		field = list_entry(tmp, prelude_sql_field_t, list);
 		free(field);
@@ -573,6 +576,13 @@ const char *prelude_sql_field_value(prelude_sql_field_t *field)
 	prelude_sql_connection_t *conn = table->conn;
 
 	return conn->plugin->db_field_value(conn->session, table->res, row->res, field->res);
+}
+
+
+
+prelude_sql_field_type_t prelude_sql_field_info_type(prelude_sql_field_t *field)
+{
+	return prelude_sql_field_type(field->row->table, field->num);
 }
 
 
