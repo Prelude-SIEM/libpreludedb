@@ -1,3 +1,7 @@
+2002-08-26  Yoann Vandoorselaere  <yoann@mandrakesoft.com>
+
+	* configure.in: pre-require autoconf 2.53.
+
 2002-08-25  Yoann Vandoorselaere  <yoann@mandrakesoft.com>
 
 	* src/format-plugins.c: avoid using global variable when
