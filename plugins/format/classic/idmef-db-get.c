@@ -1540,6 +1540,16 @@ static int get_additional_data(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
+		ret = get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
+			       idmef_additional_data_type_to_numeric);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
+			       idmef_additional_data_type_to_numeric);
+		if ( ret < 0 )
+			goto error;
+
 		ret = get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning);
 		if ( ret < 0 )
 			goto error;
@@ -1561,9 +1571,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 			ret = preludedb_sql_field_to_uint8(field, &value);
 			if ( ret < 0 )
-				goto error;
-
-			idmef_data_set_byte(data, value);
+				ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+			else
+				idmef_data_set_byte(data, value);
+			
 			break;
 		}
 
@@ -1572,9 +1583,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 			ret = preludedb_sql_field_to_uint8(field, &value);
 			if ( ret < 0 )
-				goto error;
+				ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+			else
+				idmef_data_set_char(data, (char) value);
 			
-			idmef_data_set_char(data, (char) value);
 			break;
 		}
 
@@ -1590,9 +1602,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 			ret = preludedb_sql_field_to_float(field, &value);
 			if ( ret < 0 )
-				goto error;
+				ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+			else
+				idmef_data_set_float(data, value);
 
-			idmef_data_set_float(data, value);
 			break;
 		}
 
@@ -1601,9 +1614,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 			ret = preludedb_sql_field_to_uint32(field, &value);
 			if ( ret < 0 )
-				goto error;
+				ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+			else
+				idmef_data_set_uint32(data, value);
 			
-			idmef_data_set_uint32(data, value);
 			break;
 		}
 
@@ -1628,9 +1642,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 			ret = preludedb_sql_field_to_uint64(field, &value);
 			if ( ret < 0 )
-				goto error;
+				ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+			else
+				idmef_data_set_uint64(data, value);
 
-			idmef_data_set_uint64(data, value);
 			break;
 		}
 			
