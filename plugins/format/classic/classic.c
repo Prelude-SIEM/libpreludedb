@@ -329,7 +329,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 			idmef_value_destroy(value);
 
 			if ( ret < 0 ) {
-				log(LOG_INFO, "idmef_message_set() failed\n");
+				log(LOG_INFO, "idmef_message_set() failed.\n");
 				prelude_sql_table_free(table);
 				idmef_message_destroy(message);
 				return NULL;
