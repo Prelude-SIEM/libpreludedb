@@ -21,12 +21,46 @@ Build order:
 - libpreludedb
 - prelude-manager
 
-Before building libpreludeDB adjust database name, type, etc. in
-libpreludedb/db-connections.c, function prelude_db_init_interfaces(),
-because configuration is temporarily hard-coded there. 
+Interface specification passed to prelude_db_connect()
+should be a C string of the following structure:
+
+field1=value1 field2=value2, ...
+
+If a value contains spaces or equal signs, it should be quoted using
+single or double quotes. Additionally, single characters can be escaped
+using backslash sign. 
+
+Field names are case insetive. 
+Currently used fields are:
+
+* interface: name of the interface.
+
+* class: interface class. REQUIRED. 
+  Available values: 
+  + sql
+
+* type: database plugin type. REQUIRED. 
+  Available values:
+  + pgsql
+  + mysql
+
+* format: database format plugin. REQUIRED.
+  Available values:
+  + classic 
+
+Following options are dependant on the used SQL plugin type. 
+
+* host: host name of the SQL server. 
+
+* port: port the server runs on. 
+
+* name: database name.
+
+* user: connect as user. 
+
+* pass: password for the user. 
 
 Have fun...
 
 - Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
-  August 23, 2002
 

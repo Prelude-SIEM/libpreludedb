@@ -18,6 +18,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+CFLAGS=""
 
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
@@ -148,6 +149,18 @@ AC_SUBST(filter_plugin_dir)
 
 dnl ********************* ending stuff
 
+if test x$enable_profiling = xyes ; then
+        CFLAGS="$CFLAGS -O3 -pg"
+else
+        CFLAGS="$CFLAGS -O3 -fomit-frame-pointer";
+fi
+
+
+CFLAGS="$CFLAGS -Wall -Wno-strict-prototypes -Wmissing-prototypes -Wmissing-declarations \
+-Wbad-function-cast -Wcast-qual -Wcast-align -Wnested-externs -Wunused"
+
+AC_SUBST(CFLAGS)
+
 AC_CONFIG_FILES([
 
 libpreludedb-config
@@ -174,6 +187,9 @@ plugins/filters/skeleton/Makefile
 AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
 
 AC_OUTPUT
+
+
+
 
 echo
 echo "*** Dumping configuration ***"
