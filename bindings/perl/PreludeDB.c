@@ -812,7 +812,7 @@ SWIGEXPORT(void) SWIG_init (CV *cv, CPerlObj *);
 
 
 #include <pthread.h>
-#include <libprelude/list.h>
+#include <libprelude/prelude-list.h>
 #include <libprelude/idmef.h>
 #include "db-type.h"
 #include "db.h"

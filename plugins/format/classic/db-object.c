@@ -42,7 +42,7 @@
 
 struct db_object {
 	int listed;
-	struct list_head list;
+	prelude_list_t list;
 	idmef_object_t *object;
 	char *table;
 	char *field;
@@ -53,7 +53,8 @@ struct db_object {
 	char *ident_field;
 };
 
-LIST_HEAD(db_objects);
+
+PRELUDE_LIST_HEAD(db_objects);
 
 static int db_object_count = 0;
 
@@ -72,7 +73,7 @@ static int db_object_new(char *descr)
 {
 	db_object_t *obj;
 	char *val;
-	struct list_head *tmp;
+	prelude_list_t *tmp;
 	db_object_t *entry, *prev;
 	int ret;
 	
@@ -115,8 +116,8 @@ static int db_object_new(char *descr)
 	 */
 	entry = NULL;
 	prev = NULL;
-	list_for_each(tmp, &db_objects) {
-		entry = list_entry(tmp, db_object_t, list);
+	prelude_list_for_each(tmp, &db_objects) {
+		entry = prelude_list_entry(tmp, db_object_t, list);
 		ret = idmef_object_compare(entry->object, obj->object);
 		
 		if (ret == 0)
@@ -136,9 +137,9 @@ static int db_object_new(char *descr)
 	 */
 	 
 	if ( entry )
-		list_add(&obj->list, &entry->list);
+		prelude_list_add(&obj->list, &entry->list);
 	else 
-	 	list_add(&obj->list, &db_objects);
+	 	prelude_list_add(&obj->list, &db_objects);
 	 	
 	obj->listed = 1;
 
@@ -168,7 +169,7 @@ error:
 static void db_object_destroy(db_object_t *obj)
 {
 	if ( obj->listed )
-		list_del(&obj->list);
+		prelude_list_del(&obj->list);
 	
 	if ( obj->object )
 		idmef_object_destroy(obj->object);
@@ -206,7 +207,7 @@ int db_objects_init(const char *file)
 	char buf[1024];
 	int ret;
 	int i,line;
-	struct list_head *tmp;
+	prelude_list_t *tmp;
 	db_object_t *entry;
 	char *ptr;
 
@@ -275,8 +276,8 @@ int db_objects_init(const char *file)
 	}
 	
 	i = 0;
-	list_for_each(tmp, &db_objects) {
-		entry = list_entry(tmp, db_object_t, list);
+	prelude_list_for_each(tmp, &db_objects) {
+		entry = prelude_list_entry(tmp, db_object_t, list);
 		db_object_index[i++] = entry;
 	}
 #ifdef DEBUG
@@ -365,11 +366,11 @@ char *db_object_get_ident_field(db_object_t *object)
 
 void db_objects_destroy(void)
 {
-	struct list_head *n, *tmp;
+	prelude_list_t *n, *tmp;
 	db_object_t *entry;
 	
-	list_for_each_safe(tmp, n, &db_objects) {
-		entry = list_entry(tmp, db_object_t, list);
+	prelude_list_for_each_safe(tmp, n, &db_objects) {
+		entry = prelude_list_entry(tmp, db_object_t, list);
 		db_object_destroy(entry);
 	}
 	

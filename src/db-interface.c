@@ -51,7 +51,6 @@ struct prelude_db_interface {
 	prelude_db_connection_data_t *connection_data;
 	db_message_cache_t *cache;
 	plugin_format_t *format;
-	struct list_head filter_list;
 };
 
 
@@ -79,7 +78,6 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         }
 
         interface->connection_data = data;
-	INIT_LIST_HEAD(&interface->filter_list);
 
         interface->name = strdup(name ? name : "(unnamed)");
         if ( ! interface->name ) {
@@ -110,9 +108,7 @@ void prelude_db_interface_destroy(prelude_db_interface_t *interface)
 		prelude_db_interface_disconnect(interface);
 	
 	prelude_db_connection_data_destroy(interface->connection_data);
-	
-	/* FIXME: when filters are implemented, destroy interface->filter_list here */
-	
+		
 	if ( interface->name ) 
 		free(interface->name);
 

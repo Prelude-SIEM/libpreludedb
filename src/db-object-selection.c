@@ -26,19 +26,19 @@
 #include <string.h>
 
 #include <libprelude/idmef.h>
-#include <libprelude/list.h>
+#include <libprelude/prelude-list.h>
 #include <libprelude/prelude-log.h>
 
 #include "db-object-selection.h"
 
 struct prelude_db_selected_object {
-	struct list_head list;
+	prelude_list_t list;
 	idmef_object_t *object;
 	int flags;
 };
 
 struct prelude_db_object_selection {
-	struct list_head list;
+	prelude_list_t list;
 };
 
 
@@ -233,20 +233,20 @@ prelude_db_object_selection_t *prelude_db_object_selection_new(void)
 		return NULL;
 	}
 
-	INIT_LIST_HEAD(&object_selection->list);
+	PRELUDE_INIT_LIST_HEAD(&object_selection->list);
 
 	return object_selection; 
 }
 
 
 
-void	prelude_db_object_selection_destroy(prelude_db_object_selection_t *object_selection)
+void prelude_db_object_selection_destroy(prelude_db_object_selection_t *object_selection)
 {
-	struct list_head *ptr, *next;
+        prelude_list_t *ptr, *next;
 	prelude_db_selected_object_t *selected_object;
 
-	list_for_each_safe(ptr, next, &object_selection->list) {
-		selected_object = list_entry(ptr, prelude_db_selected_object_t, list);
+	prelude_list_for_each_safe(ptr, next, &object_selection->list) {
+		selected_object = prelude_list_entry(ptr, prelude_db_selected_object_t, list);
 		prelude_db_selected_object_destroy(selected_object);
 	}
 
@@ -255,10 +255,10 @@ void	prelude_db_object_selection_destroy(prelude_db_object_selection_t *object_s
 
 
 
-void	prelude_db_object_selection_add(prelude_db_object_selection_t *object_selection,
-					prelude_db_selected_object_t *selected_object)
+void prelude_db_object_selection_add(prelude_db_object_selection_t *object_selection,
+                                     prelude_db_selected_object_t *selected_object)
 {
-	list_add_tail(&selected_object->list, &object_selection->list);
+	prelude_list_add_tail(&selected_object->list, &object_selection->list);
 }
 
 
@@ -266,5 +266,5 @@ void	prelude_db_object_selection_add(prelude_db_object_selection_t *object_selec
 prelude_db_selected_object_t *prelude_db_object_selection_get_next(prelude_db_object_selection_t *object_selection,
 								   prelude_db_selected_object_t *selected_object)
 {
-	return list_get_next(selected_object, &object_selection->list, prelude_db_selected_object_t, list);
+	return prelude_list_get_next(selected_object, &object_selection->list, prelude_db_selected_object_t, list);
 }

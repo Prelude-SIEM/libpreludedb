@@ -47,7 +47,7 @@
 #define VALLEN 262144
 
 typedef struct table_entry {
-	struct list_head list;
+	prelude_list_t list;
 	char *table;
 	char *top_field;
 	char *ident_field;
@@ -60,7 +60,7 @@ typedef struct table_entry {
 
 typedef struct table_list {
 	char *top_table;
-	struct list_head tables;
+	prelude_list_t tables;
 } table_list_t;
 
 
@@ -202,7 +202,7 @@ static table_list_t *table_list_new(void)
 		return NULL;
 	}
 
-	INIT_LIST_HEAD(&tlist->tables);
+	PRELUDE_INIT_LIST_HEAD(&tlist->tables);
 
 	return tlist;
 }
@@ -212,12 +212,13 @@ static table_list_t *table_list_new(void)
 
 static void table_list_destroy(table_list_t *tlist)
 {
-	struct list_head *tmp, *n;
-	table_entry_t *entry;
+        table_entry_t *entry;
+	prelude_list_t *tmp, *n;
 
-	list_for_each_safe(tmp, n, &tlist->tables) {
-		entry = list_entry(tmp, table_entry_t, list);
-		list_del(&entry->list);
+	prelude_list_for_each_safe(tmp, n, &tlist->tables) {
+		entry = prelude_list_entry(tmp, table_entry_t, list);
+
+                prelude_list_del(&entry->list);
 		table_entry_destroy(entry);
 	}
 
@@ -233,7 +234,7 @@ static void table_list_destroy(table_list_t *tlist)
 static prelude_strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
 {
 	int ret;
-	struct list_head *tmp;
+	prelude_list_t *tmp;
 	table_entry_t *entry;
 	prelude_strbuf_t *buf;
         
@@ -245,9 +246,10 @@ static prelude_strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
 	if ( ret < 0 )
 		goto error;
 
-	list_for_each(tmp, &tlist->tables) {
-		entry = list_entry(tmp, table_entry_t, list);
-		ret = prelude_strbuf_sprintf(buf, " LEFT JOIN %s AS %s ON %s.%s = %s.%s",
+	prelude_list_for_each(tmp, &tlist->tables) {
+		entry = prelude_list_entry(tmp, table_entry_t, list);
+
+                ret = prelude_strbuf_sprintf(buf, " LEFT JOIN %s AS %s ON %s.%s = %s.%s",
                                              entry->table, entry->alias, tlist->top_table,
                                              entry->top_field, entry->alias,
                                              entry->ident_field);
@@ -274,7 +276,7 @@ error:
 static prelude_strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, prelude_strbuf_t *where)
 {
 	int ret;
-	struct list_head *tmp;
+	prelude_list_t *tmp;
 	table_entry_t *entry;
         prelude_strbuf_t *buf;
         
@@ -292,9 +294,10 @@ static prelude_strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, pr
 	if ( ret < 0 ) 
 		goto error;
 
-	list_for_each(tmp, &tlist->tables) {
-		entry = list_entry(tmp, table_entry_t, list);
-		ret = prelude_strbuf_sprintf(buf, ", %s AS %s",
+	prelude_list_for_each(tmp, &tlist->tables) {
+		entry = prelude_list_entry(tmp, table_entry_t, list);
+
+                ret = prelude_strbuf_sprintf(buf, ", %s AS %s",
                                              entry->table, entry->alias);
 		if ( ret < 0 )
 			goto error;
@@ -340,7 +343,7 @@ static int set_top_table(table_list_t *tlist, char *table)
 static char *add_table(table_list_t *tlist, char *table, char *top_table,
 		       char *top_field, char *ident_field, char *condition)
 {
-	struct list_head *tmp;
+	prelude_list_t *tmp;
 	table_entry_t *entry;
 	int id;
 	int ret;
@@ -386,8 +389,8 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 	id = 0;
 
-	list_for_each(tmp, &tlist->tables) {
-		entry = list_entry(tmp, table_entry_t, list);
+	prelude_list_for_each(tmp, &tlist->tables) {
+		entry = prelude_list_entry(tmp, table_entry_t, list);
 
 		if ( strcmp(table, entry->table) == 0 ) {
 			if ( condition ) {
@@ -413,7 +416,7 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 	if ( ! entry )
 		return NULL;
 
-	list_add_tail(&entry->list, &tlist->tables);
+	prelude_list_add_tail(&entry->list, &tlist->tables);
 
 	return entry->alias;
 

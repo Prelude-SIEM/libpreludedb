@@ -717,7 +717,7 @@ static swig_type_info *swig_types[26];
 #define SWIG_name    "_preludedb"
 
 #include <pthread.h>
-#include <libprelude/list.h>
+#include <libprelude/prelude-list.h>
 #include <libprelude/idmef.h>
 #include "db-type.h"
 #include "db.h"

@@ -32,7 +32,6 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 #include <libprelude/config-engine.h>

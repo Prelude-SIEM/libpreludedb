@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-tree-wrap.h>

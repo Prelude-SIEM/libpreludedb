@@ -38,7 +38,7 @@
 #include <inttypes.h>
 #include <assert.h>
 
-#include <libprelude/list.h>
+#include <libprelude/prelude-list.h>
 #include <libprelude/common.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
@@ -66,18 +66,18 @@ struct prelude_sql_connection {
 struct prelude_sql_table {
 	prelude_sql_connection_t *conn;
 	void *res;
-	struct list_head row_list;
+	prelude_list_t row_list;
 };
 
 struct prelude_sql_row {
-	struct list_head list;
+	prelude_list_t list;
 	prelude_sql_table_t *table;
 	void *res;
-	struct list_head field_list;
+	prelude_list_t field_list;
 };
 
 struct prelude_sql_field {
-	struct list_head list;
+	prelude_list_t list;
 	prelude_sql_row_t *row;
 	unsigned int num;
 	void *res;
@@ -134,7 +134,7 @@ static prelude_sql_table_t *prelude_sql_table_new(prelude_sql_connection_t *conn
 	
 	prelude_sql_table->conn = conn;
 	prelude_sql_table->res = res;
-	INIT_LIST_HEAD(&prelude_sql_table->row_list);
+	PRELUDE_INIT_LIST_HEAD(&prelude_sql_table->row_list);
 	
 	return prelude_sql_table;
 }
@@ -153,9 +153,11 @@ static prelude_sql_row_t *prelude_sql_row_new(prelude_sql_table_t *table, void *
 	
 	prelude_sql_row->table = table;
 	prelude_sql_row->res = res;
-	INIT_LIST_HEAD(&prelude_sql_row->list);
-	INIT_LIST_HEAD(&prelude_sql_row->field_list);
-	list_add_tail(&prelude_sql_row->list, &table->row_list);
+
+        PRELUDE_INIT_LIST_HEAD(&prelude_sql_row->list);
+	PRELUDE_INIT_LIST_HEAD(&prelude_sql_row->field_list);
+
+        prelude_list_add_tail(&prelude_sql_row->list, &table->row_list);
 	
 	return prelude_sql_row;
 }
@@ -175,8 +177,10 @@ static prelude_sql_field_t *prelude_sql_field_new(prelude_sql_row_t *row, void *
 	prelude_sql_field->row = row;
 	prelude_sql_field->res = res;
 	prelude_sql_field->num = num;
-	INIT_LIST_HEAD(&prelude_sql_field->list);
-	list_add_tail(&prelude_sql_field->list, &row->field_list);
+
+        PRELUDE_INIT_LIST_HEAD(&prelude_sql_field->list);
+
+        prelude_list_add_tail(&prelude_sql_field->list, &row->field_list);
 	
 	return prelude_sql_field;
 }
@@ -471,17 +475,19 @@ void prelude_sql_table_free(prelude_sql_table_t *table)
 	prelude_sql_connection_t *conn = table->conn;
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
-	struct list_head *tmp;
-	struct list_head *next_row, *next_field;
+        prelude_list_t *tmp, *next_row, *next_field;
 
-	list_for_each_safe(tmp, next_row, &table->row_list) {
-		row = list_entry(tmp, prelude_sql_row_t, list);
-		list_for_each_safe(tmp, next_field, &row->field_list) {
-			field = list_entry(tmp, prelude_sql_field_t, list);
+	prelude_list_for_each_safe(tmp, next_row, &table->row_list) {
+		row = prelude_list_entry(tmp, prelude_sql_row_t, list);
+
+                prelude_list_for_each_safe(tmp, next_field, &row->field_list) {
+			field = prelude_list_entry(tmp, prelude_sql_field_t, list);
 			free(field);
 		}
-		free(row);
+
+                free(row);
 	}
+        
 	conn->plugin->db_table_free(conn->session, table->res);
 	free(table);
 }
@@ -553,19 +559,18 @@ prelude_sql_row_t *prelude_sql_row_fetch(prelude_sql_table_t *table)
 
 void prelude_sql_row_free(prelude_sql_row_t *row)
 {
-	struct list_head *tmp;
-	struct list_head *next;
+	prelude_list_t *tmp, *next;
 	prelude_sql_field_t *field;
 
 	if ( ! row )
 		return;
 
-	list_for_each_safe(tmp, next, &row->field_list) {
-		field = list_entry(tmp, prelude_sql_field_t, list);
+	prelude_list_for_each_safe(tmp, next, &row->field_list) {
+		field = prelude_list_entry(tmp, prelude_sql_field_t, list);
 		free(field);
 	}
 
-	list_del(&row->list);
+	prelude_list_del(&row->list);
 	free(row);
 }
 
