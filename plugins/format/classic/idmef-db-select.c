@@ -43,8 +43,6 @@
 
 #include "idmef-db-select.h"
 
-/* maximum length of text representation of path value */
-#define VALLEN 262144
 
 typedef struct table_entry {
 	prelude_list_t list;
