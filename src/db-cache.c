@@ -175,11 +175,15 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
         ret = -1;
         while ( (prelude_msg_get(msg, &tag, &len, &buf)) > 0 ) {
 
-                if ( tag == MSG_ALERT_TAG ) 
+                if ( tag == MSG_ALERT_TAG ) {
                         ret = msg_to_alert(idmef, msg);
-
-                else if ( tag == MSG_HEARTBEAT_TAG )
+                        break;
+                }
+                
+                else if ( tag == MSG_HEARTBEAT_TAG ) {
                         ret = msg_to_heartbeat(idmef, msg);
+                        break;
+                }
         }
 
         if ( ret == 0 )
