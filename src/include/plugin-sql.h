@@ -110,19 +110,21 @@ sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char
 
 int sql_plugins_init(const char *dirname, int argc, char **argv);
 
-char *sql_plugin_escape(sql_connection_t *conn, const char *string);
+char *sql_escape(sql_connection_t *conn, const char *string);
 
-int sql_plugin_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...);
+int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...);
 
-sql_table_t *sql_plugin_query(sql_connection_t *conn, const char *fmt, ...);
+sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...);
 
-int sql_plugin_begin(sql_connection_t *conn);
+int sql_begin(sql_connection_t *conn);
 
-int sql_plugin_commit(sql_connection_t *conn);
+int sql_commit(sql_connection_t *conn);
 
-int sql_plugin_rollback(sql_connection_t *conn);
+int sql_rollback(sql_connection_t *conn);
 
-void sql_plugins_close(sql_connection_t *conn);
+void sql_close(sql_connection_t *conn);
+
+char *sql_escape(sql_connection_t *conn, const char *text);
 
 plugin_generic_t *plugin_init(int argc, char **argv);
 

@@ -62,8 +62,6 @@
 
 static LIST_HEAD(sql_plugins_list);
 
-static char *null_str = "NULL";
-
 
 /*
  *
@@ -223,56 +221,38 @@ sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
 }
 
 
-
 char *sql_escape(sql_connection_t *conn, const char *string) 
 {
-	char *tmp, *new;
-	int len;
-	
 	if (!string) 
-		return null_str;
+		return strdup("NULL");
 	
-	tmp = conn->plugin->db_escape(string);
-	
-	if (!tmp)
-		return NULL;
-	
-	len = strlen(tmp);
-	
-	new = malloc(len+3);
-	new[0] = '\'';
-	strncpy(new+1, tmp, len);
-	new[len+1] = '\'';
-	new[len+2] = '\0';
-	
-	free(tmp);
-	
-	return new;
+	return (conn && conn->plugin) ? conn->plugin->db_escape(string) : NULL;
 }
 
 
 int sql_begin(sql_connection_t *conn)
 {
-	return conn->plugin->db_begin(conn->session);
+	return (conn && conn->plugin) ? conn->plugin->db_begin(conn->session) : -1;
 }
+
 
 int sql_commit(sql_connection_t *conn)
 {
-	return conn->plugin->db_commit(conn->session);
+	return (conn && conn->plugin) ? conn->plugin->db_commit(conn->session) : -1;
 }
+
 
 int sql_rollback(sql_connection_t *conn)
 {
-	return conn->plugin->db_rollback(conn->session);
+	return (conn && conn->plugin) ? conn->plugin->db_rollback(conn->session) : -1;
 }
-
 
 
 void sql_close(sql_connection_t *conn)
 {
-	conn->plugin->db_close(conn->session);
+	if (conn && conn->plugin)
+    		conn->plugin->db_close(conn->session);
 }
-
 
 
 sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 

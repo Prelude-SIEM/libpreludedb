@@ -61,17 +61,17 @@ static int insert_address(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         if ( ! category )
                 return -1;
         
-        address = sql_plugin_escape(conn, idmef_string(&addr->address));
+        address = sql_escape(conn, idmef_string(&addr->address));
         if ( ! address )
                 return -1;
         
-        netmask = sql_plugin_escape(conn, idmef_string(&addr->netmask));
+        netmask = sql_escape(conn, idmef_string(&addr->netmask));
         if ( ! netmask ) {
                 free(address);
                 return -1;
         }
         
-        vlan_name = sql_plugin_escape(conn, idmef_string(&addr->vlan_name));
+        vlan_name = sql_escape(conn, idmef_string(&addr->vlan_name));
         if ( ! vlan_name ) {
                 free(address);
                 free(netmask);
@@ -109,11 +109,11 @@ static int insert_node(sql_connection_t *conn, uint64_t alert_ident, uint64_t pa
         if ( ! category )
                 return -1;
         
-        name = sql_plugin_escape(conn, idmef_string(&node->name));
+        name = sql_escape(conn, idmef_string(&node->name));
         if ( ! name )
                 return -1;
         
-        location = sql_plugin_escape(conn, idmef_string(&node->location));
+        location = sql_escape(conn, idmef_string(&node->location));
         if ( ! location ) {
                 free(name);
                 return -1;
@@ -150,7 +150,7 @@ static int insert_userid(sql_connection_t *conn, uint64_t alert_ident, uint64_t 
         if ( ! type )
                 return -1;
         
-        name = sql_plugin_escape(conn, idmef_string(&uid->name));
+        name = sql_escape(conn, idmef_string(&uid->name));
         if ( ! name )
                 return -1;
         
@@ -211,11 +211,11 @@ static int insert_process(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         if ( ! process )
                 return 0;
         
-        name = sql_plugin_escape(conn, idmef_string(&process->name));
+        name = sql_escape(conn, idmef_string(&process->name));
         if ( ! name )
                 return -1;
         
-        path = sql_plugin_escape(conn, idmef_string(&process->path));
+        path = sql_escape(conn, idmef_string(&process->path));
         if ( ! path ) {
                 free(name);
                 return -1;
@@ -231,7 +231,7 @@ static int insert_process(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         list_for_each(tmp, &process->arg_list) {
                 str = list_entry(tmp, idmef_string_item_t, list);
 
-                arg = sql_plugin_escape(conn, idmef_string(&str->string));
+                arg = sql_escape(conn, idmef_string(&str->string));
                 if ( ! arg )
                         return -1;
                 
@@ -244,7 +244,7 @@ static int insert_process(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         list_for_each(tmp, &process->env_list) {
                 str = list_entry(tmp, idmef_string_item_t, list);
 
-                env = sql_plugin_escape(conn, idmef_string(&str->string));
+                env = sql_escape(conn, idmef_string(&str->string));
                 if ( ! env )
                         return -1;
                 
@@ -264,17 +264,17 @@ static int insert_snmp_service(sql_connection_t *conn, uint64_t alert_ident, uin
 {
         char *oid, *community, *command;
 
-        oid = sql_plugin_escape(conn, idmef_string(&snmp->oid));
+        oid = sql_escape(conn, idmef_string(&snmp->oid));
         if (! oid )
                 return -1;
         
-        command = sql_plugin_escape(conn, idmef_string(&snmp->command));
+        command = sql_escape(conn, idmef_string(&snmp->command));
         if ( ! command ) {
                 free(oid);
                 return -1;
         }
         
-        community = sql_plugin_escape(conn, idmef_string(&snmp->community));
+        community = sql_escape(conn, idmef_string(&snmp->community));
         if ( ! community ) {
                 free(oid);
                 free(command);
@@ -302,17 +302,17 @@ static int insert_web_service(sql_connection_t *conn, uint64_t alert_ident, uint
         if ( ! web )
                 return 0;
 
-        url = sql_plugin_escape(conn, idmef_string(&web->url));
+        url = sql_escape(conn, idmef_string(&web->url));
         if ( ! url )
                 return -1;
         
-        cgi = sql_plugin_escape(conn, idmef_string(&web->cgi));
+        cgi = sql_escape(conn, idmef_string(&web->cgi));
         if ( ! cgi ) {
                 free(url);
                 return -1;
         }
         
-        method = sql_plugin_escape(conn, idmef_string(&web->http_method));
+        method = sql_escape(conn, idmef_string(&web->http_method));
         if ( ! method ) {
                 free(url);
                 free(cgi);
@@ -337,7 +337,7 @@ static int insert_portlist(sql_connection_t *conn, uint64_t alert_ident, uint64_
 {
         char *plist;
         
-        plist = sql_plugin_escape(conn, idmef_string(portlist));
+        plist = sql_escape(conn, idmef_string(portlist));
         if ( ! plist )
                 return -1;
         
@@ -360,11 +360,11 @@ static int insert_service(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         if ( ! service )
                 return 0;
         
-        name = sql_plugin_escape(conn, idmef_string(&service->name));
+        name = sql_escape(conn, idmef_string(&service->name));
         if ( ! name )
                 return -1;
         
-        protocol = sql_plugin_escape(conn, idmef_string(&service->protocol));
+        protocol = sql_escape(conn, idmef_string(&service->protocol));
         if ( ! protocol ) {
                 free(name);
                 return -1;
@@ -435,11 +435,11 @@ static int insert_linkage(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         if ( ! category )
                 return -1;
         
-        name = sql_plugin_escape(conn, idmef_string(&linkage->name));
+        name = sql_escape(conn, idmef_string(&linkage->name));
         if (! name )
                 return -1;
         
-        path = sql_plugin_escape(conn, idmef_string(&linkage->path));
+        path = sql_escape(conn, idmef_string(&linkage->path));
         if ( ! path ) {
                 free(name);
                 return -1;
@@ -495,11 +495,11 @@ static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t ta
         if ( ! category )
                 return -1;
         
-        name = sql_plugin_escape(conn, idmef_string(&file->name));
+        name = sql_escape(conn, idmef_string(&file->name));
         if ( ! name )
                 return -1;
         
-        path = sql_plugin_escape(conn, idmef_string(&file->path));
+        path = sql_escape(conn, idmef_string(&file->path));
         if ( ! path ) {
                 free(name);
                 return -1;
@@ -563,7 +563,7 @@ static int insert_source(sql_connection_t *conn, uint64_t alert_ident, idmef_sou
         if ( ! spoofed )
                 return -1;
 
-        interface = sql_plugin_escape(conn, idmef_string(&source->interface));
+        interface = sql_escape(conn, idmef_string(&source->interface));
         if ( ! interface )
                 return -1;
         
@@ -633,7 +633,7 @@ static int insert_target(sql_connection_t *conn, uint64_t alert_ident, idmef_tar
         if ( ! decoy )
                 return -1;
         
-        interface = sql_plugin_escape(conn, idmef_string(&target->interface));
+        interface = sql_escape(conn, idmef_string(&target->interface));
         if ( ! interface )
                 return -1;
         
@@ -672,24 +672,24 @@ static int insert_analyzer(sql_connection_t *conn, uint64_t parent_ident, char p
         int ret;
         char *manufacturer, *model, *version, *class, *ostype, *osversion;
 
-        class = sql_plugin_escape(conn, idmef_string(&analyzer->class));
+        class = sql_escape(conn, idmef_string(&analyzer->class));
         if ( ! class )
                 return -1;
         
-        model = sql_plugin_escape(conn, idmef_string(&analyzer->model));
+        model = sql_escape(conn, idmef_string(&analyzer->model));
         if ( ! model ) {
                 free(class);
                 return -1;
         }
         
-        version = sql_plugin_escape(conn, idmef_string(&analyzer->version));
+        version = sql_escape(conn, idmef_string(&analyzer->version));
         if ( ! version ) {
                 free(class);
                 free(model);
                 return -1;
         }
         
-        manufacturer = sql_plugin_escape(conn, idmef_string(&analyzer->manufacturer));
+        manufacturer = sql_escape(conn, idmef_string(&analyzer->manufacturer));
         if ( ! manufacturer ) {
                 free(class);
                 free(model);
@@ -697,7 +697,7 @@ static int insert_analyzer(sql_connection_t *conn, uint64_t parent_ident, char p
                 return -1;
         }
 
-        ostype = sql_plugin_escape(conn, idmef_string(&analyzer->ostype));
+        ostype = sql_escape(conn, idmef_string(&analyzer->ostype));
         if ( ! ostype ) {
                 free(class);
                 free(model);
@@ -705,7 +705,7 @@ static int insert_analyzer(sql_connection_t *conn, uint64_t parent_ident, char p
                 free(manufacturer);
         }
 
-        osversion = sql_plugin_escape(conn, idmef_string(&analyzer->osversion));
+        osversion = sql_escape(conn, idmef_string(&analyzer->osversion));
         if ( ! ostype ) {
                 free(class);
                 free(model);
@@ -749,11 +749,11 @@ static int insert_classification(sql_connection_t *conn, uint64_t alert_ident, i
         if ( ! origin )
                 return -1;
 
-        url = sql_plugin_escape(conn, idmef_string(&class->url));
+        url = sql_escape(conn, idmef_string(&class->url));
         if ( ! url )
                 return -1;
         
-        name = sql_plugin_escape(conn, idmef_string(&class->name));
+        name = sql_escape(conn, idmef_string(&class->name));
         if ( ! name ) {
                 free(url);
                 return -1;
@@ -786,11 +786,11 @@ static int insert_data(sql_connection_t *conn, uint64_t parent_ident, char paren
         if ( ! ptr )
                 return -1;
 
-        meaning = sql_plugin_escape(conn, idmef_string(&ad->meaning));
+        meaning = sql_escape(conn, idmef_string(&ad->meaning));
         if ( ! meaning ) 
                 return -1;
         
-        data = sql_plugin_escape(conn, ptr);
+        data = sql_escape(conn, ptr);
         if ( ! data ) {
                 free(meaning);
                 return -1;
@@ -815,11 +815,11 @@ static int insert_createtime(sql_connection_t *conn, uint64_t parent_ident, char
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
         
-        u = sql_plugin_escape(conn, utc_time);
+        u = sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
         
-        n = sql_plugin_escape(conn, ntpstamp);
+        n = sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
                 return -1;
@@ -846,11 +846,11 @@ static int insert_detecttime(sql_connection_t *conn, uint64_t alert_ident, idmef
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
         
-        u = sql_plugin_escape(conn, utc_time);
+        u = sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
         
-        n = sql_plugin_escape(conn, ntpstamp);
+        n = sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
                 return -1;
@@ -877,11 +877,11 @@ static int insert_analyzertime(sql_connection_t *conn, uint64_t parent_ident, ch
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
         
-        u = sql_plugin_escape(conn, utc_time);
+        u = sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
         
-        n = sql_plugin_escape(conn, ntpstamp);
+        n = sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
                 return -1;
@@ -919,7 +919,7 @@ static int insert_impact(sql_connection_t *conn, uint64_t alert_ident, idmef_imp
         if ( ! severity )
                 return -1;
         
-        desc = sql_plugin_escape(conn, idmef_string(&impact->description));
+        desc = sql_escape(conn, idmef_string(&impact->description));
         if ( ! desc )
                 return -1;
         
@@ -943,7 +943,7 @@ static int insert_action(sql_connection_t *conn, uint64_t alert_ident, idmef_act
         if ( ! category )
                 return -1;
         
-        desc = sql_plugin_escape(conn, idmef_string(&action->description));
+        desc = sql_escape(conn, idmef_string(&action->description));
         if ( ! desc )
                 return -1;
         
@@ -1010,11 +1010,11 @@ static int insert_overflow_alert(sql_connection_t *conn, uint64_t alert_ident, i
 {
         char *program, *buffer;
 
-        program = sql_plugin_escape(conn, idmef_string(&overflow->program));
+        program = sql_escape(conn, idmef_string(&overflow->program));
         if ( ! program )
                 return -1;
 
-        buffer = sql_plugin_escape(conn, overflow->buffer);
+        buffer = sql_escape(conn, overflow->buffer);
         if ( ! buffer ) {
                 free(program);
                 return -1;
@@ -1039,11 +1039,11 @@ static int insert_tool_alert(sql_connection_t *conn, uint64_t alert_ident, idmef
         /*
          * FIXME use alert_ident ?
          */
-        name = sql_plugin_escape(conn, idmef_string(&tool->name));
+        name = sql_escape(conn, idmef_string(&tool->name));
         if ( ! name )
                 return -1;
 
-        command = sql_plugin_escape(conn, idmef_string(&tool->command));
+        command = sql_escape(conn, idmef_string(&tool->command));
         if ( ! command ) {
                 free(name);
                 return -1;
@@ -1069,7 +1069,7 @@ static int insert_correlation_alert(sql_connection_t *conn, uint64_t alert_ident
         /*
          * FIXME: use alert_ident ?
          */
-        name = sql_plugin_escape(conn, idmef_string(&correlation->name));
+        name = sql_escape(conn, idmef_string(&correlation->name));
         if ( ! name )
                 return -1;
 

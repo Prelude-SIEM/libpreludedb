@@ -52,6 +52,8 @@ static int format_write(db_connection_t *connection, idmef_message_t *message)
 		
 	if (connection->type != sql)
 		return -2;
+
+	printf("classic: writing message\n");
 		
 	return idmef_db_output(connection, message);
 }

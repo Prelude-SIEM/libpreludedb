@@ -63,6 +63,8 @@ db_interface_t *db_connect_sql(const char *dbformat, const char *dbtype, const c
 	INIT_LIST_HEAD(&interface->filter_list);
 	
 	list_add(&interface->list, &db_interfaces);
+
+	printf("connected to %s@%s\n", dbname, dbhost);
 	
 	return interface;
 }
@@ -100,6 +102,8 @@ static int db_connection_delete_filter(db_interface_t *conn, const char *filter)
 
 static int db_interface_write_idmef_message(db_interface_t *interface, idmef_message_t *msg)
 {
+	printf("db_interface_write_idmef_message()\n");
+
 	if (!interface)
 		return -1;
 		
@@ -155,6 +159,8 @@ int db_write_idmef_message(idmef_message_t *msg)
 {
 	struct list_head *tmp;
 	db_interface_t *interface;
+
+	printf("db_write_idmef_message\n");
 	
 	list_for_each(tmp, &db_interfaces) {
 		interface = list_entry(tmp, db_interface_t, list);
