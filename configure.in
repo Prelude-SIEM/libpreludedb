@@ -235,6 +235,8 @@ libpreludedb-config
 
 Makefile
 
+prelude-db-create.sh
+
 src/Makefile
 src/include/Makefile
 
@@ -256,7 +258,7 @@ bindings/python/Makefile
 
 ])
 
-AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
+AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config; chmod +x prelude-db-create.sh]],[[]])
 
 AC_OUTPUT
 

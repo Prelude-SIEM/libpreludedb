@@ -9,5 +9,6 @@ classicdir = $(format_plugin_dir)
 
 install-data-local:
 	$(INSTALL) -d -m 755 $(DESTDIR)/$(format_config_dir)/classic
+	$(INSTALL) -m 644 *.sql $(DESTDIR)/$(format_config_dir)/classic
 	$(INSTALL) -m 644 schema.txt $(DESTDIR)/$(format_config_dir)/classic
 
