@@ -26,6 +26,7 @@
 #define _LIBPRELUDEDB_DB_TYPE_H
 
 typedef enum {
+	prelude_db_type_invalid = 0,
 	prelude_db_type_sql = 1
 } prelude_db_type_t;
 

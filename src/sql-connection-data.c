@@ -60,10 +60,13 @@ prelude_sql_connection_data_t *prelude_sql_connection_data_new(void)
 
 int prelude_sql_connection_data_set_type(prelude_sql_connection_data_t *cnx, const char *type) 
 {
-        if ( ! type )
+        if ( ! cnx )
                 return -1;
         
-        return (cnx->type = strdup(type)) ? 0 : -1;
+        if ( type )
+        	return (cnx->type = strdup(type)) ? 0 : -1;
+	
+	return -1;
 }
 
 
@@ -78,10 +81,15 @@ char *prelude_sql_connection_data_get_type(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_name(prelude_sql_connection_data_t *cnx, const char *name) 
 {
-        if ( ! name )
+        if ( ! cnx )
                 return -1;
-        
-        return (cnx->name = strdup(name)) ? 0 : -1;
+
+	if ( name )
+        	return (cnx->name = strdup(name)) ? 0 : -1;
+        else
+        	cnx->name = NULL;
+        	
+        return 0;
 }
 
 
@@ -97,10 +105,15 @@ char *prelude_sql_connection_data_get_name(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, const char *host) 
 {
-        if ( ! host )
+        if ( ! cnx )
                 return -1;
         
-        return (cnx->host = strdup(host)) ? 0 : -1;
+        if ( host )
+        	return (cnx->host = strdup(host)) ? 0 : -1;
+        else
+        	cnx->host = NULL;
+        
+        return 0;
 }
 
 
@@ -116,10 +129,15 @@ char *prelude_sql_connection_data_get_host(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_port(prelude_sql_connection_data_t *cnx, const char *port) 
 {
-        if ( ! port )
+        if ( ! cnx )
                 return -1;
         
-        return (cnx->port = strdup(port)) ? 0 : -1;
+        if ( port )
+        	return (cnx->port = strdup(port)) ? 0 : -1;
+        else
+        	cnx->port = NULL;
+        	
+        return 0;
 }
 
 
@@ -134,10 +152,15 @@ char *prelude_sql_connection_data_get_port(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_user(prelude_sql_connection_data_t *cnx, const char *user) 
 {
-        if ( ! user )
+        if ( ! cnx )
                 return -1;
         
-        return (cnx->user = strdup(user)) ? 0 : -1;
+        if ( user )
+        	return (cnx->user = strdup(user)) ? 0 : -1;
+        else
+        	cnx->user = NULL;
+        	
+        return 0;
 }
 
 
@@ -152,10 +175,15 @@ char *prelude_sql_connection_data_get_user(prelude_sql_connection_data_t *cnx)
 
 int prelude_sql_connection_data_set_pass(prelude_sql_connection_data_t *cnx, const char *pass)
 {
-        if ( ! pass )
+        if ( ! cnx )
                 return -1;
-        
-        return (cnx->pass = strdup(pass)) ? 0 : -1;
+
+	if ( pass )        
+        	return (cnx->pass = strdup(pass)) ? 0 : -1;
+        else
+        	cnx->pass = NULL;
+        	
+        return 0;
 }
 
 
