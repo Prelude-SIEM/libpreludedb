@@ -70,7 +70,7 @@ static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ide
 	if ( ! sql )
 		return -1;
 
-	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE analyzerid = %" PRIu64 "AND %s = %" PRIu64 ";",
+	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE analyzerid = %" PRIu64 " AND %s = %" PRIu64 ";",
 				  table_name,
 				  prelude_db_message_ident_get_analyzerid(ident),
 				  field_name,
