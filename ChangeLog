@@ -1,3 +1,9 @@
+2002-12-19  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/sql/mysql/mysql.c:
+	implement handling of queries returning results
+	(this has been done by Nicolas Delon <delon.nicolas@wanadoo.fr>)
+
 2002-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/sql-table.c:

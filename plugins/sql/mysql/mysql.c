@@ -51,6 +51,9 @@
 #include "sql-connection-data.h"
 #include "plugin-sql.h"
 
+#if !defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID<32224
+# define mysql_field_count mysql_num_fields
+#endif /* ! MYSQL_VERSION_ID */
 
 /*
  * NOTE: Modifications for LibpreludeDB are heavily based on relevant PgSQL code 
@@ -286,13 +289,124 @@ static char *db_escape(void *s, const char *string)
 
 
 
+static int get_query_result(MYSQL *connection, const char *query, MYSQL_RES *res, prelude_sql_table_t *table)
+{
+	int i, j;
+	MYSQL_FIELD *mysql_field;
+	MYSQL_ROW mysql_row;
+	prelude_sql_row_t *prelude_row;
+	prelude_sql_field_t *prelude_field;
+	int fields;
+	prelude_sql_field_type_t type;
+
+	fields = mysql_field_count(connection);
+	i = 0;
+	while ( (mysql_row = mysql_fetch_row(res)) ) {
+		prelude_row = prelude_sql_row_new(fields);
+		if ( ! prelude_row ){
+			log(LOG_ERR, "Query \"%s\": could not create table row\n", query);
+                        errno = -ERR_PLUGIN_DB_RESULT_ROW_ERROR;
+                        return -1;
+		}
+
+		prelude_sql_table_add_row(table, prelude_row);
+
+		for ( j = 0; j < fields; j++ ) {
+			mysql_field = mysql_fetch_field_direct(res, j);
+			switch ( mysql_field->type ) {
+				
+			case FIELD_TYPE_LONG:
+				type = (mysql_field->flags & UNSIGNED_FLAG) ? type_uint32 : type_int32;
+				break;
+				
+			case FIELD_TYPE_LONGLONG:
+				type = (mysql_field->flags & UNSIGNED_FLAG) ? type_uint64 : type_int64;
+				break;
+				
+			case FIELD_TYPE_FLOAT:
+				type = type_float;
+				break;
+
+			case FIELD_TYPE_DOUBLE:
+				type = type_double;
+				break;
+
+			default:
+				type = type_string;
+				break;
+			}
+
+			prelude_field = prelude_sql_field_new(mysql_field->name, type, mysql_row[j]);
+			if ( ! prelude_field ) {
+				log(LOG_ERR, "Query \"%s\": couldn't create result field \"%s\"\n", query, mysql_field->name);
+                                errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
+                                return -1;
+			}
+
+			prelude_sql_row_set_field(prelude_row, j, prelude_field);
+		}
+		i++;
+	}
+
+	return 0;
+}
+
+
+
+
 /*
  * Execute SQL query, return table
  */
 static prelude_sql_table_t *db_query(void *s, const char *query)
 {
-	log(LOG_ERR, "db_query() is not implemented in MySQL plugin.\n");	
-	return NULL;
+	int ret;
+	MYSQL_RES *res;
+	prelude_sql_table_t *table;
+	session_t *session = s;
+
+	if ( session->status != connected && session->status != transaction ) {
+                errno = -ERR_PLUGIN_DB_NOT_CONNECTED;
+		return NULL;
+	}
+
+	table = prelude_sql_table_new("Results");
+	if ( ! table ) {
+		log(LOG_ERR, "Query: \"%s\": could not create result table\n", query);
+		errno = -ERR_PLUGIN_DB_RESULT_TABLE_ERROR;
+		return NULL;
+	}
+
+#ifdef DEBUG
+	log(LOG_INFO, "mysql: %s\n", query);
+#endif
+
+	if ( mysql_query(session->connection, query) != 0) {
+		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->connection));
+		errno = -ERR_PLUGIN_DB_QUERY_ERROR;
+		prelude_sql_table_destroy(table);
+		return NULL;
+	}
+
+	res = mysql_store_result(session->connection);
+	if ( ! res ) {
+		if ( mysql_errno(session->connection) ) {
+			log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->connection));
+			errno = -ERR_PLUGIN_DB_QUERY_ERROR;
+			prelude_sql_table_destroy(table);
+			return NULL;
+		}
+		return table;
+	}
+	
+	ret = get_query_result(session->connection, query, res, table);
+	if ( ret < 0 ) {
+		prelude_sql_table_destroy(table);
+		table = NULL;
+	}
+
+	mysql_free_result(res);
+
+	return table;
 }
 
 
