@@ -212,10 +212,14 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	
 		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
-			field = prelude_sql_field_fetch(row, field_cnt);
-			char_val = prelude_sql_field_value(field);
-
+			/* FIXME: handle enumeration */
 			object = idmef_object_ref(idmef_selection_get_next_object(selection));
+
+			field = prelude_sql_field_fetch(row, field_cnt);
+			if ( ! field )
+				continue;
+			
+			char_val = prelude_sql_field_value(field);
 			value = idmef_value_new_for_object(object, char_val);
 			if ( idmef_message_set(message, object, value) < 0 ) {
 				prelude_sql_table_free(table);

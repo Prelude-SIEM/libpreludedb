@@ -1,6 +1,16 @@
 2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c:
+	(get_message): handle NULL fields correctly. 
+
+	* plugins/format/classic/idmef-db-select.c:
+	build query differently, using LEFT JOIN statements. This allows
+	to handle empty tables / records correctly when used along with
+	filled ones. 
+
+2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic.c:
 	(get_message): call idmef_selection_set_object_iterator()
 	before processing each row. Use idmef_value_new_for_object()
 	instead of idmef_value_new_generic() to handle enums

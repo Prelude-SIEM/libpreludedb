@@ -42,7 +42,7 @@
 /* maximum length of text representation of object value */
 #define VALLEN 262144
 
-int add_table(strbuf_t *, char *);
+int add_table(strbuf_t *, char *, char *, char *, char *);
 int add_field(strbuf_t *, char *, char *, char *);
 int relation_to_sql(strbuf_t *, char *, char *, idmef_relation_t, char *);
 int criterion_to_sql(prelude_sql_connection_t *, strbuf_t *, strbuf_t *, idmef_criterion_t *);
@@ -50,24 +50,27 @@ int objects_to_sql(prelude_sql_connection_t *, strbuf_t *, strbuf_t *, strbuf_t 
 strbuf_t *build_request(prelude_sql_connection_t *, idmef_selection_t *, idmef_criterion_t *);
 
 
-int add_table(strbuf_t *tables, char *table)
+int add_table(strbuf_t *tables, char *table, char *top_table, char *top_field, char *ident_field)
 {
 	int ret;
 	
-	/* Add the table to list if not already there */
+	/* 
+	 * If LEFT JOIN list is empty, start with adding table name  
+	 * or top table name (if the latter is specified) before the LEFT JOIN clause 
+	 */
 	if ( strbuf_empty(tables) ) {
-		/* list empty */
-		ret = strbuf_sprintf(tables, "%s", table);
+		ret = strbuf_sprintf(tables, "%s", top_table ? top_table : table);
 		if ( ret < 0 )
 			return ret;
-			
-	} else {
-		/* check if table has already been added or not */
-		if ( strstr(strbuf_string(tables), table ) == NULL ) {
-			ret = strbuf_sprintf(tables, ", %s", table);
-			if ( ret < 0 )
-				return ret;
-		}
+	}
+	
+	/* Add the table to LEFT JOIN list if not already there */
+	if ( ( strstr(strbuf_string(tables), table ) == NULL ) &&
+	     top_table && top_field && ident_field ) {
+		ret = strbuf_sprintf(tables, " LEFT JOIN %s ON %s.%s = %s.%s",
+			table, top_table, top_field, table, ident_field);
+		if ( ret < 0 )
+			return ret;
 	}
 	
 	return 0;
@@ -194,7 +197,10 @@ int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t 
 
 
 
-int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *tables, idmef_criterion_t *criterion)
+int criterion_to_sql(prelude_sql_connection_t *conn, 
+		     strbuf_t *where, 
+		     strbuf_t *tables, 
+		     idmef_criterion_t *criterion)
 {
 	idmef_object_t *object;
 	db_object_t *db;
@@ -263,8 +269,7 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 			log(LOG_ERR, "object %s [%s] not handled by database specification!\n", objname, objnum);
 			free(objnum);
 			return -1;
-		}
-		
+		}		
 		
 		table = db_object_get_table(db);
 		field = db_object_get_field(db);
@@ -277,7 +282,7 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 		relation = idmef_criterion_get_relation(criterion);
 		
 		/* Add table to JOIN list */
-		ret = add_table(tables, table);
+		ret = add_table(tables, table, top_table, top_field, ident_field);
 		if ( ret < 0 )
 			return ret;
 		
@@ -286,27 +291,6 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 		value = prelude_sql_escape(conn, buf);
 
 
-		if ( condition || ( top_table && top_field && ident_field ) ) {
-			ret = strbuf_sprintf(where, " ( ");
-			if ( ret < 0 )
-				return ret;			
-		}
-
-
-		if ( top_table && top_field && ident_field ) {
-
-			/* Add top table to JOIN list */
-			ret = add_table(tables, top_table);
-			if ( ret < 0 )
-				return ret;		
-			
-			/* Add WHERE clause for tables' relation */
-			ret = strbuf_sprintf(where, "%s.%s = %s.%s AND ", 
-				     	     top_table, top_field, table, ident_field);
-			if ( ret < 0 ) 
-				return ret;
-		}
-		
 		if ( condition ) {
 			ret = strbuf_sprintf(where,"%s AND ", condition);
 			if ( ret < 0 )
@@ -320,12 +304,6 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 		if ( ret < 0 )
 			return ret;
 
-		if ( condition || ( top_table && top_field && ident_field ) ) {					
-			ret = strbuf_sprintf(where, " ) ");
-			if ( ret < 0 )
-				return ret;
-		}
-		
 		free(value);
 		
 		return 0;
@@ -335,7 +313,8 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 
 int objects_to_sql(prelude_sql_connection_t *conn, 
 		   strbuf_t *fields,
-		   strbuf_t *where, strbuf_t *tables, 
+		   strbuf_t *where, 
+		   strbuf_t *tables, 
 		   idmef_selection_t *selection)
 {
 	idmef_object_t *obj;
@@ -453,15 +432,8 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 			*end = '\0';		
 		}
 
-		/* Add top table to JOIN list */
-		if ( top_table ) {
-			ret = add_table(tables, top_table);
-			if ( ret < 0 )
-				goto error;
-		}
-		
-		/* Add object's table to JOIN list */
-		ret = add_table(tables, table);
+		/* Add object's table to LEFT JOIN list */
+		ret = add_table(tables, table, top_table, top_field, ident_field);
 		if ( ret < 0 )
 			goto error;
 		
@@ -481,22 +453,6 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 		if ( ret < 0 )
 			goto error;
 
-		if ( top_table && top_field && ident_field ) {
-			ret = strbuf_sprintf(tmp, "%s.%s = %s.%s", 
-				     	     top_table, top_field, table, ident_field);
-			if ( ret < 0 )
-				goto error;
-		
-			
-			if ( strstr(strbuf_string(where), strbuf_string(tmp)) == NULL ) {
-				ret = strbuf_sprintf(where, " %s ( %s ) ", 
-						     written++ ? "AND" : "(",
-						     strbuf_string(tmp));
-				if ( ret < 0 )
-					goto error;
-			}
-		
-		}
 				
 		/* Add condition to WHERE statement */
 		if ( condition && ( strstr(strbuf_string(where), condition) == NULL ) ) {
