@@ -534,6 +534,7 @@ static unsigned int db_rows_num(void *s, void *t)
 }
 
 
+
 static void *db_row_fetch(void *s, void *t)
 {
 	session_t *session = s;
@@ -549,25 +550,37 @@ static void *db_row_fetch(void *s, void *t)
 
 
 
-static void *db_field_fetch(void *s, void *t, void *r, unsigned int i)
+static int db_field_fetch(void *s, void *t, void *r, unsigned int i, const char **value, size_t *len)
 {
 	session_t *session = s;
 	MYSQL_RES *res = t;
 	MYSQL_ROW row = r;
+	unsigned long *lengths;
 
 	session->dberrno = 0;
 
 	if ( i >= mysql_num_fields(res) ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return NULL;
+		return -1;
 	}
 
-	return row[i];
+	if ( ! row[i] )
+		return 0;
+
+	lengths = mysql_fetch_lengths(res);
+	if ( ! lengths )
+		return -1;
+
+	*value = row[i];
+	*len = lengths[i];
+
+	return 1;
 }
 
 
 
-static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
+static int db_field_fetch_by_name(void *s, void *t, void *r, const char *name,
+				  const char **value, size_t *len)
 {
 	session_t *session = s;
 	MYSQL_RES *res = t;
@@ -575,28 +588,29 @@ static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
 	MYSQL_FIELD *fields = mysql_fetch_fields(res);
 	int fields_num = mysql_num_fields(res);
 	int i;
+	unsigned long *lengths; 
 
 	session->dberrno = 0;
 
 	for ( i = 0; i < fields_num; i++ ) {
-		if (strcmp(name, fields[i].name) == 0)
-			return row[i];
+		if ( strcmp(name, fields[i].name) == 0 ) {
+			if ( ! row[i] )
+				return 0;
+
+			lengths = mysql_fetch_lengths(res);
+			if ( ! lengths )
+				return -1;
+
+			*value = row[i];
+			*len = lengths[i];
+
+			return 1;
+		}
 	}
 
 	session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
 
-	return NULL;
-}
-
-
-
-static const char *db_field_value(void *s, void *t, void *r, void *f)
-{
-	session_t *session = s;
-
-	session->dberrno = 0;
-
-	return (const char *) f;
+	return -1;
 }
 
 
@@ -723,7 +737,6 @@ prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void)
 	plugin_set_row_fetch_func(&plugin, db_row_fetch);
 	plugin_set_field_fetch_func(&plugin, db_field_fetch);
 	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
-	plugin_set_field_value_func(&plugin, db_field_value);
 	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
 	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
 

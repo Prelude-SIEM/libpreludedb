@@ -500,7 +500,7 @@ static void *db_row_fetch(void *s, void *t)
 
 
 
-static void *db_field_fetch(void *s, void *t, void *r, unsigned int field)
+static int db_field_fetch(void *s, void *t, void *r, unsigned int field, const char **value, size_t *len)
 {
 	session_t *session = s;
 	PGresult *res = t;
@@ -510,15 +510,21 @@ static void *db_field_fetch(void *s, void *t, void *r, unsigned int field)
 	
 	if ( field >= PQnfields(res) ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return NULL;
+		return -1;
 	}
 
-	return PQgetisnull(res, row, field) ? NULL : ((void *) field + 1);
+	if ( PQgetisnull(res, row, field) )
+		return 0;
+
+	*value = PQgetvalue(res, row, field);
+	*len = PQgetlength(res, row, field);
+
+	return 1;
 }
 
 
 
-static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
+static int db_field_fetch_by_name(void *s, void *t, void *r, const char *name, const char **value, size_t *len)
 {
 	session_t *session = s;
 	PGresult *res = t;
@@ -529,24 +535,10 @@ static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
 	field = PQfnumber(res, name);
 	if ( field == -1 ) {
 		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-		return NULL;
+		return -1;
 	}
 
-	return db_field_fetch(session, res, r, field);
-}
-
-
-
-static const char *db_field_value(void *s, void *t, void *r, void *f)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	unsigned int row = (unsigned int) r - 1;
-	unsigned int field = (unsigned int) f - 1;
-
-	session->dberrno = 0;
-
-	return PQgetvalue(res, row, field);
+	return db_field_fetch(session, res, r, field, value, len);
 }
 
 
@@ -677,7 +669,6 @@ prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void)
 	plugin_set_row_fetch_func(&plugin, db_row_fetch);
 	plugin_set_field_fetch_func(&plugin, db_field_fetch);
 	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
-	plugin_set_field_value_func(&plugin, db_field_value);
 	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
 	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
 

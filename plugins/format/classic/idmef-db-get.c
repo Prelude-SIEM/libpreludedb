@@ -1910,7 +1910,7 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 		case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
 			ret = idmef_data_set_byte_string_dup(data,
 							     prelude_sql_field_value(field),
-							     strlen(prelude_sql_field_value(field) + 1));
+							     prelude_sql_field_len(field));
 			break;
 
 		case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP:
@@ -2241,7 +2241,7 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	if ( ! data )
 		goto error;
 
-	if ( idmef_data_set_byte_string_dup(data, prelude_sql_field_value(field), strlen(prelude_sql_field_value(field))) < 0 )
+	if ( idmef_data_set_byte_string_dup(data, prelude_sql_field_value(field), prelude_sql_field_len(field)) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);

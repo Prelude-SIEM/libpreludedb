@@ -78,8 +78,9 @@ struct prelude_sql_row {
 struct prelude_sql_field {
 	prelude_list_t list;
 	prelude_sql_row_t *row;
-	unsigned int num;
-	void *res;
+	int num;
+	const char *value;
+	size_t len;
 };
 
 /*
@@ -163,7 +164,7 @@ static prelude_sql_row_t *prelude_sql_row_new(prelude_sql_table_t *table, void *
 
 
 
-static prelude_sql_field_t *prelude_sql_field_new(prelude_sql_row_t *row, void *res, unsigned int num)
+static prelude_sql_field_t *prelude_sql_field_new(prelude_sql_row_t *row, int num, const char *value, size_t len)
 {
 	prelude_sql_field_t *prelude_sql_field;
 
@@ -174,8 +175,9 @@ static prelude_sql_field_t *prelude_sql_field_new(prelude_sql_row_t *row, void *
 	}
 	
 	prelude_sql_field->row = row;
-	prelude_sql_field->res = res;
 	prelude_sql_field->num = num;
+	prelude_sql_field->value = value;
+	prelude_sql_field->len = len;
 
         PRELUDE_INIT_LIST_HEAD(&prelude_sql_field->list);
 
@@ -581,10 +583,13 @@ prelude_sql_field_t *prelude_sql_field_fetch(prelude_sql_row_t *row, unsigned in
 {
 	prelude_sql_table_t *table = row->table;
 	prelude_sql_connection_t *conn = table->conn;
-	void *res;
+	const char *value;
+	size_t len;
 
-	res = conn->plugin->db_field_fetch(conn->session, table->res, row->res, i);
-	return res ? prelude_sql_field_new(row, res, i) : NULL;
+	if ( conn->plugin->db_field_fetch(conn->session, table->res, row->res, i, &value, &len) <= 0 )
+		return NULL;
+
+	return prelude_sql_field_new(row, i, value, len);
 }
 
 
@@ -593,26 +598,32 @@ prelude_sql_field_t *prelude_sql_field_fetch_by_name(prelude_sql_row_t *row, con
 {
 	prelude_sql_table_t *table = row->table;
 	prelude_sql_connection_t *conn = table->conn;
+	const char *value;
+	size_t len;
 	int num;
-	void *res;
 
 	num = prelude_sql_field_num(table, name);
 	if ( num == - 1)
 		return NULL;
 
-	res = conn->plugin->db_field_fetch_by_name(conn->session, table->res, row->res, name);
-	return res ? prelude_sql_field_new(row, res, num) : NULL;
+	if ( conn->plugin->db_field_fetch_by_name(conn->session, table->res, row->res, name, &value, &len) <= 0 )
+		return NULL;
+
+	return prelude_sql_field_new(row, num, value, len);
 }
 
 
 
 const char *prelude_sql_field_value(prelude_sql_field_t *field)
 {
-	prelude_sql_row_t *row = field->row;
-	prelude_sql_table_t *table = row->table;
-	prelude_sql_connection_t *conn = table->conn;
+	return field->value;
+}
 
-	return conn->plugin->db_field_value(conn->session, table->res, row->res, field->res);
+
+
+size_t prelude_sql_field_len(prelude_sql_field_t *field)
+{
+	return field->len;
 }
 
 

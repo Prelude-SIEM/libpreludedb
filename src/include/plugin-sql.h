@@ -97,11 +97,10 @@ typedef struct {
 	void *(*db_row_fetch)(void *session, void *table);
 
 	/* rows related functions */
-	void *(*db_field_fetch)(void *session, void *table, void *row, unsigned int i);
-	void *(*db_field_fetch_by_name)(void *session, void *table, void *row, const char *name);
-
-	/* fields related functions */
-	const char *(*db_field_value)(void *session, void *table, void *row, void *field);
+	int (*db_field_fetch)(void *session, void *table, void *row, unsigned int i,
+			      const char **value, size_t *len);
+	int (*db_field_fetch_by_name)(void *session, void *table, void *row, const char *name,
+				      const char **value, size_t *len);
 
 	/* 
 	 * we could also add functions db_field_value_type (where type could be int32, uint32,
@@ -136,7 +135,6 @@ typedef struct {
 #define	plugin_row_fetch_func(p) (p)->db_row_fetch
 #define	plugin_field_fetch_func(p) (p)->db_field_fetch
 #define	plugin_field_fetch_by_name_func(p) (p)->db_field_fetch_by_name
-#define	plugin_field_value_func(p) (p)->db_field_value
 
 #define plugin_set_setup_func(p, f) plugin_setup_func(p) = (f)
 #define plugin_set_connect_func(p, f) plugin_connect_func(p) = (f)
@@ -160,7 +158,6 @@ typedef struct {
 #define	plugin_set_row_fetch_func(p, f) plugin_row_fetch_func(p) = (f)
 #define	plugin_set_field_fetch_func(p, f) plugin_field_fetch_func(p) = (f)
 #define	plugin_set_field_fetch_by_name_func(p, f) plugin_field_fetch_by_name_func(p) = (f)
-#define	plugin_set_field_value_func(p, f) plugin_field_value_func(p) = (f)
 
 int sql_plugins_init(const char *dirname);
 

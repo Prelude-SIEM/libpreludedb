@@ -275,7 +275,7 @@ CREATE TABLE Prelude_AdditionalData (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A', 'H') NOT NULL,
  INDEX (_parent_type, _message_ident),
- type ENUM("boolean","byte","character","date-time","integer","ntpstamp","portlist","real","string","xml") NOT NULL,
+ type ENUM("boolean","byte","character","date-time","integer","ntpstamp","portlist","real","string","byte-string","xml") NOT NULL,
  meaning VARCHAR(255) NULL,
  data BLOB NULL
 ) TYPE=InnoDB;
