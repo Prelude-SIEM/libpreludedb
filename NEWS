@@ -1,3 +1,8 @@
+* 2005-03-31, libpreludedb-0.9.0-rc3:
+
+- Fix PgSQL plugin loading problem.
+
+
 * 2005-03-31, libpreludedb-0.9.0-rc2:
 
 - Fix Python/Perl bindings linking order. Was linking to old version
