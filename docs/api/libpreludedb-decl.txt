@@ -257,7 +257,7 @@ typedef struct {
 </MACRO>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.1.0-svn"
+#define LIBPRELUDEDB_VERSION "0.9.0-svn"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>

@@ -194,7 +194,7 @@ static int get_analyzer_time(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT time, gmtoff, usec "
 					  "FROM Prelude_AnalyzerTime "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 "",
 					  parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -222,7 +222,7 @@ static int get_detect_time(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT time, gmtoff, usec "
 					  "FROM Prelude_DetectTime "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 
 	if ( ret <= 0 )
@@ -253,7 +253,7 @@ static int get_create_time(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					 "SELECT time, gmtoff, usec "
 					 "FROM Prelude_CreateTime "
-					 "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
+					 "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 "",
 					 parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -287,7 +287,7 @@ static int get_user_id(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, type, name, number "
 					  "FROM Prelude_UserId "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND "
 					  "_parent0_index = %d AND _parent1_index = %d AND _parent2_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index, file_index, file_access_index);
 	if ( ret <= 0 )
@@ -337,7 +337,7 @@ static int get_user(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, category "
 					  "FROM Prelude_User "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -381,7 +381,7 @@ static int get_process_arg(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT arg "
 					  "FROM Prelude_ProcessArg "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -413,7 +413,7 @@ static int get_process_env(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT env "
 					  "FROM Prelude_ProcessEnv "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -446,7 +446,7 @@ static int get_process(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, name, pid, path "
 					  "FROM Prelude_Process "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -502,7 +502,7 @@ static int get_web_service_arg(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT arg "
 					  "FROM Prelude_WebServiceArg "
-					  "WHERE _parent_type = '%c' and _message_ident = %" PRIu64 " and _parent0_index = %d AND _index != -1",
+					  "WHERE _parent_type = '%c' and _message_ident = %" PRELUDE_PRIu64 " and _parent0_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -534,7 +534,7 @@ static int get_web_service(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT url, cgi, http_method "
 					  "FROM Prelude_WebService "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -581,7 +581,7 @@ static int get_snmp_service(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT snmp_oid, community, security_name, context_name, context_engine_id, command "
 					  "FROM Prelude_SNMPService "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -637,7 +637,7 @@ static int get_service(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, name, port, iana_protocol_number, iana_protocol_name, portlist, protocol "
 					  "FROM Prelude_Service "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return 0;
@@ -705,7 +705,7 @@ static int get_address(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, category, vlan_name, vlan_num, address, netmask "
 					  "FROM Prelude_Address "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -762,7 +762,7 @@ static int get_node(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, category, location, name "
 					  "FROM Prelude_Node "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent0_index = %d",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -815,7 +815,7 @@ static int get_analyzer(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT analyzerid, name, manufacturer, model, version, class, ostype, osversion "
 					  "FROM Prelude_Analyzer "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -889,7 +889,7 @@ static int get_action(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT category, description "
 					  "FROM Prelude_Action "
-					  "WHERE _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -927,7 +927,7 @@ static int get_confidence(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT rating, confidence "
 					  "FROM Prelude_Confidence "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -964,7 +964,7 @@ static int get_impact(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT severity, completion, type, description "
 					  "FROM Prelude_Impact "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1008,7 +1008,7 @@ static int get_assessment(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT _message_ident "
 					  "FROM Prelude_Assessment "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1049,7 +1049,7 @@ static int get_file_access_permission(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT permission "
 					  "FROM Prelude_FileAccess_Permission "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND "
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND "
 					  "_parent1_index = %d AND _parent2_index = %d AND _index != -1",
 					  message_ident, target_index, file_index, file_access_index);
 	if ( ret <= 0 )
@@ -1085,7 +1085,7 @@ static int get_file_access(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT COUNT(*) "
 					  "FROM Prelude_FileAccess "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
 					  message_ident, target_index, file_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1138,7 +1138,7 @@ static int get_linkage(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT category, name, path "
 					  "FROM Prelude_Linkage "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
 					  message_ident, target_index, file_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1185,7 +1185,7 @@ static int get_inode(preludedb_sql_t *sql,
 					  "SELECT change_time, change_time_gmtoff, number, major_device, minor_device, "
 					  "c_major_device, c_minor_device "
 					  "FROM Prelude_Inode "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND _parent1_index = %d",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _parent1_index = %d",
 					  message_ident, target_index, file_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1243,7 +1243,7 @@ static int get_checksum(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT value, checksum_key, algorithm "
 					  "FROM Prelude_Checksum "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
 					  message_ident, target_index, file_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1290,7 +1290,7 @@ static int get_file(preludedb_sql_t *sql,
 					  "modify_time, modify_time_gmtoff, access_time, "
 					  "access_time_gmtoff, data_size, disk_size, fstype "
 					  "FROM Prelude_File "
-					  "WHERE _message_ident = %" PRIu64 " AND _parent0_index = %d AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  message_ident, target_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1384,7 +1384,7 @@ static int get_source(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, spoofed, interface "
 					  "FROM Prelude_Source "
-					  "WHERE _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1450,7 +1450,7 @@ static int get_target(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, decoy, interface "
 					  "FROM Prelude_Target "
-					  "WHERE _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1523,7 +1523,7 @@ static int get_additional_data(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT type, meaning, data "
 					  "FROM Prelude_AdditionalData "
-					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1675,7 +1675,7 @@ static int get_reference(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT origin, name, url, meaning "
 					  "FROM Prelude_Reference "
-					  "WHERE _message_ident = %" PRIu64 " AND _index != -1",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _index != -1",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1722,7 +1722,7 @@ static int get_classification(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, text "
 					  "FROM Prelude_Classification "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1767,7 +1767,7 @@ static int get_alertident(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT alertident, analyzerid "
 					  "FROM Prelude_Alertident "
-					  "WHERE _parent_type = '%c' AND _message_ident = % AND _index != -1" PRIu64,
+					  "WHERE _parent_type = '%c' AND _message_ident = % AND _index != -1" PRELUDE_PRIu64,
 					  parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1805,7 +1805,7 @@ static int get_tool_alert(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT name, command "
 					  "FROM Prelude_ToolAlert "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1847,7 +1847,7 @@ static int get_correlation_alert(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT name "
 					  "FROM Prelude_CorrelationAlert "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1890,7 +1890,7 @@ static int get_overflow_alert(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT program, size, buffer "
 					  "FROM Prelude_OverflowAlert "
-					  "WHERE _message_ident = %" PRIu64 "",
+					  "WHERE _message_ident = %" PRELUDE_PRIu64 "",
 					  message_ident);
 	if ( ret <= 0 )
 		return ret;
@@ -1942,7 +1942,7 @@ static int get_alert_messageid(preludedb_sql_t *sql, uint64_t ident, idmef_alert
 	preludedb_sql_row_t *row;
 	int ret;
 
-	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid FROM Prelude_Alert WHERE _ident = %" PRIu64 "", ident);
+	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid FROM Prelude_Alert WHERE _ident = %" PRELUDE_PRIu64 "", ident);
 	if ( ret < 0 )
 		return ret;
 
@@ -2044,7 +2044,7 @@ static int _get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_heartbeat_
 	preludedb_sql_row_t *row;
 	int ret;
 
-	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid, heartbeat_interval FROM Prelude_Heartbeat WHERE _ident = %" PRIu64 "", ident);
+	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid, heartbeat_interval FROM Prelude_Heartbeat WHERE _ident = %" PRELUDE_PRIu64 "", ident);
 	if ( ret < 0 )
 		return ret;
 

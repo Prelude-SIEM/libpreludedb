@@ -58,7 +58,7 @@
 		$1 = (uint64_t) SvIV($input);
 
 	} else {
-		if ( sscanf(SvPV_nolen($input), "%" PRIu64, &($1)) < 1 ) {
+		if ( sscanf(SvPV_nolen($input), "%" PRELUDE_PRIu64, &($1)) < 1 ) {
 			croak("Argument %s is not an unsigned 64 bits integer\n", SvPV_nolen($input));
 		}
 	}
@@ -108,7 +108,7 @@
 	if ( SvIV($result) == 0 )
 		sv_setsv(SvRV($input), &PL_sv_undef);
 	else {
-		sv_setsv(SvRV($input), sv_2mortal(newSVpvf("%llu", *$1)));
+		sv_setsv(SvRV($input), sv_2mortal(newSVpvf("%" PRELUDE_PRIu64, *$1)));
 	}
 };
 
