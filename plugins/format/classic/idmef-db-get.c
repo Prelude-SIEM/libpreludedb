@@ -812,7 +812,6 @@ static int get_analyzer(preludedb_sql_t *sql,
 	preludedb_sql_row_t *row;
 	idmef_analyzer_t *analyzer;
 	int ret;
-	int analyzer_count;
 	int index;
 	
 	ret = preludedb_sql_query_sprintf(sql, &table,
@@ -822,14 +821,8 @@ static int get_analyzer(preludedb_sql_t *sql,
 	if ( ret <= 0 )
 		return ret;
 
-	analyzer_count = ret;
-	
-	for ( index = 0; index < analyzer_count; index++ ) {
-		
-		ret = preludedb_sql_table_fetch_row(table, &row);
-		if ( ret <= 0 )
-			return ret;
-
+	index = 0;
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 		ret = parent_new_child(parent, &analyzer, -1);
 		if ( ret < 0 )
 			goto error;
@@ -875,6 +868,8 @@ static int get_analyzer(preludedb_sql_t *sql,
 				  (int (*)(void *, idmef_process_t **)) idmef_analyzer_new_process);
 		if ( ret < 0 )
 			goto error;
+
+		index++;
 	}
 
  error:
