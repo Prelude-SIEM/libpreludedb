@@ -99,8 +99,8 @@ static char *generate_dynamic_query(const char *old, size_t olen,
         strncpy(query, old, olen);
         ret = vsnprintf(query + olen, *nlen - olen, fmt, ap);
         
-        if ( (ret + 1) > (*nlen - olen) || ret < 0 ) {
-                log(LOG_ERR, "Query %s doesn't fit in %d bytes", query, *nlen);
+        if ( (ret + 2) > (*nlen - olen) || ret < 0 ) {
+                log(LOG_ERR, "query %s doesn't fit in %d bytes.\n", query, *nlen);
                 free(query);
                 return NULL;
         }
@@ -112,21 +112,11 @@ static char *generate_dynamic_query(const char *old, size_t olen,
 
 
 
-int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
+
+static char *generate_query(char *buf, size_t size, int *len, const char *fmt, va_list ap)
 {
-        int ret;
-        va_list ap;
-        int len, query_length;
-        char *query_dynamic = NULL;
-        char query_static[DB_REQUEST_LENGTH], *query;
-        
-        query = query_static;
-        
-	len = snprintf(query_static, sizeof(query_static), "INSERT INTO %s (%s) VALUES(", table, fields);
-	if ( (len + 1) > sizeof(query_static) || len < 0 ) {
-                log(LOG_ERR, "Start of query (%s) doesn't fit in %d bytes", query, sizeof(query_static));
-                return -1;
-        }
+        char *query;
+        int query_length;
         
         /*
          * These  functions  return  the number of characters printed
@@ -135,91 +125,83 @@ int sql_insert(sql_connection_t *conn, const char *table, const char *fields, co
          * size bytes (including the trailing '\0'), and return -1 if
          * the  output  was truncated due to this limit.
          */
+        query_length = vsnprintf(buf + *len, size - *len, fmt, ap);
+
+        if ( (query_length + 2) <= (size - *len) ) {
+                *len = query_length + *len;
+                return buf;
+        }
+        
+        if ( query_length < 0 ) 
+                query_length = DB_MAX_INSERT_QUERY_LENGTH;
+        else 
+                query_length += *len + 2;
+
+        query = generate_dynamic_query(buf, *len, &query_length, fmt, ap);
+        
+        if ( ! query )
+                return NULL;
+
+        *len = query_length;
+                
+        return query;
+}
+
+
+
+
+int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
+{
+        va_list ap;
+        int len, ret;
+        char query_static[DB_REQUEST_LENGTH], *query;
+
+        len = snprintf(query_static, sizeof(query_static), "INSERT INTO %s (%s) VALUES(", table, fields);
+        if ( (len + 1) > sizeof(query_static) || len < 0 ) {
+                log(LOG_ERR, "start of query (%s) doesn't fit in %d bytes.\n", query, sizeof(query_static));
+                return -1;
+        }
+        
         va_start(ap, fmt);
-        query_length = vsnprintf(query_static + len, sizeof(query_static) - len, fmt, ap);
+        query = generate_query(query_static, sizeof(query_static), &len, fmt, ap);
         va_end(ap);
         
-        if ( query_length + 1 > sizeof(query_static) - len || query_length < 0 ) {
-                
-                if ( query_length < 0 )
-                        query_length = DB_MAX_INSERT_QUERY_LENGTH;
-                else 
-                        query_length += len + 2;
+        if ( ! query )
+                return -1;
 
-                va_start(ap, fmt);
-                query_dynamic = generate_dynamic_query(query_static, len, &query_length, fmt, ap);
-                va_end(ap);
-                
-                if ( ! query_dynamic )
-                        return -1;
-
-                len = 0;
-                query = query_dynamic;
-        }
-
-        query[query_length + len] = ')';
-	query[query_length + len + 1] = '\0';
+        /*
+         * generate_query() allow us to add one byte at the end of the buffer.
+         */
+        query[len] = ')';
+        query[len + 1] = '\0';
 	
         ret = conn->plugin->db_insert(conn->session, query);
-
 	if (ret < 0)
-		log(LOG_ERR, "[%s]->db_insert returned error code %d\n", 
-			conn->plugin->name, ret);
-
-	if ( query_dynamic )
-                free(query_dynamic);
-
+		log(LOG_ERR, "[%s]->db_insert returned error code %d\n", conn->plugin->name, ret);
+        
+        if ( query != query_static )
+                free(query);
+        
         return ret;
 }
 
 
+
 sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
 {
-        sql_table_t *ret;
         va_list ap;
-        int len, query_length;
-        char *query_dynamic = NULL;
+        sql_table_t *ret;
+        int query_length = 0;
         char query_static[DB_REQUEST_LENGTH], *query;
         
-        query = query_static;
-        
-        len = 0;
-        
-        /*
-         * These  functions  return  the number of characters printed
-         * (not including the trailing `\0' used  to  end  output  to
-         * strings).   snprintf  and vsnprintf do not write more than
-         * size bytes (including the trailing '\0'), and return -1 if
-         * the  output  was truncated due to this limit.
-         */
         va_start(ap, fmt);
-        query_length = vsnprintf(query_static, sizeof(query_static), fmt, ap);
+        query = generate_query(query_static, sizeof(query_static), &query_length, fmt, ap);
         va_end(ap);
-        
-        if ( query_length + 1 > sizeof(query_static) - len || query_length < 0 ) {
-                
-                if ( query_length < 0 )
-                        query_length = DB_MAX_INSERT_QUERY_LENGTH;
-                else 
-                        query_length += len + 2;
-
-                va_start(ap, fmt);
-                query_dynamic = generate_dynamic_query(query_static, len, &query_length, fmt, ap);
-                va_end(ap);
-                
-                if ( ! query_dynamic )
-                        return NULL;
-
-                len = 0;
-                query = query_dynamic;
-        }
-
-	query[query_length + len] = '\0';
 	
         ret = conn->plugin->db_query(conn->session, query);
 
-	if ( query_dynamic )
-                free(query_dynamic);
+	if ( query != query_static )
+                free(query);
 
         return ret;
 }
