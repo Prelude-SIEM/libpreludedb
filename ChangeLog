@@ -1,3 +1,9 @@
+2003-01-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/db-interface-string.c(get_sql_connection_data):
+	free 'data' structure correctly on error. 
+	Happy New Year :)
+
 2002-12-31  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/db-interface-string.c(get_sql_connection_data):

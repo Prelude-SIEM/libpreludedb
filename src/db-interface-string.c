@@ -56,7 +56,7 @@ static void *get_sql_connection_data(const char *config)
 	if ( val ) {
 		ret = prelude_sql_connection_data_set_type(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
@@ -65,10 +65,10 @@ static void *get_sql_connection_data(const char *config)
 	}
 
 	val = parameter_value(config, "host");
-	ret = prelude_sql_connection_data_set_host(data, val);
 	if ( val ) {
+		ret = prelude_sql_connection_data_set_host(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
@@ -80,7 +80,7 @@ static void *get_sql_connection_data(const char *config)
 	if ( val ) {
 		ret = prelude_sql_connection_data_set_name(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
@@ -92,7 +92,7 @@ static void *get_sql_connection_data(const char *config)
 	if ( val ) {
 		ret = prelude_sql_connection_data_set_user(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
@@ -105,7 +105,7 @@ static void *get_sql_connection_data(const char *config)
 	if ( val ) {
 		ret = prelude_sql_connection_data_set_pass(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
@@ -117,7 +117,7 @@ static void *get_sql_connection_data(const char *config)
 	if ( val ) {
 		ret = prelude_sql_connection_data_set_port(data, val);
 		if ( ret < 0 ) {
-			free(data);
+			prelude_sql_connection_data_destroy(data);
 			free(val);
 			return NULL;
 		}
