@@ -1,3 +1,9 @@
+2003-11-05  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-get.c:
+	fit libprelude changes (*_find_{string,numeric} functions
+	renamed in *_to_{string,numeric})
+
 2003-10-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:

@@ -430,7 +430,7 @@ static int get_userid(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &type, idmef_userid_type_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &type, idmef_userid_type_to_numeric) < 0 )
 			goto error;
 		idmef_userid_set_type(userid, type);
 
@@ -500,7 +500,7 @@ static int get_user(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_enum(sql, row, 0, &category, idmef_user_category_find_numeric) < 0 )
+	if ( get_enum(sql, row, 0, &category, idmef_user_category_to_numeric) < 0 )
 		goto error;
 	idmef_user_set_category(user, category);
 
@@ -1080,7 +1080,7 @@ static int get_address(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &category, idmef_address_category_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &category, idmef_address_category_to_numeric) < 0 )
 			goto error;
 		idmef_address_set_category(idmef_address, category);
 
@@ -1167,7 +1167,7 @@ static int get_node(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_enum(sql, row, 0, &category, idmef_node_category_find_numeric) < 0 )
+	if ( get_enum(sql, row, 0, &category, idmef_node_category_to_numeric) < 0 )
 		goto error;
 	idmef_node_set_category(node, category);
 
@@ -1326,7 +1326,7 @@ static int get_action(prelude_sql_connection_t *sql,
 			goto error;
 		}
 		
-		if ( get_enum(sql, row, 0, &category, idmef_action_category_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &category, idmef_action_category_to_numeric) < 0 )
 			goto error;
 		idmef_action_set_category(action, category);
 
@@ -1390,7 +1390,7 @@ static int get_confidence(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_enum(sql, row, 0, &rating, idmef_confidence_rating_find_numeric) < 0 )
+	if ( get_enum(sql, row, 0, &rating, idmef_confidence_rating_to_numeric) < 0 )
 		goto error;
 	idmef_confidence_set_rating(idmef_confidence, rating);
 
@@ -1451,17 +1451,17 @@ static int get_impact(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_enum(sql, row, 0, &severity, idmef_impact_severity_find_numeric) < 0  )
+	if ( get_enum(sql, row, 0, &severity, idmef_impact_severity_to_numeric) < 0  )
 		goto error;
 	idmef_impact_set_severity(impact, severity);
 	
 
-	if ( get_enum(sql, row, 1, &completion, idmef_impact_completion_find_numeric) < 0 )
+	if ( get_enum(sql, row, 1, &completion, idmef_impact_completion_to_numeric) < 0 )
 		goto error;
 	idmef_impact_set_completion(impact, completion);
 
 
-	if ( get_enum(sql, row, 2, &type, idmef_impact_type_find_numeric) < 0 )
+	if ( get_enum(sql, row, 2, &type, idmef_impact_type_to_numeric) < 0 )
 		goto error;
 	idmef_impact_set_type(impact, type);
 
@@ -1645,7 +1645,7 @@ static int get_linkage(prelude_sql_connection_t *sql,
 			return -1;
 		}
 
-		if ( get_enum(sql, row, 0, &category, idmef_linkage_category_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &category, idmef_linkage_category_to_numeric) < 0 )
 			goto error;
 		idmef_linkage_set_category(linkage, category);
 
@@ -1812,7 +1812,7 @@ static int get_file(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &category, idmef_file_category_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &category, idmef_file_category_to_numeric) < 0 )
 			goto error;
 		idmef_file_set_category(file, category);
 
@@ -1914,7 +1914,7 @@ static int get_source(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &spoofed, idmef_spoofed_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &spoofed, idmef_spoofed_to_numeric) < 0 )
 			goto error;
 		idmef_source_set_spoofed(source, spoofed);
 
@@ -1993,7 +1993,7 @@ static int get_target(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &decoy, idmef_spoofed_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &decoy, idmef_spoofed_to_numeric) < 0 )
 			goto error;
 		idmef_target_set_decoy(target, decoy);
 
@@ -2078,7 +2078,7 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &type, idmef_additional_data_type_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &type, idmef_additional_data_type_to_numeric) < 0 )
 			goto error;
 		idmef_additional_data_set_type(additional_data, type);
 
@@ -2143,7 +2143,7 @@ static int get_classification(prelude_sql_connection_t *sql,
 			goto error;
 		}
 
-		if ( get_enum(sql, row, 0, &origin, idmef_classification_origin_find_numeric) < 0 )
+		if ( get_enum(sql, row, 0, &origin, idmef_classification_origin_to_numeric) < 0 )
 			goto error;
 		idmef_classification_set_origin(classification, origin);
 
