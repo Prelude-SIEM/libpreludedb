@@ -36,7 +36,7 @@
 
 
 struct classic_sql_joined_table {
-	PRELUDE_LINKED_OBJECT;
+	prelude_list_t list;
 	const idmef_path_t *path;
 	char *table_name;
 	char aliased_table_name[16];
@@ -75,7 +75,7 @@ void classic_sql_join_destroy(classic_sql_join_t *join)
 		table = prelude_list_entry(tmp, classic_sql_joined_table_t, list);
 		free(table->table_name);
 		prelude_string_destroy(table->index_constraints);
-		prelude_linked_object_del((prelude_linked_object_t *) table);
+		prelude_list_del(&table->list);
 		free(table);
 	}
 
@@ -310,7 +310,7 @@ int classic_sql_join_new_table(classic_sql_join_t *join, classic_sql_joined_tabl
 		return ret;
 	}
 
-	prelude_linked_object_add_tail(&join->tables, (prelude_linked_object_t *) *table);
+	prelude_list_add_tail(&join->tables, &(*table)->list);
 
 	return 0;
 }
