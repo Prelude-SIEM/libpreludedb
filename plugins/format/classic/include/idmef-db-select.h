@@ -30,6 +30,8 @@
 
 #define NO_LIMIT -1
 
+#define NO_OFFSET -1
+
 #define AS_MESSAGES 0
 #define AS_VALUES 1
 
@@ -38,6 +40,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     idmef_criteria_t *criteria,
 				     int distinct,
 				     int limit,
+				     int offset,
 				     int as_values);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H */

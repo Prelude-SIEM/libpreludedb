@@ -1,3 +1,20 @@
+2003-12-21  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/format/classic/include/idmef-db-select.h:
+	* plugins/format/classic/classic.c:
+	add a "limit" and an "offset" parameter to the
+	prelude_db_interface_get_{alert,heartbeat}_ident_list functions
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* bindings/perl/PreludeDB.pm:
+	fit changes of limit and offset stuff
+
 2003-12-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-select.c:

@@ -49,10 +49,12 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db);
 int prelude_db_interface_connect(prelude_db_interface_t *interface);
 
 prelude_db_message_ident_list_t *prelude_db_interface_get_alert_ident_list(prelude_db_interface_t *interface,
-									   idmef_criteria_t *criteria);
+									   idmef_criteria_t *criteria,
+									   int limit, int offset);
 
 prelude_db_message_ident_list_t *prelude_db_interface_get_heartbeat_ident_list(prelude_db_interface_t *interface,
-									       idmef_criteria_t *criteria);
+									       idmef_criteria_t *criteria,
+									       int limit, int offset);
 
 void prelude_db_interface_alert_ident_list_destroy(prelude_db_message_ident_list_t *ident_list);
 

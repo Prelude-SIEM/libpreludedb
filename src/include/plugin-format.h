@@ -30,10 +30,12 @@ typedef struct {
 	PLUGIN_GENERIC;
 
 	void *(*format_get_alert_ident_list)(prelude_db_connection_t *connection,
-					     idmef_criteria_t *criteria);
+					     idmef_criteria_t *criteria,
+					     int limit, int offset);
 
 	void *(*format_get_heartbeat_ident_list)(prelude_db_connection_t *connection,
-						 idmef_criteria_t *criteria);
+						 idmef_criteria_t *criteria,
+						 int limit, int offset);
 
 	prelude_db_message_ident_t *(*format_get_next_alert_ident)(prelude_db_connection_t *connection,
 								   void *res);

@@ -219,16 +219,23 @@ sub	get_message_ident_list
      my	$self = shift;
      my $get_message_ident_list_func = shift;
      my $message_ident_list_destroy_func = shift;
+     my	%opt = @_;
      my	$criteria;
+     my	$limit;
+     my	$offset;
      my	$ident_list_handle;
      my @ident_list;
      my	$ident_handle;
 
-     if ( defined $_[0] ) {
+     if ( defined $opt{-criteria} ) {
 	 $criteria = _get_criteria($_[0]) or return ();
      }
 
-     $ident_list_handle = &$get_message_ident_list_func($$self, $criteria ? $$criteria : undef) or return ();
+     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
+     $offset = defined($opt{-offset}) ? $opt{-offset} : -1;
+
+     $ident_list_handle = &$get_message_ident_list_func($$self, $criteria ? $$criteria : undef, $limit, $offset)
+	 or return ();
 
      while ( $ident_handle = PreludeDB::prelude_db_interface_get_next_alert_ident($ident_list_handle) ) {
 	 my $ident = { };

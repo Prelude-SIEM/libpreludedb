@@ -58,6 +58,7 @@ static plugin_format_t plugin;
 
 static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 					   idmef_criteria_t *criteria,
+					   int limit, int offset,
 					   const char *object_prefix)
 {
 	prelude_db_object_selection_t *selection;
@@ -105,7 +106,7 @@ static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 	prelude_db_object_selection_add(selection, selected);
 
 	table = idmef_db_select(connection, selection, criteria, 
-	                        NO_DISTINCT, NO_LIMIT, AS_MESSAGES);
+	                        NO_DISTINCT, limit, offset, AS_MESSAGES);
 
 	prelude_db_object_selection_destroy(selection);
 
@@ -115,17 +116,19 @@ static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 
 
 static void *classic_get_alert_ident_list(prelude_db_connection_t *connection,
-					  idmef_criteria_t *criteria)
+					  idmef_criteria_t *criteria,
+					  int limit, int offset)
 {
-	return get_ident_list(connection, criteria, "alert");
+	return get_ident_list(connection, criteria, limit, offset, "alert");
 }
 
 
 
 static void *classic_get_heartbeat_ident_list(prelude_db_connection_t *connection,
-					      idmef_criteria_t *criteria)
+					      idmef_criteria_t *criteria,
+					      int limit, int offset)
 {
-	return get_ident_list(connection, criteria, "heartbeat");
+	return get_ident_list(connection, criteria, limit, offset, "heartbeat");
 }
 
 
@@ -257,7 +260,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 	}
 
 	table = idmef_db_select(connection, selection, criteria, 
-	                        NO_DISTINCT, NO_LIMIT, AS_MESSAGES);
+	                        NO_DISTINCT, NO_LIMIT, NO_OFFSET, AS_MESSAGES);
 
 	prelude_db_object_selection_destroy(selection);
 
@@ -406,7 +409,7 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 				   int limit)
 {
 	return idmef_db_select(connection, selection, criteria, 
-			       distinct, limit, AS_VALUES);
+			       distinct, limit, NO_OFFSET, AS_VALUES);
 }
 
 

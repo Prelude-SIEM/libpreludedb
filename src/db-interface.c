@@ -236,7 +236,9 @@ static prelude_db_message_ident_list_t *
 prelude_db_interface_get_message_ident_list(prelude_db_interface_t *interface,
 					    idmef_criteria_t *criteria,
 					    void *(*get_list_func)(prelude_db_connection_t *,
-								   idmef_criteria_t *))
+								   idmef_criteria_t *,
+								   int limit, int offset),
+					    int limit, int offset)
 {
 	void *res;
 	prelude_db_message_ident_list_t *ident_list;
@@ -253,7 +255,7 @@ prelude_db_interface_get_message_ident_list(prelude_db_interface_t *interface,
 		return NULL;
 	}
 
-	res = get_list_func(interface->db_connection, criteria);
+	res = get_list_func(interface->db_connection, criteria, limit, offset);
 	if ( ! res ) {
 		free(ident_list);
 		return NULL;
@@ -268,25 +270,29 @@ prelude_db_interface_get_message_ident_list(prelude_db_interface_t *interface,
 
 
 prelude_db_message_ident_list_t *prelude_db_interface_get_alert_ident_list(prelude_db_interface_t *interface,
-									   idmef_criteria_t *criteria)
+									   idmef_criteria_t *criteria,
+									   int limit, int offset)
 {
 	if ( ! interface->format )
 		return NULL;
 
 	return prelude_db_interface_get_message_ident_list(interface, criteria,
-							   interface->format->format_get_alert_ident_list);
+							   interface->format->format_get_alert_ident_list,
+							   limit, offset);
 }
 
 
 
 prelude_db_message_ident_list_t *prelude_db_interface_get_heartbeat_ident_list(prelude_db_interface_t *interface,
-									       idmef_criteria_t *criteria)
+									       idmef_criteria_t *criteria,
+									       int limit, int offset)
 {
 	if ( ! interface->format )
 		return NULL;
 
 	return prelude_db_interface_get_message_ident_list(interface, criteria,
-							   interface->format->format_get_heartbeat_ident_list);
+							   interface->format->format_get_heartbeat_ident_list,
+							   limit, offset);
 }
 
 

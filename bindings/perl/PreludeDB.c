@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.24 2003/12/19 14:14:13 nicolas Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.25 2003/12/21 19:40:22 nicolas Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -1305,12 +1305,14 @@ XS(_wrap_prelude_db_interface_get_alert_ident_list) {
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
         idmef_criteria_t *arg2 = (idmef_criteria_t *) 0 ;
+        int arg3 ;
+        int arg4 ;
         prelude_db_message_ident_list_t *result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: prelude_db_interface_get_alert_ident_list(interface,criteria);");
+        if ((items < 4) || (items > 4)) {
+            SWIG_croak("Usage: prelude_db_interface_get_alert_ident_list(interface,criteria,limit,offset);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -1322,7 +1324,9 @@ XS(_wrap_prelude_db_interface_get_alert_ident_list) {
                 SWIG_croak("Type error in argument 2 of prelude_db_interface_get_alert_ident_list. Expected _p_idmef_criteria_t");
             }
         }
-        result = (prelude_db_message_ident_list_t *)prelude_db_interface_get_alert_ident_list(arg1,arg2);
+        arg3 = (int) SvIV(ST(2));
+        arg4 = (int) SvIV(ST(3));
+        result = (prelude_db_message_ident_list_t *)prelude_db_interface_get_alert_ident_list(arg1,arg2,arg3,arg4);
         
         ST(argvi) = sv_newmortal();
         SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_message_ident_list_t,0);
@@ -1340,12 +1344,14 @@ XS(_wrap_prelude_db_interface_get_heartbeat_ident_list) {
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
         idmef_criteria_t *arg2 = (idmef_criteria_t *) 0 ;
+        int arg3 ;
+        int arg4 ;
         prelude_db_message_ident_list_t *result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: prelude_db_interface_get_heartbeat_ident_list(interface,criteria);");
+        if ((items < 4) || (items > 4)) {
+            SWIG_croak("Usage: prelude_db_interface_get_heartbeat_ident_list(interface,criteria,limit,offset);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -1357,7 +1363,9 @@ XS(_wrap_prelude_db_interface_get_heartbeat_ident_list) {
                 SWIG_croak("Type error in argument 2 of prelude_db_interface_get_heartbeat_ident_list. Expected _p_idmef_criteria_t");
             }
         }
-        result = (prelude_db_message_ident_list_t *)prelude_db_interface_get_heartbeat_ident_list(arg1,arg2);
+        arg3 = (int) SvIV(ST(2));
+        arg4 = (int) SvIV(ST(3));
+        result = (prelude_db_message_ident_list_t *)prelude_db_interface_get_heartbeat_ident_list(arg1,arg2,arg3,arg4);
         
         ST(argvi) = sv_newmortal();
         SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_message_ident_list_t,0);

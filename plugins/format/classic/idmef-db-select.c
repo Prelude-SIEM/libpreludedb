@@ -879,6 +879,7 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       idmef_criteria_t *criteria,
 			       int distinct,
 			       int limit,
+			       int offset,
 			       int as_values)
 {
 	strbuf_t *request = NULL;
@@ -891,7 +892,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		*fields = NULL,
 		*group = NULL,
 		*order = NULL,
-		*lim = NULL;
+		*lim = NULL,
+		*off = NULL;
 	table_list_t *tables = NULL;
 	int ret = -1;
 
@@ -940,6 +942,15 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			goto error;
 	}
 
+	if ( offset >= 0 ) {
+		off = strbuf_new();
+		if ( ! off )
+			goto error;
+
+		if ( strbuf_sprintf(off, "OFFSET %d", offset) < 0 )
+			goto error;
+	}
+
 	ret = objects_to_sql(conn, fields, where1, group, order, tables, selection);
 	if ( ret < 0 )
 		goto error;
@@ -973,7 +984,7 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;
 
 	/* build the query */
-	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s;",
+	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s %s;",
 			     distinct ? " DISTINCT" : "",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),
@@ -981,7 +992,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		             strbuf_string(where),
 			     strbuf_empty(group) ? "" : "GROUP BY", strbuf_string(group),
 			     strbuf_empty(order) ? "" : "ORDER BY", strbuf_string(order),
-			     lim ? strbuf_string(lim) : "");
+			     lim ? strbuf_string(lim) : "",
+			     off ? strbuf_string(off) : "");
 	if ( ret < 0 )
 		goto error;
 
@@ -1019,6 +1031,9 @@ error:
 	if ( lim )
 		strbuf_destroy(lim);
 
+	if ( off )
+		strbuf_destroy(off);
+
 	if ( ret >= 0 )
 		return request;
 
@@ -1035,7 +1050,8 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     prelude_db_object_selection_t *selection,
 				     idmef_criteria_t *criteria,
 				     int distinct,
-				     int limit, 
+				     int limit,
+				     int offset,
 				     int as_values)
 {
 	prelude_sql_connection_t *sql;
@@ -1049,7 +1065,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, selection, criteria, distinct, limit, as_values);
+	request = build_request(sql, selection, criteria, distinct, limit, offset, as_values);
 	if ( ! request )
 		return NULL;
 
@@ -1070,4 +1086,3 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 
 	return table;
 }
-
