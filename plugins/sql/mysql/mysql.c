@@ -189,9 +189,9 @@ static char *db_escape(void *s, const char *string)
         escaped[0] = '\'';
         
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
-        len = mysql_real_escape_string(session->mysql, escaped, string, len);
+        len = mysql_real_escape_string(session->mysql, escaped + 1, string, len);
 #else
-        len = mysql_escape_string(escaped, string, len);
+        len = mysql_escape_string(escaped + 1, string, len);
 #endif
 
         escaped[len + 1] = '\'';
