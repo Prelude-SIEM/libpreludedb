@@ -32,19 +32,12 @@
 #include <sys/types.h>
 
 #include <libpq-fe.h>
-
 #include <libprelude/list.h>
 
 #include "sql-table.h"
-
 #include "config.h"
 #include "db.h"
 
-
-
-#define MAX_QUERY_LENGTH 8192
-
-#define PGSQL_MAX_SESSIONS 256
 
 typedef enum {
 	available = 0,
@@ -54,6 +47,8 @@ typedef enum {
 	connection_closed = 4,
 	transaction = 5
 } session_status_t;
+
+
 
 typedef struct {
 	session_status_t status;
@@ -65,98 +60,144 @@ typedef struct {
 	PGconn *pgsql;
 } session_t;
 
-static session_t sessions[PGSQL_MAX_SESSIONS];
 
-static int is_enabled = 0; 
 static plugin_sql_t plugin;
 
-static int find_available_session(void)
-{
-	int i;
 
-	i = 0;
-	while (i < PGSQL_MAX_SESSIONS) {
-		if (sessions[i].status == available)
-			return i;
-			
-		i++;
-	}
+
+static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
+                      const char *dbuser, const char *dbpass)
+{
+        session_t *session;
+
+        session = malloc(sizeof(*session));
+        if ( ! session ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+        }
 	
-	return -ERR_PLUGIN_DB_SESSIONS_EXHAUSTED;
+	session->status = allocated;
+	session->dbhost = (dbhost) ? strdup(dbhost) : NULL;
+	session->dbport = (dbport) ? strdup(dbport) : NULL;
+	session->dbname = (dbname) ? strdup(dbname) : NULL;
+	session->dbuser = (dbuser) ? strdup(dbuser) : NULL;
+	session->dbpass = (dbpass) ? strdup(dbpass) : NULL;
+	
+	return session;
 }
 
-static int db_setup(const char *dbhost, const char *dbport, const char *dbname, 
-   		 const char *dbuser, const char *dbpass)
-{
-	int s;
 
-	if (is_enabled == 0) {
-		log(LOG_ERR, "pgsql plugin not enabled\n");
-		return -ERR_PLUGIN_DB_PLUGIN_NOT_ENABLED;
-	}
-	
-	s = find_available_session();
-	if (s < 0) {
-		log(LOG_ERR, "all pgsql sessions exhausted\n");
-		return -ERR_PLUGIN_DB_SESSIONS_EXHAUSTED;
-	}
-	
-	sessions[s].status = allocated;
-	sessions[s].dbhost = (dbhost) ? strdup(dbhost) : NULL;
-	sessions[s].dbport = (dbport) ? strdup(dbport) : NULL;
-	sessions[s].dbname = (dbname) ? strdup(dbname) : NULL;
-	sessions[s].dbuser = (dbuser) ? strdup(dbuser) : NULL;
-	sessions[s].dbpass = (dbpass) ? strdup(dbpass) : NULL;
-	
-	return s;
-}
 
-static int db_cleanup(int session_id)
+
+static int db_cleanup(void *s)
 {
-	if ((sessions[session_id].status != connection_closed) &&
-	    (sessions[session_id].status != connection_failed))
-		return -ERR_PLUGIN_DB_NOT_CONNECTED;
+        session_t *session = s;
+        
+	if ( session->status != connection_closed && session->status != connection_failed )
+                return -ERR_PLUGIN_DB_NOT_CONNECTED;
 	
-	free(sessions[session_id].dbhost);
-	free(sessions[session_id].dbport);
-	free(sessions[session_id].dbname);
-	free(sessions[session_id].dbuser);
-	free(sessions[session_id].dbpass);
-	sessions[session_id].status = available;
+	free(session->dbhost);
+	free(session->dbport);
+	free(session->dbname);
+	free(session->dbuser);
+	free(session->dbpass);
+        free(session);
 	
 	return 0;
 }
 
-/* called when plugin is unsubscribed, terminate all connections */
-static void db_shutdown(void)
+
+
+
+/*
+ * Execute SQL query, do not return table
+ */
+static int db_command(session_t *session, const char *query)
 {
-	int i, ret;
-	
-	log(LOG_INFO, "PgSQL plugin unsubscribed, terminating active connections\n");
-	for (i=0;i<PGSQL_MAX_SESSIONS;i++) {
-		if (sessions[i].status == transaction) {
-			ret = db_rollback(i);
-			if (ret < 0)
-				log(LOG_ERR, "ROLLBACK error on connection %d\n", i);
-		}
-		
-		if (sessions[i].status == connected) 
-			db_close(i);
-		
-		/* at this point all sessions should be either closed or in 
-		   other inactive state */
-		
-		if (sessions[i].status != available)
-			db_cleanup(i);
-	}
-	
-	
+        PGresult *ret;
+        
+	if ( session->status != connected && session->status != transaction )
+		return -ERR_PLUGIN_DB_NOT_CONNECTED; 
+        
+#ifdef DEBUG
+	log(LOG_INFO, "pgsql[%p]: %s\n", session, query);
+#endif
+        
+        ret = PQexec(session->pgsql, query);
+
+        if ( ! ret || (PQresultStatus(ret) != PGRES_COMMAND_OK && PQresultStatus(ret) != PGRES_TUPLES_OK) ) {
+                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
+                return -ERR_PLUGIN_DB_QUERY_ERROR;
+        }
+
+        return 0;
 }
+
+
+
+/*
+ * end transaction
+ */
+static int db_rollback(void *s)
+{
+        session_t *session = s;
+        
+	if ( session->status != transaction )
+		return -ERR_PLUGIN_DB_NO_TRANSACTION;
+	
+	return db_command(session, "ROLLBACK;");
+}
+
+
+
+/*
+ * closes the DB connection.
+ */
+static void db_close(void *s)
+{
+        session_t *session = s;
+    
+        PQfinish(session->pgsql);
+        session->status = connection_closed;
+}
+
+
+
+/*
+ * called when plugin is unsubscribed, terminate all connections
+ */
+static void db_shutdown(void *s)
+{
+	int ret;
+	session_t *session = s;
+        
+	log(LOG_INFO, "PgSQL plugin unsubscribed, terminating active connection\n");
+                
+        if ( session->status == transaction ) {
+                ret = db_rollback(session);
+                if ( ret < 0 )
+                        log(LOG_ERR, "ROLLBACK error on connection %p\n", s);
+        }	
+
+        if ( session->status == connected ) 
+                db_close(session);
+		
+        /*
+         * at this point all sessions should be either closed or in 
+         * other inactive state.
+         */
+		
+        if ( session->status != available )
+                db_cleanup(session);
+}
+
+
+
 
 /*
  * Escape string with single quote
  */
-static char *db_escape(int session_id, const char *str)
+static char *db_escape(void *s, const char *str)
 {
         char *ptr;
         int i, ok, len = strlen(str);
@@ -183,63 +224,95 @@ static char *db_escape(int session_id, const char *str)
 
 
 
-/*
- * Execute SQL query, do not return table
- */
-static int db_command(int session_id, const char *query)
+
+static int get_query_result(const char *query, PGresult *res, sql_table_t *table) 
 {
-        PGresult *ret;
-
-	if ((!is_enabled) && (strcasecmp(query, "ROLLBACK") != 0))
-		return -ERR_PLUGIN_DB_PLUGIN_NOT_ENABLED;
-		
-	if ((sessions[session_id].status != connected) && 
-	    (sessions[session_id].status != transaction))
-		return -ERR_PLUGIN_DB_NOT_CONNECTED; 
-
-#ifdef DEBUG
-	log(LOG_INFO, "pgsql[%d]: %s\n", session_id, query);
-#endif
+        int i, j;
+        sql_row_t *row;
+        const char *name;
+        sql_field_t *field;
+        int tuples, fields;
+        sql_field_type_t type;
         
-        ret = PQexec(sessions[session_id].pgsql, query);
-        if ( ! ret || 
-        	((PQresultStatus(ret) != PGRES_COMMAND_OK) &&
-        	(PQresultStatus(ret) != PGRES_TUPLES_OK)) ) {
-                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, 
-                	PQerrorMessage(sessions[session_id].pgsql));
-                return -ERR_PLUGIN_DB_QUERY_ERROR;
+        tuples = PQntuples(res);
+        fields = PQnfields(res);
+        	
+        for ( i = 0; i < tuples; i++ ) {
+                
+                row = sql_row_new(fields);
+                if ( ! row ) {
+                        log(LOG_ERR, "Query \"%s\": could not create table row\n", query);
+                        errno = -ERR_PLUGIN_DB_RESULT_ROW_ERROR;
+                        return -1;
+                }
+        		
+                sql_table_add_row(table, row);
+                
+                for ( j = 0; j < fields; j++ ) {
+
+                        /*
+                         * determine and convert column type.
+                         *
+                         * FIXME: values are taken from pgsql/server/catalog/pg_type.h
+                         * but maybe there is a more elegant way to do that
+                         */
+
+                        switch ( PQftype(res, j) ) {
+
+                        case 20:
+                                type = type_int64;
+                                break;
+
+                        case 23:
+                                type = type_int32;
+                                break;
+                                
+                        case 700:
+                                type = type_float;
+                                break;
+                                
+                        case 701:
+                                type = type_double;
+                                break;
+
+                        default:
+                                type = type_string;
+                                break;
+                        }
+
+                        name = PQfname(res, j);
+                        
+                        field = sql_field_new(name, type, PQgetvalue(res, i, j));
+                        if ( ! field ) {
+                                log(LOG_ERR, "Query \"%s\": couldn't create result field \"%s\"\n", query, name);
+                                errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
+                                return -1;
+                        }
+        	}
         }
 
         return 0;
 }
 
+
+
 /*
  * Execute SQL query, return table
  */
-sql_table_t *db_query(int session_id, const char *query)
+static sql_table_t *db_query(void *s, const char *query)
 {
+        int ret;
         PGresult *res;
         sql_table_t *table;
-        sql_row_t *row;
-        sql_field_t *field;
-	char *name, *val;
-	sql_field_type_t type;        
-        int tuples, fields;
-        int tup, fld;
-
-	if (!is_enabled) {
-		errno = -ERR_PLUGIN_DB_PLUGIN_NOT_ENABLED;
+        session_t *session = s;
+       
+	if ( session->status != connected && session->status != transaction ) {
+                errno = -ERR_PLUGIN_DB_NOT_CONNECTED;
 		return NULL;
 	}
 
-	if ((sessions[session_id].status != connected) &&
-	    (sessions[session_id].status != transaction)) {
-		errno = -ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;
-	}
-
-	table = sql_table_create("Results");
-	if (!table) {
+	table = sql_table_new("Results");
+	if ( ! table ) {
 		log(LOG_ERR, "Query: \"%s\": could not create result table\n", query);
 		errno = -ERR_PLUGIN_DB_RESULT_TABLE_ERROR;
 		return NULL;
@@ -249,209 +322,116 @@ sql_table_t *db_query(int session_id, const char *query)
 	log(LOG_INFO, "pgsql: %s\n", query);
 #endif
         
-        res = PQexec(sessions[session_id].pgsql, query);
-        if ( ! res || 
-        	((PQresultStatus(res) != PGRES_COMMAND_OK) &&
-        	(PQresultStatus(res) != PGRES_TUPLES_OK)) ) {
-                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, 
-                	PQerrorMessage(sessions[session_id].pgsql));
+        res = PQexec(session->pgsql, query);
+        if ( ! res || (PQresultStatus(res) != PGRES_COMMAND_OK && PQresultStatus(res) != PGRES_TUPLES_OK) ) {
+                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
                 PQclear(res);
                 errno = -ERR_PLUGIN_DB_QUERY_ERROR;
                 return NULL;
         }
-        
-        if (PQresultStatus(res) == PGRES_TUPLES_OK) {
-        	tuples = PQntuples(res);
-        	fields = PQnfields(res);
-        	
-        	for (tup=0;tup<tuples;tup++) {
-        		row = sql_row_create(fields);
-        		if (!row) {
-        			log(LOG_ERR, "Query \"%s\": could not create table row\n", 
-        				query);
-        			sql_table_destroy(table);
-        			PQclear(res);
-        			errno = -ERR_PLUGIN_DB_RESULT_ROW_ERROR;
-        			return NULL;
-        		}
-        		
-        		sql_table_add_row(table, row);
-        		
-        		for (fld=0;fld<fields;fld++) {
-        			       			
-        			/* determine and convert column type */
-        			/* FIXME: values are taken from pgsql/server/catalog/pg_type.h
-        			   but maybe there is a more elegant way to do that */
-        			switch (PQftype(res, fld)) {
-					case 20: type = type_int64;
-						 break;
-        				case 23: type = type_int32;
-        					 break;
-        				case 700: type = type_float;
-        					  break;
-        				case 701: type = type_double;
-        					  break;
-        				default: type = type_string;
-        					 break;
-        			}
-        			
-        			name = PQfname(res, fld);
-        			val = PQgetvalue(res, tup, fld);
-        			
-        			field = sql_field_create(name, type, val);
-        			if (!field) {
-        				log(LOG_ERR, "Query \"%s\": couldn't create result field \"%s\"\n", 
-        					query, name);
-        				sql_table_destroy(table);
-        				PQclear(res);
-        				errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
-        				return NULL;
-        			}
-        		}
-        	}
-        }
 
+        if ( PQresultStatus(res) != PGRES_TUPLES_OK ) {
+                PQclear(res);
+                return table;
+        }
+        
+        ret = get_query_result(query, res, table);
+        if ( ret < 0 ) {
+                sql_table_destroy(table);
+                table = NULL;
+        }
+        
 	PQclear(res);
 
         return table;
 }
 
+
+
+
 /*
  * insert data into table
  */
-static int db_insert(int session_id, const char *query) 
+static int db_insert(void *session, const char *query) 
 {
-	return db_command(session_id, query);
+	return db_command(session, query);
 }
+
+
 
 
 /*
  * start transaction
  */
-static int db_begin(int session_id) 
+static int db_begin(void *s) 
 {
-	if (sessions[session_id].status == transaction)
+        session_t *session = s;
+        
+	if ( session->status == transaction )
 		return -ERR_PLUGIN_DB_NO_TRANSACTION;
 	
-	sessions[session_id].status = transaction;
-	return db_command(session_id, "BEGIN;");
+	session->status = transaction;
+        
+	return db_command(session, "BEGIN;");
 }
+
 
 
 
 /*
  * commit transaction
  */
-static int db_commit(int session_id) 
+static int db_commit(void *s)
 {
-	if (sessions[session_id].status != transaction)
+        session_t *session = s;
+        
+	if ( session->status != transaction )
 		return -ERR_PLUGIN_DB_NO_TRANSACTION;
 	
-	return db_command(session_id, "COMMIT;");
+	return db_command(session, "COMMIT;");
 }
 
-
-/*
- * end transaction
- */
-static int db_rollback(int session_id)
-{
-	if (sessions[session_id].status != transaction)
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
-	
-	return db_command(session_id, "ROLLBACK;");
-}
-
-
-
-/*
- * closes the DB connection.
- */
-static void db_close(int session_id)
-{
-        PQfinish(sessions[session_id].pgsql);
-        sessions[session_id].status = connection_closed;
-}
 
 
 
 /*
  * Connect to the PgSQL database
  */
-static int db_connect(int session_id)
-{        
-	if (is_enabled == 0) {
-		log(LOG_ERR, "pgsql plugin not enabled\n");
-		return -ERR_PLUGIN_DB_PLUGIN_NOT_ENABLED;
-	}
-
-	if ((sessions[session_id].status != allocated) && 
-	    (sessions[session_id].status != connection_failed) &&
-	    (sessions[session_id].status != connection_closed))
+static int db_connect(void *s)
+{
+        int ret;
+        session_t *session = s;
+        
+	if ( session->status != allocated &&
+             session->status != connection_failed &&
+             session->status != connection_closed )
 		return -ERR_PLUGIN_DB_ALREADY_CONNECTED;
 	
-        sessions[session_id].pgsql = PQsetdbLogin(sessions[session_id].dbhost, 
-				        	sessions[session_id].dbport, 
-    				    	NULL, NULL, 
-				        	sessions[session_id].dbname, 
-				        	sessions[session_id].dbuser, 
-				        	sessions[session_id].dbpass);
+        session->pgsql = PQsetdbLogin(session->dbhost, session->dbport, 
+                                      NULL, NULL, session->dbname, session->dbuser, session->dbpass);
 
-
-        if ( PQstatus(sessions[session_id].pgsql) == CONNECTION_BAD) {
-                log(LOG_INFO, "PgSQL connection failed: %s", 
-                	PQerrorMessage(sessions[session_id].pgsql));
-                PQfinish(sessions[session_id].pgsql);
-                sessions[session_id].status = connection_failed;
+        ret = PQstatus(session->pgsql);
+        
+        if ( ret == CONNECTION_BAD) {
+                log(LOG_INFO, "PgSQL connection failed: %s", PQerrorMessage(session->pgsql));
+                PQfinish(session->pgsql);
+                session->status = connection_failed;
                 return -ERR_PLUGIN_DB_CONNECTION_FAILED;
         }
 
-	sessions[session_id].status = connected;
+	session->status = connected;
         
         return 0;
 }
 
 
-static int set_pgsql_state(prelude_option_t *opt, const char *arg) 
-{
-        int ret;
-        
-        if ( is_enabled == 1 ) {
-                db_shutdown();
-                
-                ret = plugin_unsubscribe((plugin_generic_t *) &plugin);
-                if ( ret < 0 )
-                        return prelude_option_error;
-                is_enabled = 0;
-        }
-
-        else {
-		bzero(&sessions, PGSQL_MAX_SESSIONS*sizeof(session_t));
-
-                ret = plugin_subscribe((plugin_generic_t *) &plugin);
-                if ( ret < 0 )
-                        return prelude_option_error;
-                
-                is_enabled = 1;
-        }
-        
-        return prelude_option_success;
-}
-
-
-
-static int get_pgsql_state(char *buf, size_t size) 
-{
-        snprintf(buf, size, "%s", (is_enabled == 1) ? "enabled" : "disabled");
-        return prelude_option_success;
-}
-
-
-
 
 plugin_generic_t *plugin_init(int argc, char **argv)
-{	
-	/* system-wide options for the plugin should go in here */
+{
+        
+	/*
+         * system-wide options for the plugin should go in here
+         */
 	
         plugin_set_name(&plugin, "PgSQL");
         plugin_set_desc(&plugin, "Will log all alert to a PostgreSQL database.");
@@ -464,9 +444,7 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_commit_func(&plugin, db_commit);
         plugin_set_rollback_func(&plugin, db_rollback);
         plugin_set_closing_func(&plugin, db_close);
-
-	set_pgsql_state(NULL, NULL);
-       
+        
 	return (plugin_generic_t *) &plugin;
 }
 

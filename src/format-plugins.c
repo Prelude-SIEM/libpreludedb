@@ -47,37 +47,15 @@
 
 
 
-static LIST_HEAD(format_plugins_list);
-
-
-
-static int subscribe(plugin_container_t *pc) 
-{
-        log(LOG_INFO, "- Subscribing %s to active format plugins.\n", pc->plugin->name);
-        return plugin_add(pc, &format_plugins_list, NULL);
-}
-
-
-
-static void unsubscribe(plugin_container_t *pc) 
-{
-        log(LOG_INFO, "- Un-subscribing %s from active format plugins.\n", pc->plugin->name);
-        plugin_del(pc);
-}
-
-
-
 /**
  * format_plugins_init:
  * @dirname: Pointer to a directory string.
- * @argc: Number of command line argument.
- * @argv: Array containing the command line arguments.
  *
  * Tell the DB plugins subsystem to load database format plugins from @dirname.
  *
  * Returns: 0 on success, -1 if an error occured.
  */
-int format_plugins_init(const char *dirname, int argc, char **argv)
+int format_plugins_init(const char *dirname)
 {
         int ret;
 	
@@ -91,7 +69,7 @@ int format_plugins_init(const char *dirname, int argc, char **argv)
                 return -1;
 	}
 
-        ret = plugin_load_from_dir(dirname, argc, argv, subscribe, unsubscribe);
+        ret = plugin_load_from_dir(dirname, 0, NULL, NULL, NULL);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't load plugin subsystem.\n");
                 return -1;
@@ -99,16 +77,3 @@ int format_plugins_init(const char *dirname, int argc, char **argv)
 
         return ret;
 }
-
-
-
-/**
- * format_plugins_available:
- *
- * Returns: 0 if there are active format plugins, -1 otherwise.
- */
-int format_plugins_available(void) 
-{
-        return list_empty(&format_plugins_list) ? -1 : 0;
-}
-

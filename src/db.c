@@ -29,57 +29,51 @@
 #include <libprelude/prelude-log.h>
 
 #include "db.h"
+#include "plugin-format.h"
+
 
 static int initialized = 0;
+
+
 
 int prelude_db_init(void)
 {
 	int ret;
 
 	/* FIXME: we should rather return error here */
-	if (initialized++) {
+	if ( initialized++ ) {
 		log(LOG_ERR, "attempt to re-initialize db subsystem! pretending to be OK\n");
 		return 0;
 	}
 	
 	log(LOG_INFO, "- Starting DB subsystem\n");
 
-	/* When asynchronous subsystem is in, initialize it here */
-/*	
+#if 0
 	ret = db_dispatch_init();
 	if (ret < 0)
 		return -1;
-*/	
+#endif	
 
-	ret = sql_plugins_init(SQL_PLUGIN_DIR, 0, NULL);	
-	if (ret < 0)
+	ret = sql_plugins_init(SQL_PLUGIN_DIR);	
+	if ( ret < 0 )
 		return -2;
 		
-	ret = format_plugins_init(FORMAT_PLUGIN_DIR, 0, NULL);	
-	if (ret < 0)
+	ret = format_plugins_init(FORMAT_PLUGIN_DIR);	
+	if ( ret < 0 )
 		return -3;
-
-	/* When filters are in, initialize them here */
-/*	
+        
+#if 0
 	ret = filter_plugins_init(FILTER_PLUGIN_DIR, 0, NULL);
 	if (ret < 0)
 		return -4;
-*/	
-	ret = prelude_db_init_interfaces();
-	if (ret < 0)
-		return -5;
+#endif
 	
-	return 0; /* success */
+	return 0;
 }
 
-int prelude_db_output_idmef_message(idmef_message_t *idmef)
-{
-	/* when async queuing is introduced, add message to queue here */
 
-	return prelude_db_write_idmef_message(idmef);
-}
 
 int prelude_db_shutdown(void) 
 {
-	return prelude_db_shutdown_interfaces();
+	return 0;
 }

@@ -39,9 +39,10 @@
 
 #include "sql-table.h"
 #include "plugin-sql.h"
+#include "db-connection.h"
+
 
 int prelude_db_init(void);
-int prelude_db_output_idmef_message(idmef_message_t *idmef);
 int prelude_db_shutdown(void);
 
 #endif /* LIBPRELUDEDB_DB_H */

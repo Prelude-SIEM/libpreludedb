@@ -21,6 +21,7 @@
 *
 *****/
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -36,41 +37,104 @@
 #include "plugin-sql.h"
 #include "db-connection.h"
 #include "plugin-format.h"
-/* #include "plugin-filter.h" */
+#include "param-string.h"
 
+#define safe_free(x) if (x) { free(x); x = NULL; }
 
-/* FIXME: add interface deletion */
+prelude_db_interface_t *prelude_db_connect(const char *config)
+{
+	char *class;
+	
+	class = parameter_value(config, "class");
+	
+	if ( !class ) {
+		log(LOG_ERR, "Interface class not specified\n");
+		goto error;
+	}
+	
+	if ( strcasecmp(class, "SQL") == 0 ) 
+		return prelude_db_connect_sql_config(config);
+	else {
+		log(LOG_ERR, "Unknown interface class %s\n", class);
+		goto error;
+	}
+	
+error:
+	safe_free(class);
+	return NULL;
+}
 
-/* FIXME: add filters */
+prelude_db_interface_t *prelude_db_connect_sql_config(const char *config)
+{
+	prelude_db_interface_t *ret;
+	
+	char *name;
+	char *dbtype;
+	char *dbformat;
+	char *dbhost;
+	char *dbport;
+	char *dbname;
+	char *dbuser;
+	char *dbpass;
 
-/* FIXME: better error codes management? */
+	name = parameter_value(config, "interface");
+	dbtype = parameter_value(config, "type");
+	dbformat = parameter_value(config, "format");
+	dbhost = parameter_value(config, "host");
+	dbport = parameter_value(config, "port");
+	dbname = parameter_value(config, "name");
+	dbuser = parameter_value(config, "user");
+	dbpass = parameter_value(config, "pass");
 
-struct list_head db_interfaces;
+	ret = prelude_db_connect_sql(name, dbformat, dbtype, dbhost, 
+					dbport, dbname, dbuser, dbpass);
+
+	safe_free(dbtype);
+	safe_free(dbformat);
+	safe_free(dbhost);
+	safe_free(dbport);
+	safe_free(dbname);
+	safe_free(dbuser);
+	safe_free(dbpass);
+
+	return ret;
+}
 
 prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbformat, 
-                                const char *dbtype, const char *dbhost, 
-				const char *dbport, const char *dbname, 
-				const char *dbuser, const char *dbpass)
+                                               const char *dbtype, const char *dbhost, 
+                                               const char *dbport, const char *dbname, 
+                                               const char *dbuser, const char *dbpass)
 {
+        plugin_format_t *format;
 	sql_connection_t *sql_conn;
 	prelude_db_interface_t *interface;
-	plugin_format_t *format;
+	
+		
+	if ( !dbtype ) {
+		log(LOG_ERR, "Database type not specified\n");
+		return NULL;
+	}
+	
+	if ( !dbformat ) {
+		log(LOG_ERR, "Database format not specified\n");
+		return NULL;
+	}
 	
 	sql_conn = sql_connect(dbtype, dbhost, dbport, dbname, dbuser, dbpass);
-	if (!sql_conn) {
+	if ( !sql_conn ) {
 		log(LOG_ERR, "%s on %s: database connection failed\n", dbname, dbhost);
 		return NULL;
 	}
 	
 	format = (plugin_format_t *) plugin_search_by_name(dbformat);
-	if (!format) {
+	if ( !format ) {
 		log(LOG_ERR, "%s: format plugin not found\n");
 		return NULL;
 	}
 	
 	interface = (prelude_db_interface_t *) calloc(1, sizeof(prelude_db_interface_t));
-	if (!interface) {
-		log(LOG_ERR, "out of memory!\n");
+	if ( !interface ) {
+		log(LOG_ERR, "memory exhausted.\n");
 		return NULL;
 	}
 	
@@ -81,21 +145,21 @@ prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbf
 	interface->active = 1;
 	interface->connected = 1;
 	INIT_LIST_HEAD(&interface->filter_list);
-	
-	list_add(&interface->list, &db_interfaces);
 
 	log(LOG_INFO, "- DB interface %s connected to database %s on %s format %s\n", 
-		name, dbname, dbhost, interface->format->name);
+            name, dbname, dbhost, interface->format->name);
 	
 	return interface;
 }
 
+
+
 int prelude_db_interface_activate(prelude_db_interface_t *interface)
 {
-	if (!interface)
+	if ( ! interface )
 		return -1; 
 		
-	if (interface->active)
+	if ( interface->active )
 		return -2;
 		
 	interface->active = 1;
@@ -106,10 +170,10 @@ int prelude_db_interface_activate(prelude_db_interface_t *interface)
 
 int prelude_db_interface_deactivate(prelude_db_interface_t *interface)
 {
-	if (!interface)
+	if ( ! interface )
 		return -1; 
 		
-	if (!interface->active)
+	if ( ! interface->active )
 		return -2;
 		
 	interface->active = 0;
@@ -118,7 +182,8 @@ int prelude_db_interface_deactivate(prelude_db_interface_t *interface)
 }
 
 
-/*
+
+#if 0
 static int db_connection_add_filter(prelude_db_interface_t *conn, const char *filter)
 {
 	filter_plugin_t *filter;
@@ -134,64 +199,73 @@ static int db_connection_add_filter(prelude_db_interface_t *conn, const char *fi
 }
 
 static int db_connection_delete_filter(prelude_db_interface_t *conn, const char *filter);
-*/
+#endif
 
-int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, idmef_message_t *msg)
+
+
+int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg)
 {
-	if (!interface)
+	if ( ! interface )
 		return -1;
 		
-	if (!msg)
+	if ( ! msg )
 		return -2;
 		
-	if (!interface->active)
+	if ( ! interface->active )
 		return -3;
 		
-	if (!interface->connected)
+	if ( ! interface->connected )
 		return -4;
 		
 	return interface->format->format_write(&interface->db_connection, msg);
 }
 
+
+
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 {
 	int ret;
 
-	if (!interface)
+	if ( ! interface )
 		return -1;
 	
-	if (!interface->connected)
+	if ( ! interface->connected )
 		return -2;
 
 	ret = prelude_db_interface_deactivate(interface);
-	if (ret < 0)
+	if ( ret < 0 )
 		return -3;
 	
 	switch (interface->db_connection.type) {
-		case sql: sql_close(interface->db_connection.connection.sql);
-			  return 0;
-			  
-		default:  log(LOG_ERR, "not supported connection type %d\n", interface->db_connection.type);
-			  return -4;
+            
+        case sql:
+                sql_close(interface->db_connection.connection.sql);
+                return 0;
+                
+        default:
+                log(LOG_ERR, "not supported connection type %d\n", interface->db_connection.type);
+                return -4;
 	}
 		
 	return 0;
 }
 
+
+
 int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 {
-	if (!interface)
+	if ( ! interface )
 		return -1;
 	
-	if (interface->active)
-		db_interface_deactivate(interface);
+	if ( interface->active )
+		prelude_db_interface_deactivate(interface);
 
-	if (interface->connected)
-		db_interface_disconnect(interface);
+	if ( interface->connected )
+		prelude_db_interface_disconnect(interface);
 	
 	/* FIXME: when filters are implemented, destroy interface->filter_list here */
 	
-	if (interface->name) 
+	if ( interface->name ) 
 		free(interface->name);
 		
 	free(interface);
@@ -199,64 +273,7 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 	return 0;
 }
 
-int prelude_db_init_interfaces(void)
-{
-	prelude_db_interface_t *if1, *if2;
-	int ret;
-	
-	INIT_LIST_HEAD(&db_interfaces);
 
-	/* FIXME: read this from config file */
-	if1 = prelude_db_connect_sql("iface1", "classic", "pgsql", "localhost", NULL, "prelude", "prelude", "prelude");
-	if (!if1)
-		log(LOG_ERR, "pgsql connection failed!\n");
-	
-	if2 = prelude_db_connect_sql("iface2", "classic", "mysql", "lhotse", NULL, "prelude", "prelude", "prelude");
-	if (!if2)
-		log(LOG_ERR, "db connection failed\n");
-	
-	return 0;
-}
 
-int prelude_db_shutdown_interfaces(void)
-{
-	int ret, ret2;
-	struct list_head *tmp, *n;
-	prelude_db_interface_t *interface;
 
-	ret2 = 0;
-	list_for_each_safe(tmp, n, &db_interfaces) {
-		interface = list_entry(tmp, prelude_db_interface_t, list);
-		ret = prelude_db_interface_disconnect(interface);
-		if (ret < 0) {
-			log(LOG_ERR, "could not disconnect interface %s\n", 
-				interface->name);
-			ret2--;
-		}
-		
-		ret = prelude_db_interface_destroy(interface);
-		if (ret < 0) {
-			log(LOG_ERR, "could not destroy interface %s\n", 
-				interface->name);
-			ret2--;
-		}
-	}
-	
-	return ret2;
-}
-
-int prelude_db_write_idmef_message(idmef_message_t *msg)
-{
-	struct list_head *tmp;
-	prelude_db_interface_t *interface;
-	
-	list_for_each(tmp, &db_interfaces) {
-		interface = list_entry(tmp, prelude_db_interface_t, list);
-		printf("writing message on DB interface %s\n", interface->name);
-		prelude_db_interface_write_idmef_message(interface, msg);
-	}
-	
-	return 0;
-	
-}
 

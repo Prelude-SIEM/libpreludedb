@@ -47,21 +47,21 @@
 
 typedef struct {
         PLUGIN_GENERIC;
-        int (*db_setup) (const char *dbhost, const char *dbport, const char *dbname, 
-        		 const char *dbuser, const char *dbpass);
-        int (*db_connect) (int session_id);
-        char *(*db_escape)(int session_id, const char *input);
-        int (*db_insert)(int session_id, const char *query);
-        sql_table_t *(*db_query)(int session_id, const char *query);
-        int (*db_begin)(int session_id);
-        int (*db_commit)(int session_id);
-        int (*db_rollback)(int session_id);
-        void (*db_close)(int session_id);
+        void *(*db_setup)(const char *dbhost, const char *dbport, const char *dbname, 
+                          const char *dbuser, const char *dbpass);
+        int (*db_connect) (void *session);
+        char *(*db_escape)(void *session, const char *input);
+        int (*db_insert)(void *session, const char *query);
+        sql_table_t *(*db_query)(void *session, const char *query);
+        int (*db_begin)(void *session);
+        int (*db_commit)(void *session);
+        int (*db_rollback)(void *session);
+        void (*db_close)(void *session);
 } plugin_sql_t;
 
 typedef struct {
+        void *session;
 	plugin_sql_t *plugin;
-	int session;	
 } sql_connection_t;
 
 
@@ -108,9 +108,9 @@ typedef struct {
 int sql_plugins_available(void);
 
 sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 
-	const char *dbname, const char *dbuser, const char *dbpass);
+                              const char *dbname, const char *dbuser, const char *dbpass);
 
-int sql_plugins_init(const char *dirname, int argc, char **argv);
+int sql_plugins_init(const char *dirname);
 
 char *sql_escape(sql_connection_t *conn, const char *string);
 

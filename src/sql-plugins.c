@@ -85,26 +85,6 @@
 
 
 
-static LIST_HEAD(sql_plugins_list);
-
-
-/*
- *
- */
-static int subscribe(plugin_container_t *pc) 
-{
-        log(LOG_INFO, "- Subscribing %s to active database plugins.\n", pc->plugin->name);
-        return plugin_add(pc, &sql_plugins_list, NULL);
-}
-
-
-static void unsubscribe(plugin_container_t *pc) 
-{
-        log(LOG_INFO, "- Un-subscribing %s from active database plugins.\n", pc->plugin->name);
-        plugin_del(pc);
-}
-
-
 
 
 static char *generate_dynamic_query(const char *old, size_t olen,
@@ -179,7 +159,6 @@ static char *generate_query(char *buf, size_t size, int *len, const char *fmt, v
 
 
 
-
 int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
 {
         va_list ap;
@@ -188,7 +167,7 @@ int sql_insert(sql_connection_t *conn, const char *table, const char *fields, co
 
         len = snprintf(query_static, sizeof(query_static), "INSERT INTO %s (%s) VALUES(", table, fields);
         if ( (len + 1) > sizeof(query_static) || len < 0 ) {
-                log(LOG_ERR, "start of query (%s) doesn't fit in %d bytes.\n", query, sizeof(query_static));
+                log(LOG_ERR, "start of query doesn't fit in %d bytes.\n", sizeof(query_static));
                 return -1;
         }
         
@@ -237,6 +216,7 @@ sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
 }
 
 
+
 char *sql_escape(sql_connection_t *conn, const char *string) 
 {
 	if (!string) 
@@ -247,10 +227,12 @@ char *sql_escape(sql_connection_t *conn, const char *string)
 }
 
 
+
 int sql_begin(sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_begin(conn->session) : -1;
 }
+
 
 
 int sql_commit(sql_connection_t *conn)
@@ -259,10 +241,12 @@ int sql_commit(sql_connection_t *conn)
 }
 
 
+
 int sql_rollback(sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_rollback(conn->session) : -1;
 }
+
 
 
 void sql_close(sql_connection_t *conn)
@@ -272,32 +256,39 @@ void sql_close(sql_connection_t *conn)
 }
 
 
+
 sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 
-	const char *dbname, const char *dbuser, const char *dbpass) 
+                              const char *dbname, const char *dbuser, const char *dbpass) 
 {
-	plugin_sql_t *plugin;
-	int session;
-	sql_connection_t *conn;
 	int ret;
+        void *session;
+	plugin_sql_t *plugin;
+	sql_connection_t *conn;
+
+	if ( !dbtype ) {
+		log(LOG_ERR, "dbtype not specified\n");
+		return NULL;
+	}
 	
 	plugin = (plugin_sql_t *) plugin_search_by_name(dbtype);
-	if (!plugin) {
+	if ( ! plugin ) {
 		errno = -ERR_DB_PLUGIN_NOT_FOUND;
 		return NULL;
 	}
 	
-	/* any needed parameter translation should go in here */
-	
+	/*
+         * any needed parameter translation should go in here
+         */
 	session = plugin->db_setup(dbhost, dbport, dbname, dbuser, dbpass);
-	if (session < 0) 
+	if ( ! session ) 
 		return NULL; /* FIXME: better error detection ? */
 	
 	ret = plugin->db_connect(session);
-	if (ret < 0)
+	if ( ret < 0 )
 		return NULL; /* FIXME: better error detection ? */
 	
 	conn = calloc(1, sizeof(sql_connection_t));
-	if (conn < 0) {
+	if ( ! conn ) {
 		log(LOG_ERR, "out of memory\n");
 		return NULL;
 	}
@@ -307,6 +298,8 @@ sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char
 	
 	return conn;
 }
+
+
 
 
 /**
@@ -319,7 +312,7 @@ sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char
  *
  * Returns: 0 on success, -1 if an error occured.
  */
-int sql_plugins_init(const char *dirname, int argc, char **argv)
+int sql_plugins_init(const char *dirname)
 {
         int ret;
 	
@@ -327,28 +320,17 @@ int sql_plugins_init(const char *dirname, int argc, char **argv)
 	if ( ret < 0 ) {
 		if ( errno == ENOENT )
 			return 0;
+                
 		log(LOG_ERR, "can't access %s.\n", dirname);
 		return -1;
 	}
 
-        ret = plugin_load_from_dir(dirname, argc, argv, subscribe, unsubscribe);
+        ret = plugin_load_from_dir(dirname, 0, NULL, NULL, NULL);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't load plugin subsystem.\n");
                 return -1;
         }
 
         return ret;
-}
-
-
-
-/**
- * db_plugins_available:
- *
- * Returns: 0 if there is active DB plugins, -1 otherwise.
- */
-int sql_plugins_available(void) 
-{
-        return list_empty(&sql_plugins_list) ? -1 : 0;
 }
 

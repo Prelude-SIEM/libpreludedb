@@ -1227,7 +1227,7 @@ int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg)
 
         ret = -1;
 
-	if (conn->type != sql) {
+	if ( conn->type != sql) {
 		log(LOG_ERR, "SQL database required for classic format!\n");
 		return -1;
 	}

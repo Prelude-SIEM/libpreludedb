@@ -34,13 +34,7 @@ typedef struct {
 
 #define plugin_set_write_func(p, f) plugin_write_func(p) = (f)
 
-
-
-int format_plugins_available(void);
-
-int format_plugins_init(const char *dirname, int argc, char **argv);
-
-int format_plugin_write(const idmef_message_t *msg);
+int format_plugins_init(const char *dirname);
 
 plugin_generic_t *plugin_init(int argc, char **argv);
 

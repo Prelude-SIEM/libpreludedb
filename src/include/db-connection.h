@@ -39,7 +39,6 @@ typedef struct {
 #include "plugin-format.h" /* for plugin_format_t */
 
 typedef struct {
-	struct list_head list;
 	prelude_db_connection_t db_connection;
 	plugin_format_t *format;
 	struct list_head filter_list;
@@ -49,20 +48,17 @@ typedef struct {
 } prelude_db_interface_t;
 
 /* Interface-specific functions */
-prelude_db_interface_t *prelude_db_connect_sql(const char *name, 
-       					const char *dbformat, const char *dbtype, const char *dbhost, 
-				       	const char *dbport, const char *dbname, const char *dbuser, 
-       					const char *dbpass);
+prelude_db_interface_t *prelude_db_connect(const char *config);
+prelude_db_interface_t *prelude_db_connect_sql_config(const char *config);
+prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbformat, 
+                                               const char *dbtype, const char *dbhost, 
+                                               const char *dbport, const char *dbname, 
+                                               const char *dbuser, const char *dbpass);
 int prelude_db_interface_activate(prelude_db_interface_t *interface);
 int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
-int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, idmef_message_t *msg);
+int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 int prelude_db_interface_destroy(prelude_db_interface_t *interface);
-
-/* General functions */
-int prelude_db_init_interfaces(void);
-int prelude_db_write_idmef_message(idmef_message_t *msg);
-int prelude_db_shutdown_interfaces(void);
 
 #endif /* _LIBPRELUDEDB_DB_CONNECTION_H */
 
