@@ -1670,7 +1670,7 @@ static int get_source(prelude_sql_connection_t *sql,
 		if ( ! source )
 			goto error;
 
-		if ( get_enum(sql, row, 0, source, idmef_source_new_spoofed, idmef_spoofed_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, source, idmef_source_new_spoofed, idmef_source_spoofed_to_numeric) < 0 )
 			goto error;
 
 		if ( get_string(sql, row, 1, source, idmef_source_new_interface) < 0 )
@@ -1738,7 +1738,7 @@ static int get_target(prelude_sql_connection_t *sql,
 		if ( ! target )
 			goto error;
 
-		if ( get_enum(sql, row, 0, target, idmef_target_new_decoy, idmef_spoofed_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, target, idmef_target_new_decoy, idmef_target_decoy_to_numeric) < 0 )
 			goto error;
 
 		if ( get_string(sql, row, 1, target, idmef_target_new_interface) < 0 )
