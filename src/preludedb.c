@@ -389,12 +389,7 @@ int preludedb_get_alert_idents(preludedb_t *db,
 			       preludedb_result_idents_order_t order,
 			       preludedb_result_idents_t **result)
 {
-	int ret;
-
-	ret = preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
-	printf("get_alert_idents: %d\n", ret);
-
-	return ret;
+	return preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
 }
 
 
