@@ -156,7 +156,6 @@ static int classic_insert_idmef_message(preludedb_sql_t *sql, idmef_message_t *m
 static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *selection, 
 			      idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res)
 {
-
 	return idmef_db_select(sql, selection, criteria, distinct, limit, offset, AS_VALUES, (preludedb_sql_table_t **) res);
 }
 
@@ -169,6 +168,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 	idmef_value_type_id_t type;
 	preludedb_sql_field_t *field;
 	const char *char_val;
+	unsigned int retrieved = 1;
 	int ret;
 
 	flags = preludedb_selected_path_get_flags(selected);
@@ -198,13 +198,13 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                        return ret;
 
                return 1;
-       }
+	}
 
 
 	switch ( type ) {
 	case IDMEF_VALUE_TYPE_TIME: {
 		uint32_t gmtoff = 0, usec = 0;
-		int retrieved = 1;
+		
 		idmef_time_t *time;
 
 		if ( ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
@@ -240,14 +240,20 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 		preludedb_sql_time_from_timestamp(time, char_val, gmtoff, usec);
 
 		ret = idmef_value_new_time(value, time);
-		if ( ret < 0 )
+		if ( ret < 0 ) {
 			idmef_time_destroy(time);
+			return ret;
+		}
+
+		break;
 	}
 	default:
 		ret = idmef_value_new_from_path(value, path, char_val);
+		if ( ret < 0 )
+			return ret;
 	}
 
-	return ret;
+	return retrieved;
 }
 
 
@@ -275,7 +281,7 @@ static int classic_get_next_values(void *res, preludedb_path_selection_t *select
 	for ( value_cnt = 0; value_cnt < column_count; value_cnt++ ) {
 		selected = preludedb_path_selection_get_next(selection, selected);
 
-		ret = get_value(row, value_cnt, selected, *values + value_cnt);
+		ret = get_value(row, sql_cnt, selected, *values + value_cnt);
 		if ( ret < 0 )
 			break;
 
