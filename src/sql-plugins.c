@@ -184,9 +184,9 @@ int sql_insert(sql_connection_t *conn, const char *table, const char *fields, co
         query[len] = ')';
         query[len + 1] = '\0';
 	
-        ret = conn->plugin->db_insert(conn->session, query);
+        ret = conn->plugin->db_command(conn->session, query);
 	if (ret < 0)
-		log(LOG_ERR, "[%s]->db_insert returned error code %d\n", conn->plugin->name, ret);
+		log(LOG_ERR, "[%s]->db_command returned error code %d\n", conn->plugin->name, ret);
         
         if ( query != query_static )
                 free(query);

@@ -66,7 +66,6 @@
 
 
 typedef enum {
-	available = 0,
 	allocated = 1,
 	connected = 2,
 	connection_failed = 3,
@@ -157,17 +156,67 @@ static int db_command(void *s, const char *query)
 
 
 /*
+ * start transaction
+ */
+static int db_begin(void *s) 
+{
+        session_t *session = s;
+        int ret;
+        
+	if ( session->status == transaction )
+		return -ERR_PLUGIN_DB_NO_TRANSACTION;
+       
+	ret = db_command(session, "BEGIN;");
+		
+	if (ret == 0)
+		session->status = transaction;
+		
+	return ret;
+}
+
+
+
+
+/*
+ * commit transaction
+ */
+static int db_commit(void *s)
+{
+        session_t *session = s;
+        int ret;
+        
+	if ( session->status != transaction )
+		return -ERR_PLUGIN_DB_NO_TRANSACTION;
+	
+	ret = db_command(session, "COMMIT;");
+	
+	if (ret == 0)
+		session->status = connected;
+		
+	return ret;
+}
+
+
+
+/*
  * end transaction
  */
 static int db_rollback(void *s)
 {
         session_t *session = s;
+        int ret;
         
 	if ( session->status != transaction )
 		return -ERR_PLUGIN_DB_NO_TRANSACTION;
+		
+	ret = db_command(session, "ROLLBACK;");
 	
-	return db_command(session, "ROLLBACK;");
+	if (ret == 0)
+		session->status = connected;
+		
+	return ret;
 }
+
 
 
 
@@ -181,36 +230,6 @@ static void db_close(void *s)
         
         mysql_close(session->connection);
         session->status = connection_closed;
-}
-
-
-
-/*
- * called when plugin is unsubscribed, terminate all connections
- */
-static void db_shutdown(void *s)
-{
-	int ret;
-        session_t *session = s;
-	
-	log(LOG_INFO, "MySQL plugin unsubscribed, terminating active connections\n");
-        
-        if ( session->status == transaction ) {
-                ret = db_rollback(session);
-                if ( ret < 0 )
-                        log(LOG_ERR, "ROLLBACK error on connection %p\n", s);
-        }
-        
-		
-        if ( session->status == connected ) 
-                db_close(session);
-        
-        /*
-         * at this point all sessions should be either closed or in 
-         * other inactive state
-         */
-        if ( session->status != available )
-                db_cleanup(session);
 }
 
 
@@ -267,45 +286,6 @@ static sql_table_t *db_query(void *s, const char *query)
 
 
 
-static int db_insert(void *s, const char *query)
-{	
-	return db_command(s, query);
-}
-
-
-
-/*
- * start transaction
- */
-static int db_begin(void *s) 
-{
-        session_t *session = s;
-        
-	if ( session->status == transaction )
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
-	
-	session->status = transaction;
-        
-	return db_command(session, "BEGIN;");
-}
-
-
-
-
-/*
- * commit transaction
- */
-static int db_commit(void *s) 
-{
-        session_t *session =s;
-        
-	if ( session->status != transaction )
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
-	
-	return db_command(session, "COMMIT;");
-}
-
-
 
 /*
  * Connect to the MySQL database
@@ -360,7 +340,7 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_setup_func(&plugin, db_setup);
         plugin_set_connect_func(&plugin, db_connect);
         plugin_set_escape_func(&plugin, db_escape);
-        plugin_set_insert_func(&plugin, db_insert);
+        plugin_set_command_func(&plugin, db_command);
         plugin_set_query_func(&plugin, db_query);
         plugin_set_begin_func(&plugin, db_begin);
         plugin_set_commit_func(&plugin, db_commit);

@@ -1,3 +1,16 @@
+2002-09-15  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugin/sql/mysql.c:
+	* plugin/sql/pgsql.c:
+	fixed a serious connection state handling bug (transactions were
+	not marked as terminated). Cleanup. 
+
+	* plugin/sql/mysql.c:
+	* plugin/sql/pgsql.c:
+	* src/sql-plugins.c:
+	* src/include/plugins-sql.c:
+	remove unnecessary db_insert() in favor of db_command(). 
+
 2002-09-12  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/db-connection.c:
