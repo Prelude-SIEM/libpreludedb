@@ -256,6 +256,15 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 		
 		object = idmef_criterion_get_object(criterion);
 		db = db_object_find(object);
+		if ( ! db ) {
+			const char *objname = idmef_object_get_name(object);
+			char *objnum = idmef_object_get_numeric(object);
+			
+			log(LOG_ERR, "object %s [%s] not handled by database specification!\n", objname, objnum);
+			free(objnum);
+			return -1;
+		}
+		
 		
 		table = db_object_get_table(db);
 		field = db_object_get_field(db);
@@ -378,7 +387,7 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 		db = db_object_find(obj);
 		if ( ! db ) {
 			const char *objname = idmef_object_get_name(obj);
-			char *objnum = idmef_object_get_num(obj);
+			char *objnum = idmef_object_get_numeric(obj);
 			
 			log(LOG_ERR, "object %s [%s] not handled by database specification!\n", objname, objnum);
 			free(objnum);

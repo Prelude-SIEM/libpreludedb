@@ -250,9 +250,8 @@ prelude_db_ident_list_t * prelude_db_interface_get_ident_list(prelude_db_interfa
 		return NULL;
 		
 	res = interface->format->format_get_ident_list(interface->db_connection, criterion);
-	if ( ! res ) {
+	if ( ! res )
 		return NULL;
-	}
 
 	ident_list = malloc(sizeof (*ident_list));
 	ident_list->interface = interface;

@@ -1,3 +1,20 @@
+2003-05-29  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB/*:
+	removed
+
+	* bindings/perl/*:
+	new files, the perl binding has been rewritten using swig
+
+	* configure.in:
+	* Makefile.am:
+	modified to support the perl binding in the build process
+
+	* plugins/format/classic/idmef-db-select.c:
+	in criterion_to_sql, check if db_object_find's return value is NULL
+	rename idmef_object_get_num function's call in idmef_object_get_numeric
+	because idmef_object_get_num does not exist
+
 2003-05-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/classic.c:

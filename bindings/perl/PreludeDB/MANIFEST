@@ -1,8 +1,0 @@
-Changes
-Makefile.PL
-MANIFEST
-ppport.h
-PreludeDB.pm
-PreludeDB.xs
-README
-t/1.t
