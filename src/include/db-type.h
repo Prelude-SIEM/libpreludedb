@@ -21,54 +21,13 @@
 *
 *****/
 
-#include <stdlib.h>
 
-#include <libprelude/prelude-log.h>
+#ifndef _LIBPRELUDEDB_DB_TYPE_H
+#define _LIBPRELUDEDB_DB_TYPE_H
 
-#include "db-type.h"
-#include "db-connection.h"
+typedef enum {
+	prelude_db_type_sql = 1
+} prelude_db_type_t;
 
-
-struct prelude_db_connection {
-	prelude_db_type_t type;
-	void *connection;
-};
-
-
-
-
-prelude_db_connection_t *prelude_db_connection_new(prelude_db_type_t type, void *cnx)
-{
-        prelude_db_connection_t *conn;
-
-        conn = calloc(1, sizeof(*conn));
-        if ( ! conn ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
-        }
-        
-        conn->type = type;
-        conn->connection = cnx;
-        
-        return conn;
-}
-
-
-
-
-
-prelude_db_type_t prelude_db_connection_get_type(prelude_db_connection_t *conn)
-{
-	return conn ? conn->type : -1 ;
-}
-
-
-
-
-void *prelude_db_connection_get(prelude_db_connection_t *conn)
-{
-	return conn ? conn->connection : NULL;
-}
-
-
+#endif /* _LIBPRELUDEDB_DB_TYPE_H */
 

@@ -37,3 +37,4 @@ void *prelude_db_connection_data_get(prelude_db_connection_data_t *data);
 void prelude_db_connection_data_destroy(prelude_db_connection_data_t *data);
 
 #endif /* _LIBPRELUDEDB_DB_CONNECTION_DATA_H */
+

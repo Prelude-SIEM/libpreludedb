@@ -25,13 +25,7 @@
 #ifndef _LIBPRELUDEDB_DB_CONNECTION_H
 #define _LIBPRELUDEDB_DB_CONNECTION_H
 
-typedef enum {
-	prelude_db_type_sql = 1
-} prelude_db_type_t;
-
-
 typedef struct prelude_db_connection prelude_db_connection_t;
-
 
 prelude_db_connection_t *prelude_db_connection_new(prelude_db_type_t type, void *cnx);
 

@@ -76,6 +76,24 @@ char *prelude_sql_connection_data_get_type(prelude_sql_connection_data_t *cnx)
 
 
 
+int prelude_sql_connection_data_set_name(prelude_sql_connection_data_t *cnx, const char *name) 
+{
+        if ( ! name )
+                return -1;
+        
+        return (cnx->name = strdup(name)) ? 0 : -1;
+}
+
+
+
+
+char *prelude_sql_connection_data_get_name(prelude_sql_connection_data_t *cnx)
+{
+	return cnx ? cnx->name : NULL;
+}
+
+
+
 
 int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, const char *host) 
 {

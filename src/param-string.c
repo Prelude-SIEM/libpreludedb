@@ -33,7 +33,7 @@
 #define BUFLEN 127
 
 /* Find char 'c' in first 'n' bytes of string 's' */
-char *strnchr(char *s, char c, int n)
+static char *strnchr(char *s, char c, int n)
 {
 	int i;
 	
@@ -52,7 +52,7 @@ char *strnchr(char *s, char c, int n)
  * If a `\' is found, the following character is skipped. 
  */
 
-char *find_separator(char *s, char *sep)
+static char *find_separator(char *s, char *sep)
 {
 	if ( !s || !sep )
 		return NULL;
@@ -94,7 +94,7 @@ char *find_separator(char *s, char *sep)
 }
 
 /* strcpy(3) says that strings may not overlap, so we reimplement */
-void my_strcpy(char *dst, char *src)
+static void my_strcpy(char *dst, char *src)
 {
 	if ( !dst || !src )
 		return ;
@@ -106,7 +106,7 @@ void my_strcpy(char *dst, char *src)
 }
 
 /* unescape backslash-espaced sequences */
-void unescape(char *s)
+static void unescape(char *s)
 {
 	if ( !s ) 
 		return ;
@@ -120,7 +120,7 @@ void unescape(char *s)
 }
 
 /* remove quotes surrounding data */
-void unquote(char *s)
+static void unquote(char *s)
 {
 	int len;
 	

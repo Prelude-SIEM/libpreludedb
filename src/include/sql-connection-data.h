@@ -34,7 +34,11 @@ int prelude_sql_connection_data_set_type(prelude_sql_connection_data_t *cnx, con
 
 char *prelude_sql_connection_data_get_type(prelude_sql_connection_data_t *cnx);
 
-int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, const char *host) ;
+int prelude_sql_connection_data_set_name(prelude_sql_connection_data_t *cnx, const char *name);
+
+char *prelude_sql_connection_data_get_name(prelude_sql_connection_data_t *cnx);
+
+int prelude_sql_connection_data_set_host(prelude_sql_connection_data_t *cnx, const char *host);
 
 char *prelude_sql_connection_data_get_host(prelude_sql_connection_data_t *cnx);
 

@@ -1,5 +1,34 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/include/db-type.h:
+	new file. prelude_db_type_t moved from db-connection.h
+
+	* src/include/db-connection.h:
+	modified accordingly.
+
+	* src/include/Makefile.am:
+	modified accordingly.
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-output.c:
+	* src/db-connection.c:
+	* src/db-interface.c:
+	* src/db.c:
+	* src/format-plugins.c:
+	* src/sql-plugins.c:
+	include "db-type.h"
+
+	* src/sql-connection-data.c:
+	* src/include/sql-connection-data.h:
+	(prelude_sql_connection_data_set_name):
+	(prelude_sql_connection_data_get_name):
+	implemented.
+
+	* src/param-string.c:
+	declare local functions as static
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-interface.c:
 	* src/include/db-connection-data.c:
 	add missing copyright notice
