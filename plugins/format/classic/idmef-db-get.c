@@ -494,7 +494,7 @@ static int get_user(prelude_sql_connection_t *sql,
 	}
 
 	user = idmef_user_new();
-	if ( user ) {
+	if ( ! user ) {
 		log_memory_exhausted();
 		goto error;
 	}

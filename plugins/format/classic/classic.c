@@ -45,6 +45,7 @@
 
 #include "idmef-db-insert.h"
 #include "idmef-db-select.h"
+#include "idmef-db-get.h"
 #include "db-object.h"
 
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"

@@ -26,6 +26,11 @@ object=alert.analyzer.model  table=Prelude_Analyzer  field=model  top_table=Prel
 object=alert.analyzer.class  table=Prelude_Analyzer  field=class  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_Analyzer.parent_type='A'"  
 object=alert.analyzer.ostype  table=Prelude_Analyzer  field=ostype  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_Analyzer.parent_type='A'"  
 object=alert.analyzer.osversion  table=Prelude_Analyzer  field=osversion  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_Analyzer.parent_type='A'"  
+
+object=alert.additional_data.type  table=Prelude_AdditionalData  field=type  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='A'"  
+object=alert.additional_data.meaning  table=Prelude_AdditionalData  field=meaning  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='A'"  
+object=alert.additional_data.data  table=Prelude_AdditionalData  field=data  top_table=Prelude_Alert  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='A'"  
+
 object=alert.analyzer.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
 object=alert.analyzer.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
 object=alert.analyzer.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
@@ -43,3 +48,66 @@ object=alert.tool_alert.command  table=Prelude_ToolAlert  field=command  top_tab
 object=alert.overflow_alert.program  table=Prelude_OverflowAlert  field=program  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.overflow_alert.size  table=Prelude_OverflowAlert  field=size  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.overflow_alert.buffer  table=Prelude_OverflowAlert  field=buffer  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+
+object=alert.source.ident  table=Prelude_Source  field=ident  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.source.spoofed  table=Prelude_Source  field=spoofed  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.source.interface  table=Prelude_Source  field=interface  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.source.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='S'"  
+object=alert.source.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='S'"  
+object=alert.source.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='S'"  
+object=alert.source.node.address.category  table=Prelude_Address  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='S'"  
+object=alert.source.node.address.vlan_name  table=Prelude_Address  field=vlan_name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='S'"  
+object=alert.source.node.address.vlan_num  table=Prelude_Address  field=vlan_num  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='S'"  
+object=alert.source.node.address.address  table=Prelude_Address  field=address  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='S'"  
+object=alert.source.node.address.netmask  table=Prelude_Address  field=netmask  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='S'"  
+object=alert.source.user.category  table=Prelude_User  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_User.parent_type='S'"  
+object=alert.source.user.userid.ident  table=Prelude_UserId  field=ident  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='S'"  
+object=alert.source.user.userid.type  table=Prelude_UserId  field=type  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='S'"  
+object=alert.source.user.userid.name  table=Prelude_UserId  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='S'"  
+object=alert.source.user.userid.number  table=Prelude_UserId  field=number  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='S'"  
+object=alert.source.process.name  table=Prelude_Process  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='S'"  
+object=alert.source.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='S'"  
+object=alert.source.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='S'"  
+object=alert.source.service.name  table=Prelude_Service  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='S'"  
+object=alert.source.service.port  table=Prelude_Service  field=port  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident condition="Prelude_Service.parent_type='S'"
+object=alert.source.service.protocol  table=Prelude_Service  field=protocol  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='S'"  
+object=alert.source.service.web.url  table=Prelude_WebService  field=url  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='S'"  
+object=alert.source.service.web.cgi  table=Prelude_WebService  field=cgi  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='S'"  
+object=alert.source.service.web.http_method  table=Prelude_WebService  field=http_method  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='S'"  
+object=alert.source.service.snmp.oid  table=Prelude_SNMPService  field=oid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='S'"  
+object=alert.source.service.snmp.community  table=Prelude_SNMPService  field=community  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='S'"  
+object=alert.source.service.snmp.command  table=Prelude_SNMPService  field=command  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='S'"  
+
+object=alert.target.ident  table=Prelude_Target  field=ident  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.decoy  table=Prelude_Target  field=decoy  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.interface  table=Prelude_Target  field=interface  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='T'"  
+object=alert.target.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='T'"  
+object=alert.target.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='T'"  
+object=alert.target.node.address.category  table=Prelude_Address  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='T'"  
+object=alert.target.node.address.vlan_name  table=Prelude_Address  field=vlan_name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='T'"  
+object=alert.target.node.address.vlan_num  table=Prelude_Address  field=vlan_num  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='T'"  
+object=alert.target.node.address.address  table=Prelude_Address  field=address  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='T'"  
+object=alert.target.node.address.netmask  table=Prelude_Address  field=netmask  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='T'"  
+object=alert.target.user.category  table=Prelude_User  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_User.parent_type='T'"  
+object=alert.target.user.userid.ident  table=Prelude_UserId  field=ident  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='T'"  
+object=alert.target.user.userid.type  table=Prelude_UserId  field=type  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='T'"  
+object=alert.target.user.userid.name  table=Prelude_UserId  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='T'"  
+object=alert.target.user.userid.number  table=Prelude_UserId  field=number  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_UserId.parent_type='T'"  
+object=alert.target.process.name  table=Prelude_Process  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='T'"  
+object=alert.target.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='T'"  
+object=alert.target.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='T'"  
+object=alert.target.service.name  table=Prelude_Service  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='T'"  
+object=alert.target.service.protocol  table=Prelude_Service  field=protocol  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='T'"  
+object=alert.target.service.web.url  table=Prelude_WebService  field=url  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='T'"  
+object=alert.target.service.web.cgi  table=Prelude_WebService  field=cgi  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='T'"  
+object=alert.target.service.web.http_method  table=Prelude_WebService  field=http_method  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='T'"  
+object=alert.target.service.snmp.oid  table=Prelude_SNMPService  field=oid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='T'"  
+object=alert.target.service.snmp.community  table=Prelude_SNMPService  field=community  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='T'"  
+object=alert.target.service.snmp.command  table=Prelude_SNMPService  field=command  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_SNMPService.parent_type='T'"  
+object=alert.target.file.ident  table=Prelude_File  field=ident  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.file.category  table=Prelude_File  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.file.name  table=Prelude_File  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.file.path  table=Prelude_File  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.file.data_size  table=Prelude_File  field=data_size  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
+object=alert.target.file.disk_size  table=Prelude_File  field=disk_size  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  

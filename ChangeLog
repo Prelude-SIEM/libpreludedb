@@ -1,3 +1,14 @@
+2003-07-03  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic.c:
+	include "idmef-db-get.h"
+
+	* plugins/format/classic/idmef-db-get.c:
+	(get_user): fixed error detection. 
+
+	* plugins/format/classic/schema.txt:
+	newer version. 
+
 2003-07-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/classic.c:
