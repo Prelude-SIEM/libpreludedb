@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.3 2003/07/04 20:56:47 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.4 2003/07/06 14:24:04 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL

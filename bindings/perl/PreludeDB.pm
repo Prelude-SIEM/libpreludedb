@@ -138,9 +138,14 @@ sub	get_alert
     my	$object_list_handle;
     my	$message;
 
-    $object_list_handle = _convert_object_list(@object_list);
-    unless ( $object_list_handle ) {
-	return undef;
+    if ( @object_list ) {
+	$object_list_handle = _convert_object_list(@object_list);
+	unless ( $object_list_handle ) {
+	    return undef;
+	}
+
+    } else {
+	$object_list_handle = undef;
     }
 
     $message = PreludeDB::prelude_db_interface_get_alert($$self, $ident, $object_list_handle);
