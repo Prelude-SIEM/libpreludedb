@@ -61,6 +61,7 @@ struct preludedb_result_values {
 };
 
 
+static int libpreludedb_refcount = 0;
 
 static PRELUDE_LIST(plugin_instances);
 
@@ -73,11 +74,14 @@ static int subscribe(prelude_plugin_instance_t *pi)
 
 
 
-int preludedb_init(int *argc, char **argv)
+int preludedb_init(void)
 {
 	int ret;
 
-	ret = prelude_init(argc, argv);
+	if ( libpreludedb_refcount++ > 0 )
+		return 0;
+
+	ret = prelude_init(NULL, NULL);
 	if ( ret < 0 )
 		return ret;
 
@@ -106,9 +110,15 @@ void preludedb_deinit(void)
 {
 	prelude_list_t *tmp, *next;
 	prelude_plugin_instance_t *pi;
+	prelude_plugin_generic_t *plugin;
+
+	if ( --libpreludedb_refcount > 0 )
+		return;
 
 	prelude_list_for_each_safe(&plugin_instances, tmp, next) {
 		pi = prelude_linked_object_get_object(tmp);
+		plugin = prelude_plugin_instance_get_plugin(pi);
+		prelude_plugin_unload(plugin);
 		prelude_plugin_del(pi);
 	}
 

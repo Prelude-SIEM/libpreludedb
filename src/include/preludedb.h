@@ -41,7 +41,7 @@ typedef enum {
 
 #define PRELUDEDB_ERRBUF_SIZE 512
 
-int preludedb_init(int *argc, char **argv);
+int preludedb_init(void);
 void preludedb_deinit(void);
 
 int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size);
