@@ -886,7 +886,8 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t message_iden
 			   idmef_analyzer_t *analyzer, int depth) 
 {
         int ret = -1;
-        char *manufacturer = NULL, *model = NULL, *version = NULL, *class = NULL, *ostype = NULL, *osversion = NULL;
+        char *name = NULL, *manufacturer = NULL, *model = NULL, *version = NULL, *class = NULL,
+		*ostype = NULL, *osversion = NULL;
 	idmef_analyzer_t *sub_analyzer;
 
         if ( ! analyzer )
@@ -894,6 +895,10 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t message_iden
 
         class = prelude_sql_escape(conn, get_string(idmef_analyzer_get_class(analyzer)));
         if ( ! class )
+                return -1;
+
+        name = prelude_sql_escape(conn, get_string(idmef_analyzer_get_name(analyzer)));
+        if ( ! name )
                 return -1;
         
         model = prelude_sql_escape(conn, get_string(idmef_analyzer_get_model(analyzer)));
@@ -918,11 +923,12 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t message_iden
 	
 
         ret = prelude_sql_insert(conn, "Prelude_Analyzer",
-				 "_message_ident, _parent_type, _depth, analyzerid, manufacturer, model, version, class, "
+				 "_message_ident, _parent_type, _depth, analyzerid, name, manufacturer, "
+				 "model, version, class, "
                                  "ostype, osversion",
-				 "%" PRIu64 ", '%c', %d, %" PRIu64 ", %s, %s, %s, %s, %s, %s", 
-                                 message_ident, parent_type, depth, idmef_analyzer_get_analyzerid(analyzer), manufacturer, 
-				 model, version, class, ostype, osversion);
+				 "%" PRIu64 ", '%c', %d, %" PRIu64 ", %s, %s, %s, %s, %s, %s, %s", 
+                                 message_ident, parent_type, depth, idmef_analyzer_get_analyzerid(analyzer),
+				 name, manufacturer, model, version, class, ostype, osversion);
         
         if ( ret < 0 )
                 goto error;

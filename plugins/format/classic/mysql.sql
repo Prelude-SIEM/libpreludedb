@@ -70,6 +70,7 @@ CREATE TABLE Prelude_Analyzer (
  _depth TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_message_ident,_parent_type,_depth),
  analyzerid BIGINT UNSIGNED NOT NULL,
+ name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
  model VARCHAR(255) NULL,
  version VARCHAR(255) NULL,

@@ -1034,7 +1034,7 @@ static int get_analyzer(prelude_sql_connection_t *sql,
 	idmef_analyzer_t *analyzer;
 
 	table = prelude_sql_query(sql,
-				  "SELECT analyzerid, manufacturer, model, version, class, ostype, osversion "
+				  "SELECT analyzerid, name, manufacturer, model, version, class, ostype, osversion "
 				  "FROM Prelude_Analyzer "
 				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _depth = %d",
 				  parent_type, message_ident, depth);
@@ -1060,22 +1060,25 @@ static int get_analyzer(prelude_sql_connection_t *sql,
 	if ( get_uint64(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, analyzer, idmef_analyzer_new_manufacturer) < 0 )
+	if ( get_string(sql, row, 1, analyzer, idmef_analyzer_new_name) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 2, analyzer, idmef_analyzer_new_model) < 0 )
+	if ( get_string(sql, row, 2, analyzer, idmef_analyzer_new_manufacturer) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 3, analyzer, idmef_analyzer_new_version) < 0 )
+	if ( get_string(sql, row, 3, analyzer, idmef_analyzer_new_model) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 4, analyzer, idmef_analyzer_new_class) < 0 )
+	if ( get_string(sql, row, 4, analyzer, idmef_analyzer_new_version) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 5, analyzer, idmef_analyzer_new_ostype) < 0 )
+	if ( get_string(sql, row, 5, analyzer, idmef_analyzer_new_class) < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 6, analyzer, idmef_analyzer_new_osversion) < 0 )
+	if ( get_string(sql, row, 6, analyzer, idmef_analyzer_new_ostype) < 0 )
+		goto error;
+
+	if ( get_string(sql, row, 7, analyzer, idmef_analyzer_new_osversion) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);
