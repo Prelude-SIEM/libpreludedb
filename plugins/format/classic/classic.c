@@ -181,10 +181,6 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	const char *char_val;
 	int cnt = 0;
 
-	/* TODO: if selection is NULL, the whole message's content should be retrieved */
-	if ( ! selection )
-		return NULL;
-
 	object = idmef_object_new(object_name);
 	value = idmef_value_new_uint64(ident);
 	criterion = idmef_criterion_new(object, relation_equal, value);
@@ -207,26 +203,41 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	nfields = prelude_sql_fields_num(table);
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
-	
+
 		idmef_selection_set_object_iterator(selection);
-	
+
+#ifdef DEBUG
+		log(LOG_INFO, "+ row %d\n", cnt);
+#endif
+
 		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
-			/* FIXME: handle enumeration */
+			/* FIXME: handle enumeration The Right Way(tm) */
 			object = idmef_object_ref(idmef_selection_get_next_object(selection));
 
 #ifdef DEBUG
-			log(LOG_INFO, "object: %s\n", idmef_object_get_name(object));
+			log(LOG_INFO, " * object: %s\n", idmef_object_get_name(object));
 #endif
 
+			/*
+			 * don't set unambigous objects more than once,
+			 * the value is always the same anyhow
+			 * (plus this is not allowed by idmef_object_set()).
+			 * Otherwise we'd end up having more then one value
+			 * for object that can only have single incarnation,
+			 * what would be clearly incorrect.
+			 */
+			if ( cnt && ! idmef_object_is_ambiguous(object) )
+				continue;
+
 			field = prelude_sql_field_fetch(row, field_cnt);
-			if ( ! field ) 
+			if ( ! field )
 				continue;
 
 			char_val = prelude_sql_field_value(field);
 
 #ifdef DEBUG
-			log(LOG_INFO, "read value: %s\n", char_val);
+			log(LOG_INFO, " * read value: %s\n", char_val);
 #endif
 
 
@@ -248,8 +259,10 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 				return NULL;
 			}
 
-			cnt++;
 		}
+
+		cnt++;
+
 	}
 
 	prelude_sql_table_free(table);

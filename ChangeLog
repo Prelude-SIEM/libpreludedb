@@ -1,3 +1,16 @@
+2003-07-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+	
+	* plugins/format/classic/classic.c:
+	(get_message): more readable debug messages :). Handle 1-to-N
+	relations better ( still not perfect :( ). 
+
+	* plugins/format/classic/idmef-db-select.c:
+	don't try to build the FROM ... LEFT JOIN ... statements at once;
+	instead, first build a table list and then compile to SQL. 
+	Alias all tables. That should make extracting values with 1-to-N 
+	relations correctly. Add a debug messsage containing a number
+	of rows extracted. 
+
 2003-06-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-get.c:
@@ -6,7 +19,7 @@
 	add the support of a whole message fetching
 
 	* plugins/format/classic/classic.c:
-	(classic_get_alert)
+	(classic_get_alert):
 	call get_alert when the selection argument is NULL in order
 	to fetch the whole message
 
@@ -14,8 +27,8 @@
 
 	* src/sql.c:
 	* src/include/sql.h:
-	(prelude_sql_field_value_int16)
-	(prelude_sql_field_value_uint16)
+	(prelude_sql_field_value_int16):
+	(prelude_sql_field_value_uint16):
 	new functions
 	
 2003-06-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
