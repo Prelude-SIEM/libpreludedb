@@ -64,6 +64,27 @@ static inline const char *get_string(prelude_string_t *string)
 }
 
 
+static inline char *get_data(prelude_sql_connection_t *conn, idmef_data_t *data)
+{
+	switch ( idmef_data_get_type(data) ) {
+	case IDMEF_DATA_TYPE_BYTE: case IDMEF_DATA_TYPE_BYTE_STRING:
+	case IDMEF_DATA_TYPE_CHAR: case IDMEF_DATA_TYPE_CHAR_STRING:
+		return prelude_sql_escape_fast(conn, idmef_data_get_data(data), idmef_data_get_len(data));
+
+	default: {
+		char buf[32];
+
+		if ( idmef_data_to_string(data, buf, sizeof (buf)) < 0 )
+			return NULL;
+		return strdup(buf);		
+	}
+	}
+
+	return NULL;
+}
+
+
+
 static inline char *get_optional_enum(int *value, char *(*convert_func)(int))
 {
 	if ( ! value )
@@ -1048,45 +1069,34 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t messa
                                   char parent_type, idmef_additional_data_t *additional_data) 
 {
         int ret;
-        size_t dlen;
-        idmef_data_t *idata;
-        unsigned char tmp[1024];
-        const unsigned char *data;
-        char *meaning, *typestr, *cleandata;
-        idmef_additional_data_type_t type;
+        char *meaning, *type, *data;
                 
         if ( ! additional_data )
                 return 0;
 
-        type = idmef_additional_data_get_type(additional_data);
-        idata = idmef_additional_data_get_data(additional_data);
-        
-        dlen = sizeof(tmp);
-        data = idmef_additionaldata_data_to_string(additional_data, tmp, &dlen);
-        
-        cleandata = prelude_sql_escape_fast(conn, data, dlen);
-        if ( ! cleandata )
+        type = prelude_sql_escape(conn, idmef_additional_data_type_to_string(idmef_additional_data_get_type(additional_data)));
+        if ( ! type )
                 return -1;
-
-        typestr = prelude_sql_escape(conn, idmef_additional_data_type_to_string(type));
-        if ( ! typestr ) {
-                free(cleandata);
-                return -1;
-        }
         
         meaning = prelude_sql_escape(conn, get_string(idmef_additional_data_get_meaning(additional_data)));
         if ( ! meaning ) {
-                free(cleandata);
-                free(typestr);
+                free(type);
                 return -1;
         }
+
+	data = get_data(conn, idmef_additional_data_get_data(additional_data));
+	if ( ! data ) {
+		free(type);
+		free(meaning);
+		return -1;
+	}
         
         ret = prelude_sql_insert(conn, "Prelude_AdditionalData", "_message_ident, _parent_type, type, meaning, data",
-                                 "%" PRIu64 ", '%c', %s, %s, %s", message_ident, parent_type, typestr, meaning, cleandata);
+                                 "%" PRIu64 ", '%c', %s, %s, %s", message_ident, parent_type, type, meaning, data);
 
-        free(cleandata);
-        free(typestr);        
-        free(meaning);
+        free(type);
+        free(meaning);        
+        free(data);
         
         return ret;
 }
@@ -1296,21 +1306,20 @@ static int insert_overflow_alert(prelude_sql_connection_t *conn, uint64_t messag
         if ( ! program )
                 return -1;
 
-        /* FIXME: data will not be null byte terminated forever  */
-        buffer = prelude_sql_escape(conn, idmef_data_get_data(idmef_overflow_alert_get_buffer(overflow_alert)));
-        if ( ! buffer ) {
-                free(program);
-                return -2;
-        }
+	buffer = get_data(conn, idmef_overflow_alert_get_buffer(overflow_alert));
+	if ( ! buffer ) {
+		free(buffer);
+		return -1;
+	}
 
 	get_optional_uint32(size, idmef_overflow_alert_get_size(overflow_alert));
-        
+
         ret = prelude_sql_insert(conn, "Prelude_OverflowAlert", "_message_ident, program, size, buffer",
 				 "%" PRIu64 ", %s, %s, %s", 
                                  message_ident, program, size, buffer);
 
-        free(buffer);
         free(program);
+        free(buffer);
 
         return ret;
 }

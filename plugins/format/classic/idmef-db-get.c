@@ -126,37 +126,37 @@ static int _get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 	return 1;
 }
 
-static int _get_data(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
-		     int index,
-		     void *parent, idmef_data_t *(parent_new_child)(void *parent))
-{
-	prelude_sql_field_t *field;
-	const char *tmp;
-	idmef_data_t *data;
+/* static int _get_data(prelude_sql_connection_t *sql, prelude_sql_row_t *row, */
+/* 		     int index, */
+/* 		     void *parent, idmef_data_t *(parent_new_child)(void *parent)) */
+/* { */
+/* 	prelude_sql_field_t *field; */
+/* 	const char *tmp; */
+/* 	idmef_data_t *data; */
 
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
+/* 	field = prelude_sql_field_fetch(row, index); */
+/* 	if ( ! field ) { */
+/* 		if ( prelude_sql_errno(sql) ) { */
+/* 			db_log(sql); */
+/* 			return -1; */
+/* 		} */
 
-		return 0;
-	}
+/* 		return 0; */
+/* 	} */
 
-	tmp = prelude_sql_field_value(field);
-	if ( ! tmp )
-		return -1;
+/* 	tmp = prelude_sql_field_value(field); */
+/* 	if ( ! tmp ) */
+/* 		return -1; */
 
-	data = parent_new_child(parent);
-	if ( ! data )
-		return -1;
+/* 	data = parent_new_child(parent); */
+/* 	if ( ! data ) */
+/* 		return -1; */
 
-	if ( idmef_data_set_dup(data, tmp, strlen(tmp) + 1) < 0 )
-		return -1;
+/* 	if ( idmef_data_set_dup(data, tmp, strlen(tmp) + 1) < 0 ) */
+/* 		return -1; */
 
-	return 1;
-}
+/* 	return 1; */
+/* } */
 
 static int _get_enum(prelude_sql_connection_t *sql, prelude_sql_row_t *row, 
 		     int index,
@@ -239,8 +239,8 @@ static int _get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 #define get_string(sql, row, index, parent, parent_new_child) \
 	_get_string(sql, row, index, parent, (prelude_string_t *(*)(void *)) parent_new_child)
 
-#define get_data(sql, row, index, parent, parent_new_child) \
-	_get_data(sql, row, index, parent, (idmef_data_t *(*)(void *)) parent_new_child)
+/* #define get_data(sql, row, index, parent, parent_new_child) \ */
+/* 	_get_data(sql, row, index, parent, (idmef_data_t *(*)(void *)) parent_new_child) */
 
 #define get_enum(sql, row, index, parent, parent_new_child, convert_enum) \
 	_get_enum(sql, row, index, parent, (int *(*)(void *)) parent_new_child, convert_enum)
@@ -1841,7 +1841,10 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
 	idmef_additional_data_t *additional_data;
+	idmef_data_t *data;
+	prelude_sql_field_t *field;
 	int cnt = 0;
+	int ret = 0;
 
 	table = prelude_sql_query(sql,
 				  "SELECT type, meaning, data "
@@ -1870,7 +1873,55 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 		if ( get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning) < 0 )
 			goto error;
 
-		if ( get_data(sql, row, 2, additional_data, idmef_additional_data_new_data) < 0 )
+		field = prelude_sql_field_fetch(row, 2);
+		if ( ! field ) { /* this field is mandatory */
+			db_log(sql);
+			goto error;
+		}
+
+		data = idmef_additional_data_new_data(additional_data);
+		if ( ! data )
+			goto error;
+
+		switch ( idmef_additional_data_get_type(additional_data) ) {
+		case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
+			idmef_data_set_byte(data, prelude_sql_field_value_uint8(field));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER:
+			idmef_data_set_char(data, (char) prelude_sql_field_value_uint8(field));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
+		case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
+		case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
+		case IDMEF_ADDITIONAL_DATA_TYPE_XML:
+			ret = idmef_data_set_char_string_dup(data, prelude_sql_field_value(field));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_REAL:
+			idmef_data_set_float(data, prelude_sql_field_value_float(field));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER:
+			idmef_data_set_uint32(data, prelude_sql_field_value_uint32(field));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
+			ret = idmef_data_set_byte_string_dup(data,
+							     prelude_sql_field_value(field),
+							     strlen(prelude_sql_field_value(field) + 1));
+			break;
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP:
+			idmef_data_set_uint64(data, prelude_sql_field_value_uint64(field));
+			break;
+			
+		case IDMEF_ADDITIONAL_DATA_TYPE_ERROR:
+			/* nop */;
+		}
+
+		if ( ret < 0 )
 			goto error;
 
 		cnt++;
@@ -2149,6 +2200,8 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
 	idmef_overflow_alert_t *overflow_alert;
+	prelude_sql_field_t *field;
+	idmef_data_t *data;
 
 	table = prelude_sql_query(sql,
 				  "SELECT program, size, buffer "
@@ -2180,7 +2233,15 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	if ( get_uint32(sql, row, 1, overflow_alert, idmef_overflow_alert_new_size) < 0 )
 		goto error;
 
-	if ( get_data(sql, row, 2, overflow_alert, idmef_overflow_alert_new_buffer) < 0 )
+	field = prelude_sql_field_fetch(row, 2);
+	if ( ! field )
+		goto error;
+
+	data = idmef_overflow_alert_new_buffer(overflow_alert);
+	if ( ! data )
+		goto error;
+
+	if ( idmef_data_set_byte_string_dup(data, prelude_sql_field_value(field), strlen(prelude_sql_field_value(field))) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);
