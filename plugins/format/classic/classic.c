@@ -226,7 +226,7 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 			char_val = prelude_sql_field_value(field);
 
 #ifdef DEBUG
-			log(LOG_INFO, "read a non-NULL field value\n");
+			log(LOG_INFO, "read value: %s\n", char_val);
 #endif
 
 
