@@ -28,8 +28,8 @@
 #include <sys/types.h>
 #include <pthread.h>
 
-#include <libprelude/prelude-plugin.h>
-#include <libprelude/idmef.h>
+#include <libprelude/prelude.h>
+
 
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
@@ -62,30 +62,57 @@ struct preludedb_result_values {
 
 
 
-static int load_format_plugins_if_needed(void)
+static PRELUDE_LIST(plugin_instances);
+
+
+
+static int subscribe(prelude_plugin_instance_t *pi)
 {
-	static prelude_bool_t plugins_loaded = FALSE;
-	static pthread_mutex_t plugins_loaded_mutex = PTHREAD_MUTEX_INITIALIZER;
-	int ret = 0;
-	
-	pthread_mutex_lock(&plugins_loaded_mutex);
+        return prelude_plugin_add(pi, &plugin_instances, NULL);
+}
 
-	if ( ! plugins_loaded ) {
-		ret = access(FORMAT_PLUGIN_DIR, F_OK);
-		if ( ret < 0 )
-			goto error;
 
-		prelude_plugin_load_from_dir(FORMAT_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
-		if ( ret < 0 )
-			goto error;
 
-		plugins_loaded = TRUE;
+int preludedb_init(int *argc, char **argv)
+{
+	int ret;
+
+	ret = prelude_init(argc, argv);
+	if ( ret < 0 )
+		return ret;
+
+	ret = access(FORMAT_PLUGIN_DIR, F_OK);
+	if ( ret < 0 )
+		return prelude_error_from_errno(errno);
+
+	ret = prelude_plugin_load_from_dir(FORMAT_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, subscribe, NULL);
+	if ( ret < 0 )
+		return ret;
+
+	ret = access(SQL_PLUGIN_DIR, F_OK);
+	if ( ret < 0 )
+		return prelude_error_from_errno(errno);
+
+	ret = prelude_plugin_load_from_dir(SQL_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, subscribe, NULL);
+	if ( ret < 0 )
+		return ret;
+
+	return 0;
+}
+
+
+
+void preludedb_deinit(void)
+{
+	prelude_list_t *tmp, *next;
+	prelude_plugin_instance_t *pi;
+
+	prelude_list_for_each_safe(&plugin_instances, tmp, next) {
+		pi = prelude_linked_object_get_object(tmp);
+		prelude_plugin_del(pi);
 	}
 
- error: 
-	pthread_mutex_unlock(&plugins_loaded_mutex);
-
-	return ret;
+	prelude_deinit();
 }
 
 
@@ -136,8 +163,6 @@ static int preludedb_autodetect_format(preludedb_t *db)
 int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size)
 {
 	int ret;
-
-	load_format_plugins_if_needed();
 
 	*db = calloc(1, sizeof (**db));
 	if ( ! *db ) {

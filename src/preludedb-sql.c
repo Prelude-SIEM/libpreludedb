@@ -37,6 +37,7 @@
 #include <pthread.h>
 
 #include <libprelude/prelude-list.h>
+#include <libprelude/prelude-linked-object.h>
 #include <libprelude/common.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/prelude-error.h>
@@ -103,34 +104,6 @@ struct preludedb_sql_field {
 
 
 
-static int load_sql_plugins_if_needed(void)
-{
-	static prelude_bool_t plugins_loaded = FALSE;
-	static pthread_mutex_t plugins_loaded_mutex = PTHREAD_MUTEX_INITIALIZER;
-	int ret = 0;
-
-	pthread_mutex_lock(&plugins_loaded_mutex);
-
-	if ( ! plugins_loaded ) {
-		ret = access(SQL_PLUGIN_DIR, F_OK);
-		if ( ret < 0 )
-			goto error;
-
-		prelude_plugin_load_from_dir(SQL_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
-		if ( ret < 0 )
-			goto error;
-
-		plugins_loaded = TRUE;
-	}
-
- error: 
-	pthread_mutex_unlock(&plugins_loaded_mutex);
-
-	return ret;
-}
-
-
-
 /**
  * preludedb_sql_new:
  * @new: Pointer to a sql object to initialize.
@@ -144,12 +117,6 @@ static int load_sql_plugins_if_needed(void)
  */
 int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_settings_t *settings) 
 {
-	int ret;
-
-	ret = load_sql_plugins_if_needed();
-	if ( ret < 0 )
-		return ret;
-
 	*new = calloc(1, sizeof (**new));
 	if ( ! *new )
 		return preludedb_error_from_errno(errno);
