@@ -1,7 +1,7 @@
 /*****
 *
-* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
-* All Rights Reserved
+* Copyright (C) 2003-2005 PreludeIDS Technologies. All Rights Reserved.
+* Author: Nicolas Delon <nicolas.delon@prelude-ids.com>
 *
 * This file is part of the Prelude program.
 *
@@ -21,7 +21,6 @@
 *
 *****/
 
-%module PreludeDB
 %{
 #include <pthread.h>
 #include <libprelude/prelude-list.h>
@@ -33,282 +32,9 @@
 #include "preludedb-path-selection.h"
 #include "preludedb.h"
 
-#ifdef SWIGPYTHON
-
-void swig_python_raise_exception(int error, const char *strerror)
-{
-        PyObject *module;
-        PyObject *exception_class;
-        PyObject *exception;
-
-        module = PyImport_ImportModule("preludedb");
-        exception_class = PyObject_GetAttrString(module, "PreludeDBError");
-        exception = PyObject_CallFunction(exception_class, "is", error, strerror);
-
-        PyErr_SetObject(exception_class, exception);
-
-        Py_DECREF(module);
-        Py_DECREF(exception_class);
-        Py_DECREF(exception);
-}
-
-PyObject *swig_python_string(prelude_string_t *string)
-{
-        return PyString_FromStringAndSize(prelude_string_get_string(string), prelude_string_get_len(string));
-}
-
-PyObject *swig_python_data(idmef_data_t *data)
-{
-        switch ( idmef_data_get_type(data) ) {
-        case IDMEF_DATA_TYPE_CHAR: case IDMEF_DATA_TYPE_BYTE:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), 1);
-
-        case IDMEF_DATA_TYPE_CHAR_STRING:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), idmef_data_get_len(data) - 1);
-
-        case IDMEF_DATA_TYPE_BYTE_STRING:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), idmef_data_get_len(data));
-
-        case IDMEF_DATA_TYPE_UINT32:
-                return PyLong_FromLongLong(idmef_data_get_uint32(data));
-
-        case IDMEF_DATA_TYPE_UINT64:
-                return PyLong_FromUnsignedLongLong(idmef_data_get_uint64(data));
-
-        case IDMEF_DATA_TYPE_FLOAT:
-                return PyFloat_FromDouble((double) idmef_data_get_float(data));
-
-        default:
-                return NULL;
-        }
-}
-
-#endif /* ! SWIGPYTHON */
-
-
 %}
 
 typedef struct idmef_value idmef_value_t;
-
-%typemap(perl5, in) char ** {
-	AV *tempav;
-	I32 len;
-	int i;
-	SV  **tv;
-
-	if ( ! SvROK($input))
-	    croak("Argument $argnum is not a reference.");
-
-        if ( SvTYPE(SvRV($input)) != SVt_PVAV )
-	    croak("Argument $argnum is not an array.");
-
-        tempav = (AV*) SvRV($input);
-	len = av_len(tempav);
-	$1 = (char **) malloc((len+2)*sizeof(char *));
-	if ( ! $1 )
-		croak("out of memory\n");
-	for ( i = 0; i <= len; i++ ) {
-	    tv = av_fetch(tempav, i, 0);	
-	    $1[i] = (char *) SvPV_nolen(*tv);
-        }
-	$1[i] = NULL;
-};
-
-
-%typemap(python, in) const char * {
-        if ( $input == Py_None )
-                $1 = NULL;
-        else if ( PyString_Check($input) )
-                $1 = PyString_AsString($input);
-        else {
-                PyErr_Format(PyExc_TypeError,
-                             "expected None or string, %s found", $input->ob_type->tp_name);
-                return NULL;
-        }
-};
-
-
-%typemap(perl5, in) uint8_t {
-	$1 = (uint8_t) SvIV($input);
-};
-
-
-%typemap(perl5, in) uint64_t {
-	if ( SvIOK($input) ) {
-		$1 = (uint64_t) SvIV($input);
-
-	} else {
-		if ( sscanf(SvPV_nolen($input), "%" PRIu64, &($1)) < 1 ) {
-			croak("Argument %s is not an unsigned 64 bits integer\n", SvPV_nolen($input));
-		}
-	}
-};
-
-
-%typemap(perl5, out) uint64_t {
-	char tmp[32];
-	int len;
-
-	len = snprintf(tmp, sizeof (tmp), "%" PRIu64, $1);
-
-	if ( len >= 0 && len < sizeof (tmp) ) {
-		$result = sv_2mortal(newSVpv(tmp, len));
-		argvi++;
-	}
-};
-
-
-%typemap(python, in, numinputs=0) idmef_value_t ***values (idmef_value_t **tmp) {
-	$1 = &tmp;
-};
-
-%typemap(python, argout) idmef_value_t ***values {
-	long size;
-
-	size = PyInt_AsLong($result);
-	if ( size < 0 ) {
-		swig_python_raise_exception(size, NULL);
-		$result = NULL;
-
-	} else if ( size == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
-
-	} else {
-		idmef_value_t **values = *($1);
-		int cnt;
-
-		$result = PyList_New(0);
-
-		for ( cnt = 0; cnt < size; cnt++ ) {
-			PyList_Append($result,
-				      SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0));
-		}
-
-		free(values);
-	}
-};
-
-
-%typemap(in, numinputs=0) SWIGTYPE **OUTPARAM ($*1_type tmp) {
-        $1 = ($1_ltype) &tmp;
-};
-
-
-%typemap(argout) SWIGTYPE **OUTPARAM {
-        $result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
-};
-
-
-%apply SWIGTYPE **OUTPARAM {
-	preludedb_t **,
-	preludedb_selected_path_t **,
-	preludedb_path_selection_t **,
-	preludedb_sql_t **,
-	preludedb_sql_settings_t **,
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	idmef_message_t **
-};
-
-
-%typemap(python, in, numinputs=0) uint64_t *ident (uint64_t tmp) {
-	$1 = &tmp;
-};
-
-
-%typemap(in, numinputs=0) (char *errbuf, size_t size) (char tmp[PRELUDEDB_ERRBUF_SIZE]) {
-	$1 = tmp;
-	$2 = sizeof(tmp);
-};
-
-/* %typemap(python, argout) (char *errbuf, size_t size) { */
-/* 	int ret = PyInt_AsLong($1); */
-
-/* 	if ( ret < 0 ) { */
-/* 		swig_python_raise_exception(ret, ret); */
-/* 		return NULL; */
-/* 	} */
-/* }; */
-
-
-%typemap(python, out) int {
-	if ( $1 < 0 ) {
-		swig_python_raise_exception($1, NULL);
-		return NULL;
-	}
-
-	/*
-	 * swig workaround: we want to access ret from some argout typemap when ret can
-	 * contain the number of results for example, but the C result is not reachable
-	 * from argout
-	 */
-	$result = PyInt_FromLong($1);
-};
-
-
-%typemap(python, argout) uint64_t *ident {
-	if ( PyInt_AsLong($result) == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
-	}
-	else
-		$result = PyLong_FromUnsignedLongLong(*($1));
-};
-
-
-%typemap(python, in, numinputs=0) prelude_string_t *output {
-	int ret;
-	
-	ret = prelude_string_new(&($1));
-	if ( ret < 0 ) {
-		swig_python_raise_exception(ret, NULL);
-		return NULL;
-	}
-};
-%typemap(python, argout) prelude_string_t *output {
-	$result = PyString_FromStringAndSize(prelude_string_get_string($1), prelude_string_get_len($1));
-	prelude_string_destroy($1);
-};
-
-
-%typemap(in, numinputs=0) SWIGTYPE **OUTRESULT ($*1_type tmp) {
-        $1 = ($1_ltype) &tmp;
-};
-
-%typemap(argout) SWIGTYPE **OUTRESULT {
-	if ( PyInt_AsLong($result) == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
-	}
-	else
-		$result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
-};
-
-
-%typemap(in, numinputs=0) char **output (char *tmp) {
-	$1 = &tmp;
-};
-
-%typemap(argout) char **output {
-	if ( PyInt_AsLong($result) < 0 ) {
-		swig_python_raise_exception(PyInt_AsLong($result), NULL);
-		return NULL;
-	}
-
-	$result = PyString_FromString(*$1);
-	free(*$1);
-};
-
-
-%apply SWIGTYPE **OUTRESULT {
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	preludedb_sql_table_t **,
-	preludedb_sql_row_t **,	
-	preludedb_sql_field_t **
-};
-
 
 typedef int int32_t;
 typedef unsigned int uint32_t;
@@ -317,7 +43,13 @@ typedef unsigned long long uint64_t;
 typedef signed int preludedb_error_t;
 typedef signed int prelude_bool_t;
 
-%ignore preludedb_new;
+#ifdef SWIGPYTHON
+%include libpreludedb_python.i
+#endif /* ! SWIGPYTHON */
+
+#ifdef SWIGPERL
+%include libpreludedb_perl.i
+#endif /* ! SWIGPERL */
 
 %include "preludedb-sql-settings.h"
 %include "preludedb-sql.h"
@@ -326,36 +58,3 @@ typedef signed int prelude_bool_t;
 
 prelude_bool_t preludedb_error_check(preludedb_error_t error, preludedb_error_code_t code);
 const char *preludedb_strerror(preludedb_error_t error);
-
-%rename(preludedb_new) wrap_preludedb_new;
-%inline %{
-preludedb_t *wrap_preludedb_new(preludedb_sql_t *sql, const char *format_name)
-{
-	char errbuf[PRELUDEDB_ERRBUF_SIZE];
-	preludedb_t *db;
-	int ret;
-
-	ret = preludedb_new(&db, sql, format_name, errbuf, sizeof(errbuf));
-	if ( ret < 0 ) {
-		swig_python_raise_exception(ret, errbuf);
-		return NULL;
-	}
-
-	return db;
-}
-%}
-
-
-#ifdef SWIGPYTHON
-
-%pythoncode %{
-import prelude
-
-class PreludeDBError(prelude.PreludeError):
-    def __str__(self):
-	if self._strerror:
-	    return self._strerror
-        return preludedb_strerror(self.errno)
-%}
-
-#endif /* ! SWIGPYTHON */

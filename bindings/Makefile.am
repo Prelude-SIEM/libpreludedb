@@ -1,4 +1,4 @@
-BINDING_DEPENDS=libpreludedb.i \
+BINDING_DEPENDS=libpreludedb.i libpreludedb_perl.i libpreludedb_python.i \
 		$(top_srcdir)/src/include/preludedb-error.h \
 		$(top_srcdir)/src/include/preludedb.h \
 		$(top_srcdir)/src/include/preludedb-path-selection.h \
