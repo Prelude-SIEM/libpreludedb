@@ -75,6 +75,8 @@ prelude_sql_field_t *prelude_sql_field_fetch_by_name(prelude_sql_row_t *row, con
 
 prelude_sql_field_type_t prelude_sql_field_info_type(prelude_sql_field_t *field);
 const char *prelude_sql_field_value(prelude_sql_field_t *field);
+int16_t prelude_sql_field_value_int16(prelude_sql_field_t *field);
+uint16_t prelude_sql_field_value_uint16(prelude_sql_field_t *field);
 int32_t prelude_sql_field_value_int32(prelude_sql_field_t *field);
 uint32_t prelude_sql_field_value_uint32(prelude_sql_field_t *field);
 int64_t prelude_sql_field_value_int64(prelude_sql_field_t *field);

@@ -588,6 +588,30 @@ prelude_sql_field_type_t prelude_sql_field_info_type(prelude_sql_field_t *field)
 
 
 
+int16_t prelude_sql_field_value_int16(prelude_sql_field_t *field)
+{
+	const char *s;
+	int16_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%hd", &i);
+	return i;
+}
+
+
+
+uint16_t prelude_sql_field_value_uint16(prelude_sql_field_t *field)
+{
+	const char *s;
+	uint16_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%hu", &i);
+	return i;
+}
+
+
+
 int32_t prelude_sql_field_value_int32(prelude_sql_field_t *field)
 {
 	const char *s;
