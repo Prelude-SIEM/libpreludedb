@@ -33,8 +33,8 @@
 typedef struct preludedb_sql_settings preludedb_sql_settings_t;
 
 
-preludedb_sql_settings_t *preludedb_sql_settings_new(void);
-preludedb_sql_settings_t *preludedb_sql_settings_new_from_string(const char *str);
+int preludedb_sql_settings_new(preludedb_sql_settings_t **settings);
+int preludedb_sql_settings_new_from_string(preludedb_sql_settings_t **settings, const char *str);
 
 void preludedb_sql_settings_destroy(preludedb_sql_settings_t *settings);
 

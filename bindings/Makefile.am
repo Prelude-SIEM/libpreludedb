@@ -1,7 +1,7 @@
 BINDING_DEPENDS=libpreludedb.i \
 		$(top_srcdir)/src/include/preludedb-error.h \
 		$(top_srcdir)/src/include/preludedb.h \
-		$(top_srcdir)/src/include/preludedb-object-selection.h \
+		$(top_srcdir)/src/include/preludedb-path-selection.h \
 		$(top_srcdir)/src/include/preludedb-plugin-format.h \
 		$(top_srcdir)/src/include/preludedb-plugin-sql.h \
 		$(top_srcdir)/src/include/preludedb-sql.h \
@@ -45,7 +45,7 @@ endif
 
 python/_preludedb.c: $(BINDING_DEPENDS)
 if HAVE_SWIG
-	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -interface _preludedb -module _preludedb -noproxy $<
+	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -interface _preludedb -module preludedb $<
 endif
 
 

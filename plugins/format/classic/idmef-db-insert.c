@@ -68,13 +68,14 @@ static inline int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **outp
 		prelude_string_t *string;
 		int ret;
 
-		string = prelude_string_new();
-		if ( ! string )
-			return -1;
+		ret = prelude_string_new(&string);
+		if ( ret < 0 )
+			return ret;
 
-		if ( idmef_data_to_string(data, string) < 0 ) {
+		ret = idmef_data_to_string(data, string);
+		if (  ret < 0 ) {
 			prelude_string_destroy(string);
-			return -1;
+			return ret;
 		}
 
 		ret = preludedb_sql_escape(sql, prelude_string_get_string(string), output);
@@ -1281,6 +1282,7 @@ static int insert_confidence(preludedb_sql_t *sql, uint64_t message_ident, idmef
 {
         int ret;
         char *rating;
+	char confidence_value[16];
 
         if ( ! confidence )
                 return 0;
@@ -1289,9 +1291,10 @@ static int insert_confidence(preludedb_sql_t *sql, uint64_t message_ident, idmef
         if ( ret < 0 )
                 return ret;
 
+	get_optional_float(confidence_value, idmef_confidence_get_confidence(confidence));
+
         ret = preludedb_sql_insert(sql, "Prelude_Confidence", "_message_ident, rating, confidence",
-				   "%" PRIu64 ", %s, %f",
-				   message_ident, rating, idmef_confidence_get_confidence(confidence));
+				   "%" PRIu64 ", %s, %s", message_ident, rating, confidence_value);
 
         free(rating);
         

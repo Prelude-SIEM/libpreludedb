@@ -31,16 +31,17 @@
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-list.h>
 
+#include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 
-#include "db-object.h"
+#include "db-path.h"
 
 
-struct db_object {
+struct db_path {
 	int listed;
 	prelude_list_t list;
-	idmef_object_t *object;
+	idmef_path_t *path;
 	char *table;
 	char *field;
 	char *function;
@@ -54,11 +55,11 @@ struct db_object {
 };
 
 
-PRELUDE_LIST_HEAD(db_objects);
+PRELUDE_LIST(db_paths);
 
-static int db_object_count = 0;
+static int db_path_count = 0;
 
-db_object_t **db_object_index = NULL;
+db_path_t **db_path_index = NULL;
 
 
 #define OBJECT_DUPLICATED_ERROR 1
@@ -66,7 +67,7 @@ db_object_t **db_object_index = NULL;
 #define OTHER_ERROR 3
 #define BUFLEN 127
 
-static void db_object_destroy(db_object_t *obj);
+static void db_path_destroy(db_path_t *obj);
 
 /* 
  * Find char 'c' in first 'n' bytes of string 's'
@@ -191,13 +192,12 @@ static void unquote(char *s)
  * If the field is not found, NULL is returned. 
  * If the field value is empty, a pointer to empty string is returned. 
  */
-static char *parameter_value(const char *string, const char *field)
+static int parameter_value(const char *string, const char *field, char **value)
 {
 	char buf[BUFLEN+1]; /* +1 for trailing '\0' */
 	const char *s;
 	const char *sep;
 	const char *data;
-	char *ret;
 	int len;
 	int name_len;
 	int data_len;
@@ -234,121 +234,139 @@ static char *parameter_value(const char *string, const char *field)
 			
 		if ( strncasecmp(buf, field, name_len) == 0 ) {
 			
-			ret = malloc(data_len + 1);
-			if ( ! ret ) {
-				log(LOG_ERR, "memory exhausted.\n");
-				return NULL;
-			}
+			*value = malloc(data_len + 1);
+			if ( ! *value )
+				return preludedb_error_from_errno(errno);
 			
-			strncpy(ret, data, data_len);
-			ret[data_len] = '\0';
+			strncpy(*value, data, data_len);
+			(*value)[data_len] = '\0';
 			
-			unescape(ret);
-			unquote(ret);
+			unescape(*value);
+			unquote(*value);
 			
-			return ret;
+			return 1;
 		}
 		
 		s = sep + 1;
 	} while (sep && *s);
 	
-	return NULL;
+	return 0;
 }
 
 
 
 
-static int db_object_new(char *descr)
+static int db_path_new(char *descr)
 {
-	db_object_t *obj;
+	db_path_t *obj;
 	char *val;
 	prelude_list_t *tmp;
-	db_object_t *entry, *prev;
+	db_path_t *entry, *prev;
 	int ret;
 	
 	obj = calloc(1, sizeof(*obj));
-	if ( ! obj ) {
-		log(LOG_ERR, "out of memory\n");
-		return -1;
-	}
+	if ( ! obj )
+		return preludedb_error_from_errno(errno);
 	
-	val = parameter_value(descr, "object");
-	if ( ! val )
+	ret = parameter_value(descr, "object", &val);
+	if ( ret <= 0 )
 		goto parse_error;
 	
-	obj->object = idmef_object_new(val);
+	ret = idmef_path_new_fast(&obj->path, val);
 	free(val);
-	if ( ! obj->object )
+	if ( ret < 0 )
 		goto error;
 
-	obj->table = parameter_value(descr, "table");
-	if ( ! obj->table )
+	ret = parameter_value(descr, "table", &obj->table);
+	if ( ret <= 0 )
 		goto parse_error;
-		
-	obj->field = parameter_value(descr, "field");
-	obj->function = parameter_value(descr, "function");
+
+	ret = parameter_value(descr, "field", &obj->field);
+	if ( ret < 0 )
+		goto error;
+
+	ret = parameter_value(descr, "function", &obj->function);
+	if ( ret < 0 )
+		goto error;
 	
 	if ( ! obj->field && ! obj->function )
 		goto parse_error;
 
 	/* Following fields are optional */
-	obj->top_table = parameter_value(descr, "top_table");
-	obj->top_field = parameter_value(descr, "top_field");
-	obj->condition = parameter_value(descr, "condition");
-	obj->ident_field = parameter_value(descr, "ident_field");
-	obj->usec_field = parameter_value(descr, "usec_field");
-	obj->gmtoff_field = parameter_value(descr, "gmtoff_field");
+	ret = parameter_value(descr, "top_table", &obj->top_table);
+	if ( ret < 0 )
+		goto error;
+
+	ret = parameter_value(descr, "top_field", &obj->top_field);
+	if ( ret < 0 )
+		return ret;
+
+	ret = parameter_value(descr, "condition", &obj->condition);
+	if ( ret < 0 )
+		return ret;
+
+	ret = parameter_value(descr, "ident_field", &obj->ident_field);
+	if ( ret < 0 )
+		return ret;
+
+	ret = parameter_value(descr, "usec_field", &obj->usec_field);
+	if ( ret < 0 )
+		return ret;
+
+	ret = parameter_value(descr, "gmtoff_field", &obj->gmtoff_field);
+	if ( ret < 0 )
+		return ret;
 	
 
 	/* From idmef-cache.c -- adapted (shamelessly copying my own code :) */
 	
 	/*
-	 * determine if object is in the list, or where it should be 
-	 * added to the list, so the list is sorted by idmef_object_t->id
+	 * determine if path is in the list, or where it should be 
+	 * added to the list, so the list is sorted by idmef_path_t->id
 	 */
 	entry = NULL;
 	prev = NULL;
-	prelude_list_for_each(tmp, &db_objects) {
-		entry = prelude_list_entry(tmp, db_object_t, list);
-		ret = idmef_object_compare(entry->object, obj->object);
+	prelude_list_for_each(&db_paths, tmp) {
+		entry = prelude_list_entry(tmp, db_path_t, list);
+		ret = idmef_path_compare(entry->path, obj->path);
 		
 		if (ret == 0)
-			goto error_duplicated; /* object found */
+			goto error_duplicated; /* path found */
 			
 		if (ret > 0) {
 			entry = prev;
-			break;        /* add after previous object */
+			break;        /* add after previous path */
 		}
 		
 		prev = entry;
 	}	
 	
 	/* 
-	 * @entry@ holds the pointer to object we should add our object 
-	 * after, or NULL if we should add it before the first object
+	 * @entry@ holds the pointer to path we should add our path 
+	 * after, or NULL if we should add it before the first path
 	 */
 	 
 	if ( entry )
-		prelude_list_add(&obj->list, &entry->list);
+		prelude_list_add(&entry->list, &obj->list);
 	else 
-	 	prelude_list_add(&obj->list, &db_objects);
+	 	prelude_list_add(&db_paths, &obj->list);
 	 	
 	obj->listed = 1;
 
 	return 0;  /* Success */
 
 error_duplicated:
-	db_object_destroy(obj);
+	db_path_destroy(obj);
 
 	return -OBJECT_DUPLICATED_ERROR;
 			
 parse_error:
-	db_object_destroy(obj);
+	db_path_destroy(obj);
 		
 	return -PARSE_ERROR;
 	
 error:
-	db_object_destroy(obj);
+	db_path_destroy(obj);
 	
 	return -OTHER_ERROR;
 }
@@ -358,13 +376,13 @@ error:
 
 
 
-static void db_object_destroy(db_object_t *obj)
+static void db_path_destroy(db_path_t *obj)
 {
 	if ( obj->listed )
 		prelude_list_del(&obj->list);
 	
-	if ( obj->object )
-		idmef_object_destroy(obj->object);
+	if ( obj->path )
+		idmef_path_destroy(obj->path);
 		
 	if ( obj->table )
 		free(obj->table);
@@ -399,24 +417,24 @@ static void db_object_destroy(db_object_t *obj)
 
 
 
-int db_objects_init(const char *file)
+int db_paths_init(const char *file)
 {
 	FILE *f;
 	char buf[1024];
 	int ret;
 	int i,line;
 	prelude_list_t *tmp;
-	db_object_t *entry;
+	db_path_t *entry;
 	char *ptr;
 
 	f = fopen(file, "r");
 	if ( ! f ) {
-		log(LOG_ERR, "could not open file %s\n", file);
+		prelude_log(PRELUDE_LOG_ERR, "could not open file %s\n", file);
 		return -1;
 	}
 
 #ifdef DEBUG
-	log(LOG_INFO, "- Loading database specification from file %s\n", file);
+	prelude_log(PRELUDE_LOG_INFO, "- Loading database specification from file %s\n", file);
 #endif /* DEBUG */
 	
 	line = 0;
@@ -436,20 +454,20 @@ int db_objects_init(const char *file)
 		/* remove trailing \n */
 		buf[strlen(buf)-1] = '\0';
 		
-		ret = db_object_new(buf);
+		ret = db_path_new(buf);
 		switch ( ret ) {
 		case -OBJECT_DUPLICATED_ERROR:
-			log(LOG_ERR, "error: duplicated object on line %d\n", line);
+			prelude_log(PRELUDE_LOG_ERR, "error: duplicated path on line %d\n", line);
 			fclose(f);
 			return -1;
 		
 		case -PARSE_ERROR:
-			log(LOG_ERR, "parse error: on line %d\n", line);
+			prelude_log(PRELUDE_LOG_ERR, "parse error: on line %d\n", line);
 			fclose(f);
 			return -1;
 		
 		case -OTHER_ERROR:
-			log(LOG_ERR, "error on line %d\n", line);
+			prelude_log(PRELUDE_LOG_ERR, "error on line %d\n", line);
 			fclose(f);
 			return -1;
 		
@@ -457,29 +475,29 @@ int db_objects_init(const char *file)
 			break;
 		}
 		
-		db_object_count++;
+		db_path_count++;
 	}
 	
 	if ( ferror(f) ) {
-		log(LOG_ERR, "file read error.\n");
+		prelude_log(PRELUDE_LOG_ERR, "file read error.\n");
 		return -1;
 	}
 		
 	fclose(f);
 
-	db_object_index = calloc(db_object_count, sizeof(*db_object_index));
-	if ( ! db_object_index ) {
-		log(LOG_ERR, "out of memory\n");
+	db_path_index = calloc(db_path_count, sizeof(*db_path_index));
+	if ( ! db_path_index ) {
+		prelude_log(PRELUDE_LOG_ERR, "out of memory\n");
 		return -1;
 	}
 	
 	i = 0;
-	prelude_list_for_each(tmp, &db_objects) {
-		entry = prelude_list_entry(tmp, db_object_t, list);
-		db_object_index[i++] = entry;
+	prelude_list_for_each(&db_paths, tmp) {
+		entry = prelude_list_entry(tmp, db_path_t, list);
+		db_path_index[i++] = entry;
 	}
 #ifdef DEBUG
-	log(LOG_INFO, "- %d objects loaded and indexed\n", db_object_count);
+	prelude_log(PRELUDE_LOG_INFO, "- %d paths loaded and indexed\n", db_path_count);
 #endif /* DEBUG */
 	
 	return 0;
@@ -489,102 +507,102 @@ int db_objects_init(const char *file)
 
 
 /* From idmef-cache.c -- adapted (shamelessly copying my own code :) */
-db_object_t *db_object_find(idmef_object_t *object)
+db_path_t *db_path_find(idmef_path_t *path)
 {
 	int low, high, mid, cmp;
 		
 	/* Mostly from A.Drozdek, D.L.Simon "Data structures in C" */
 	low = 0;
-	high = db_object_count-1;
+	high = db_path_count-1;
 	
 	while ( low <= high ) {
 		mid = (low + high) / 2;
-		cmp = idmef_object_compare(object, db_object_index[mid]->object);
+		cmp = idmef_path_compare(path, db_path_index[mid]->path);
 		if ( cmp > 0 )
 			low = mid+1;
 		else if ( cmp < 0 )
 			high = mid-1;
 		else
-			return db_object_index[mid];
+			return db_path_index[mid];
 	}
 	
 	return NULL;
 }
 
 
-char *db_object_get_table(db_object_t *object)
+char *db_path_get_table(db_path_t *path)
 {
-	return object->table;
+	return path->table;
 }
 
 
-char *db_object_get_field(db_object_t *object)
+char *db_path_get_field(db_path_t *path)
 {
-	return object->field;
-}
-
-
-
-char *db_object_get_function(db_object_t *object)
-{
-	return object->function;
+	return path->field;
 }
 
 
 
-
-char *db_object_get_top_table(db_object_t *object)
+char *db_path_get_function(db_path_t *path)
 {
-	return object->top_table;
-}
-
-
-
-char *db_object_get_top_field(db_object_t *object)
-{
-	return object->top_field;
-}
-
-
-
-char *db_object_get_condition(db_object_t *object)
-{
-	return object->condition;
-}
-
-
-
-char *db_object_get_ident_field(db_object_t *object)
-{
-	return object->ident_field;
-}
-
-
-
-char *db_object_get_usec_field(db_object_t *object)
-{
-	return object->usec_field;
-}
-
-
-
-char *db_object_get_gmtoff_field(db_object_t *object)
-{
-	return object->gmtoff_field;
+	return path->function;
 }
 
 
 
 
-void db_objects_destroy(void)
+char *db_path_get_top_table(db_path_t *path)
+{
+	return path->top_table;
+}
+
+
+
+char *db_path_get_top_field(db_path_t *path)
+{
+	return path->top_field;
+}
+
+
+
+char *db_path_get_condition(db_path_t *path)
+{
+	return path->condition;
+}
+
+
+
+char *db_path_get_ident_field(db_path_t *path)
+{
+	return path->ident_field;
+}
+
+
+
+char *db_path_get_usec_field(db_path_t *path)
+{
+	return path->usec_field;
+}
+
+
+
+char *db_path_get_gmtoff_field(db_path_t *path)
+{
+	return path->gmtoff_field;
+}
+
+
+
+
+void db_paths_destroy(void)
 {
 	prelude_list_t *n, *tmp;
-	db_object_t *entry;
+	db_path_t *entry;
 	
-	prelude_list_for_each_safe(tmp, n, &db_objects) {
-		entry = prelude_list_entry(tmp, db_object_t, list);
-		db_object_destroy(entry);
+	prelude_list_for_each_safe(&db_paths, tmp, n) {
+		entry = prelude_list_entry(tmp, db_path_t, list);
+		db_path_destroy(entry);
 	}
 	
-	free(db_object_index);
+	free(db_path_index);
 }

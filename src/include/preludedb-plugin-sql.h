@@ -31,7 +31,7 @@
 typedef struct {
         PRELUDE_PLUGIN_GENERIC;
 
-        int (*open)(preludedb_sql_settings_t *settings, void **session);
+        int (*open)(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size);
         void (*close) (void *session);
 	const char *(*get_error)(void *session);
         int (*escape)(void *session, const char *input, size_t input_size, char **output);

@@ -28,7 +28,6 @@
 #include <libprelude/prelude-hash.h>
 
 #include "preludedb-error.h"
-
 #include "preludedb-sql-settings.h"
 
 
@@ -38,39 +37,36 @@ struct preludedb_sql_settings {
 
 
 
-preludedb_sql_settings_t *preludedb_sql_settings_new(void)
+int preludedb_sql_settings_new(preludedb_sql_settings_t **settings)
 {
-	preludedb_sql_settings_t *settings;
+	int ret;
 
-	settings = malloc(sizeof (*settings));
-	if ( ! settings )
-		return NULL;
+	*settings = malloc(sizeof (**settings));
+	if ( ! *settings )
+		return prelude_error_from_errno(errno);
 
-	settings->hash = prelude_hash_new(NULL, NULL, free, free);
-	if ( ! settings->hash ) {
-		free(settings);
-		return NULL;
-	}
+	ret = prelude_hash_new(&(*settings)->hash, NULL, NULL, free, free);
+	if ( ret < 0 )
+		free(*settings);
 
-	return settings;
+	return ret;
 }
 
 
 
-preludedb_sql_settings_t *preludedb_sql_settings_new_from_string(const char *str)
+int preludedb_sql_settings_new_from_string(preludedb_sql_settings_t **settings, const char *str)
 {
-	preludedb_sql_settings_t *settings;
+	int ret;
 
-	settings = preludedb_sql_settings_new();
-	if ( ! settings )
-		return NULL;
+	ret = preludedb_sql_settings_new(settings);
+	if ( ret < 0 )
+		return ret;
 
-	if ( preludedb_sql_settings_set_from_string(settings, str) < 0 ) {
-		preludedb_sql_settings_destroy(settings);
-		return NULL;
-	}
+	ret = preludedb_sql_settings_set_from_string(*settings, str);
+	if ( ret < 0 )
+		preludedb_sql_settings_destroy(*settings);
 
-	return settings;
+	return ret;
 }
 
 

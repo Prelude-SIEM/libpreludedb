@@ -47,6 +47,8 @@
 #include "preludedb-sql.h"
 #include "preludedb-error.h"
 #include "preludedb-plugin-sql.h"
+#include "preludedb-path-selection.h"
+#include "preludedb.h"
 
 
 prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void);
@@ -57,7 +59,7 @@ prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void);
 #endif /* ! MYSQL_VERSION_ID */
 
 
-static int sql_open(preludedb_sql_settings_t *settings, void **session)
+static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
 {
 	unsigned int port = 0;
 
@@ -68,15 +70,19 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 	if ( ! *session )
 		return preludedb_error_from_errno(errno);
 
-	if ( mysql_real_connect(*session,
-				preludedb_sql_settings_get_host(settings),
-				preludedb_sql_settings_get_user(settings),
-				preludedb_sql_settings_get_pass(settings),
-				preludedb_sql_settings_get_name(settings),
-				port, NULL, 0) )
-		return 0;
+	if ( ! mysql_real_connect(*session,
+				  preludedb_sql_settings_get_host(settings),
+				  preludedb_sql_settings_get_user(settings),
+				  preludedb_sql_settings_get_pass(settings),
+				  preludedb_sql_settings_get_name(settings),
+				  port, NULL, 0) ) {
+		if ( mysql_error(*session) )
+			snprintf(errbuf, size, "%s", mysql_error(*session));
+		mysql_close(*session);
+		return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+	}
 
-	return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+	return 0;
 }
 
 

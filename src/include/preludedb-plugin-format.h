@@ -58,10 +58,10 @@ typedef struct {
 
 	int (*insert_message)(preludedb_sql_t *sql, idmef_message_t *message);
 
-	int (*get_values)(preludedb_sql_t *sql, preludedb_object_selection_t *selection,
+	int (*get_values)(preludedb_sql_t *sql, preludedb_path_selection_t *selection,
 			  idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res);
 
-	int (*get_next_values)(void *res, preludedb_object_selection_t *selection, idmef_value_t ***values);
+	int (*get_next_values)(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values);
 
 	void (*destroy_values_resource)(void *res);
 } preludedb_plugin_format_t;

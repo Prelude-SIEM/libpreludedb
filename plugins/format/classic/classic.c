@@ -34,7 +34,7 @@
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
-#include "preludedb-object-selection.h"
+#include "preludedb-path-selection.h"
 #include "preludedb.h"
 #include "preludedb-plugin-format.h"
 
@@ -42,7 +42,7 @@
 #include "idmef-db-select.h"
 #include "idmef-db-get.h"
 #include "idmef-db-delete.h"
-#include "db-object.h"
+#include "db-path.h"
 
 
 prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void);
@@ -52,7 +52,7 @@ prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void);
 
 struct db_value_info {
 	idmef_value_type_id_t type;
-	preludedb_selected_object_flags_t flags;
+	preludedb_selected_path_flags_t flags;
 };
 
 struct db_result {
@@ -153,7 +153,7 @@ static int classic_insert_idmef_message(preludedb_sql_t *sql, idmef_message_t *m
 
 
 
-static int classic_get_values(preludedb_sql_t *sql, preludedb_object_selection_t *selection, 
+static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *selection, 
 			      idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res)
 {
 
@@ -162,18 +162,18 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_object_selection_t
 
 
 
-static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_object_t *selected, idmef_value_t **value)
+static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_t *selected, idmef_value_t **value)
 {
-	preludedb_selected_object_flags_t flags;
-	idmef_object_t *object;
+	preludedb_selected_path_flags_t flags;
+	idmef_path_t *path;
 	idmef_value_type_id_t type;
 	preludedb_sql_field_t *field;
 	const char *char_val;
 	int ret;
 
-	flags = preludedb_selected_object_get_flags(selected);
-	object = preludedb_selected_object_get_object(selected);
-	type = idmef_object_get_value_type(object);
+	flags = preludedb_selected_path_get_flags(selected);
+	path = preludedb_selected_path_get_path(selected);
+	type = idmef_path_get_value_type(path);
 
 	ret = preludedb_sql_row_fetch_field(row, cnt, &field);
 	if ( ret < 0 )
@@ -193,9 +193,9 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_objec
                if ( ret < 0 )
                        return ret;
 
-               *value = idmef_value_new_uint32(count);
-               if ( ! *value )
-                       return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+               ret = idmef_value_new_uint32(value, count);
+               if ( ret < 0 )
+                       return ret;
 
                return 1;
        }
@@ -233,33 +233,29 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_objec
 			retrieved += 2;
 		}
 
-		time = idmef_time_new();
-		if ( ! time )
-			return -1;
+		ret = idmef_time_new(&time);
+		if ( ret < 0 )
+			return ret;
 
 		preludedb_sql_time_from_timestamp(time, char_val, gmtoff, usec);
 
-		*value = idmef_value_new_time(time);
-		if ( ! *value ) {
+		ret = idmef_value_new_time(value, time);
+		if ( ret < 0 )
 			idmef_time_destroy(time);
-			return -1;
-		}
-
-		return retrieved;
 	}
 	default:
-		*value = idmef_value_new_for_object(object, char_val);
+		ret = idmef_value_new_from_path(value, path, char_val);
 	}
 
-	return 1;
+	return ret;
 }
 
 
 
-static int classic_get_next_values(void *res, preludedb_object_selection_t *selection, idmef_value_t ***values)
+static int classic_get_next_values(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values)
 {
 	preludedb_sql_row_t *row;
-	preludedb_selected_object_t *selected;
+	preludedb_selected_path_t *selected;
 	unsigned int sql_cnt, value_cnt;
 	unsigned int column_count;
 	int ret;
@@ -268,7 +264,7 @@ static int classic_get_next_values(void *res, preludedb_object_selection_t *sele
 	if ( ret <= 0 )
 		return ret;
 
-	column_count = preludedb_object_selection_get_count(selection);
+	column_count = preludedb_path_selection_get_count(selection);
 
 	*values = malloc(column_count * sizeof (**values));
 	if ( ! *values )
@@ -277,7 +273,7 @@ static int classic_get_next_values(void *res, preludedb_object_selection_t *sele
 	selected = NULL;
 	sql_cnt = 0;
 	for ( value_cnt = 0; value_cnt < column_count; value_cnt++ ) {
-		selected = preludedb_object_selection_get_next(selection, selected);
+		selected = preludedb_path_selection_get_next(selection, selected);
 
 		ret = get_value(row, value_cnt, selected, *values + value_cnt);
 		if ( ret < 0 )
@@ -328,7 +324,7 @@ prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void)
 	preludedb_plugin_format_set_get_next_values_func(&plugin, classic_get_next_values);
 	preludedb_plugin_format_set_destroy_values_resource_func(&plugin, classic_destroy_values_resource);
 
-	db_objects_init(CONFIG_FILE);
+	db_paths_init(CONFIG_FILE);
 
 	return (void *) &plugin;
 }

@@ -1,7 +1,7 @@
 includedir = $(prefix)/include/libpreludedb
 
 include_HEADERS = 			\
-	preludedb-object-selection.h	\
+	preludedb-path-selection.h	\
 	preludedb-plugin-sql.h		\
 	preludedb-plugin-format.h	\
 	preludedb-sql-settings.h	\

@@ -36,7 +36,7 @@
 #define AS_VALUES 1
 
 int idmef_db_select(preludedb_sql_t *sql,
-		    preludedb_object_selection_t *selection, 
+		    preludedb_path_selection_t *selection, 
 		    idmef_criteria_t *criteria,
 		    int distinct, int limit, int offset, int as_values,
 		    preludedb_sql_table_t **table);

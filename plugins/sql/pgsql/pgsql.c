@@ -43,6 +43,9 @@
 #include "preludedb-sql.h"
 #include "preludedb-error.h"
 #include "preludedb-plugin-sql.h"
+#include "preludedb-path-selection.h"
+#include "preludedb.h"
+
 
 prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void);
 
@@ -55,7 +58,7 @@ struct pg_session {
 
 
 
-static int sql_open(preludedb_sql_settings_t *settings, void **session)
+static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
 {
 	struct pg_session *s;
 
@@ -72,6 +75,8 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 				preludedb_sql_settings_get_pass(settings));
 
         if ( PQstatus(s->pgsql) == CONNECTION_BAD ) {
+		if ( PQerrorMessage(((struct pg_session *) session)->pgsql) )
+			snprintf(errbuf, size, "%s", PQerrorMessage(((struct pg_session *) session)->pgsql));
                 PQfinish(s->pgsql);
 		free(s);
 		return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
@@ -94,7 +99,7 @@ static void sql_close(void *session)
 
 static const char *sql_get_error(void *session)
 {
-	PQerrorMessage(((struct pg_session *) session)->pgsql);
+	return PQerrorMessage(((struct pg_session *) session)->pgsql);
 }
 
 
@@ -136,9 +141,9 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
 
         ptr = PQescapeBytea((unsigned char *) input, input_size, &dummy);
 
-        string = prelude_string_new();
-	if ( ! string )
-		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        ret = prelude_string_new(&string);
+	if ( ret < 0 )
+		return ret;
 
         ret = prelude_string_sprintf(string, "'%s'", ptr);
         free(ptr);
@@ -147,7 +152,7 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
                 return ret;
         }
 
-        *output = prelude_string_get_string_released(string);
+        ret = prelude_string_get_string_released(string, output);
 
         prelude_string_destroy(string);
 

@@ -24,31 +24,31 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
 #define _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
 
-typedef struct db_object db_object_t;
+typedef struct db_path db_path_t;
 
-int db_objects_init(const char *file);
+int db_paths_init(const char *file);
 
-db_object_t *db_object_find(idmef_object_t *object);
+db_path_t *db_path_find(idmef_path_t *path);
 
-char *db_object_get_table(db_object_t *object);
+char *db_path_get_table(db_path_t *path);
 
-char *db_object_get_field(db_object_t *object);
+char *db_path_get_field(db_path_t *path);
 
-char *db_object_get_function(db_object_t *object);
+char *db_path_get_function(db_path_t *path);
 
-char *db_object_get_top_table(db_object_t *object);
+char *db_path_get_top_table(db_path_t *path);
 
-char *db_object_get_top_field(db_object_t *object);
+char *db_path_get_top_field(db_path_t *path);
 
-char *db_object_get_condition(db_object_t *object);
+char *db_path_get_condition(db_path_t *path);
 
-char *db_object_get_ident_field(db_object_t *object);
+char *db_path_get_ident_field(db_path_t *path);
 
-char *db_object_get_usec_field(db_object_t *object);
+char *db_path_get_usec_field(db_path_t *path);
 
-char *db_object_get_gmtoff_field(db_object_t *object);
+char *db_path_get_gmtoff_field(db_path_t *path);
 
-void db_objects_destroy(void);
+void db_paths_destroy(void);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H */
 

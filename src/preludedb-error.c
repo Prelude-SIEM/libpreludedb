@@ -42,7 +42,9 @@ const char *preludedb_strerror(preludedb_error_t error)
                 "Unknown format plugin",
                 "Already in transaction",
                 "Not in transaction",
-		"Invalid message ident"
+		"Invalid message ident",
+		"Invalid selected path string",
+		"Invalid path selection"
         };
 
 	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {

@@ -18,7 +18,7 @@ libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\
 	preludedb.c			\
-	preludedb-object-selection.c	\
+	preludedb-path-selection.c	\
 	preludedb-sql.c			\
 	preludedb-sql-settings.c	\
 	preludedb-version.c		\

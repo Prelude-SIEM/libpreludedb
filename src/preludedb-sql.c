@@ -48,6 +48,8 @@
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 #include "preludedb-plugin-sql.h"
+#include "preludedb-path-selection.h"
+#include "preludedb.h"
 
 
 
@@ -58,6 +60,7 @@ struct preludedb_sql {
 	preludedb_sql_status_t status;
         void *session;
 	FILE *logfile;
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
 };
 
 struct preludedb_sql_table {
@@ -229,7 +232,7 @@ static int preludedb_sql_connect(preludedb_sql_t *sql)
 {
 	int ret;
 
-	ret = sql->plugin->open(sql->settings, &sql->session);
+	ret = sql->plugin->open(sql->settings, &sql->session, sql->errbuf, sizeof(sql->errbuf));
 	if ( ret < 0 )
 		return ret;
 
@@ -260,8 +263,9 @@ static void preludedb_sql_disconnect(preludedb_sql_t *sql)
  */
 const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
 {
-	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED )
-		return NULL;
+	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {
+		return (strlen(sql->errbuf) > 0) ? sql->errbuf : NULL;
+	}
 
 	if ( ! sql->plugin->get_error )
 		return NULL;
@@ -279,7 +283,7 @@ static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t 
 
 	(*new)->sql = sql;
 	(*new)->res = res;
-	PRELUDE_INIT_LIST_HEAD(&(*new)->row_list);
+	prelude_list_init(&(*new)->row_list);
 
 	return 0;
 }
@@ -309,7 +313,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
 
 		ret = fprintf(sql->logfile, "%s\n", query);
 		if ( ret < strlen(query) + 1 || fflush(sql->logfile) == EOF )
-			log(LOG_ERR, "could not log query: %s.\n", strerror(errno));
+			prelude_log(PRELUDE_LOG_ERR, "could not log query: %s.\n", strerror(errno));
 
 		/* Show must go on: don't stop trying executing the query even if we cannot log it */
 	}
@@ -354,9 +358,9 @@ int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **ta
 
 	assert_connected(sql);
 
-	query = prelude_string_new();
-	if ( ! query )
-		return -1;
+	ret = prelude_string_new(&query);
+	if ( ret < 0 )
+		return ret;
         
         va_start(ap, format);
 	ret = prelude_string_vprintf(query, format, ap);
@@ -394,9 +398,9 @@ int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fi
 
 	assert_connected(sql);
 
-	query = prelude_string_new();
-	if ( ! query )
-		return -1;
+	ret = prelude_string_new(&query);
+	if ( ret < 0 )
+		return ret;
 
 	ret = prelude_string_sprintf(query, "INSERT INTO %s (%s) VALUES(", table, fields);
 	if ( ret < 0 )
@@ -640,10 +644,10 @@ void preludedb_sql_table_destroy(preludedb_sql_table_t *table)
 	preludedb_sql_field_t *field;
         prelude_list_t *tmp, *next_row, *next_field;
 
-	prelude_list_for_each_safe(tmp, next_row, &table->row_list) {
+	prelude_list_for_each_safe(&table->row_list, tmp, next_row) {
 		row = prelude_list_entry(tmp, preludedb_sql_row_t, list);
 
-                prelude_list_for_each_safe(tmp, next_field, &row->field_list) {
+                prelude_list_for_each_safe(&row->field_list, tmp, next_field) {
 			field = prelude_list_entry(tmp, preludedb_sql_field_t, list);
 			free(field);
 		}
@@ -666,10 +670,10 @@ static int preludedb_sql_row_new(preludedb_sql_row_t **row, preludedb_sql_table_
 	(*row)->table = table;
 	(*row)->res = res;
 
-        PRELUDE_INIT_LIST_HEAD(&(*row)->list);
-	PRELUDE_INIT_LIST_HEAD(&(*row)->field_list);
+        prelude_list_init(&(*row)->list);
+	prelude_list_init(&(*row)->field_list);
 
-        prelude_list_add_tail(&(*row)->list, &table->row_list);
+        prelude_list_add_tail(&table->row_list, &(*row)->list);
 	
 	return 0;
 }
@@ -688,9 +692,9 @@ static int preludedb_sql_field_new(preludedb_sql_field_t **field,
 	(*field)->value = value;
 	(*field)->len = len;
 
-        PRELUDE_INIT_LIST_HEAD(&(*field)->list);
+        prelude_list_init(&(*field)->list);
 
-        prelude_list_add_tail(&(*field)->list, &row->field_list);
+        prelude_list_add_tail(&row->field_list, &(*field)->list);
 	
 	return 0;
 }
@@ -1337,9 +1341,9 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 		return ret;		
 	}
 
-	string = prelude_string_new();
-	if ( ! string )
-		return -1;
+	ret = prelude_string_new(&string);
+	if ( ret < 0 )
+		return ret;
 
 	ret = idmef_value_to_string(value, string);
 	if ( ret < 0 ) {
@@ -1418,11 +1422,11 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 		return prelude_string_sprintf(output, "%s != NULL", field);
 
 	switch ( idmef_criterion_value_get_type(value) ) {
-	case idmef_criterion_value_type_fixed:
+	case IDMEF_CRITERION_VALUE_TYPE_FIXED:
 		return build_criterion_fixed_value(sql, output, field, relation,
 						   idmef_criterion_value_get_fixed(value));
 
-	case idmef_criterion_value_type_non_linear_time:
+	case IDMEF_CRITERION_VALUE_TYPE_NON_LINEAR_TIME:
 		return build_criterion_non_linear_time_value(sql, output, field, relation,
 							     idmef_criterion_value_get_non_linear_time(value));
 	}

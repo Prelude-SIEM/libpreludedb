@@ -29,34 +29,32 @@
 #include <libprelude/prelude-list.h>
 #include <libprelude/prelude-log.h>
 
-#include "preludedb-object-selection.h"
+#include "preludedb-error.h"
+#include "preludedb-path-selection.h"
 
-struct preludedb_selected_object {
+struct preludedb_selected_path {
 	prelude_list_t list;
-	idmef_object_t *object;
-	preludedb_selected_object_flags_t flags;
+	idmef_path_t *path;
+	preludedb_selected_path_flags_t flags;
 };
 
-struct preludedb_object_selection {
+struct preludedb_path_selection {
 	prelude_list_t list;
 };
 
 
 
-preludedb_selected_object_t *preludedb_selected_object_new(idmef_object_t *object, int flags)
+int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
+				  idmef_path_t *path, int flags)
 {
-	preludedb_selected_object_t *selected_object;
+	*selected_path = calloc(1, sizeof (**selected_path));
+	if ( ! *selected_path )
+		return preludedb_error_from_errno(errno);
 
-	selected_object = calloc(1, sizeof (*selected_object));
-	if ( ! selected_object ) {
-		log(LOG_ERR, "memory exhausted.\n");
-		return NULL;
-	}
+	(*selected_path)->path = path;
+	(*selected_path)->flags = flags;
 
-	selected_object->object = object;
-	selected_object->flags = flags;
-
-	return selected_object;
+	return 0;
 }
 
 
@@ -76,7 +74,7 @@ static int parse_filter(const char *str, size_t len)
 			return filter_table[cnt].flag;
 	}
 
-	return -1;
+	return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 }
 
 
@@ -92,7 +90,7 @@ static int parse_filters(const char *str)
 	while ( (end = strchr(start, ',')) ) {
 		ret = parse_filter(start, end - start);
 		if ( ret < 0 )
-			return -1;
+			return ret;
 
 		flags |= ret;
 
@@ -101,7 +99,7 @@ static int parse_filters(const char *str)
 
 	ret = parse_filter(start, strlen(start));
 
-	return (ret < 0) ? -1 : (flags | ret);
+	return (ret < 0) ? ret : (flags | ret);
 }
 
 
@@ -123,47 +121,44 @@ static int parse_function(const char *str, size_t len)
 			return function_table[cnt].flag;
 	}
 
-	return -1;
+	return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 }
 
 
 
-static idmef_object_t *parse_object(const char *str, size_t len)
+static int parse_path(const char *str, size_t len, idmef_path_t **path)
 {
 	char *buf;
-	idmef_object_t *object;
+	int ret;
 
 	buf = malloc(len + 1);
-	if ( ! buf ) {
-		log(LOG_ERR, "memory exhausted.\n");
-		return NULL;
-	}
+	if ( ! buf )
+		return preludedb_error_from_errno(errno);
 
 	memcpy(buf, str, len);
 	buf[len] = 0;
 
-	object = idmef_object_new_fast(buf);
+	ret = idmef_path_new_fast(path, buf);
 
 	free(buf);
 
-	return object;	
+	return ret;
 }
 
 
-preludedb_selected_object_t *preludedb_selected_object_new_string(const char *str)
+int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path, const char *str)
 {
 	const char *filters;
 	const char *start, *end;
 	int ret;
 	int flags = 0;
-	idmef_object_t *object;
-	preludedb_selected_object_t *selected;
+	idmef_path_t *path;
 
 	filters = strchr(str, '/');
 	if ( filters ) {
 		ret = parse_filters(filters + 1);
 		if ( ret < 0 )
-			return NULL;
+			return ret;
 
 		flags |= ret;
 	}
@@ -172,113 +167,109 @@ preludedb_selected_object_t *preludedb_selected_object_new_string(const char *st
 	if ( start ) {
 		end = strchr(start, ')');
 		if ( ! end )
-			return NULL;
+			return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 
 		ret = parse_function(str, start - str);
 		if ( ret < 0 )
-			return NULL;
+			return ret;
 
 		flags |= ret;
 
-		object = parse_object(start + 1, end - start - 1);
+		ret = parse_path(start + 1, end - start - 1, &path);
 
 	} else {
 		if ( filters )
-			object = parse_object(str, filters - str);
+			ret = parse_path(str, filters - str, &path);
 		else
-			object = idmef_object_new_fast(str);
+			ret = idmef_path_new_fast(&path, str);
 	}
 
-	if ( ! object )
-		return NULL;
+	if ( ret < 0 )
+		return ret;
 
-	selected = preludedb_selected_object_new(object, flags);
-	if ( ! selected )
-		idmef_object_destroy(object);
+	ret = preludedb_selected_path_new(selected_path, path, flags);
+	if ( ret < 0 )
+		idmef_path_destroy(path);
 
-	return selected;
+	return ret;
 }
 
 
 
-void preludedb_selected_object_destroy(preludedb_selected_object_t *selected_object)
+void preludedb_selected_path_destroy(preludedb_selected_path_t *selected_path)
 {
-	idmef_object_destroy(selected_object->object);
-	free(selected_object);
+	idmef_path_destroy(selected_path->path);
+	free(selected_path);
 }
 
 
 
-idmef_object_t *preludedb_selected_object_get_object(preludedb_selected_object_t *selected_object)
+idmef_path_t *preludedb_selected_path_get_path(preludedb_selected_path_t *selected_path)
 {
-	return selected_object->object;
+	return selected_path->path;
 }
 
 
 
-int preludedb_selected_object_get_flags(preludedb_selected_object_t *selected_object)
+int preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path)
 {
-	return selected_object->flags;
+	return selected_path->flags;
 }
 
 
 
-preludedb_object_selection_t *preludedb_object_selection_new(void)
+int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
 {
-	preludedb_object_selection_t *object_selection;
+	*path_selection = calloc(1, sizeof (**path_selection));
+	if ( ! *path_selection )
+		return preludedb_error_from_errno(errno);
 
-	object_selection = calloc(1, sizeof (*object_selection));
-	if ( ! object_selection ) {
-		log(LOG_ERR, "memory exhausted.\n");
-		return NULL;
-	}
+	prelude_list_init(&(*path_selection)->list);
 
-	PRELUDE_INIT_LIST_HEAD(&object_selection->list);
-
-	return object_selection; 
+	return 0;
 }
 
 
 
-void preludedb_object_selection_destroy(preludedb_object_selection_t *object_selection)
+void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection)
 {
         prelude_list_t *ptr, *next;
-	preludedb_selected_object_t *selected_object;
+	preludedb_selected_path_t *selected_path;
 
-	prelude_list_for_each_safe(ptr, next, &object_selection->list) {
-		selected_object = prelude_list_entry(ptr, preludedb_selected_object_t, list);
-		preludedb_selected_object_destroy(selected_object);
+	prelude_list_for_each_safe(&path_selection->list, ptr, next) {
+		selected_path = prelude_list_entry(ptr, preludedb_selected_path_t, list);
+		preludedb_selected_path_destroy(selected_path);
 	}
 
-	free(object_selection);
+	free(path_selection);
 }
 
 
 
-void preludedb_object_selection_add(preludedb_object_selection_t *object_selection,
-				    preludedb_selected_object_t *selected_object)
+void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
+				  preludedb_selected_path_t *selected_path)
 {
-	prelude_list_add_tail(&selected_object->list, &object_selection->list);
+	prelude_list_add_tail(&path_selection->list, &selected_path->list);
 }
 
 
 
-preludedb_selected_object_t *preludedb_object_selection_get_next(preludedb_object_selection_t *object_selection,
-								 preludedb_selected_object_t *selected_object)
+preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
+							     preludedb_selected_path_t *selected_path)
 {
-	return prelude_list_get_next(selected_object, &object_selection->list, preludedb_selected_object_t, list);
+	return prelude_list_get_next(&path_selection->list, selected_path, preludedb_selected_path_t, list);
 }
 
 
 
-size_t preludedb_object_selection_get_count(preludedb_object_selection_t *object_selection)
+size_t preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection)
 {
 	size_t cnt;
 	prelude_list_t *ptr;
 
 	cnt = 0;
 
-	prelude_list_for_each(ptr, &object_selection->list) {
+	prelude_list_for_each(&path_selection->list, ptr) {
 		cnt++;
 	}
 

@@ -35,24 +35,25 @@ typedef enum {
 
 	PRELUDEDB_SELECTED_OBJECT_ORDER_ASC = 0x40,
 	PRELUDEDB_SELECTED_OBJECT_ORDER_DESC = 0x80
-} preludedb_selected_object_flags_t;
+} preludedb_selected_path_flags_t;
 
 
-typedef struct preludedb_object_selection preludedb_object_selection_t;
-typedef struct preludedb_selected_object preludedb_selected_object_t;
+typedef struct preludedb_path_selection preludedb_path_selection_t;
+typedef struct preludedb_selected_path preludedb_selected_path_t;
 
-preludedb_selected_object_t *preludedb_selected_object_new(idmef_object_t *object, int flags);
-preludedb_selected_object_t *preludedb_selected_object_new_string(const char *str);
-void preludedb_selected_object_destroy(preludedb_selected_object_t *selected_object);
-idmef_object_t *preludedb_selected_object_get_object(preludedb_selected_object_t *selected_object);
-int preludedb_selected_object_get_flags(preludedb_selected_object_t *selected_object);
+int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
+				  idmef_path_t *path, int flags);
+int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path, const char *str);
+void preludedb_selected_path_destroy(preludedb_selected_path_t *selected_path);
+idmef_path_t *preludedb_selected_path_get_path(preludedb_selected_path_t *selected_path);
+int preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path);
 
-preludedb_object_selection_t *preludedb_object_selection_new(void);
-void preludedb_object_selection_destroy(preludedb_object_selection_t *object_selection);
-void preludedb_object_selection_add(preludedb_object_selection_t *object_selection,
-				    preludedb_selected_object_t *selected_object);
-preludedb_selected_object_t *preludedb_object_selection_get_next(preludedb_object_selection_t *object_selection,
-								 preludedb_selected_object_t *selected_object);
-size_t preludedb_object_selection_get_count(preludedb_object_selection_t *object_selection);
+int preludedb_path_selection_new(preludedb_path_selection_t **path_selection);
+void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection);
+void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
+				    preludedb_selected_path_t *selected_path);
+preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
+								 preludedb_selected_path_t *selected_path);
+size_t preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection);
 
 #endif /* ! _LIBPRELUDEDB_OBJECT_SELECTION_H */

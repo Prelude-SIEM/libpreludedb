@@ -39,14 +39,16 @@ typedef enum {
 } preludedb_result_idents_order_t;
 
 
-preludedb_t *preludedb_new(preludedb_sql_t *sql, const char *format_name);
+#define PRELUDEDB_ERRBUF_SIZE 512
+
+
+int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size);
 
 void preludedb_destroy(preludedb_t *db);
 
-const char *preludedb_get_format_name(preludedb_t *db);
+const char *preludedb_get_format(preludedb_t *db);
 
-int preludedb_format_set(preludedb_t *db, const char *format_name);
-int preludedb_format_autodetect(preludedb_t *db);
+int preludedb_set_format(preludedb_t *db, const char *format_name);
 
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db);
 
@@ -56,25 +58,28 @@ int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t
 void preludedb_result_values_destroy(preludedb_result_values_t *result);
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values);
 
-int preludedb_get_error(preludedb_t *db, preludedb_error_t error, char **output);
+char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size);
 
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message);
 
-preludedb_result_idents_t *preludedb_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
-						      int limit, int offset,
-						      preludedb_result_idents_order_t order);
-preludedb_result_idents_t *preludedb_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
-							  int limit, int offset,
-							  preludedb_result_idents_order_t order);
+int preludedb_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
+			       int limit, int offset,
+			       preludedb_result_idents_order_t order,
+			       preludedb_result_idents_t **result);
+int preludedb_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
+				   int limit, int offset,
+				   preludedb_result_idents_order_t order,
+				   preludedb_result_idents_t **result);
 
-idmef_message_t *preludedb_get_alert(preludedb_t *interface, uint64_t ident);
-idmef_message_t *preludedb_get_heartbeat(preludedb_t *db, uint64_t ident);
+int preludedb_get_alert(preludedb_t *interface, uint64_t ident, idmef_message_t **message);
+int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident);
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident);
 
-preludedb_result_values_t *preludedb_get_values(preludedb_t *db, preludedb_object_selection_t *object_selection,
-						idmef_criteria_t *criteria, int distinct, int limit, int offset);
+int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selection,
+			 idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
+			 preludedb_result_values_t **result);
 
 
 #endif /* _LIBPRELUDEDB_H */
