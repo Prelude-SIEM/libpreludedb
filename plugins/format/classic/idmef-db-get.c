@@ -1546,7 +1546,7 @@ static int get_checksum(prelude_sql_connection_t *sql,
 	int cnt = 0;
 	
 	table = prelude_sql_query(sql,
-				  "SELECT value, key, algorithm "
+				  "SELECT value, checksum_key, algorithm "
 				  "FROM Prelude_Checksum "
 				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
 				  message_ident, target_index, file_index);
