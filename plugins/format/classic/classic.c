@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Vandoorselaere Yoann <yoann@mandrakesoft.com>
+* Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -45,7 +45,7 @@ static plugin_format_t plugin;
 
 
 
-static int format_write(db_connection_t *connection, idmef_message_t *message)
+static int format_write(prelude_db_connection_t *connection, idmef_message_t *message)
 {
 	if (is_enabled == 0)
 		return -1;

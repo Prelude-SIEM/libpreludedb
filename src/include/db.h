@@ -1,6 +1,5 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * All Rights Reserved
 *
@@ -41,9 +40,8 @@
 #include "sql-table.h"
 #include "plugin-sql.h"
 
-int db_init(int argc, char **argv);
-void db_startup(void);
-int db_available(void);
-int db_write_alert(idmef_message_t *idmef);
+int prelude_db_init(void);
+int prelude_db_output_idmef_message(idmef_message_t *idmef);
+int prelude_db_shutdown(void);
 
 #endif /* LIBPRELUDEDB_DB_H */

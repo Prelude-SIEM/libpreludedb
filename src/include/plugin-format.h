@@ -27,7 +27,7 @@
 
 typedef struct {
         PLUGIN_GENERIC;
-        int (*format_write)(db_connection_t *connection, idmef_message_t *message);
+        int (*format_write)(prelude_db_connection_t *connection, idmef_message_t *message);
 } plugin_format_t;
 
 #define plugin_write_func(p) (p)->format_write

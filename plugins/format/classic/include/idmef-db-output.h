@@ -24,7 +24,7 @@
 #ifndef _LIBPRELUDEDB_IDMEF_MESSAGE_OUTPUT_H
 #define _LIBPRELUDEDB_IDMEF_MESSAGE_OUTPUT_H
 
-int idmef_db_output(db_connection_t *conn, idmef_message_t *msg);
+int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg);
 
 #endif /* _LIBPRELUDEDB_IDMEF_MESSAGE_OUTPUT_H */
 

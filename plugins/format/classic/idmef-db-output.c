@@ -1221,7 +1221,7 @@ static int insert_heartbeat(sql_connection_t *conn, idmef_heartbeat_t *heartbeat
 
 
 
-int idmef_db_output(db_connection_t *conn, idmef_message_t *msg) 
+int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg) 
 {
         int ret;
 
@@ -1243,7 +1243,7 @@ int idmef_db_output(db_connection_t *conn, idmef_message_t *msg)
                 break;
 
         default:
-                log(LOG_ERR, "unknow message type: %d.\n", msg->type);
+                log(LOG_ERR, "unknown message type: %d.\n", msg->type);
                 break;
         }
 
