@@ -13,7 +13,7 @@ bin_PROGRAMS = PreludeDB.so
 
 PreludeDB_so_LDFLAGS = -shared -L$(top_builddir)/src/.libs
 PreludeDB_so_SOURCES = PreludeDB.c
-PreludeDB_so_LDADD = @LIBPRELUDE_LIBS@ -lpreludedb
+PreludeDB_so_LDADD = -lpreludedb @LIBPRELUDE_LIBS@ 
 noinst_PROGRAMS = PreludeDB.so
 
 endif
