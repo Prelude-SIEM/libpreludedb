@@ -853,21 +853,22 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t paren
                                   char parent_type, idmef_additional_data_t *additional_data) 
 {
         int ret;
+        size_t dlen;
         idmef_data_t *idata;
+        unsigned char tmp[128];
 	char *meaning, *typestr, *data;
         idmef_additional_data_type_t type;
-        unsigned char tmp[128];
                 
 	if ( ! additional_data )
 		return 0;
 
         type = idmef_additional_data_get_type(additional_data);
         idata = idmef_additional_data_get_data(additional_data);
-
-        data = prelude_sql_escape_fast(conn,
-                                       idmef_additionaldata_data_to_string(additional_data, tmp, sizeof(tmp)),
-                                       idmef_data_get_len(idata));
         
+        dlen = sizeof(tmp);
+        data = idmef_additionaldata_data_to_string(additional_data, tmp, &dlen);
+        
+        data = prelude_sql_escape_fast(conn, data, dlen);
         if ( ! data )
 		return -2;
 

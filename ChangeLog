@@ -1,3 +1,8 @@
+2004-02-06  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* plugins/format/classic/idmef-db-insert.c (insert_additional_data): 
+	use the size returned by idmef_additionaldata_data_to_string().
+
 2004-02-03  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* plugins/sql/pgsql/pgsql.c (db_build_time_constraint): 
