@@ -219,7 +219,7 @@ static char *db_escape(void *s, const char *str)
         len = strlen(str);
         
         rlen = len * 2 + 3;
-        if ( rlen < len )
+        if ( rlen <= len )
                 return NULL;
         
         ptr = malloc(rlen);
