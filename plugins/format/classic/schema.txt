@@ -98,6 +98,7 @@ object=alert.target.process.name  table=Prelude_Process  field=name  top_table=P
 object=alert.target.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='T'"  
 object=alert.target.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='T'"  
 object=alert.target.service.name  table=Prelude_Service  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='T'"  
+object=alert.target.service.port  table=Prelude_Service  field=port  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='T'"  
 object=alert.target.service.protocol  table=Prelude_Service  field=protocol  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Service.parent_type='T'"  
 object=alert.target.service.web.url  table=Prelude_WebService  field=url  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='T'"  
 object=alert.target.service.web.cgi  table=Prelude_WebService  field=cgi  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_WebService.parent_type='T'"  

@@ -1,3 +1,11 @@
+2003-07-08  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-insert.c:
+	bug fix, code cleanup, port to the new IDMEF API
+
+	* plugins/format/classic/schema.txt:
+	add the alert.target.service.port object
+
 2003-07-06  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:

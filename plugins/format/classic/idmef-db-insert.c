@@ -29,10 +29,9 @@
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/plugin-common.h>
-#include <libprelude/idmef-tree.h>
-#include <libprelude/idmef-tree-func.h>
+#include <libprelude/idmef.h>
+#include <libprelude/idmef-tree-wrap.h>
 #include <libprelude/idmef-util.h>
-
 
 #include "sql-connection-data.h"
 #include "sql.h"
@@ -54,45 +53,48 @@
 static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident, int file_ident, char parent_type, idmef_file_t *file);
 
 static int insert_address(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
-                          char parent_type, uint64_t node_ident, idmef_address_t *addr) 
+                          char parent_type, uint64_t node_ident, idmef_address_t *address) 
 {
         const char *category;
-        char *vlan_name, *address, *netmask;
+        char *vlan_name, *addr, *netmask;
         int ret;
 
-        category = idmef_address_category_to_string(addr->category);
+	if ( ! address )
+		return 0;
+
+        category = idmef_address_category_to_string(idmef_address_get_category(address));
         if ( ! category )
                 return -1;
-        
-        address = prelude_sql_escape(conn, idmef_string(&addr->address));
-        if ( ! address )
-                return -1;
-        
-        netmask = prelude_sql_escape(conn, idmef_string(&addr->netmask));
+
+        addr = prelude_sql_escape(conn, idmef_string(idmef_address_get_address(address)));
+        if ( ! addr )
+                return -2;
+
+        netmask = prelude_sql_escape(conn, idmef_string(idmef_address_get_netmask(address)));
         if ( ! netmask ) {
-                free(address);
-                return -1;
+                free(addr);
+                return -3;
         }
-        
-        vlan_name = prelude_sql_escape(conn, idmef_string(&addr->vlan_name));
+
+        vlan_name = prelude_sql_escape(conn, idmef_string(idmef_address_get_vlan_name(address)));
         if ( ! vlan_name ) {
-                free(address);
+                free(addr);
                 free(netmask);
-                return -1;
+                return -4;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_Address", "alert_ident, parent_type, parent_ident, "
-                          "category, vlan_name, vlan_num, address, netmask",
-                          "%llu, '%c', %llu, '%s', '%s', '%d', '%s', '%s'",
-                         alert_ident, parent_type, parent_ident, category, vlan_name, addr->vlan_num, address, netmask);
+				 "category, vlan_name, vlan_num, address, netmask",
+				 "%llu, '%c', %llu, '%s', '%s', '%d', '%s', '%s'",
+				 alert_ident, parent_type, parent_ident, category, vlan_name, 
+				 idmef_address_get_vlan_num(address), addr, netmask);
         
-        free(address);
+        free(addr);
         free(netmask);
         free(vlan_name);
 
-        return ret;
+        return (ret < 0) ? -5 : 1;
 }
-
 
 
 
@@ -101,72 +103,70 @@ static int insert_node(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
 {
         int ret;
         const char *category;
-        idmef_address_t *addr;
-        struct list_head *tmp;
+        idmef_address_t *address;
         char *location, *name;
 
         if ( ! node )
                 return 0;
 
-        category = idmef_node_category_to_string(node->category);
+        category = idmef_node_category_to_string(idmef_node_get_category(node));
         if ( ! category )
                 return -1;
         
-        name = prelude_sql_escape(conn, idmef_string(&node->name));
+        name = prelude_sql_escape(conn, idmef_string(idmef_node_get_name(node)));
         if ( ! name )
-                return -1;
+                return -2;
         
-        location = prelude_sql_escape(conn, idmef_string(&node->location));
+        location = prelude_sql_escape(conn, idmef_string(idmef_node_get_location(node)));
         if ( ! location ) {
                 free(name);
-                return -1;
+                return -3;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_Node", "alert_ident, parent_type, parent_ident, category, location, name",
-                         "%llu, '%c', %llu, '%s', '%s', '%s'", alert_ident, parent_type, parent_ident,
-                         category, location, name);
-        
+				 "%llu, '%c', %llu, '%s', '%s', '%s'", 
+				 alert_ident, parent_type, parent_ident, category, location, name);
+
         free(name);
         free(location);
         
         if ( ret < 0 )
-        	return ret;
+        	return -4;
 
-        list_for_each(tmp, &node->address_list) {
-                addr = list_entry(tmp, idmef_address_t, list);
+	address = NULL;
+	while ( (address = idmef_node_get_next_address(node, address)) ) {
 
-                ret = insert_address(conn, alert_ident, parent_ident, parent_type, node->ident, addr);
-                if ( ret < 0 )
-                        return ret;
-        }
+                if ( insert_address(conn, alert_ident, parent_ident, parent_type, idmef_node_get_ident(node), address) < 0 )
+			return -5;
+	}
 
         return 0;
 }
 
 
 
-
 static int insert_userid(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
-                         char parent_type, idmef_userid_t *uid) 
+                         char parent_type, idmef_userid_t *userid) 
 {
-        char *name;
         const char *type;
+        char *name;
         int ret;
         
-        type = idmef_userid_type_to_string(uid->type);
+        type = idmef_userid_type_to_string(idmef_userid_get_type(userid));
         if ( ! type )
                 return -1;
-        
-        name = prelude_sql_escape(conn, idmef_string(&uid->name));
+
+        name = prelude_sql_escape(conn, idmef_string(idmef_userid_get_name(userid)));
         if ( ! name )
                 return -1;
         
         ret = prelude_sql_insert(conn, "Prelude_UserId", "alert_ident, parent_type, parent_ident, ident, type, name, number",
-                         "%llu, '%c', %llu, %llu, '%s', '%s', '%u'", alert_ident, parent_type, parent_ident,
-                         uid->ident, type, name, uid->number);
-       
+				 "%llu, '%c', %llu, %llu, '%s', '%s', '%u'", 
+				 alert_ident, parent_type, parent_ident,
+				 idmef_userid_get_ident(userid), type, name, idmef_userid_get_number(userid));
+
         free(name);
-        
+
         return ret;
 }
 
@@ -175,34 +175,30 @@ static int insert_userid(prelude_sql_connection_t *conn, uint64_t alert_ident, u
 static int insert_user(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
                        char parent_type, idmef_user_t *user) 
 {
-        int ret;
         uint64_t tmpid = 0;
-        idmef_userid_t *uid;
+        idmef_userid_t *userid;
         const char *category;
-        struct list_head *tmp;
         
         if ( ! user )
                 return 0;
 
-        category = idmef_user_category_to_string(user->category);
+        category = idmef_user_category_to_string(idmef_user_get_category(user));
         if ( ! category )
                 return -1;
         
-        ret = prelude_sql_insert(conn, "Prelude_User", "alert_ident, parent_type, parent_ident, category",
-                         "%llu, '%c', %llu, '%s'", alert_ident, parent_type, parent_ident,
-                         category);
-        if ( ret < 0 )
-        	return ret;
-        
-        list_for_each(tmp, &user->userid_list) {
-                uid = list_entry(tmp, idmef_userid_t, list);
+        if ( prelude_sql_insert(conn, "Prelude_User", "alert_ident, parent_type, parent_ident, category",
+				"%llu, '%c', %llu, '%s'", 
+				alert_ident, parent_type, parent_ident,	category) < 0 )
+		return -2;
 
-                if ( uid->ident == 0 )
-                        uid->ident = tmpid++;
-                
-                ret = insert_userid(conn, alert_ident, user->ident, parent_type, uid);
-                if ( ret < 0 )
-                        return ret;
+	userid = NULL;
+	while ( (userid = idmef_user_get_next_userid(user, userid)) ) {
+
+		if ( idmef_userid_get_ident(userid) == 0 )
+			idmef_userid_set_ident(userid, tmpid++);
+
+                if ( insert_userid(conn, alert_ident, idmef_userid_get_ident(userid), parent_type, userid) < 0 )
+			return -3;
         }
 
         return 0;
@@ -213,158 +209,148 @@ static int insert_user(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
 static int insert_process(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
                           char parent_type, idmef_process_t *process) 
 {
-        struct list_head *tmp;
-        idmef_string_item_t *str;
-        char *name, *path, *env, *arg;
+	idmef_process_arg_t *process_arg;
+	idmef_process_env_t *process_env;
+        char *name, *path, *arg, *env;
         int ret;
-        
+
         if ( ! process )
                 return 0;
         
-        name = prelude_sql_escape(conn, idmef_string(&process->name));
+        name = prelude_sql_escape(conn, idmef_string(idmef_process_get_name(process)));
         if ( ! name )
                 return -1;
-        
-        path = prelude_sql_escape(conn, idmef_string(&process->path));
+
+        path = prelude_sql_escape(conn, idmef_string(idmef_process_get_path(process)));
         if ( ! path ) {
                 free(name);
-                return -1;
+                return -2;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_Process", "alert_ident, parent_type, parent_ident, name, pid, path",
-                         "%llu, '%c', %llu, '%s', '%u', '%s'", alert_ident, parent_type, parent_ident,
-                         name, process->pid, path);
+				 "%llu, '%c', %llu, '%s', '%u', '%s'", 
+				 alert_ident, parent_type, parent_ident, name, idmef_process_get_pid(process), path);
         
         free(name);
         free(path);
         
         if ( ret < 0 )
-        	return ret;
-        
-        list_for_each(tmp, &process->arg_list) {
-                str = list_entry(tmp, idmef_string_item_t, list);
+        	return -3;
 
-                arg = prelude_sql_escape(conn, idmef_string(&str->string));
+	process_arg = NULL;
+	while ( (process_arg = idmef_process_get_next_arg(process, process_arg)) ) {
+
+                arg = prelude_sql_escape(conn, idmef_string(idmef_process_arg_get_string(process_arg)));
                 if ( ! arg )
-                        return -1;
+                        return -4;
                 
-                prelude_sql_insert(conn, "Prelude_ProcessArg", "alert_ident, parent_type, parent_ident, arg",
-                                 "%llu, '%c', %llu, '%s'", alert_ident, parent_type, parent_ident, arg);
+                ret = prelude_sql_insert(conn, "Prelude_ProcessArg", "alert_ident, parent_type, parent_ident, arg",
+					 "%llu, '%c', %llu, '%s'", 
+					 alert_ident, parent_type, parent_ident, arg);
 
                 free(arg);
+
+		if ( ret < 0 )
+			return -5;
         }
 
-        list_for_each(tmp, &process->env_list) {
-                str = list_entry(tmp, idmef_string_item_t, list);
+	process_env = NULL;
+	while ( (process_env = idmef_process_get_next_env(process, process_env)) ) {
 
-                env = prelude_sql_escape(conn, idmef_string(&str->string));
+                env = prelude_sql_escape(conn, idmef_string(idmef_process_env_get_string(process_env)));
                 if ( ! env )
-                        return -1;
-                
+                        return -6;
+
                 ret = prelude_sql_insert(conn, "Prelude_ProcessEnv", "alert_ident, parent_type, parent_ident, env",
-                                 "%llu, '%c', %llu, '%s'", alert_ident, parent_type, parent_ident, env);
+					 "%llu, '%c', %llu, '%s'", 
+					 alert_ident, parent_type, parent_ident, env);
                                  
                 free(env);
 
 		if ( ret < 0 )
-			return ret;
-
+			return -7;
         }
 
-        return 0;
+        return 1;
 }
 
 
 
 static int insert_snmp_service(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t service_ident,
-                               uint64_t parent_ident, char parent_type, idmef_snmpservice_t *snmp) 
+                               uint64_t parent_ident, char parent_type, idmef_snmpservice_t *snmpservice) 
 {
         char *oid, *community, *command;
         int ret;
 
-        oid = prelude_sql_escape(conn, idmef_string(&snmp->oid));
-        if (! oid )
+	if ( ! snmpservice )
+		return 0;
+
+        oid = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_oid(snmpservice)));
+        if ( ! oid )
                 return -1;
         
-        command = prelude_sql_escape(conn, idmef_string(&snmp->command));
+        command = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_command(snmpservice)));
         if ( ! command ) {
                 free(oid);
-                return -1;
+                return -2;
         }
-        
-        community = prelude_sql_escape(conn, idmef_string(&snmp->community));
+
+        community = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_community(snmpservice)));
         if ( ! community ) {
                 free(oid);
                 free(command);
-                return -1;
+                return -3;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_SnmpService", "alert_ident, parent_type, parent_ident, service_ident, oid, community, command",
-                         "%llu, '%c', %llu, %llu, '%s', '%s', '%s'", alert_ident, parent_type, parent_ident, service_ident,
-                         oid, community, command);
+				 "%llu, '%c', %llu, %llu, '%s', '%s', '%s'", 
+				 alert_ident, parent_type, parent_ident, service_ident, oid, community, command);
 
         free(oid);
         free(command);
         free(community);
 
-        return ret;
+        return (ret < 0) ? -4 : 1;
 }
 
 
 
 static int insert_web_service(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t service_ident,
-                              uint64_t parent_ident, char parent_type, idmef_webservice_t *web) 
+                              uint64_t parent_ident, char parent_type, idmef_webservice_t *webservice) 
 {
         char *url, *cgi, *method;
         int ret;
         
-        if ( ! web )
+        if ( ! webservice )
                 return 0;
 
-        url = prelude_sql_escape(conn, idmef_string(&web->url));
+        url = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_url(webservice)));
         if ( ! url )
                 return -1;
         
-        cgi = prelude_sql_escape(conn, idmef_string(&web->cgi));
+        cgi = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_cgi(webservice)));
         if ( ! cgi ) {
                 free(url);
-                return -1;
+                return -2;
         }
         
-        method = prelude_sql_escape(conn, idmef_string(&web->http_method));
+        method = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_http_method(webservice)));
         if ( ! method ) {
                 free(url);
                 free(cgi);
-                return -1;
+                return -3;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_WebService", "alert_ident, parent_type, parent_ident, service_ident, url, cgi, http_method",
-                         "%llu, '%c', %llu, %llu, '%s', '%s', '%s'", alert_ident, parent_type, parent_ident, service_ident,
-                         url, cgi, method);
+				 "%llu, '%c', %llu, %llu, '%s', '%s', '%s'",
+				 alert_ident, parent_type, parent_ident, service_ident, url, cgi, method);
 
         free(url);
         free(cgi);
         free(method);
 
-        return ret;
+        return (ret < 0) ? -4 : 1;
 }
-
-
-
-static int insert_portlist(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
-                           char parent_type, idmef_string_t *portlist) 
-{
-        char *plist;
-        
-        plist = prelude_sql_escape(conn, idmef_string(portlist));
-        if ( ! plist )
-                return -1;
-        
-        return prelude_sql_insert(conn, "Prelude_ServicePortlist", "alert_ident, parent_type, parent_ident, portlist",
-                         "%llu, '%c', %llu, '%s'", alert_ident, parent_type, parent_ident, plist);
-}
-
-
 
 
 
@@ -372,58 +358,69 @@ static int insert_service(prelude_sql_connection_t *conn, uint64_t alert_ident, 
                           char parent_type, idmef_service_t *service) 
 {
         int ret;
-        char *name, *protocol;
+        char *name, *protocol, *portlist;
+	uint64_t ident;
 
         if ( ! service )
                 return 0;
-        
-        name = prelude_sql_escape(conn, idmef_string(&service->name));
+
+	ident = idmef_service_get_ident(service);
+
+        name = prelude_sql_escape(conn, idmef_string(idmef_service_get_name(service)));
         if ( ! name )
                 return -1;
-        
-        protocol = prelude_sql_escape(conn, idmef_string(&service->protocol));
+
+        protocol = prelude_sql_escape(conn, idmef_string(idmef_service_get_protocol(service)));
         if ( ! protocol ) {
                 free(name);
-                return -1;
+                return -2;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_Service", "alert_ident, parent_type, parent_ident, name, port, protocol",
-                         "%llu, '%c', %llu, '%s', '%u', '%s'", alert_ident, parent_type, parent_ident,
-                         name, service->port, protocol);
-	if ( ret < 0 ) {
-	        free(name);
-	        free(protocol);
-		return ret;
+				 "%llu, '%c', %llu, '%s', '%u', '%s'", 
+				 alert_ident, parent_type, parent_ident, name, idmef_service_get_port(service), protocol);
+
+	free(name);
+	free(protocol);
+
+	if ( ret < 0 )
+		return -3;
+
+	if ( idmef_string(idmef_service_get_portlist(service)) ) {
+		portlist = prelude_sql_escape(conn, idmef_string(idmef_service_get_portlist(service)));
+		if ( ! portlist )
+			return -3;
+
+		ret = prelude_sql_insert(conn, "Prelude_ServicePortlist", "alert_ident, parent_type, parent_ident, portlist",
+					 "%llu, '%c', %llu, '%s'", alert_ident, parent_type, parent_ident, portlist);
+
+		free(portlist);
+
+		if ( ret < 0 )
+			return -4;
 	}
 
-        if ( idmef_string(&service->portlist) )
-        	ret = insert_portlist(conn, alert_ident, parent_ident, parent_type, &service->portlist);
-        
-        free(name);
-        free(protocol);
-        
-        if ( ret < 0 )
-        	return ret;
+        switch ( idmef_service_get_type(service)) {
 
-        switch (service->type) {
         case web_service:
-                ret = insert_web_service(conn, alert_ident, service->ident, parent_ident, parent_type, service->specific.web);
+                if ( insert_web_service(conn, alert_ident, ident, parent_ident, parent_type, idmef_service_get_web(service)) < 0 )
+			return -5;
                 break;
 
         case snmp_service:
-                ret = insert_snmp_service(conn, alert_ident, service->ident, parent_ident, parent_type, service->specific.snmp);
+                if ( insert_snmp_service(conn, alert_ident, ident, parent_ident, parent_type, idmef_service_get_snmp(service)) < 0 )
+			return -6;
                 break;
 
         case no_specific_service:
-                ret = 0;
+		/* nop */;
                 break;
                 
         default:
-                ret = -1;
-                break;
+		return -7;
         }
 
-        return ret;
+        return 1;
 }
 
 
@@ -432,19 +429,26 @@ static int insert_inode(prelude_sql_connection_t *conn, uint64_t alert_ident, ui
                         int file_ident, idmef_inode_t *inode) 
 {
         char ctime[MAX_UTC_DATETIME_SIZE] = { '\0' };
+	idmef_time_t *time;
+	int ret;
 
         if ( ! inode )
                 return 0;
 
-        if ( inode->change_time )
-                idmef_get_db_timestamp(inode->change_time, ctime, sizeof(ctime));
-        
-        return prelude_sql_insert(conn, "Prelude_Inode", "alert_ident, target_ident, file_ident, "
-                         "change_time, major_device, minor_device, c_major_device, "
-                         "c_minor_device", "%llu, %llu, %d, '%s', %d, %d, %d, %d",
-                         alert_ident, target_ident, file_ident, ctime, inode->major_device,
-                         inode->minor_device, inode->c_major_device, inode->c_minor_device);
+	time = idmef_inode_get_change_time(inode);
+        if ( time )
+                idmef_get_db_timestamp(time, ctime, sizeof(ctime));
 
+	ret = prelude_sql_insert(conn, "Prelude_Inode", "alert_ident, target_ident, file_ident, "
+				 "change_time, major_device, minor_device, c_major_device, "
+				 "c_minor_device", "%llu, %llu, %d, '%s', %d, %d, %d, %d",
+				 alert_ident, target_ident, file_ident, ctime, 
+				 idmef_inode_get_major_device(inode),
+				 idmef_inode_get_minor_device(inode),
+				 idmef_inode_get_c_major_device(inode), 
+				 idmef_inode_get_c_minor_device(inode));
+
+	return (ret < 0) ? -1 : 1;
 }
 
 
@@ -455,53 +459,61 @@ static int insert_linkage(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         char *name, *path;
         const char *category;
         int ret;
+
+	if ( ! linkage )
+		return 0;
         
-        category = idmef_linkage_category_to_string(linkage->category);
+        category = idmef_linkage_category_to_string(idmef_linkage_get_category(linkage));
         if ( ! category )
                 return -1;
         
-        name = prelude_sql_escape(conn, idmef_string(&linkage->name));
-        if (! name )
-                return -1;
+        name = prelude_sql_escape(conn, idmef_string(idmef_linkage_get_name(linkage)));
+        if ( ! name )
+                return -2;
         
-        path = prelude_sql_escape(conn, idmef_string(&linkage->path));
+        path = prelude_sql_escape(conn, idmef_string(idmef_linkage_get_path(linkage)));
         if ( ! path ) {
                 free(name);
-                return -1;
+                return -3;
         }
-                
+
         ret = prelude_sql_insert(conn, "Prelude_Linkage", "alert_ident, target_ident, file_ident, category, name, path",
-                         "%llu, %llu, %d, '%s', '%s', '%s'", alert_ident, target_ident, file_ident, category, name, path);
-        
+				 "%llu, %llu, %d, '%s', '%s', '%s'", 
+				 alert_ident, target_ident, file_ident, category, name, path);
+
         free(name);
         free(path);
         
         if ( ret < 0 )
-        	return ret;
+        	return -4;
         
-        return insert_file(conn, alert_ident, target_ident, file_ident, 'L', linkage->file);
-}
+        ret = insert_file(conn, alert_ident, target_ident, file_ident, 'L', idmef_linkage_get_file(linkage));
 
+	return (ret < 0) ? -5 : 1;
+}
 
 
 
 static int insert_file_access(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
-                              int file_ident, idmef_file_access_t *access)
+                              int file_ident, idmef_file_access_t *file_access)
 {
 	int ret;
+
+	if ( ! file_access )
+		return 0;
 	
-        ret = prelude_sql_insert(conn, "Prelude_FileAccess", "alert_ident, target_ident, file_ident",
-                         "%llu, %llu, %llu", alert_ident, target_ident, file_ident);
-        if ( ret < 0 )
-        	return ret;
+	if ( prelude_sql_insert(conn, "Prelude_FileAccess", "alert_ident, target_ident, file_ident",
+				"%llu, %llu, %llu", alert_ident, target_ident, file_ident) < 0 )
+        	return -1;
 
         /*
          * FIXME: access permission ?
          */
-        
-        return insert_userid(conn, alert_ident, target_ident, 'F', &access->userid);
-}
 
+	ret = insert_userid(conn, alert_ident, target_ident, 'F', idmef_file_access_get_userid(file_access));
+
+	return (ret < 0) ? -2 : 1;
+}
 
 
 
@@ -509,11 +521,11 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
                        int file_ident, char parent_type, idmef_file_t *file) 
 {
         int ret;
-        char *name, *path;
         const char *category;
-        struct list_head *tmp;
+        char *name, *path;
         idmef_linkage_t *linkage;
-        idmef_file_access_t *access;
+        idmef_file_access_t *file_access;
+	idmef_time_t *time;
         char ctime[MAX_UTC_DATETIME_SIZE] = { '\0' };
         char mtime[MAX_UTC_DATETIME_SIZE]= { '\0' }, atime[MAX_UTC_DATETIME_SIZE] = { '\0' };
 
@@ -523,65 +535,63 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
         /*
          * why no parent_ident ???
          */
-        category = idmef_file_category_to_string(file->category);
+        category = idmef_file_category_to_string(idmef_file_get_category(file));
         if ( ! category )
                 return -1;
-        
-        name = prelude_sql_escape(conn, idmef_string(&file->name));
+
+        name = prelude_sql_escape(conn, idmef_string(idmef_file_get_name(file)));
         if ( ! name )
-                return -1;
-        
-        path = prelude_sql_escape(conn, idmef_string(&file->path));
+                return -2;
+
+        path = prelude_sql_escape(conn, idmef_string(idmef_file_get_path(file)));
         if ( ! path ) {
                 free(name);
-                return -1;
+                return -3;
         }
 
-        if ( file->create_time )
-                idmef_get_db_timestamp(file->create_time, ctime, sizeof(ctime));
+	time = idmef_file_get_create_time(file);
+	if ( time )
+		idmef_get_db_timestamp(time, ctime, sizeof (ctime));
 
-        if ( file->modify_time )
-                idmef_get_db_timestamp(file->modify_time, mtime, sizeof(mtime));
+	time = idmef_file_get_modify_time(file);
+	if ( time )
+		idmef_get_db_timestamp(time, mtime, sizeof (mtime));
 
-        if ( file->access_time )
-                idmef_get_db_timestamp(file->access_time, atime, sizeof(atime));
+	time = idmef_file_get_access_time(file);
+	if ( time )
+		idmef_get_db_timestamp(time, atime, sizeof (atime));
                 
         ret = prelude_sql_insert(conn, "Prelude_File", "alert_ident, target_ident, ident, category, name, path, "
-                         "create_time, modify_time, access_time, data_size, disk_size", "%llu, %llu, %d, '%s', "
-                         "'%s', '%s', '%s', '%s', '%s', '%d', %d", alert_ident, target_ident,
-                         file_ident, category, name, path, ctime, mtime, atime, file->data_size, file->disk_size);
+				 "create_time, modify_time, access_time, data_size, disk_size", "%llu, %llu, %d, '%s', "
+				 "'%s', '%s', '%s', '%s', '%s', '%d', %d", 
+				 alert_ident, target_ident, file_ident, category, name, path, ctime, mtime, atime,
+				 idmef_file_get_data_size(file), idmef_file_get_disk_size(file));
 
         free(name);
         free(path);
         
         if ( ret < 0 )
-        	return ret;
+        	return -4;
 
-        list_for_each(tmp, &file->file_access_list) {
-                access = list_entry(tmp, idmef_file_access_t, list);
+	file_access = NULL;
+	while ( (file_access = idmef_file_get_next_file_access(file, file_access)) ) {
 
-                ret = insert_file_access(conn, alert_ident, target_ident, file_ident, access);
-                if ( ret < 0 )
-                        return ret;
-        }
+		if ( insert_file_access(conn, alert_ident, target_ident, file_ident, file_access) < 0 )
+			return -5;
+	}
 
-        list_for_each(tmp, &file->file_linkage_list) {
-                linkage = list_entry(tmp, idmef_linkage_t, list);
-                
-                ret = insert_linkage(conn, alert_ident, target_ident, file_ident, linkage);
-                if ( ret < 0 )
-                        return ret;
-        }
+	linkage = NULL;
+	while ( (linkage = idmef_file_get_next_file_linkage(file, linkage)) ) {
 
-        ret = insert_inode(conn, alert_ident, target_ident, file_ident, file->inode);
-        if ( ret < 0 )
-                return ret;
+                if ( insert_linkage(conn, alert_ident, target_ident, file_ident, linkage) < 0 )
+			return -6;
+	}
+
+        if ( insert_inode(conn, alert_ident, target_ident, file_ident, idmef_file_get_inode(file)) < 0 )
+		return -7;
         
         return 0;
 }
-
-
-
 
 
 
@@ -590,76 +600,43 @@ static int insert_source(prelude_sql_connection_t *conn, uint64_t alert_ident, i
         int ret;
         char *interface;
         const char *spoofed;
+	uint64_t ident;
 
         if ( ! source )
                 return 0;
 
-        spoofed = idmef_source_spoofed_to_string(source->spoofed);
+	ident = idmef_source_get_ident(source);
+
+        spoofed = idmef_source_spoofed_to_string(idmef_source_get_spoofed(source));
         if ( ! spoofed )
                 return -1;
 
-        interface = prelude_sql_escape(conn, idmef_string(&source->interface));
+        interface = prelude_sql_escape(conn, idmef_string(idmef_source_get_interface(source)));
         if ( ! interface )
-                return -1;
-        
-        ret = prelude_sql_insert(conn, "Prelude_Source", "alert_ident, ident, spoofed, interface",
-                         "%llu, %llu, '%s', '%s'", alert_ident, source->ident, spoofed, interface);
-        
+                return -2;
+
+        ret = prelude_sql_insert(conn, "Prelude_Source", "alert_ident, ident, spoofed, interface", "%llu, %llu, '%s', '%s'",
+				 alert_ident, ident, spoofed, interface);
+
         free(interface);
         
         if ( ret < 0 )
-        	return ret;
+        	return -3;
         
-        ret = insert_node(conn, alert_ident, source->ident, 'S', source->node);
-        if ( ret < 0 )
-                return ret;
+        if ( insert_node(conn, alert_ident, ident, 'S', idmef_source_get_node(source)) < 0 )
+		return -4;
 
-        ret = insert_user(conn, alert_ident, source->ident, 'S', source->user);
-        if ( ret < 0 )
-                return ret;
+        if ( insert_user(conn, alert_ident, ident, 'S', idmef_source_get_user(source)) < 0 )
+		return -5;
         
-        ret = insert_process(conn, alert_ident, source->ident, 'S', source->process);
-        if ( ret < 0 )
-                return ret;
+        if ( insert_process(conn, alert_ident, ident, 'S', idmef_source_get_process(source)) < 0 )
+		return -6;
         
-        ret = insert_service(conn, alert_ident, source->ident, 'S', source->service);
-        if ( ret < 0 )
-                return ret;
-        
-        return 0;
+        if ( insert_service(conn, alert_ident, ident, 'S', idmef_source_get_service(source)) < 0 )
+		return -7;
+
+        return 1;
 }
-
-
-
-static int insert_file_list(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident, struct list_head *file_list) 
-{
-        int ret;
-        uint64_t tmpid = 0;
-        idmef_file_t *file;
-        struct list_head *tmp;
-
-        if ( list_empty(file_list) )
-                return 0;
-        
-        ret = prelude_sql_insert(conn, "Prelude_FileList", "alert_ident, target_ident",
-                         "%llu, %llu", alert_ident, target_ident);
-        if ( ret < 0 )
-        	return ret;
-        
-        list_for_each(tmp, file_list) {
-                file = list_entry(tmp, idmef_file_t, list);
-
-                file->ident = tmpid++;
-
-                ret = insert_file(conn, alert_ident, target_ident, file->ident, 'T', file);
-                if ( ret < 0 )
-                        return ret;
-        }
-
-        return 0;
-}
-
-
 
 
 
@@ -668,47 +645,60 @@ static int insert_target(prelude_sql_connection_t *conn, uint64_t alert_ident, i
         int ret;
         char *interface;
         const char *decoy;
+	uint64_t ident;
+	idmef_file_t *file;
+	uint64_t fileid;
         
         if ( ! target )
                 return 0;
 
-        decoy = idmef_target_decoy_to_string(target->decoy);
+	ident = idmef_target_get_ident(target);
+
+        decoy = idmef_target_decoy_to_string(idmef_target_get_decoy(target));
         if ( ! decoy )
                 return -1;
-        
-        interface = prelude_sql_escape(conn, idmef_string(&target->interface));
+
+        interface = prelude_sql_escape(conn, idmef_string(idmef_target_get_interface(target)));
         if ( ! interface )
-                return -1;
-        
-        ret = prelude_sql_insert(conn, "Prelude_Target", "alert_ident, ident, decoy, interface",
-                         "%llu, %llu, '%s', '%s'", alert_ident, target->ident,
-                         decoy, interface);
-        if ( ret < 0 )
-        	goto err;
-        
-        ret = insert_node(conn, alert_ident, target->ident, 'T', target->node);
-        if ( ret < 0 )
-                goto err;
-        
-        ret = insert_user(conn, alert_ident, target->ident, 'T', target->user);
-        if ( ret < 0 )
-                goto err;
-        
-        ret = insert_process(conn, alert_ident, target->ident, 'T', target->process);
-        if ( ret < 0 )
-                goto err;
-        
-        ret = insert_service(conn, alert_ident, target->ident, 'T', target->service);
-        if ( ret < 0 )
-                goto err;
+                return -2;
 
-        ret = insert_file_list(conn, alert_ident, target->ident, &target->file_list);
+        ret = prelude_sql_insert(conn, "Prelude_Target", "alert_ident, ident, decoy, interface", "%llu, %llu, '%s', '%s'", 
+				 alert_ident, ident, decoy, interface);
 
- err:
-        free(interface);
-        return ret;
+	free(interface);
+
+        if ( ret < 0 )
+        	return -3;
+        
+        if ( insert_node(conn, alert_ident, ident, 'T', idmef_target_get_node(target)) < 0 )
+		return -4;
+        
+        if ( insert_user(conn, alert_ident, ident, 'T', idmef_target_get_user(target)) < 0 )
+		return -5;
+        
+        if ( insert_process(conn, alert_ident, ident, 'T', idmef_target_get_process(target)) < 0 )
+		return -6;
+        
+        if ( insert_service(conn, alert_ident, ident, 'T', idmef_target_get_service(target)) < 0 )
+		return -7;
+
+	if ( prelude_sql_insert(conn, "Prelude_FileList", "alert_ident, target_ident", "%llu, %llu", 
+				alert_ident, ident) < 0 )
+		return -8;
+
+	file = NULL;
+	fileid = 0;
+	while ( (file = idmef_target_get_next_file(target, file)) ) {
+
+		if ( idmef_file_get_ident(file) == 0 )
+			idmef_file_set_ident(file, fileid++);
+
+		if ( insert_file(conn, alert_ident, ident, idmef_file_get_ident(file), 'T', file) < 0 )
+			return -9;
+	}
+
+        return 1;
 }
-
 
 
 
@@ -716,147 +706,152 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t parent_ident
 {
         int ret;
         char *manufacturer, *model, *version, *class, *ostype, *osversion;
+	uint64_t analyzerid;
 
-        class = prelude_sql_escape(conn, idmef_string(&analyzer->class));
+	if ( ! analyzer )
+		return 0;
+
+	analyzerid = idmef_analyzer_get_analyzerid(analyzer);
+
+        class = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_class(analyzer)));
         if ( ! class )
                 return -1;
         
-        model = prelude_sql_escape(conn, idmef_string(&analyzer->model));
+        model = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_model(analyzer)));
         if ( ! model ) {
                 free(class);
-                return -1;
+                return -2;
         }
         
-        version = prelude_sql_escape(conn, idmef_string(&analyzer->version));
+        version = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_version(analyzer)));
         if ( ! version ) {
                 free(class);
                 free(model);
-                return -1;
+                return -3;
         }
         
-        manufacturer = prelude_sql_escape(conn, idmef_string(&analyzer->manufacturer));
+        manufacturer = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_manufacturer(analyzer)));
         if ( ! manufacturer ) {
                 free(class);
                 free(model);
                 free(version);
-                return -1;
+                return -4;
         }
 
-        ostype = prelude_sql_escape(conn, idmef_string(&analyzer->ostype));
+        ostype = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_ostype(analyzer)));
         if ( ! ostype ) {
                 free(class);
                 free(model);
                 free(version);
                 free(manufacturer);
-                return -1;
+                return -5;
         }
 
-        osversion = prelude_sql_escape(conn, idmef_string(&analyzer->osversion));
-        if ( ! ostype ) {
+        osversion = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_osversion(analyzer)));
+        if ( ! osversion ) {
                 free(class);
                 free(model);
                 free(version);
                 free(manufacturer);
                 free(ostype);
-                return -1;
+                return -6;
         }
 
-        
         ret = prelude_sql_insert(conn, "Prelude_Analyzer", "parent_ident, parent_type, analyzerid, manufacturer, model, version, class, "
-                         "ostype, osversion", "%llu, '%c', %llu, '%s', '%s', '%s', '%s', '%s', '%s'", parent_ident,
-                         parent_type, analyzer->analyzerid, manufacturer, model, version, class, ostype, osversion);
-        
-        free(class);
-        free(model);
-        free(version);
+				 "ostype, osversion", "%llu, '%c', %llu, '%s', '%s', '%s', '%s', '%s', '%s'", 
+				 parent_ident, parent_type, analyzerid, manufacturer, model, version, class, ostype, osversion);
+
         free(manufacturer);
+        free(model);
+        free(class);
+        free(version);
         free(ostype);
         free(osversion);
         
         if ( ret < 0 )
-        	return ret;
+        	return -7;
         
-        ret = insert_node(conn, parent_ident, analyzer->analyzerid, parent_type, analyzer->node);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_process(conn, parent_ident, analyzer->analyzerid, parent_type, analyzer->process);
-        if ( ret < 0 )
-                return ret;
+        if ( insert_node(conn, parent_ident, analyzerid, parent_type, idmef_analyzer_get_node(analyzer)) < 0 )
+		return -8;
 
-        return 0;
+        if ( insert_process(conn, parent_ident, analyzerid, parent_type, idmef_analyzer_get_process(analyzer)) < 0 )
+		return -9;
+
+        return 1;
 }
 
 
 
-
-static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_classification_t *class) 
+static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_classification_t *classification) 
 {
         char *name, *url;
         const char *origin;
         int ret;
 
-        origin = idmef_classification_origin_to_string(class->origin);
+        origin = idmef_classification_origin_to_string(idmef_classification_get_origin(classification));
         if ( ! origin )
                 return -1;
 
-        url = prelude_sql_escape(conn, idmef_string(&class->url));
+        url = prelude_sql_escape(conn, idmef_string(idmef_classification_get_url(classification)));
         if ( ! url )
-                return -1;
+                return -2;
         
-        name = prelude_sql_escape(conn, idmef_string(&class->name));
+        name = prelude_sql_escape(conn, idmef_string(idmef_classification_get_name(classification)));
         if ( ! name ) {
                 free(url);
-                return -1;
+                return -3;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_Classification", "alert_ident, origin, name, url",
-                         "%llu, '%s', '%s', '%s'", alert_ident, origin, name, url);
+				 "%llu, '%s', '%s', '%s'", alert_ident, origin, name, url);
 
         free(url);
         free(name);
 
-        return ret;
+        return (ret < 0) ? -4: 1;
 }
 
 
 
-static int insert_data(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_additional_data_t *ad) 
+static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_additional_data_t *additional_data) 
 {
         int size;
-        const char *type, *ptr;
+        const char *type;
+	const char *tmp;
         char buf[1024], *meaning, *data;
         int ret;
 
-        type = idmef_additional_data_type_to_string(ad->type);
+	if ( ! additional_data )
+		return 0;
+
+        type = idmef_additional_data_type_to_string(idmef_additional_data_get_type(additional_data));
         if ( ! type )
                 return -1;
 
         size = sizeof(buf);
         
-        ptr = idmef_additional_data_to_string(ad, buf, &size);
-        if ( ! ptr )
-                return -1;
+        tmp = idmef_additional_data_to_string(additional_data, buf, &size);
+        if ( ! tmp )
+                return -2;
 
-        meaning = prelude_sql_escape(conn, idmef_string(&ad->meaning));
+        meaning = prelude_sql_escape(conn, idmef_string(idmef_additional_data_get_meaning(additional_data)));
         if ( ! meaning ) 
-                return -1;
+                return -3;
         
-        data = prelude_sql_escape(conn, ptr);
+        data = prelude_sql_escape(conn, tmp);
         if ( ! data ) {
                 free(meaning);
-                return -1;
+                return -4;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_AdditionalData", "parent_ident, parent_type, type, meaning, data",
-                         "%llu, '%c', '%s', '%s', '%s'", parent_ident, parent_type, type, meaning, data);
+				 "%llu, '%c', '%s', '%s', '%s'", parent_ident, parent_type, type, meaning, data);
 
         free(data);
         free(meaning);
 
-        return ret;
+        return (ret < 0) ? -5 : 1;
 }
-
 
 
 
@@ -867,24 +862,24 @@ static int insert_createtime(prelude_sql_connection_t *conn, uint64_t parent_ide
         
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
-        
+
         u = prelude_sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
-        
+
         n = prelude_sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
-                return -1;
+                return -2;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_CreateTime", "parent_ident, parent_type, time, ntpstamp", 
-                         "%llu, '%c', '%s', '%s'", parent_ident, parent_type, u, n);
+				 "%llu, '%c', '%s', '%s'", parent_ident, parent_type, u, n);
 
         free(u);
         free(n);
 
-        return ret;
+        return (ret < 0) ? -3 : 1;
 }
 
 
@@ -896,27 +891,27 @@ static int insert_detecttime(prelude_sql_connection_t *conn, uint64_t alert_iden
         
         if ( ! time )
                 return 0;
-        
+
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
-        
+
         u = prelude_sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
-        
+
         n = prelude_sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
-                return -1;
+                return -2;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_DetectTime", "alert_ident, time, ntpstamp",
-                          "%llu, '%s', '%s'", alert_ident, u, n);
-        
+				 "%llu, '%s', '%s'", alert_ident, u, n);
+
         free(u);
         free(n);
 
-        return ret;
+        return (ret < 0) ? -3 : 1;
 }
 
 
@@ -925,325 +920,330 @@ static int insert_analyzertime(prelude_sql_connection_t *conn, uint64_t parent_i
 {
         char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE], *u, *n;
         int ret;
-        
+
         if ( ! time )
                 return 0;
-        
+
         idmef_get_db_timestamp(time, utc_time, sizeof(utc_time));
         idmef_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp));
-        
+
         u = prelude_sql_escape(conn, utc_time);
         if ( ! u )
                 return -1;
-        
+
         n = prelude_sql_escape(conn, ntpstamp);
         if ( ! n ) {
                 free(u);
-                return -1;
+                return -2;
         }
         
         ret = prelude_sql_insert(conn, "Prelude_AnalyzerTime", "parent_ident, parent_type, time, ntpstamp",
-                          "%llu, '%c', '%s', '%s'", parent_ident, parent_type, u, n);
-        
+				 "%llu, '%c', '%s', '%s'", parent_ident, parent_type, u, n);
+
         free(u);
         free(n);
 
-        return ret;
+        return (ret < 0) ? -3 : 1;
 }
-
 
 
 
 static int insert_impact(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_impact_t *impact) 
 {
-        char *desc;
         const char *completion, *type, *severity;
+        char *description;
         int ret;
-        
+
         if ( ! impact )
                 return 0;
 
-        completion = idmef_impact_completion_to_string(impact->completion);
-        if ( ! completion )
+        completion = idmef_impact_completion_to_string(idmef_impact_get_completion(impact));
+        if ( ! completion ) {
+		
                 return -1;
+	}
 
-        type = idmef_impact_type_to_string(impact->type);
+        type = idmef_impact_type_to_string(idmef_impact_get_type(impact));
         if ( ! type )
-                return -1;
+                return -2;
 
-        severity = idmef_impact_severity_to_string(impact->severity);
+        severity = idmef_impact_severity_to_string(idmef_impact_get_severity(impact));
         if ( ! severity )
-                return -1;
-        
-        desc = prelude_sql_escape(conn, idmef_string(&impact->description));
-        if ( ! desc )
-                return -1;
-        
-        ret = prelude_sql_insert(conn, "Prelude_Impact", "alert_ident, severity, completion, type, description",
-                         "%llu, '%s', '%s', '%s', '%s'", alert_ident, severity, completion, type, desc);
+                return -3;
 
-        free(desc);
+        description = prelude_sql_escape(conn, idmef_string(idmef_impact_get_description(impact)));
+        if ( ! description )
+                return -4;
         
-        return ret;
+        ret = prelude_sql_insert(conn, "Prelude_Impact", "alert_ident, severity, completion, type, description", 
+				 "%llu, '%s', '%s', '%s', '%s'", 
+				 alert_ident, severity, completion, type, description);
+
+        free(description);
+
+        return (ret < 0) ? -5 : 1;
 }
-
 
 
 
 static int insert_action(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_action_t *action)
 {
-        char *desc;
         const char *category;
+        char *description;
         int ret;
 
-        category = idmef_action_category_to_string(action->category);
+        category = idmef_action_category_to_string(idmef_action_get_category(action));
         if ( ! category )
                 return -1;
-        
-        desc = prelude_sql_escape(conn, idmef_string(&action->description));
-        if ( ! desc )
-                return -1;
-        
-        ret = prelude_sql_insert(conn, "Prelude_Action", "alert_ident, category, description",
-                         "%llu, '%s', '%s'", alert_ident, category, desc);
 
-        free(desc);
+        description = prelude_sql_escape(conn, idmef_string(idmef_action_get_description(action)));
+        if ( ! description )
+                return -2;
+        
+        ret = prelude_sql_insert(conn, "Prelude_Action", "alert_ident, category, description", "%llu, '%s', '%s'", 
+				 alert_ident, category, description);
 
-        return ret;
+        free(description);
+
+        return (ret < 0) ? -1 : 1;
 }
-
 
 
 
 static int insert_confidence(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_confidence_t *confidence) 
 {
+	int ret;
+
         if ( ! confidence )
                 return 0;
         
-        return prelude_sql_insert(conn, "Prelude_Confidence", "alert_ident, rating, confidence", "%llu, '%s', %f",
-                         alert_ident, idmef_confidence_rating_to_string(confidence->rating),
-                         confidence->confidence);
+        ret =  prelude_sql_insert(conn, "Prelude_Confidence", "alert_ident, rating, confidence", "%llu, '%s', %f",
+				  alert_ident, idmef_confidence_rating_to_string(idmef_confidence_get_rating(confidence)),
+				  idmef_confidence_get_confidence(confidence));
 
+	return (ret < 0) ? -1 : 1;
 }
-
 
 
 
 static int insert_assessment(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_assessment_t *assessment) 
 {
-        int ret;
-        struct list_head *tmp;
         idmef_action_t *action;
 
         if ( ! assessment )
                 return 0;
 
-        ret = prelude_sql_insert(conn, "Prelude_Assessment", "alert_ident", "%llu", alert_ident);
-        if ( ret < 0 )
-        	return ret;
-        
-        ret = insert_impact(conn, alert_ident, assessment->impact);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_confidence(conn, alert_ident, assessment->confidence);
-        if ( ret < 0 )
-                return ret;
-        
-        list_for_each(tmp, &assessment->action_list) {
-                action = list_entry(tmp, idmef_action_t, list);
+        if ( prelude_sql_insert(conn, "Prelude_Assessment", "alert_ident", "%llu", alert_ident) < 0 )
+		return -1;
 
-                ret = insert_action(conn, alert_ident, action);
-                if ( ret < 0 )
-                        return ret;
+        if ( insert_impact(conn, alert_ident, idmef_assessment_get_impact(assessment)) < 0 )
+		return -2;
+        
+	if ( insert_confidence(conn, alert_ident, idmef_assessment_get_confidence(assessment)) < 0 )
+		return -3;
+
+	action = NULL;
+	while ( (action = idmef_assessment_get_next_action(assessment, action)) ) {
+
+                if ( insert_action(conn, alert_ident, action) < 0 )
+			return -4;
         }
         
-        return 0;
+        return 1;
 }
 
 
 
-
-static int insert_overflow_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_overflow_alert_t *overflow) 
+static int insert_overflow_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_overflow_alert_t *overflow_alert) 
 {
         char *program, *buffer;
         int ret;
-        
-        program = prelude_sql_escape(conn, idmef_string(&overflow->program));
+
+        program = prelude_sql_escape(conn, idmef_string(idmef_overflow_alert_get_program(overflow_alert)));
         if ( ! program )
                 return -1;
 
-        buffer = prelude_sql_escape(conn, overflow->buffer);
+	/* FIXME: data will not be null byte terminated forever  */
+        buffer = prelude_sql_escape(conn, idmef_data(idmef_overflow_alert_get_buffer(overflow_alert)));
         if ( ! buffer ) {
                 free(program);
-                return -1;
+                return -2;
         }
         
-        ret = prelude_sql_insert(conn, "Prelude_OverflowAlert", "alert_ident, program, size, buffer",
-                         "%llu, '%s', %d, '%s'", alert_ident, program, overflow->size, buffer);
+        ret = prelude_sql_insert(conn, "Prelude_OverflowAlert", "alert_ident, program, size, buffer", "%llu, '%s', %d, '%s'", 
+				 alert_ident, program, idmef_overflow_alert_get_size(overflow_alert), buffer);
 
         free(buffer);
         free(program);
-        
-        return ret;
+
+        return (ret < 0) ? -3 : 1;
 }
 
 
 
-
-static int insert_tool_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_tool_alert_t *tool) 
+static int insert_tool_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_tool_alert_t *tool_alert) 
 {
         char *name, *command;
         int ret;
-                
+
+	if ( ! tool_alert )
+		return 0;
+
         /*
          * FIXME use alert_ident ?
          */
-        name = prelude_sql_escape(conn, idmef_string(&tool->name));
+        name = prelude_sql_escape(conn, idmef_string(idmef_tool_alert_get_name(tool_alert)));
         if ( ! name )
                 return -1;
 
-        command = prelude_sql_escape(conn, idmef_string(&tool->command));
+        command = prelude_sql_escape(conn, idmef_string(idmef_tool_alert_get_command(tool_alert)));
         if ( ! command ) {
                 free(name);
-                return -1;
+                return -2;
         }
 
         ret = prelude_sql_insert(conn, "Prelude_ToolAlert", "alert_ident, name, command", "%llu, '%s', '%s'",
-                         alert_ident, name, command);
+				 alert_ident, name, command);
 
         free(name);
         free(command);
 
-        return ret;
+        return (ret < 0) ? -3 : 1;
 }
 
 
 
-static int insert_correlation_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_correlation_alert_t *correlation) 
+static int insert_correlation_alert(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_correlation_alert_t *correlation_alert) 
 {
         char *name;
-        struct list_head *tmp;
-        idmef_alertident_t *ai;
-        int ret;
-                
+        idmef_alertident_t *idmef_alertident;
+	int ret;
+
+	if ( ! correlation_alert )
+		return 0;
+
         /*
          * FIXME: use alert_ident ?
          */
-        name = prelude_sql_escape(conn, idmef_string(&correlation->name));
+        name = prelude_sql_escape(conn, idmef_string(idmef_correlation_alert_get_name(correlation_alert)));
         if ( ! name )
                 return -1;
 
-        ret = prelude_sql_insert(conn, "Prelude_CorrelationAlert", "ident, name", "%llu, '%s'",
-                         alert_ident, name);
-        free(name);
+        ret = prelude_sql_insert(conn, "Prelude_CorrelationAlert", "ident, name", "%llu, '%s'", alert_ident, name);
 
-        list_for_each(tmp, &correlation->alertident_list){
-                ai = list_entry(tmp, idmef_alertident_t, list);
-                prelude_sql_insert(conn, "Prelude_CorrelationAlert_Alerts", "ident, alert_ident", "%llu", alert_ident); /* FIXME: isn't there a bug here ? */
+	free(name);
+ 
+	if ( ret < 0 )
+		return -2;
+
+	idmef_alertident = NULL;
+	while ( (idmef_alertident = idmef_correlation_alert_get_next_alertident(correlation_alert, idmef_alertident)) ) {
+
+                if ( prelude_sql_insert(conn,
+					"Prelude_CorrelationAlert_Alerts", "ident, alert_ident", "%llu, %llu",
+					alert_ident, idmef_alertident_get_alertident(idmef_alertident)) < 0 )
+			return -3;
         }
 
-        return ret;
+	return 1;
 }
-
-
 
 
 
 static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert) 
 {
-        int ret;
+	uint64_t ident;
         uint64_t tmpid;
-        struct list_head *tmp;
         idmef_source_t *source;
         idmef_target_t *target;
-        idmef_classification_t *class;
-        idmef_additional_data_t *data;
-        
-        ret = prelude_sql_insert(conn, "Prelude_Alert", "ident", "%llu", alert->ident);
-	if ( ret < 0 )
-		return ret;
+        idmef_classification_t *classification;
+        idmef_additional_data_t *additional_data;
 
-        ret = insert_assessment(conn, alert->ident, alert->assessment);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_analyzer(conn, alert->ident, 'A', &alert->analyzer);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_createtime(conn, alert->ident, 'A', &alert->create_time);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_detecttime(conn, alert->ident, alert->detect_time);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_analyzertime(conn, alert->ident, 'A', alert->analyzer_time);
-        if ( ret < 0 )
-                return ret;
+	if ( ! alert )
+		return 0;
 
-        switch (alert->type) {
+	ident = idmef_alert_get_ident(alert);
+        
+        if ( prelude_sql_insert(conn, "Prelude_Alert", "ident", "%llu", ident) < 0 )
+		return -1;
+
+        if ( insert_assessment(conn, ident, idmef_alert_get_assessment(alert)) < 0 )
+	     return -2;
+	     
+	if ( insert_analyzer(conn, ident, 'A', idmef_alert_get_analyzer(alert)) < 0 )
+		return -3;
+
+        if ( insert_createtime(conn, ident, 'A', idmef_alert_get_create_time(alert)) < 0 )
+		return -4;
+        
+        if ( insert_detecttime(conn, ident, idmef_alert_get_detect_time(alert)) < 0 )
+		return -5;
+        
+        if ( insert_analyzertime(conn, ident, 'A', idmef_alert_get_analyzer_time(alert)) < 0 )
+		return -6;
+
+        switch ( idmef_alert_get_type(alert) ) {
+
         case idmef_default:
-                ret = 0;
+		/* nop */
                 break;
 
         case idmef_tool_alert:
-                ret = insert_tool_alert(conn, alert->ident, alert->detail.tool_alert);
+                if ( insert_tool_alert(conn, ident, idmef_alert_get_tool_alert(alert)) < 0 )
+			return -7;
                 break;
 
         case idmef_overflow_alert:
-                ret = insert_overflow_alert(conn, alert->ident, alert->detail.overflow_alert);
+                if ( insert_overflow_alert(conn, ident, idmef_alert_get_overflow_alert(alert)) < 0 )
+			return -8;
                 break;
 
         case idmef_correlation_alert:
-                ret = insert_correlation_alert(conn, alert->ident, alert->detail.correlation_alert);
+		if ( insert_correlation_alert(conn, ident, idmef_alert_get_correlation_alert(alert)) < 0 )
+			return -9;
                 break;
-        }
 
-        if ( ret < 0 )
-                return ret;
-
-        tmpid = 0;
-        list_for_each(tmp, &alert->source_list) {
-                source = list_entry(tmp, idmef_source_t, list);
-
-                if ( source->ident == 0 )
-                        source->ident = tmpid++;
-                
-                ret = insert_source(conn, alert->ident,source);
-                if ( ret < 0 )
-                        return ret;
+	default:
+		/* nop */;
         }
 
         tmpid = 0;
-        list_for_each(tmp, &alert->target_list) {
-                target = list_entry(tmp, idmef_target_t, list);
+	source = NULL;
+	while ( (source = idmef_alert_get_next_source(alert, source)) ) {
 
-                if ( target->ident == 0 )
-                        target->ident = tmpid++;
+                if ( idmef_source_get_ident(source) == 0 )
+                        idmef_source_set_ident(source, tmpid++);
                 
-                ret = insert_target(conn, alert->ident, target);
-                if ( ret < 0 )
-                        return ret;
-        }
-        
-        list_for_each(tmp, &alert->classification_list) {
-                class = list_entry(tmp, idmef_classification_t, list);
-                ret = insert_classification(conn, alert->ident, class);
-                if ( ret < 0 )
-                        return ret;
+                if ( insert_source(conn, ident, source) < 0 )
+			return -10;
         }
 
-        list_for_each(tmp, &alert->additional_data_list) {
-                data = list_entry(tmp, idmef_additional_data_t, list);
-                ret = insert_data(conn, alert->ident, 'A', data);
-                if ( ret < 0 )
-                        return ret;
+        tmpid = 0;
+	target = NULL;
+	while ( (target = idmef_alert_get_next_target(alert, target)) ) {
+
+		if ( idmef_target_get_ident(target) == 0 )
+			idmef_target_set_ident(target, tmpid++);
+
+                if ( insert_target(conn, ident, target) < 0 )
+			return -11;
         }
 
-        return 0;
+	classification = NULL;
+	while ( (classification = idmef_alert_get_next_classification(alert, classification)) ) {
+
+                if ( insert_classification(conn, ident, classification) < 0 )
+			return -12;
+	}
+
+	additional_data = NULL;
+	while ( (additional_data = idmef_alert_get_next_additional_data(alert, additional_data)) ) {
+
+                if ( insert_additional_data(conn, ident, 'A', additional_data) < 0 )
+			return -13;
+	}
+
+        return 1;
 }
 
 
@@ -1251,45 +1251,45 @@ static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert)
 
 static int insert_heartbeat(prelude_sql_connection_t *conn, idmef_heartbeat_t *heartbeat) 
 {
-        int ret;
-        struct list_head *tmp;
-        idmef_additional_data_t *data;
+	uint64_t ident;
+	idmef_additional_data_t *additional_data;
 
-        ret = prelude_sql_insert(conn, "Prelude_Heartbeat", "ident", "%llu", heartbeat->ident);
-        if ( ret < 0 )
-        	return ret;
-        
-        ret = insert_analyzer(conn, heartbeat->ident, 'H', &heartbeat->analyzer);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_createtime(conn, heartbeat->ident, 'H', &heartbeat->create_time);
-        if ( ret < 0 )
-                return ret;
-        
-        ret = insert_analyzertime(conn, heartbeat->ident, 'H', heartbeat->analyzer_time);
-        if ( ret < 0 )
-                return ret;
-        
-        list_for_each(tmp, &heartbeat->additional_data_list) {
-                data = list_entry(tmp, idmef_additional_data_t, list);
+	if ( ! heartbeat )
+		return 0;
 
-                ret = insert_data(conn, heartbeat->ident, 'H', data);
-                if ( ret < 0 )
-                        return ret;
-        }
+	ident = idmef_heartbeat_get_ident(heartbeat);
 
-        return 0;
+        if ( prelude_sql_insert(conn, "Prelude_Heartbeat", "ident", "%llu", ident) < 0 )
+		return -1;
+        
+        if ( insert_analyzer(conn, ident, 'H', idmef_heartbeat_get_analyzer(heartbeat)) < 0 )
+		return -2;
+
+        if ( insert_createtime(conn, ident, 'H', idmef_heartbeat_get_create_time(heartbeat)) < 0 )
+		return -3;
+        
+        if ( insert_analyzertime(conn, ident, 'H', idmef_heartbeat_get_analyzer_time(heartbeat)) < 0 )
+		return -4;
+
+	additional_data = NULL;
+	while ( (additional_data = idmef_heartbeat_get_next_additional_data(heartbeat, additional_data)) ) {
+
+                if ( insert_additional_data(conn, ident, 'H', additional_data) < 0 )
+                        return -5;
+	}
+
+        return 1;
 }
-        
 
 
 
-
-int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *msg) 
+int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *message)
 {
 	prelude_sql_connection_t *sql;
         int ret, ret2;
+
+	if ( ! message )
+		return 0;
 
         ret = -1;
 
@@ -1309,18 +1309,18 @@ int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *msg)
                	return ret;
 	}
         
-        switch (msg->type) {
+        switch ( idmef_message_get_type(message) ) {
 
         case idmef_alert_message:
-                ret = insert_alert(sql, msg->message.alert);
+                ret = insert_alert(sql, idmef_message_get_alert(message));
                 break;
 
         case idmef_heartbeat_message:
-                ret = insert_heartbeat(sql, msg->message.heartbeat);
+                ret = insert_heartbeat(sql, idmef_message_get_heartbeat(message));
                 break;
 
         default:
-                log(LOG_ERR, "unknown message type: %d.\n", msg->type);
+                log(LOG_ERR, "unknown message type: %d.\n", idmef_message_get_type(message));
                 break;
         }
 
