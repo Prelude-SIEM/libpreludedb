@@ -4,7 +4,7 @@ LibpreludeDB README
 OK, mostly for developers, quick and dirty ;-)
 
 The conceptual diagram of the library is at
-http://mops.uci.agh.edu.pl/~kzaraska/stuff/libpreludedb1.dia
+http://mops.uci.agh.edu.pl/~kzaraska/libpreludedb/libpreludedb1.dia
 you'll need to zoom to read everything :-/
 
 The current functionality reflects what prelude-manager currently does,
