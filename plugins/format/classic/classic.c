@@ -179,6 +179,11 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_objec
 	if ( ret < 0 )
 		return ret;
 
+	if ( ret == 0 ) {
+		*value = NULL;
+		return 1;
+	}
+
 	char_val = preludedb_sql_field_get_value(field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
@@ -209,15 +214,21 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_objec
 			ret = preludedb_sql_row_fetch_field(row, cnt + 1, &gmtoff_field);
 			if ( ret < 0 )
 				return ret;
-			ret = preludedb_sql_field_to_uint32(gmtoff_field, &gmtoff);
-			if ( ret < 0 )
-				return ret;
+
+			if ( ret > 0 ) {
+				ret = preludedb_sql_field_to_uint32(gmtoff_field, &gmtoff);
+				if ( ret < 0 )
+					return ret;
+			}
 
 			ret = preludedb_sql_row_fetch_field(row, cnt + 2, &usec_field);
 			if ( ret < 0 )
-				return ret;		
-			if ( preludedb_sql_field_to_uint32(usec_field, &usec) < 0 )
 				return ret;
+
+			if ( ret > 0 ) {
+				if ( preludedb_sql_field_to_uint32(usec_field, &usec) < 0 )
+					return ret;
+			}
 
 			retrieved += 2;
 		}
