@@ -9,8 +9,7 @@ DROP TABLE IF EXISTS Prelude_Alert;
 
 CREATE TABLE Prelude_Alert (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- messageid BIGINT UNSIGNED NOT NULL,
- UNIQUE INDEX(messageid)
+ messageid BIGINT UNSIGNED NOT NULL
 ) TYPE=InnoDB;
 
 
@@ -61,8 +60,7 @@ DROP TABLE IF EXISTS Prelude_Heartbeat;
 
 CREATE TABLE Prelude_Heartbeat (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
- messageid BIGINT UNSIGNED NOT NULL,
- UNIQUE INDEX(messageid)
+ messageid BIGINT UNSIGNED NOT NULL
 ) TYPE=InnoDB;
 
 
@@ -73,17 +71,17 @@ CREATE TABLE Prelude_Analyzer (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H') NOT NULL, # A=Alert H=Hearbeat
  _depth TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_message_ident,_parent_type,_depth),
+ PRIMARY KEY (_parent_type,_message_ident,_depth),
  analyzerid BIGINT UNSIGNED NOT NULL,
+ INDEX (_parent_type,analyzerid),
  name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
  model VARCHAR(255) NULL,
+ INDEX (_parent_type,model),
  version VARCHAR(255) NULL,
  class VARCHAR(255) NULL,
  ostype VARCHAR(255) NULL,
- osversion VARCHAR(255) NULL,
- INDEX (model),
- INDEX (analyzerid)
+ osversion VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
@@ -106,9 +104,9 @@ CREATE TABLE Prelude_Reference (
  INDEX(_message_ident),
  origin ENUM("unknown","vendor-specific","user-specific","bugtraqid","cve","osvdb") NOT NULL,
  name VARCHAR(255) NOT NULL,
+ INDEX(name),
  url VARCHAR(255) NOT NULL,
- meaning VARCHAR(255) NULL,
- INDEX(name)
+ meaning VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
@@ -239,8 +237,11 @@ CREATE TABLE Prelude_Impact (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  description VARCHAR(255) NULL,
  severity ENUM("low","medium","high") NULL,
+ INDEX(severity),
  completion ENUM("failed", "succeeded") NULL,
- type ENUM("admin", "dos", "file", "recon", "user", "other") NOT NULL
+ INDEX(completion),
+ type ENUM("admin", "dos", "file", "recon", "user", "other") NOT NULL,
+ INDEX(type)
 ) TYPE=InnoDB;
 
 
@@ -296,7 +297,7 @@ CREATE TABLE Prelude_CreateTime (
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
  gmtoff INTEGER NOT NULL,
- INDEX (time)
+ INDEX (_parent_type,time)
 ) TYPE=InnoDB;
 
 
@@ -322,7 +323,7 @@ CREATE TABLE Prelude_AnalyzerTime (
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
  gmtoff INTEGER NOT NULL,
- INDEX (time)
+ INDEX (_parent_type,time)
 ) TYPE=InnoDB;
 
 
@@ -337,8 +338,9 @@ CREATE TABLE Prelude_Node (
  ident BIGINT UNSIGNED NOT NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
  location VARCHAR(255) NULL,
+ INDEX(_parent_type,location),
  name VARCHAR(255) NULL,
- INDEX(name)
+ INDEX(_parent_type,name)
 ) TYPE=InnoDB;
 
 
@@ -355,8 +357,8 @@ CREATE TABLE Prelude_Address (
  vlan_name VARCHAR(255) NULL,
  vlan_num INTEGER UNSIGNED NULL,
  address VARCHAR(255) NOT NULL,
- netmask VARCHAR(255) NULL,
- INDEX (address)
+ INDEX (_parent_type,address),
+ netmask VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
@@ -445,8 +447,8 @@ CREATE TABLE Prelude_Service (
  iana_protocol_name VARCHAR(255) NULL,
  portlist VARCHAR (255) NULL,
  protocol VARCHAR(255) NULL,
- INDEX (protocol(10),port),
- INDEX (protocol(10),name(10))
+ INDEX (_parent_type,protocol(10),port),
+ INDEX (_parent_type,protocol(10),name(10))
 ) TYPE=InnoDB;
 
 

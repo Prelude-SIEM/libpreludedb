@@ -12,8 +12,6 @@ CREATE TABLE Prelude_Alert (
  messageid NUMERIC(20) NOT NULL
 );
 
-CREATE UNIQUE INDEX prelude_alert_index ON Prelude_Alert (messageid);
-
 
 
 DROP TABLE Prelude_AlertIdent;
@@ -66,8 +64,6 @@ CREATE TABLE Prelude_Heartbeat (
  messageid NUMERIC(20) NOT NULL
 );
 
-CREATE UNIQUE INDEX prelude_heartbeat_index ON Prelude_Heartbeat (messageid);
-
 
 
 DROP TABLE Prelude_Analyzer;
@@ -76,7 +72,7 @@ CREATE TABLE Prelude_Analyzer (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Alert H=Hearbeat */
  _depth NUMERIC(1) NOT NULL,
- PRIMARY KEY (_message_ident,_parent_type,_depth),
+ PRIMARY KEY (_parent_type,_message_ident,_depth),
  analyzerid NUMERIC(20) NOT NULL,
  name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
@@ -87,8 +83,8 @@ CREATE TABLE Prelude_Analyzer (
  osversion VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (model);
-CREATE INDEX prelude_analyzer_index_analyzerid ON Prelude_Analyzer (analyzerid);
+CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (_parent_type,model);
+CREATE INDEX prelude_analyzer_index_analyzerid ON Prelude_Analyzer (_parent_type,analyzerid);
 
 
 
@@ -251,6 +247,10 @@ CREATE TABLE Prelude_Impact (
  type VARCHAR(32) NOT NULL
 );
 
+CREATE INDEX prelude_impact_index_severity ON Prelude_Impact (severity);
+CREATE INDEX prelude_impact_index_completion ON Prelude_Impact (completion);
+CREATE INDEX prelude_impact_index_type ON Prelude_Impact (type);
+
 
 
 DROP TABLE Prelude_Action;
@@ -308,7 +308,7 @@ CREATE TABLE Prelude_CreateTime (
  gmtoff NUMERIC(8) NOT NULL
 );
 
-CREATE INDEX prelude_createtime_index ON Prelude_CreateTime (time);
+CREATE INDEX prelude_createtime_index ON Prelude_CreateTime (_parent_type,time);
 
 
 
@@ -336,7 +336,7 @@ CREATE TABLE Prelude_AnalyzerTime (
  gmtoff NUMERIC(8) NOT NULL
 );
 
-CREATE INDEX prelude_analyzertime_index ON Prelude_AnalyzerTime (time);
+CREATE INDEX prelude_analyzertime_index ON Prelude_AnalyzerTime (_parent_type,time);
 
 
 
@@ -353,7 +353,8 @@ CREATE TABLE Prelude_Node (
  name VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_node_index ON Prelude_Node (name);
+CREATE INDEX prelude_node_index_name ON Prelude_Node (_parent_type, name);
+CREATE INDEX prelude_node_index_location ON Prelude_Node (_parent_type, location);
 
 
 
@@ -361,7 +362,7 @@ DROP TABLE Prelude_Address;
 
 CREATE TABLE Prelude_Address (
  _message_ident NUMERIC(20) NOT NULL,
- _parent_type VARCHAR(1) NOT NULL, /* A=Analyser T=Target S=Source H=Heartbeat */
+ _parent_type VARCHAR(1) NOT NULL, /* A=Analyzer T=Target S=Source H=Heartbeat */
  _parent_index NUMERIC(1) NOT NULL,
  ident NUMERIC(20) NOT NULL,
  category VARCHAR(32) NOT NULL,
@@ -372,7 +373,7 @@ CREATE TABLE Prelude_Address (
 );
 
 CREATE INDEX prelude_address_index ON Prelude_Address (_parent_type, _message_ident, _parent_index);
-CREATE INDEX prelude_address_index_address ON Prelude_Address (address);
+CREATE INDEX prelude_address_index_address ON Prelude_Address (_parent_type, address);
 
 
 
@@ -465,8 +466,8 @@ CREATE TABLE Prelude_Service (
  protocol VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (protocol, port);
-CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (protocol, name);
+CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (_parent_type, protocol, port);
+CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_type, protocol, name);
 
 
 
