@@ -393,7 +393,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *dat
         prelude_plugin_set_name(&sql_plugin, "PgSQL");
         prelude_plugin_set_desc(&sql_plugin, "SQL plugin for PostgreSQL database.");
 	prelude_plugin_set_author(&sql_plugin, "Nicolas Delon");
-        prelude_plugin_set_contact(&sql_plugin, "nicolas@prelude-ids.org");
+        prelude_plugin_set_contact(&sql_plugin, "nicolas.delon@prelude-ids.com");
 
         preludedb_plugin_sql_set_open_func(&sql_plugin, sql_open);
         preludedb_plugin_sql_set_close_func(&sql_plugin, sql_close);
