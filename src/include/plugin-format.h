@@ -55,9 +55,9 @@ typedef struct {
 					   const idmef_message_t *message);
 	
 	void *(*format_select_values)(prelude_db_connection_t *connection,
-				      int distinct,
-			              idmef_selection_t *selection, 
-				      idmef_criterion_t *criteria);
+			              idmef_selection_t *selection,
+				      idmef_criterion_t *criteria,
+				      int limit);
 
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,
 							void *data,

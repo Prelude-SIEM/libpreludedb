@@ -1,3 +1,26 @@
+2003-09-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* plugins/format/classic/classic.c:
+	modifications to fit changes of idmef_db_select's prototype
+	(classic_get_values)
+	skip empty lines (lines where all fields are NULL)
+	don't build value depending of object because of sql functions
+	(for example, count for a string field returns a number)
+
+	* plugins/format/classic/idmef-db-select.c:
+	lot of changes and cleanup to support GROUP BY, ORDER BY and LIMIT
+	distinct is not used anymore, use group by instead
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	(prelude_db_interface_select_values)
+	(format_select_values)
+	function's prototype changes, remove distinct and add limit argument
+
 2003-09-15  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:

@@ -25,10 +25,10 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H
 
-prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
-				      int distinct,
-				      idmef_selection_t *selection, 
-				      idmef_criterion_t *criterion);
+prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
+				     idmef_selection_t *selection, 
+				     idmef_criterion_t *criterion,
+				     int limit);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H */
 

@@ -158,7 +158,7 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	table = idmef_db_select(connection, 0, selection, criterion);
+	table = idmef_db_select(connection, selection, criterion, -1);
 
 	idmef_selection_destroy(selection);
 
@@ -226,7 +226,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 	value = idmef_value_new_uint64(ident);
 	criterion = idmef_criterion_new(object, relation_equal, value);
 
-	table = idmef_db_select(connection, 0, selection, criterion);
+	table = idmef_db_select(connection, selection, criterion, -1);
 
 	idmef_criterion_destroy(criterion);
 
@@ -371,11 +371,11 @@ static int classic_insert_idmef_message(prelude_db_connection_t *connection, con
 
 
 static void *classic_select_values(prelude_db_connection_t *connection,
-				   int distinct,
 			           idmef_selection_t *selection, 
-				   idmef_criterion_t *criteria)
+				   idmef_criterion_t *criteria,
+				   int limit)
 {
-	return idmef_db_select(connection, distinct, selection, criteria);
+	return idmef_db_select(connection, selection, criteria, limit);
 }
 
 
@@ -388,10 +388,11 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	prelude_sql_field_t *field;
 	int field_cnt, nfields;
 	const char *char_val;
-	idmef_object_value_list_t *vallist;
+	idmef_object_value_list_t *objval_list = NULL;
 	idmef_object_value_t *objval;
 	idmef_object_t *object;
 	idmef_value_t *value;
+	int cnt;
 
 	if ( ! table )
 		return NULL;
@@ -402,14 +403,11 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 		return NULL;
 	}
 
-	vallist = idmef_object_value_list_new();
-	if ( ! vallist )
-		return NULL;
-	
 	nfields = prelude_sql_fields_num(table);	
 
 	idmef_selection_set_iterator(selection);
 
+	cnt = 0;
 	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
 		object = idmef_selection_get_next_object(selection);
@@ -418,31 +416,35 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 		if ( ! field )
 			continue;
 
-		char_val = prelude_sql_field_value(field);
+		if ( cnt == 0 ) {
+			objval_list = idmef_object_value_list_new();
+			if ( ! objval_list )
+				return NULL;
+		}
 
-#ifdef DEBUG
-		log(LOG_INFO, " * read value: %s\n", char_val);
-#endif
-
-		value = idmef_value_new_for_object(object, char_val);
+		value = prelude_sql_field_value_idmef(field);
 		if ( ! value ) {
-			log(LOG_ERR, "could not create container!\n");
+			log(LOG_ERR, "could not get idmef value from sql field\n");
 			goto error;
 		}
 
 		objval = idmef_object_value_new(idmef_object_ref(object), value);
 
-		if ( idmef_object_value_list_add(vallist, objval) < 0 ) {
+		if ( idmef_object_value_list_add(objval_list, objval) < 0 ) {
 			log(LOG_ERR, "could not add to value list\n");
-
 			goto error;
 		}
+
+		cnt++;
 	}
 
-	return vallist;
+	if ( cnt == 0 )
+		return classic_get_values(connection, table, selection);
+
+	return objval_list;
 
 error:
-	idmef_object_value_list_destroy(vallist);
+	idmef_object_value_list_destroy(objval_list);
 	prelude_sql_table_free(table);
 	
 	return NULL;

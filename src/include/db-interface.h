@@ -70,9 +70,9 @@ int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, pre
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
-					 int distinct,
-					 idmef_selection_t *selection, 
-					 idmef_criterion_t *criteria);
+					 idmef_selection_t *selection,
+					 idmef_criterion_t *criteria,
+					 int limit);
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
 							   void *data,

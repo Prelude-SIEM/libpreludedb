@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.9 2003/09/12 14:30:05 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.10 2003/09/18 06:55:56 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -1296,32 +1296,32 @@ XS(_wrap_prelude_db_interface_select_values) {
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        int arg2 ;
-        idmef_selection_t *arg3 = (idmef_selection_t *) 0 ;
-        idmef_criterion_t *arg4 = (idmef_criterion_t *) 0 ;
+        idmef_selection_t *arg2 = (idmef_selection_t *) 0 ;
+        idmef_criterion_t *arg3 = (idmef_criterion_t *) 0 ;
+        int arg4 ;
         void *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 4) || (items > 4)) {
-            SWIG_croak("Usage: prelude_db_interface_select_values(interface,distinct,selection,criteria);");
+            SWIG_croak("Usage: prelude_db_interface_select_values(interface,selection,criteria,limit);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
                 SWIG_croak("Type error in argument 1 of prelude_db_interface_select_values. Expected _p_prelude_db_interface_t");
             }
         }
-        arg2 = (int) SvIV(ST(1));
         {
-            if (SWIG_ConvertPtr(ST(2), (void **) &arg3, SWIGTYPE_p_idmef_selection_t,0) < 0) {
-                SWIG_croak("Type error in argument 3 of prelude_db_interface_select_values. Expected _p_idmef_selection_t");
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_idmef_selection_t,0) < 0) {
+                SWIG_croak("Type error in argument 2 of prelude_db_interface_select_values. Expected _p_idmef_selection_t");
             }
         }
         {
-            if (SWIG_ConvertPtr(ST(3), (void **) &arg4, SWIGTYPE_p_idmef_criterion_t,0) < 0) {
-                SWIG_croak("Type error in argument 4 of prelude_db_interface_select_values. Expected _p_idmef_criterion_t");
+            if (SWIG_ConvertPtr(ST(2), (void **) &arg3, SWIGTYPE_p_idmef_criterion_t,0) < 0) {
+                SWIG_croak("Type error in argument 3 of prelude_db_interface_select_values. Expected _p_idmef_criterion_t");
             }
         }
+        arg4 = (int) SvIV(ST(3));
         result = (void *)prelude_db_interface_select_values(arg1,arg2,arg3,arg4);
         
         ST(argvi) = sv_newmortal();

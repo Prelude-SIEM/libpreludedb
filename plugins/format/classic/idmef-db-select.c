@@ -638,115 +638,172 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 
 
 
+static char *object_to_table(table_list_t *tables, db_object_t *db_object)
+{
+	/* Add object's table to LEFT JOIN list */
+
+	return add_table(tables,
+			 db_object_get_table(db_object),
+			 db_object_get_top_table(db_object),
+			 db_object_get_top_field(db_object),
+			 db_object_get_ident_field(db_object),
+			 db_object_get_condition(db_object));
+}
+
+
+
+static int object_to_field(strbuf_t *fields,
+			   idmef_selected_object_t *selected,
+			   db_object_t *db_object,
+			   char *table_alias)
+{
+	idmef_object_t *alert = NULL, *heartbeat = NULL;
+	idmef_object_t *object = idmef_selected_object_get_object(selected);
+	char *table = db_object_get_table(db_object);
+	char *field = db_object_get_field(db_object);
+	char *function = db_object_get_function(db_object);
+	int retval;
+
+	alert = idmef_object_new_fast("alert.ident");
+	if ( ! alert ) {
+		log(LOG_ERR, "could not create alert.ident object!\n");
+		return -1;
+	}
+
+	heartbeat = idmef_object_new_fast("heartbeat.ident");
+	if ( ! heartbeat ) {
+		log(LOG_ERR, "could not create heartbeat.ident object!\n");
+		idmef_object_destroy(alert);
+		return -2;
+	}
+
+	/*
+	 * Add field to SELECT list, with alias if we're dealing with
+	 * alert.ident or heartbeat.ident
+	 */
+	if ( ( idmef_object_compare(object, alert) == 0 ) ||
+	     ( idmef_object_compare(object, heartbeat) == 0 ) )
+		retval = add_field(fields, table, field, "ident",
+				idmef_selected_object_get_function(selected));
+	else
+		retval = add_field(fields,
+				field ? table_alias : NULL,
+				field ? field : function,
+				NULL, 
+				idmef_selected_object_get_function(selected));
+
+	idmef_object_destroy(alert);
+	idmef_object_destroy(heartbeat);
+
+	return (retval < 0) ? -3 : retval;
+}
+
+
+
+static int object_to_group(strbuf_t *group, idmef_selected_object_t *selected, int index)
+{
+	int retval;
+
+	if ( idmef_selected_object_get_group_by(selected) != group_by )
+		return 0;
+
+	retval = strbuf_sprintf(group, "%s%d", strbuf_empty(group) ? "" : ",",	index);
+
+	return (retval < 0) ? -1 : 1;
+}
+
+
+
+static int object_to_order(strbuf_t *order_buf, idmef_selected_object_t *selected, int index)
+{
+	int retval;
+	idmef_order_t order = idmef_selected_object_get_order(selected);
+
+	if ( order == order_none )
+		return 0;
+	
+	retval = strbuf_sprintf(order_buf, "%s%d %s",
+				strbuf_empty(order_buf) ? "" : ",",
+				index,
+				(order == order_asc) ? "ASC" : "DESC");
+
+	return (retval < 0) ? -1 : 1;
+}
+
+
+
 
 /*
  * This function does not modify WHERE clause as for now, but we pass it the
  * relevant buffer just in case
  */
 static int objects_to_sql(prelude_sql_connection_t *conn,
-		   strbuf_t *fields,
-		   strbuf_t *where,
-		   table_list_t *tables,
-		   idmef_selection_t *selection)
+			  strbuf_t *fields,
+			  strbuf_t *where,
+			  strbuf_t *group,
+			  strbuf_t *order,
+			  table_list_t *tables,
+			  idmef_selection_t *selection)
 {
 	idmef_selected_object_t *selected;
+	db_object_t *db_object;
 	idmef_object_t *object;
-	db_object_t *db;
-	char *table;
-	char *field;
-	char *function;
-	char *top_table;
-	char *top_field;
-	char *condition;
-	char *ident_field;
 	char *table_alias;
-	int ret = -1;
-	idmef_object_t *alert = NULL, *heartbeat = NULL;
+	int cnt;
 
-	alert = idmef_object_new("alert.ident");
-	if ( ! alert ) {
-		log(LOG_ERR, "could not create alert.ident object!\n");
-		ret = -1;
-		goto error;
-	}
-
-	heartbeat = idmef_object_new("heartbeat.ident");
-	if ( ! heartbeat ) {
-		log(LOG_ERR, "could not create heartbeat.ident object!\n");
-		ret = -1;
-		goto error;
-	}
-
+	cnt = 0;
 	idmef_selection_set_iterator(selection);
 	while ( (selected = idmef_selection_get_next_selected_object(selection)) ) {
 
 		object = idmef_selected_object_get_object(selected);
 
-		db = db_object_find(object);
-		if ( ! db ) {
+		db_object = db_object_find(object);
+		if ( ! db_object ) {
 			const char *objname = idmef_object_get_name(object);
 			char *objnum = idmef_object_get_numeric(object);
 
 			log(LOG_ERR, "object %s [%s] not handled by database specification!\n",
 				     objname, objnum);
 			free(objnum);
-			ret = -1;
-			goto error;
+			return -1;
 		}
 
-		table = db_object_get_table(db);
-		field = db_object_get_field(db);
-		function = db_object_get_function(db);
-		top_table = db_object_get_top_table(db);
-		top_field = db_object_get_top_field(db);
-		condition = db_object_get_condition(db);
-		ident_field = db_object_get_ident_field(db);
-
-		/* Add object's table to LEFT JOIN list */
-		table_alias = add_table(tables, table, top_table, top_field,
-				        ident_field, condition);
+		table_alias = object_to_table(tables, db_object);
 		if ( ! table_alias )
-			goto error;
+			return -2;
 
-		/*
-		 * Add field to SELECT list, with alias if we're dealing with
-		 * alert.ident or heartbeat.ident
-		 */
-		if ( ( idmef_object_compare(object, alert) == 0 ) ||
-		     ( idmef_object_compare(object, heartbeat) == 0 ) )
-		     	ret = add_field(fields, table, field, "ident", 
-		     			idmef_selected_object_get_function(selected));
-		else
-			ret = add_field(fields,
-					field ? table_alias : NULL,
-					field ? field : function,
-					NULL, 
-					idmef_selected_object_get_function(selected));
+		if ( object_to_field(fields, selected, db_object, table_alias) < 0 )
+			return -3;
 
-		if ( ret < 0 )
-			goto error;
+		if ( object_to_group(group, selected, cnt + 1) < 0 )
+			return -4;
 
+		if ( object_to_order(order, selected, cnt + 1) < 0 )
+			return -5;
+
+		cnt++;
 	}
 
-	ret = 0;
-
-error:
-	idmef_object_destroy(alert);
-	idmef_object_destroy(heartbeat);
-
-	return ret;
+	return 0;
 }
 
 
 
 
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
-			       int distinct,
 			       idmef_selection_t *selection,
-			       idmef_criterion_t *criterion)
+			       idmef_criterion_t *criterion,
+			       int limit)
 {
 	strbuf_t *request = NULL;
-	strbuf_t *str_tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
+	strbuf_t 
+		*str_tables = NULL,
+		*where1 = NULL,
+		*where2 = NULL,
+		*fields = NULL,
+		*group = NULL,
+		*order = NULL,
+		*lim = NULL;
 	table_list_t *tables = NULL;
 	int ret = -1;
 
@@ -770,7 +827,24 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! where2 )
 		goto error;
 
-	ret = objects_to_sql(conn, fields, where1, tables, selection);
+	group = strbuf_new();
+	if ( ! group )
+		goto error;
+
+	order = strbuf_new();
+	if ( ! order )
+		goto error;
+
+	if ( limit >= 0 ) {
+		lim = strbuf_new();
+		if ( ! lim )
+			goto error;
+
+		if ( strbuf_sprintf(lim, "LIMIT %d", limit) < 0 )
+			goto error;
+	}
+
+	ret = objects_to_sql(conn, fields, where1, group, order, tables, selection);
 	if ( ret < 0 )
 		goto error;
 
@@ -785,14 +859,16 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! str_tables )
 		goto error;
 
-	ret = strbuf_sprintf(request, "SELECT %s%s FROM %s %s %s %s %s ;",
-			     distinct ? "DISTINCT " : "",
+	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s %s %s %s %s %s;",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),
 			     ( strbuf_empty(where1) && strbuf_empty(where2) ) ? "" : "WHERE",
 		             strbuf_string(where1),
 		             ( strbuf_empty(where1) || strbuf_empty(where2) ? "" : "AND" ),
-		             strbuf_string(where2));
+		             strbuf_string(where2),
+			     strbuf_empty(group) ? "" : "GROUP BY", strbuf_string(group),
+			     strbuf_empty(order) ? "" : "ORDER BY", strbuf_string(order),
+			     lim ? strbuf_string(lim) : "");
 	if ( ret < 0 )
 		goto error;
 
@@ -813,6 +889,15 @@ error:
 	if ( where2 )
 		strbuf_destroy(where2);
 
+	if ( group )
+		strbuf_destroy(group);
+
+	if ( order )
+		strbuf_destroy(order);
+
+	if ( lim )
+		strbuf_destroy(lim);
+
 	if ( ret >= 0 )
 		return request;
 
@@ -825,10 +910,10 @@ error:
 
 
 
-prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
-				      int distinct,
-				      idmef_selection_t *selection,
-				      idmef_criterion_t *criterion)
+prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
+				     idmef_selection_t *selection,
+				     idmef_criterion_t *criterion,
+				     int limit)
 {
 	prelude_sql_connection_t *sql;
 	strbuf_t *request;
@@ -841,7 +926,7 @@ prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, distinct, selection, criterion);
+	request = build_request(sql, selection, criterion, limit);
 	if ( ! request )
 		return NULL;
 

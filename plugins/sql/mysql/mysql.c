@@ -585,7 +585,7 @@ static const char *db_field_value(void *s, void *t, void *r, void *f)
 	session_t *session = s;
 
 	session->dberrno = 0;
-	
+
 	return (const char *) f;
 }
 
