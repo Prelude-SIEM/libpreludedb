@@ -1,0 +1,5 @@
+TYPEMAP
+prelude_db_interface_t *		T_PTROBJ
+prelude_sql_connection_t *		T_PTROBJ
+prelude_sql_table_t *			T_PTROBJ
+prelude_sql_row_t *			T_PTROBJ

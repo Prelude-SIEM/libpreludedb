@@ -1,3 +1,13 @@
+2003-01-11  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/Makefile.am:
+	link the plugin dynamically against libprelude to avoid linker
+	errors when used from Perl. 
+	
+	* bindings/*:
+	new files. Perl 5.8 bindings from Nicolas Delon 
+	<delon.nicolas@wanadoo.fr>
+
 2003-01-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/sql/mysql.c:
