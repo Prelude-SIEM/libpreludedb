@@ -43,6 +43,10 @@ int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
 
 int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 
+prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
+
+prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_db_interface_t *interface);
+
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 
 int prelude_db_interface_destroy(prelude_db_interface_t *interface);

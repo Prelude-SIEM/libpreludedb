@@ -191,7 +191,7 @@ prelude_sql_row_t *prelude_sql_row_new(int cols)
 
 
 
-int prelude_sql_row_add_field(prelude_sql_row_t *row, int column, prelude_sql_field_t *field)
+int prelude_sql_row_set_field(prelude_sql_row_t *row, int column, prelude_sql_field_t *field)
 {
 	if ( ! row || column < 0 || column > row->fields || row->field[column] )
 		return -1;
@@ -253,10 +253,17 @@ int prelude_sql_row_find_field(prelude_sql_row_t *row, const char *name)
 
 prelude_sql_field_t *prelude_sql_row_get_field(prelude_sql_row_t *row, int field)
 {
-	if ( ! row || ! field)
+	if ( ! row )
 		return NULL;
 	
 	return (field < row->fields) ? row->field[field] : NULL;
+}
+
+
+
+int prelude_sql_row_get_width(prelude_sql_row_t *row)
+{
+	return row ? row->fields : -1;
 }
 
 

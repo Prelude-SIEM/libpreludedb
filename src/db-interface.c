@@ -63,9 +63,6 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
 	if ( ! data )
 		return NULL;
 		
-	if ( ! format )
-		return NULL;
-
         interface = calloc(1, sizeof(*interface));
         if ( ! interface ) {
                 log(LOG_ERR, "memory exhausted.\n");
@@ -73,19 +70,21 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         }
         
         interface->connection_data = data;
-        interface->format = (plugin_format_t *) plugin_search_by_name(format);
-        if ( ! interface->format ) {
-                log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
-                free(interface);
-                return NULL;
+        
+        if ( format ) {
+        	interface->format = (plugin_format_t *) plugin_search_by_name(format);
+        	if ( ! interface->format ) {
+                	log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
+                	free(interface);
+                	return NULL;
+        	}
+        	interface->format_name = strdup(format);
         }
         
         if ( name ) 
         	interface->name = strdup(name);
         else
         	interface->name = strdup("(unnamed)");
-     	
-        interface->format_name = strdup(format);
         
 	INIT_LIST_HEAD(&interface->filter_list);
         
@@ -114,11 +113,6 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db)
 int prelude_db_interface_connect(prelude_db_interface_t *db) 
 {
         prelude_sql_connection_t *cnx;
-
-        if ( ! db->format ) {
-                log(LOG_ERR, "database format not specified.\n");
-                return -1;
-        }
 
 	switch ( prelude_db_connection_data_get_type(db->connection_data) ) {
 
@@ -215,11 +209,31 @@ int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, 
 	if ( ! interface->active )
 		return -4;
 	
-	if ( ! interface->format->format_write )
+	if ( ! interface->format )
 		return -5;
+	
+	if ( ! interface->format->format_write )
+		return -6;
 		
 	return interface->format->format_write(interface->db_connection, msg);
 }
+
+
+
+
+prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface)
+{
+	return interface ? interface->db_connection : NULL;
+}
+
+
+
+
+prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_db_interface_t *interface)
+{
+	return interface ? interface->connection_data : NULL;
+}
+
 
 
 
@@ -252,6 +266,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 	/* not reached */		
 	return 0;
 }
+
 
 
 

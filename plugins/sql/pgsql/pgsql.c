@@ -281,6 +281,8 @@ static int get_query_result(const char *query, PGresult *res, prelude_sql_table_
                                 errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
                                 return -1;
                         }
+                        
+                        prelude_sql_row_set_field(row, j, field);
         	}
         }
 

@@ -1,3 +1,24 @@
+2002-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/db-interface.c:
+	allow interface specification with format = NULL
+
+	* src/db-interface.c:
+	* src/include/db-interface-h:
+	(prelude_db_interface_get_connection)
+	(prelude_db_interface_get_connection_data)
+	new function.
+
+	* src/sql-table.c:
+	* src/include/sql-table.h:
+	rename prelude_sql_row_add_field() to prelude_sql_row_set_field()
+	to reflect actual behavior. Add new function 
+	prelude_sql_row_get_width().
+
+	* plugins/sql/pgsql/pgsql.c(get_query_result):
+	fix a bug preventing function from working :-)
+	(add missing call to prelude_sql_row_set_field())
+
 2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/include/sql.h:

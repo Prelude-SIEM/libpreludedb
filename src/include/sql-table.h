@@ -50,11 +50,12 @@ int prelude_sql_field_to_string(prelude_sql_field_t *f, char *buf, int len);
 int prelude_sql_field_destroy(prelude_sql_field_t *f);
 
 prelude_sql_row_t *prelude_sql_row_new(int cols);
-int prelude_sql_row_add_field(prelude_sql_row_t *row, int column, prelude_sql_field_t *field);
+int prelude_sql_row_set_field(prelude_sql_row_t *row, int column, prelude_sql_field_t *field);
 int prelude_sql_row_delete_field(prelude_sql_row_t *row, int column);
 int prelude_sql_row_destroy_field(prelude_sql_row_t *row, int column);
 int prelude_sql_row_find_field(prelude_sql_row_t *row, const char *name);
 prelude_sql_field_t *prelude_sql_row_get_field(prelude_sql_row_t *row, int field);
+int prelude_sql_row_get_width(prelude_sql_row_t *row);
 int prelude_sql_row_destroy(prelude_sql_row_t *row);
 
 prelude_sql_table_t *prelude_sql_table_new(const char *name);
