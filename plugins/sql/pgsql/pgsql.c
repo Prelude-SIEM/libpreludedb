@@ -48,40 +48,33 @@
 int pgsql_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data);
 
 
-struct pg_session {
-	PGconn *pgsql;
-
-	/* query dependant variable */
+struct pg_result {
+	PGresult *result;
 	int row;
 };
 
 
-
 static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
 {
-	struct pg_session *s;
+	PGconn *conn;
 
-	s = calloc(1, sizeof (struct pg_session));
-	if ( ! s )
-		return preludedb_error_from_errno(errno);
+        conn = PQsetdbLogin(preludedb_sql_settings_get_host(settings),
+			    preludedb_sql_settings_get_port(settings),
+			    NULL,
+			    NULL,
+			    preludedb_sql_settings_get_name(settings),
+			    preludedb_sql_settings_get_user(settings),
+			    preludedb_sql_settings_get_pass(settings));
 
-        s->pgsql = PQsetdbLogin(preludedb_sql_settings_get_host(settings),
-				preludedb_sql_settings_get_port(settings),
-				NULL,
-				NULL,
-				preludedb_sql_settings_get_name(settings),
-				preludedb_sql_settings_get_user(settings),
-				preludedb_sql_settings_get_pass(settings));
+        if ( PQstatus(conn) == CONNECTION_BAD ) {
+		if ( PQerrorMessage(conn) )
+			snprintf(errbuf, size, "%s", PQerrorMessage(conn));
+                PQfinish(conn);
 
-        if ( PQstatus(s->pgsql) == CONNECTION_BAD ) {
-		if ( PQerrorMessage(((struct pg_session *) session)->pgsql) )
-			snprintf(errbuf, size, "%s", PQerrorMessage(((struct pg_session *) session)->pgsql));
-                PQfinish(s->pgsql);
-		free(s);
 		return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
 
-	*session = s;
+	*session = conn;
 
         return 0;
 }
@@ -90,18 +83,14 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
 
 static void sql_close(void *session)
 {
-        struct pg_session *s = session;
-        
-        PQfinish(s->pgsql);
-	free(s);
+        PQfinish(session);
 }
 
 
 
 static const char *sql_get_error(void *session)
 {
-        struct pg_session *s = session;
-	return PQerrorMessage(s->pgsql);
+	return PQerrorMessage(session);
 }
 
 
@@ -191,22 +180,29 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 static int sql_query(void *session, const char *query, void **resource)
 {
         int ret;
-        PGresult *res;
-        struct pg_session *s = session;
+        struct pg_result *res;
 
-	res = PQexec(s->pgsql, query);
+	res = calloc(1, sizeof (*res));
 	if ( ! res )
+		return prelude_error_from_errno(errno);
+
+	res->row = -1;
+
+	res->result = PQexec(session, query);
+	if ( ! res->result ) {
+		free(res);
 		return preludedb_error(PRELUDEDB_ERROR_QUERY);
+	}
 
-	ret = PQresultStatus(res);
+	ret = PQresultStatus(res->result);
 
-        if ( ret == PGRES_TUPLES_OK && PQntuples(res) != 0 ) {
-                s->row = 0;
+        if ( ret == PGRES_TUPLES_OK && PQntuples(res->result) != 0 ) {
                 *resource = res;
                 return 1;
         }
         
-        PQclear(res);
+        PQclear(res->result);
+	free(res);
         if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
                 return 0;
         
@@ -217,46 +213,54 @@ static int sql_query(void *session, const char *query, void **resource)
 
 static void sql_resource_destroy(void *session, void *resource)
 {
-	if ( resource )
-		PQclear(resource);
+	if ( resource ) {
+		PQclear(((struct pg_result *) resource)->result);
+		free(resource);
+	}
 }
 
 
 
 static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
 {
-	return PQfname(resource, column_num);
+	return PQfname(((struct pg_result *) resource)->result, column_num);
 }
 
 
 
 static int sql_get_column_num(void *session, void *resource, const char *column_name)
 {
-	return PQfnumber(resource, column_name);
+	return PQfnumber(((struct pg_result *) resource)->result, column_name);
 }
 
 
 
 static unsigned int sql_get_column_count(void *session, void *resource)
 {
-	return PQnfields(resource);
+	return PQnfields(((struct pg_result *) resource)->result);
 }
 
 
 
 static unsigned int sql_get_row_count(void *session, void *resource)
 {
-	return PQntuples(resource);
+	return PQntuples(((struct pg_result *) resource)->result);
 }
 
 
 
 static int sql_fetch_row(void *s, void *resource, void **row)
 {
-	struct pg_session *session = s;
+	struct pg_result *res = resource;
 
-	if ( session->row < PQntuples(((PGresult *) resource)) ) {
-		*row = (void *) (session->row++ + 1);
+	/* 
+	 * initialize *row, but we won't use it since we access row's fields directly
+	 * through the PGresult structure
+	 */
+	*row = NULL;
+
+	if ( res->row + 1 < PQntuples(res->result) ) {
+		res->row++;
 		return 1;
 	}
 
@@ -268,16 +272,16 @@ static int sql_fetch_row(void *s, void *resource, void **row)
 static int sql_fetch_field(void *session, void *resource, void *r,
 			   unsigned int column_num, const char **value, size_t *len)
 {
-	unsigned int row = (unsigned int) r - 1;
+	struct pg_result *res = resource;
 	
-	if ( column_num >= PQnfields(resource) )
+	if ( column_num >= PQnfields(res->result) )
 		return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
-	if ( PQgetisnull(resource, row, column_num) )
+	if ( PQgetisnull(res->result, res->row, column_num) )
 		return 0;
 
-	*value = PQgetvalue(resource, row, column_num);
-	*len = PQgetlength(resource, row, column_num);
+	*value = PQgetvalue(res->result, res->row, column_num);
+	*len = PQgetlength(res->result, res->row, column_num);
 
 	return 1;
 }

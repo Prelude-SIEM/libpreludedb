@@ -227,7 +227,7 @@ DROP TABLE IF EXISTS Prelude_Checksum;
 
 CREATE TABLE Prelude_Checksum (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index BIGINT NOT NULL,
+ _parent0_index TINYINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index),
@@ -487,7 +487,7 @@ CREATE TABLE Prelude_WebServiceArg (
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent0_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  arg VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
 

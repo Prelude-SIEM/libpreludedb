@@ -9,21 +9,21 @@ DROP TABLE Prelude_Alert;
 
 CREATE TABLE Prelude_Alert (
  _ident BIGSERIAL PRIMARY KEY,
- messageid NUMERIC(20) NOT NULL
+ messageid VARCHAR(255) NULL
 );
 
 
 
-DROP TABLE Prelude_AlertIdent;
+DROP TABLE Prelude_Alertident;
 
-CREATE TABLE Prelude_AlertIdent (
+CREATE TABLE Prelude_Alertident (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=ToolAlert C=CorrelationAlert */
  alertident VARCHAR(255) NOT NULL,
  analyzerid VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_alertident_index ON Prelude_AlertIdent (_parent_type, _message_ident);
+CREATE INDEX prelude_alertident_index ON Prelude_Alertident (_parent_type, _message_ident);
 
 
 
@@ -61,7 +61,8 @@ DROP TABLE Prelude_Heartbeat;
 
 CREATE TABLE Prelude_Heartbeat (
  _ident BIGSERIAL PRIMARY KEY,
- messageid NUMERIC(20) NOT NULL
+ messageid VARCHAR(255) NULL,
+ heartbeat_interval NUMERIC(8) NULL
 );
 
 
@@ -104,13 +105,14 @@ DROP TABLE Prelude_Reference;
 
 CREATE TABLE Prelude_Reference (
  _message_ident NUMERIC(20) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
  origin VARCHAR(32) NOT NULL,
  name VARCHAR(255) NOT NULL,
  url VARCHAR(255) NOT NULL,
  meaning VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_reference_index_message_ident ON Prelude_Reference (_message_ident);
+CREATE INDEX prelude_reference_index_message_ident ON Prelude_Reference (_message_ident, _index);
 CREATE INDEX prelude_reference_index_name on Prelude_Reference (name);
 
 
@@ -145,9 +147,9 @@ DROP TABLE Prelude_File;
 
 CREATE TABLE Prelude_File (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
  _index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _index),
+ PRIMARY KEY (_message_ident, _parent0_index, _index),
  ident VARCHAR(255) NULL,
  path VARCHAR(255) NOT NULL,
  name VARCHAR(255) NOT NULL,
@@ -169,10 +171,10 @@ DROP TABLE Prelude_FileAccess;
 
 CREATE TABLE Prelude_FileAccess (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(3) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
  _index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index, _index)
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
 );
 
 
@@ -181,13 +183,13 @@ DROP TABLE Prelude_FileAccess_Permission;
 
 CREATE TABLE Prelude_FileAccess_Permission (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(3) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
- _file_access_index NUMERIC(3) NOT NULL,
- perm VARCHAR(255) NOT NULL
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
+ _parent2_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _parent2_index, _index),
+ permission VARCHAR(255) NOT NULL
 );
-
-CREATE INDEX prelude_fileaccess_permission_index ON Prelude_FileAccess_Permission (_message_ident, _target_index, _file_index, _file_access_index);
 
 
 
@@ -195,14 +197,15 @@ DROP TABLE Prelude_Linkage;
 
 CREATE TABLE Prelude_Linkage (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(3) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
  category VARCHAR(32) NOT NULL,
  name VARCHAR(255) NOT NULL,
  path VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX prelude_linkage_index ON Prelude_Linkage (_message_ident, _target_index, _file_index);
+CREATE INDEX prelude_linkage_index ON Prelude_Linkage (_message_ident, _parent0_index, _parent1_index, _index);
 
 
 
@@ -210,9 +213,9 @@ DROP TABLE Prelude_Inode;
 
 CREATE TABLE Prelude_Inode (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(20) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index),
  change_time TIMESTAMP NULL,
  change_time_gmtoff NUMERIC(8) NULL, 
  number VARCHAR(8) NULL,
@@ -228,9 +231,10 @@ DROP TABLE Prelude_Checksum;
 
 CREATE TABLE Prelude_Checksum (
  _message_ident NUMERIC(20) NOT NULL,
- _target_index NUMERIC(20) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index),
  algorithm VARCHAR(32) NOT NULL,
  value VARCHAR(255) NOT NULL,
  checksum_key VARCHAR(255) NULL /* key is a reserved word */
@@ -257,11 +261,11 @@ DROP TABLE Prelude_Action;
 
 CREATE TABLE Prelude_Action (
  _message_ident NUMERIC(20) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_message_ident, _index),
  description VARCHAR(255) NULL,
  category VARCHAR(32) NOT NULL
 );
-
-CREATE INDEX prelude_action_index ON Prelude_Action (_message_ident);
 
 
 
@@ -288,12 +292,12 @@ DROP TABLE Prelude_AdditionalData;
 CREATE TABLE Prelude_AdditionalData (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _index),
  type VARCHAR(32) NOT NULL,
  meaning VARCHAR(255) NULL,
  data BYTEA NULL
 );
-
-CREATE INDEX prelude_additional_data_index ON Prelude_AdditionalData (_parent_type, _message_ident);
 
 
 
@@ -345,8 +349,8 @@ DROP TABLE Prelude_Node;
 CREATE TABLE Prelude_Node (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Analyzer T=Target S=Source H=Heartbeat */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY(_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY(_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  category VARCHAR(32) NULL,
  location VARCHAR(255) NULL,
@@ -363,7 +367,9 @@ DROP TABLE Prelude_Address;
 CREATE TABLE Prelude_Address (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Analyzer T=Target S=Source H=Heartbeat */
- _parent_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  ident VARCHAR(255) NULL,
  category VARCHAR(32) NOT NULL,
  vlan_name VARCHAR(255) NULL,
@@ -372,7 +378,6 @@ CREATE TABLE Prelude_Address (
  netmask VARCHAR(255) NULL
 );
 
-CREATE INDEX prelude_address_index ON Prelude_Address (_parent_type, _message_ident, _parent_index);
 CREATE INDEX prelude_address_index_address ON Prelude_Address (_parent_type, address);
 
 
@@ -382,8 +387,8 @@ DROP TABLE Prelude_User;
 CREATE TABLE Prelude_User (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target S=Source */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  category VARCHAR(32) NOT NULL
 );
@@ -395,17 +400,17 @@ DROP TABLE Prelude_UserId;
 CREATE TABLE Prelude_UserId (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target User S=Source User F=File Access */
- _parent_index NUMERIC(3) NOT NULL,
- _file_index NUMERIC(3) NOT NULL,
- _file_access_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _parent1_index NUMERIC(3) NOT NULL,
+ _parent2_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _parent1_index, _parent2_index, _index), /* _parent_index1 and _parent2_index will always be zero if parent_type = 'F' */
  ident VARCHAR(255) NULL,
  type VARCHAR(32) NOT NULL,
  name VARCHAR(255) NULL,
  tty VARCHAR(255) NULL,
  number NUMERIC(8) NULL
 );
-
-CREATE INDEX prelude_user_id_index ON Prelude_UserId (_parent_type, _message_ident, _parent_index, _file_index, _file_access_index); /* _file_index and _file_access_index will always be zero if parent_type = 'F' */
 
 
 
@@ -414,8 +419,8 @@ DROP TABLE Prelude_Process;
 CREATE TABLE Prelude_Process (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Analyzer T=Target S=Source H=Heartbeat */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  name VARCHAR(255) NOT NULL,
  pid NUMERIC(8) NULL,
@@ -429,11 +434,11 @@ DROP TABLE Prelude_ProcessArg;
 CREATE TABLE Prelude_ProcessArg (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL DEFAULT 'A', /* A=Analyser T=Target S=Source */
- _parent_index NUMERIC(3) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _index  NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  arg VARCHAR(255) NOT NULL
 );
-
-CREATE INDEX prelude_process_arg_index ON Prelude_ProcessArg (_parent_type, _message_ident, _parent_index);
 
 
 
@@ -442,11 +447,11 @@ DROP TABLE Prelude_ProcessEnv;
 CREATE TABLE Prelude_ProcessEnv (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Analyser T=Target S=Source */
- _parent_index NUMERIC(20) NOT NULL,
+ _parent0_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  env VARCHAR(255) NOT NULL
 );
-
-CREATE INDEX prelude_process_env_index ON Prelude_ProcessEnv (_parent_type, _message_ident, _parent_index);
 
 
 
@@ -455,8 +460,8 @@ DROP TABLE Prelude_Service;
 CREATE TABLE Prelude_Service (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target S=Source */
- _parent_index NUMERIC(20) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(20) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  ip_version NUMERIC(3) NULL,
  name VARCHAR(255) NULL,
@@ -477,8 +482,8 @@ DROP TABLE Prelude_WebService;
 CREATE TABLE Prelude_WebService (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target S=Source */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  url VARCHAR(255) NOT NULL,
  cgi VARCHAR(255) NULL,
  http_method VARCHAR(255) NULL
@@ -491,8 +496,9 @@ DROP TABLE Prelude_WebServiceArg;
 CREATE TABLE Prelude_WebServiceArg (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target S=Source */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ _index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  arg VARCHAR(255) NOT NULL
 );
 
@@ -503,8 +509,8 @@ DROP TABLE Prelude_SNMPService;
 CREATE TABLE Prelude_SNMPService (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=Target S=Source */
- _parent_index NUMERIC(3) NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index NUMERIC(3) NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  snmp_oid VARCHAR(255) NULL, /* oid is a reserved word in PostgreSQL */
  community VARCHAR(255) NULL,
  security_name VARCHAR(255) NULL,
