@@ -316,7 +316,7 @@ static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t 
  *
  * Execute a SQL query.
  *
- * Returns: 0 on success or a negative value if an error occur.
+ * Returns: 1 if the query returns results, 0 if it does not, or negative value if an error occur.
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
@@ -364,7 +364,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
  *
  * Execute a SQL query.
  *
- * Returns: 0 on success or a negative value if an error occur.
+ * Returns: 1 if the query returns results, 0 if it does not, or negative value if an error occur.
  */
 int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table,
 				const char *format, ...)
@@ -783,7 +783,8 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
  *
  * Fetch the next table's row.
  *
- * Returns: 0 on success or a negative value if an error occur.
+ * Returns: 1 if the table returns a new row, 0 if there is no more rows to fetch or
+ * a negative value if an error occur.
  */
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row)
 {
@@ -816,7 +817,8 @@ int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_ro
  *
  * Fetch the field of column @column_num
  *
- * Returns: 0 on success or a negative value if an error occur.
+ * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
+ * a negative value if an error occur.
  */
 int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_num,
 				  preludedb_sql_field_t **field)
@@ -852,7 +854,8 @@ int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_
  *
  * Fetch the field of column @column_name
  *
- * Returns: 0 on success or a negative value if an error occur.
+ * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
+ * a negative value if an error occur.
  */
 int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *column_name,
 					  preludedb_sql_field_t **field)
