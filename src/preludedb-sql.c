@@ -264,6 +264,8 @@ static void preludedb_sql_disconnect(preludedb_sql_t *sql)
  */
 const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
 {
+	const char *error;
+	
 	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {
 		return (strlen(sql->errbuf) > 0) ? sql->errbuf : NULL;
 	}
@@ -271,7 +273,11 @@ const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
 	if ( ! sql->plugin->get_error )
 		return NULL;
 
-	return sql->plugin->get_error(sql->session);
+	error = sql->plugin->get_error(sql->session);
+	if ( error && strlen(error) > 0 )
+		return error;
+
+	return (strlen(sql->errbuf) > 0) ? sql->errbuf : NULL;	
 }
 
 
@@ -518,9 +524,14 @@ int preludedb_sql_transaction_end(preludedb_sql_t *sql)
 int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 {
 	int ret;
+	const char *error;
 
 	if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
 		return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
+
+	error = sql->plugin->get_error(sql->session);
+	if ( error && strlen(error) > 0 )
+		snprintf(sql->errbuf, PRELUDEDB_ERRBUF_SIZE, "%s", error);
 
 	ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
 
