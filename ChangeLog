@@ -1,3 +1,14 @@
+2004-01-28  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* src/sql.c (prelude_sql_escape_fast):
+	implement. Same as prelude_sql_escape() but take
+	a size as argument.
+
+	* plugins/sql/pgsql/pgsql.c (db_escape): 
+	* plugins/sql/mysql/mysql.c (db_escape): 
+	now take a len argument. We doesn't compute len
+	by ourself anymore.
+
 2004-01-25  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.c:

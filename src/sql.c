@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2002, 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
@@ -313,14 +313,28 @@ int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const 
 
 
 
-char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string) 
+
+char *prelude_sql_escape_fast(prelude_sql_connection_t *conn, const char *buf, size_t len) 
 {
-	if ( ! string ) 
+	if ( ! buf ) 
 		return strdup("NULL");
 	
 	return (conn && conn->plugin) ? 
-		conn->plugin->db_escape(conn->session, string) : NULL;
+		conn->plugin->db_escape(conn->session, buf, len) : NULL;
 }
+
+
+
+
+char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string) 
+{
+        if ( ! string )
+                return strdup("NULL");
+        
+        return (conn && conn->plugin) ? 
+		conn->plugin->db_escape(conn->session, string, strlen(string)) : NULL;
+}
+
 
 
 

@@ -209,17 +209,15 @@ static void db_close(void *s)
 /*
  * Escape string with single quote
  */
-static char *db_escape(void *s, const char *str)
+static char *db_escape(void *s, const char *str, size_t len)
 {
         char *ptr;
+        size_t rlen;
         int i, ok = 0;
-        size_t len, rlen;
 
         if ( ! str )
                 return strdup("NULL");
 
-        len = strlen(str);
-        
         rlen = len * 2 + 3;
         if ( rlen <= len )
                 return NULL;

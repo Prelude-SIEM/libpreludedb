@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001-2003 Vandoorselaere Yoann <yoann@prelude-ids.org>
+* Copyright (C) 2001-2004 Vandoorselaere Yoann <yoann@prelude-ids.org>
 * Copyright (C) 2001 Sylvain GIL <prelude@tootella.org>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
@@ -156,10 +156,10 @@ static void db_close(void *s)
  * Takes a string and create a legal SQL string from it.
  * returns the escaped string.
  */
-static char *db_escape(void *s, const char *string)
+static char *db_escape(void *s, const char *buf, size_t len)
 {
+        size_t rlen;
         char *escaped;
-        size_t len, rlen;
 	session_t *session = s;
 
 	session->dberrno = 0;
@@ -174,8 +174,6 @@ static char *db_escape(void *s, const char *string)
          * worse case, each character may need to be encoded as using two bytes,
          * and you need room for the terminating null byte.)
          */
-        len = strlen(string);
-
         rlen = len * 2 + 3;
         if ( rlen <= len )
                 return NULL;

@@ -69,7 +69,7 @@ typedef struct {
         void *(*db_setup)(const char *dbhost, const char *dbport, const char *dbname, 
                           const char *dbuser, const char *dbpass);
         int (*db_connect) (void *session);
-        char *(*db_escape)(void *session, const char *input);
+        char *(*db_escape)(void *session, const char *buf, size_t len);
 	const char *(*db_limit_offset)(void *session, int limit, int offset);
         void *(*db_query)(void *session, const char *query);
         int (*db_begin)(void *session);
