@@ -113,7 +113,7 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db)
 
 int prelude_db_interface_connect(prelude_db_interface_t *db) 
 {
-        sql_connection_t *cnx;
+        prelude_sql_connection_t *cnx;
 
         if ( ! db->format ) {
                 log(LOG_ERR, "database format not specified.\n");
@@ -123,7 +123,7 @@ int prelude_db_interface_connect(prelude_db_interface_t *db)
 	switch ( prelude_db_connection_data_get_type(db->connection_data) ) {
 
 		case prelude_db_type_sql:
-        		cnx = sql_connect(prelude_db_connection_data_get(db->connection_data));
+        		cnx = prelude_sql_connect(prelude_db_connection_data_get(db->connection_data));
         		if ( ! cnx ) {
                 		log(LOG_ERR, "%s: SQL connection failed.\n", db->name);
                 		return -1;
@@ -240,7 +240,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 	switch ( prelude_db_connection_get_type(interface->db_connection) ) {
             
         	case prelude_db_type_sql:
-         	       sql_close(prelude_db_connection_get(interface->db_connection));
+         	       prelude_sql_close(prelude_db_connection_get(interface->db_connection));
                 	return 0;
                 
         	default:

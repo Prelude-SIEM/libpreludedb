@@ -1,5 +1,17 @@
 2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/include/format.h:
+	* src/sql.c:
+	prefix public functions with prelude_ (so all public SQL functions
+	are now prefixed with prelude_sql_)
+
+	* src/include/format.h:
+	* src/db-interface.c:
+	* plugins/format/classic/idmef-db-output.c:
+	modified accordingly
+
+2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/include/sql.h:
 	* src/sql.c:
 	SQL connection handling code from sql-plugins.c. sql_connection_t

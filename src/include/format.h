@@ -8,7 +8,7 @@ typedef enum {
 typedef struct {
 	db_type_t type;
 	union {
-		sql_connection_t *connection;
+		prelude_sql_connection_t *connection;
 	} connection;
 } db_connection_t;
 

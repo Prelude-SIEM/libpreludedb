@@ -49,7 +49,7 @@
 #include "db-connection.h"
 
 
-struct sql_connection {
+struct prelude_sql_connection {
         void *session;
 	plugin_sql_t *plugin;
 	prelude_sql_connection_data_t *data;
@@ -170,7 +170,7 @@ static char *generate_query(char *buf, size_t size, int *len, const char *fmt, v
 
 
 
-int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
+int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
 {
         va_list ap;
         int len, ret;
@@ -207,7 +207,7 @@ int sql_insert(sql_connection_t *conn, const char *table, const char *fields, co
 
 
 
-sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
+sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...)
 {
         va_list ap;
         sql_table_t *ret;
@@ -228,7 +228,7 @@ sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...)
 
 
 
-char *sql_escape(sql_connection_t *conn, const char *string) 
+char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string) 
 {
 	if (!string) 
 		return strdup("NULL");
@@ -239,28 +239,28 @@ char *sql_escape(sql_connection_t *conn, const char *string)
 
 
 
-int sql_begin(sql_connection_t *conn)
+int prelude_sql_begin(prelude_sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_begin(conn->session) : -1;
 }
 
 
 
-int sql_commit(sql_connection_t *conn)
+int prelude_sql_commit(prelude_sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_commit(conn->session) : -1;
 }
 
 
 
-int sql_rollback(sql_connection_t *conn)
+int prelude_sql_rollback(prelude_sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_rollback(conn->session) : -1;
 }
 
 
 
-void sql_close(sql_connection_t *conn)
+void prelude_sql_close(prelude_sql_connection_t *conn)
 {
 	if (conn && conn->plugin)
     		conn->plugin->db_close(conn->session);
@@ -268,12 +268,12 @@ void sql_close(sql_connection_t *conn)
 
 
 
-sql_connection_t *sql_connect(prelude_sql_connection_data_t *data) 
+prelude_sql_connection_t *prelude_sql_connect(prelude_sql_connection_data_t *data) 
 {
 	int ret;
         void *session;
 	plugin_sql_t *plugin;
-	sql_connection_t *conn;
+	prelude_sql_connection_t *conn;
 	char *dbtype, *dbhost, *dbport, *dbname, *dbuser, *dbpass;
 		
 	dbtype = prelude_sql_connection_data_get_type(data);
@@ -305,7 +305,7 @@ sql_connection_t *sql_connect(prelude_sql_connection_data_t *data)
 	if ( ret < 0 )
 		return NULL; /* FIXME: better error detection ? */
 	
-	conn = calloc(1, sizeof(sql_connection_t));
+	conn = calloc(1, sizeof(prelude_sql_connection_t));
 	if ( ! conn ) {
 		log(LOG_ERR, "out of memory\n");
 		return NULL;
