@@ -71,7 +71,7 @@ int preludedb_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
 				   preludedb_result_idents_order_t order,
 				   preludedb_result_idents_t **result);
 
-int preludedb_get_alert(preludedb_t *interface, uint64_t ident, idmef_message_t **message);
+int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident);

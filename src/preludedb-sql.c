@@ -345,6 +345,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
  * @table: Pointer to a table where the query result will be stored if the type of query return 
  * results (i.e a SELECT can results, but an INSERT never results) and if the query is sucessfull.
  * @format: The SQL query to execute in a printf format string.
+ * @...: Arguments referenced in @format.
  *
  * Execute a SQL query.
  *
@@ -385,6 +386,7 @@ int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **ta
  * @table: the name of the table where to insert values.
  * @fields: a list of comma separated field names where the values will be inserted.
  * @format: The values to insert in a printf format string.
+ * @...: Argument referenced throught @format.
  *
  * Insert values in a table.
  *
@@ -606,7 +608,7 @@ int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input
  * @input: Buffer to unescape.
  * @input_size: Buffer size.
  * @output: Where the new unescaped buffer will be stored.
- * @output: Size of the new unescape buffer.
+ * @output_size: Size of the new unescape buffer.
  *
  * Unescape to a binary buffer.
  *
@@ -1479,9 +1481,9 @@ int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, 
  * preludedb_sql_time_to_timestamp:
  * @time: Pointer to a time object.
  * @time_buf: SQL timestamp.
- * @time_buf_len: SQL timestamp buffer size.
+ * @time_buf_size: SQL timestamp buffer size.
  * @gmtoff_buf: GMT offset buffer.
- * @gmtoff_buf_len: GMT offset buffer size.
+ * @gmtoff_buf_size: GMT offset buffer size.
  * @usec_buf: Microseconds buffer.
  * @usec_buf_size: Microseconds buffer size.
  *

@@ -220,7 +220,7 @@ int preludedb_set_format(preludedb_t *db, const char *format_name)
  * preludedb_get_sql:
  * @db: Pointer to a db object.
  * 
- * Return a pointer to the underlying sql object.
+ * Returns: a pointer to the underlying sql object.
  */
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 {
@@ -233,11 +233,13 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
  * preludedb_get_error:
  * @db: Pointer to a db object.
  * @error: Error code to build the error string from.
- * @output: Buffer where the error message will be stored,
- * size of this buffer must be PRELUDEDB_ERRBUF_SIZE.
+ * @errbuf: Buffer where the error message will be stored,
+ * @size: size of this buffer must be PRELUDEDB_ERRBUF_SIZE.
  *
  * Build an error message from the error code given as argument and from
  * the sql plugin error string (if any) if the error code is db related.
+ *
+ * Returns: a pointer to the error string or NULL if an error occured.
  */
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size)
 {
@@ -378,7 +380,7 @@ preludedb_get_message_idents(preludedb_t *db,
  * @limit: Limit of results or -1 if no limit.
  * @offset: Offset in results or -1 if no offset.
  * @order: Result order.
- * @results: Idents result.
+ * @result: Idents result.
  *
  * Returns: 1 if there are any results, 0 if there is no result, or negative value if an error occur.
  */
@@ -399,7 +401,7 @@ int preludedb_get_alert_idents(preludedb_t *db,
  * @limit: Limit of results or -1 if no limit.
  * @offset: Offset in results or -1 if no offset.
  * @order: Result order.
- * @results: Idents result.
+ * @result: Idents result.
  *
  * Returns: 1 if there are any results, 0 if there is no result , or negative value if an error occur.
  */
@@ -483,6 +485,8 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
  * @limit: Limit of results or -1 if no limit.
  * @offset: Offset in results or -1 if no offset.
  * @result: Values result.
+ *
+ * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_values(preludedb_t *db,
 			 preludedb_path_selection_t *path_selection,

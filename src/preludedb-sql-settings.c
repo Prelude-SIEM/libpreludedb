@@ -31,6 +31,11 @@
 #include "preludedb-sql-settings.h"
 
 
+#define skip_spaces(str)			\
+	while ( isspace(*str) )			\
+		(str)++
+
+
 struct preludedb_sql_settings {
 	prelude_hash_t *hash;
 };
@@ -73,8 +78,8 @@ int preludedb_sql_settings_new_from_string(preludedb_sql_settings_t **settings, 
 
 void preludedb_sql_settings_destroy(preludedb_sql_settings_t *settings)
 {
-	prelude_hash_destroy(settings->hash);
-	free(settings);
+	prelude_hash_destroy(settings->hash);       
+        free(settings);
 }
 
 
@@ -96,12 +101,6 @@ int preludedb_sql_settings_set(preludedb_sql_settings_t *settings,
 
 	return prelude_hash_set(settings->hash, n, v);
 }
-
-
-
-#define skip_spaces(str)			\
-	while ( isspace(*str) )			\
-		(str)++
 
 
 
