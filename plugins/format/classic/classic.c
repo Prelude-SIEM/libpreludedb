@@ -287,7 +287,9 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 					      uint64_t ident,
 					      idmef_selection_t *selection)
 {
-	return get_message(connection, ident, "heartbeat.ident", selection);
+	return (selection ?
+		get_message(connection, ident, "heartbeat.ident", selection) :
+		get_heartbeat(connection, ident));
 }
 
 

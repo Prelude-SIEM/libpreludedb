@@ -1,3 +1,9 @@
+2003-07-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/schema.txt:
+	support whole message fetching for heartbeat
+	
 2003-07-02  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-select.c:

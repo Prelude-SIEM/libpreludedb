@@ -1,6 +1,14 @@
+object=heartbeat.ident table=Prelude_Heartbeat field=ident
+
+object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
+object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
+object=heartbeat.analyzer.model 	table=Prelude_Analyzer 		field=model 		top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'"	ident_field=parent_ident
+object=heartbeat.analyzer.version 	table=Prelude_Analyzer 		field=version 		top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
+object=heartbeat.analyzer.class 	table=Prelude_Analyzer 		field=class 		top_table=Prelude_Heartbeat 	top_field=ident		condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
+object=heartbeat.analyzer.ostype 	table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
+object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
 
 object=alert.ident  table=Prelude_Alert  field=ident  
-object=heartbeat.ident  table=Prelude_Heartbeat  field=ident  
 
 object=alert.assessment.impact.description  table=Prelude_Impact  field=description  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.assessment.impact.severity  table=Prelude_Impact  field=severity  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
