@@ -1,4 +1,23 @@
-2003-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+2003-02-15  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-read.c:
+	use SELECT DISTINCT instead of SELECT (eliminates duplicates
+	introduced by 1-to-N relations). 
+
+2003-02-15  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-read.c:
+	fix handling of 1-to-N relations
+
+	* src/idmef-object-list.c:
+	* src/include/idmef-object-list.h:
+	removed. 
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	updated accordingly. 
+
+2003-02-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* configure.in: 
 	add a variable for directory for holding configuration of 
