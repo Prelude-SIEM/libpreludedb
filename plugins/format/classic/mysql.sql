@@ -460,10 +460,12 @@ CREATE TABLE Prelude_Service (
  iana_protocol_number TINYINT UNSIGNED NULL,
  iana_protocol_name VARCHAR(255) NULL,
  portlist VARCHAR (255) NULL,
- protocol VARCHAR(255) NULL,
- INDEX (_parent_type,protocol(10),port),
- INDEX (_parent_type,protocol(10),name(10))
+ protocol VARCHAR(255) NULL
 ) TYPE=InnoDB;
+
+
+CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (_parent_type,protocol(10),port);
+CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_type,protocol(10),name(10));
 
 
 
