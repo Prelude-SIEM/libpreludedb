@@ -231,38 +231,24 @@ static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd)
 
 
 
-static int init_cache_directory(const char *directory)
+static int create_directory_if_needed(const char *directory) 
 {
-        int ret, i;
+        int ret;
         struct stat st;
-        char dname[256];
-
+        
         ret = stat(directory, &st);
+        if ( ret == 0 )
+                return 0;
+        
         if ( ret < 0 && errno != ENOENT ) {
                 log(LOG_ERR, "error stating %s.\n", directory);
                 return -1;
         }
-        
+
         ret = mkdir(directory, S_IRWXU);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't create directory %s.\n", directory);
                 return -1;
-        }
-
-        for ( i = 0; i < 10; i++ ) {
-                snprintf(dname, sizeof(dname), "%s/%d", directory, i);
-
-                ret = stat(dname, &st);
-                if ( ret < 0 && errno != ENOENT ) {
-                        log(LOG_ERR, "error stating %s.\n", dname);
-                        return -1;
-                }
-                
-                ret = mkdir(dname, S_IRWXU);
-                if ( ret < 0 ) {
-                        log(LOG_ERR, "couldn't create directory %s.\n", directory);
-                        return -1;
-                }
         }
 
         return 0;
@@ -355,12 +341,21 @@ idmef_message_t *db_cache_read(db_cache_t *cache, const char *type, uint64_t ide
 
 db_cache_t *db_cache_new(const char *directory)
 {
-        int ret;
+        int ret, i;
+        char dname[256];
         
-        ret = init_cache_directory(directory);
+        ret = create_directory_if_needed(directory);
         if ( ret < 0 )
                 return NULL;
         
+        for ( i = 0; i < 10; i++ ) {
+                snprintf(dname, sizeof(dname), "%s/%d", directory, i);
+
+                ret = create_directory_if_needed(directory);
+                if ( ret < 0 )
+                        return NULL;
+        }
+
         return create_cache_object(directory);
 }
 
