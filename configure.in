@@ -142,9 +142,12 @@ AC_SUBST(PGSQL_INCLUDEDIR)
 
 sql_plugin_dir=$libdir/libpreludedb/plugins/sql
 format_plugin_dir=$libdir/libpreludedb/plugins/formats
+format_config_dir=$sysconfdir/libpreludedb/plugins/formats
 filter_plugin_dir=$libdir/libpreludedb/plugins/filters
+
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
+AC_SUBST(format_config_dir)
 AC_SUBST(filter_plugin_dir)
 
 dnl ********************* ending stuff

@@ -1,3 +1,52 @@
+2003-12-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* configure.in: 
+	add a variable for directory for holding configuration of 
+	format plugins
+
+	* plugins/format/classic/Makefile.am:
+	add plugin and config directories to DEFS.
+	compile db-object.c.
+	install schema.txt.
+
+	* plugins/format/classic/include/db-object.h
+	* plugins/format/classic/db-object.c:
+	* plugins/format/classic/schema.txt:
+	new file. Parser and config file for describing database structure
+
+	* plugins/format/classic/include/idmef-db-read.h:
+	* plugins/format/classic/idmef-db-read.c:
+	* plugins/format/classic/classic.c:
+	add IDMEF message reading support.
+
+	* src/idmef-db-values.c:
+	* src/include/idmef-db-values.h:
+	Removed. idmef_cache_t used instead. 
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	updated accordingly
+
+	* src/db-interface-string.c:
+	* src/db-interface.c:
+	* src/db.c
+	* src/format-plugins.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	modify to reflect used API. 	
+
+	* src/include/param-string.h
+	* src/param-string.c:	
+	fix various bugs resulting in SIGSEGVs
+	(strbuf_sprintf): handle empty strings correctly
+	(strbuf_string):
+	(strbug_empty):
+	(strbuf_clear): implemented
+
+	* src/db.c:
+	change comment to indicate that reinitialization attempts are OK
+	
+
 2003-01-17  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c:
