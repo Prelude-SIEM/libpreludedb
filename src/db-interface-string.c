@@ -107,6 +107,18 @@ static void *get_sql_connection_data(const char *config)
 		
 		free(val);
 	}
+
+	val = parameter_value(config, "port");
+	if ( val ) {
+		ret = prelude_sql_connection_data_set_port(data, val);
+		if ( ret < 0 ) {
+			free(data);
+			return NULL;
+		}
+		
+		free(val);
+	}
+
 	
 	return data;
 }
