@@ -978,7 +978,7 @@ static int build_time_constraint(preludedb_sql_t *sql,
 				 preludedb_sql_time_constraint_type_t type,
 				 idmef_value_relation_t relation, int value)
 {
-	uint32_t gmt_offset;
+	int32_t gmt_offset;
 
 	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
 		return -1;
@@ -1158,7 +1158,7 @@ static int build_criterion_hour(preludedb_sql_t *sql,
 	int hour, min, sec;
 	unsigned int total_seconds;
 	int relation_offset;
-	uint32_t gmt_offset;
+	int32_t gmt_offset;
 	char interval[128];
 	int ret;
 
@@ -1450,7 +1450,7 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
  *
  * Returns: 0 on success, or a negative value if an error occur.
  */
-int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, uint32_t gmtoff, uint32_t usec)
+int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec)
 {
 	int ret;
         struct tm tm;

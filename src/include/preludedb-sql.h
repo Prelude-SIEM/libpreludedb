@@ -106,7 +106,7 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 const char *field,
 					 idmef_value_relation_t relation, idmef_criterion_value_t *value);
 
-int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, uint32_t gmtoff, uint32_t usec);
+int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec);
 int preludedb_sql_time_to_timestamp(const idmef_time_t *time,
 				    char *time_buf, size_t time_buf_size,
 				    char *gmtoff_buf, size_t gmtoff_buf_size,

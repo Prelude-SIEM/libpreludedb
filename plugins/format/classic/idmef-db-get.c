@@ -140,7 +140,7 @@ static int _get_timestamp(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 {
 	preludedb_sql_field_t *time_field, *gmtoff_field, *usec_field = NULL;
 	const char *tmp;
-	uint32_t gmtoff;
+	int32_t gmtoff;
 	uint32_t usec = 0;
 	idmef_time_t *time;
 	int ret;
@@ -165,7 +165,7 @@ static int _get_timestamp(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 
 	tmp = preludedb_sql_field_get_value(time_field);
 
-	ret = preludedb_sql_field_to_uint32(gmtoff_field, &gmtoff);
+	ret = preludedb_sql_field_to_int32(gmtoff_field, &gmtoff);
 	if ( ret < 0 )
 		return ret;
 	

@@ -151,11 +151,11 @@ CREATE TABLE Prelude_File (
  name VARCHAR(255) NOT NULL,
  category ENUM("current", "original") NULL,
  create_time DATETIME NULL,
- create_time_gmtoff INTEGER UNSIGNED NULL,
+ create_time_gmtoff INTEGER NULL,
  modify_time DATETIME NULL,
- modify_time_gmtoff INTEGER UNSIGNED NULL,
+ modify_time_gmtoff INTEGER NULL,
  access_time DATETIME NULL,
- access_time_gmtoff INTEGER UNSIGNED NULL,
+ access_time_gmtoff INTEGER NULL,
  data_size INT UNSIGNED NULL,
  disk_size INT UNSIGNED NULL,
  fstype ENUM("ufs", "efs", "nfs", "afs", "ntfs", "fat16", "fat32", "pcfs", "joliet", "iso9660") NULL
@@ -210,7 +210,7 @@ CREATE TABLE Prelude_Inode (
  _file_index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_message_ident, _target_index, _file_index),
  change_time DATETIME NULL,
- change_time_gmtoff INTEGER UNSIGNED NULL, 
+ change_time_gmtoff INTEGER NULL, 
  number INT UNSIGNED NULL,
  major_device INT UNSIGNED NULL,
  minor_device INT UNSIGNED NULL,
@@ -295,7 +295,7 @@ CREATE TABLE Prelude_CreateTime (
  PRIMARY KEY (_parent_type,_message_ident),
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
- gmtoff INTEGER UNSIGNED NOT NULL,
+ gmtoff INTEGER NOT NULL,
  INDEX (time)
 ) TYPE=InnoDB;
 
@@ -307,7 +307,7 @@ CREATE TABLE Prelude_DetectTime (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
- gmtoff INTEGER UNSIGNED NOT NULL,	
+ gmtoff INTEGER NOT NULL,	
  INDEX (time)
 ) TYPE=InnoDB;
 
@@ -321,7 +321,7 @@ CREATE TABLE Prelude_AnalyzerTime (
  PRIMARY KEY (_parent_type, _message_ident),
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
- gmtoff INTEGER UNSIGNED NOT NULL,
+ gmtoff INTEGER NOT NULL,
  INDEX (time)
 ) TYPE=InnoDB;
 
