@@ -30,9 +30,6 @@
 #include <unistd.h>
 
 #include <libprelude/prelude-log.h>
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
 #include <libprelude/idmef.h>
 
 #include "sql-connection-data.h"

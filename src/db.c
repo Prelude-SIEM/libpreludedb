@@ -32,8 +32,6 @@
 #include <libprelude/config-engine.h>
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"

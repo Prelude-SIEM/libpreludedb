@@ -26,9 +26,6 @@
 #ifndef _LIBPRELUDEDB_PLUGIN_DB_H
 #define _LIBPRELUDEDB_PLUGIN_DB_H
 
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
 #include <libprelude/prelude-plugin.h>
 
 

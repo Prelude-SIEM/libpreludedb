@@ -33,13 +33,8 @@
 #include <inttypes.h>
 #include <assert.h>
 
-#include <libprelude/prelude-list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
 #include <libprelude/prelude-plugin.h>
-#include <libprelude/idmef.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"

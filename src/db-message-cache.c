@@ -159,7 +159,7 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
         idmef_message_t *message;
         prelude_msg_t *pmsg = NULL;
         
-        if ( prelude_msg_read(&pmsg, fd) != prelude_msg_finished )
+        if ( prelude_msg_read(&pmsg, fd) < 0 )
                 return NULL;
 
         message = idmef_message_new();

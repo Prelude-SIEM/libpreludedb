@@ -31,9 +31,6 @@
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-tree-wrap.h>
 #include <libprelude/idmef-util.h>
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
 #include <libprelude/prelude-plugin.h>
 
 #include <netinet/in.h>
