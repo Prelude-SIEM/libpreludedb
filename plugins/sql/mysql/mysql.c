@@ -38,7 +38,6 @@
 #include <libprelude/idmef.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
-#include <libprelude/idmef-util.h>
 
 #include <libprelude/prelude-io.h>
 #include <libprelude/prelude-message.h>
@@ -609,13 +608,9 @@ static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
 				    prelude_sql_time_constraint_type_t type,
 				    idmef_relation_t relation, int value, int gmt_offset)
 {
-	int gmt_offset;
 	char buf[128];
 	const char *sql_relation;
-
-	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
-		return -1;
-
+ 
 	if ( snprintf(buf, sizeof (buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600) < 0 )
 		return -1;
 

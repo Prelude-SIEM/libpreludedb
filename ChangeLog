@@ -1,5 +1,14 @@
 2004-02-03  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
+	* plugins/sql/pgsql/pgsql.c (db_build_time_constraint): 
+	* plugins/sql/mysql/mysql.c (db_build_time_constraint): 
+	remove call to prelude_get_gmt_offset(). gmt_offset is already
+	provided as an argument, and so it make no sense to compute it
+	again. Fix re-declaration of gmt_offset.
+	
+	* src/sql.c (build_time_constraint, build_criterion_hour):  
+	update call to prelude_get_gmt_offset() to fit API change.
+
 	* plugins/format/classic/idmef-db-insert.c (insert_additional_data): 
 	back to using idmef_additionaldata_data_to_string(), which should
 	now work better.

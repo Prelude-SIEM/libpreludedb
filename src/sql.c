@@ -39,6 +39,7 @@
 #include <assert.h>
 
 #include <libprelude/list.h>
+#include <libprelude/common.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
@@ -819,7 +820,7 @@ static int build_time_constraint(prelude_sql_connection_t *conn,
 {
 	int gmt_offset;
 
-	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+	if ( prelude_get_gmt_offset(time(NULL), &gmt_offset) < 0 )
 		return -1;
 
 	return conn->plugin->db_build_time_constraint(output, field, type, relation, value, gmt_offset);
@@ -985,7 +986,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 				prelude_strbuf_t *output,
 				const char *field,
 				idmef_relation_t relation,
-				idmef_criterion_value_non_linear_time_t *time)
+				idmef_criterion_value_non_linear_time_t *timeval)
 {
 	int hour, min, sec;
 	unsigned int total_seconds;
@@ -993,9 +994,9 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 	int gmt_offset;
 	char interval[128];
 
-	hour = idmef_criterion_value_non_linear_time_get_hour(time);
-	min = idmef_criterion_value_non_linear_time_get_min(time);
-	sec = idmef_criterion_value_non_linear_time_get_sec(time);
+	hour = idmef_criterion_value_non_linear_time_get_hour(timeval);
+	min = idmef_criterion_value_non_linear_time_get_min(timeval);
+	sec = idmef_criterion_value_non_linear_time_get_sec(timeval);
 
 	if ( relation & IDMEF_RELATION_EQUAL )
 		relation_offset = 0;
@@ -1014,7 +1015,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 		total_seconds += relation_offset * 3600;
 	}
 
-	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+	if ( prelude_get_gmt_offset(time(NULL), &gmt_offset) < 0 )
 		return -1;
 
 	if ( build_time_interval(conn, dbconstraint_hour, gmt_offset / 3600, interval, sizeof (interval)) < 0 )
