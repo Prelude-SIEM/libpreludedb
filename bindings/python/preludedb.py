@@ -81,15 +81,6 @@ class PreludeDB:
         """PreludeDB destructor"""
         if self.res:
             _preludedb.preludedb_destroy(self.res)
-
-    def connect(self):
-        """Connect to the database."""
-        if _preludedb.preludedb_connect(self.res) < 0:
-            raise Error("cannot connect database")
-
-    def disconnect(self):
-        """Disconnect from the database."""
-        _preludedb.preludedb_disconnect()
         
     def _get_message_idents(self, get_idents, criteria, limit, offset):
         if criteria:

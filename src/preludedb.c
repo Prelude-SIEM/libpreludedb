@@ -101,12 +101,6 @@ preludedb_t *preludedb_new(preludedb_sql_t *sql, const char *format_name)
 
 	db->sql = sql;
 
-	ret = preludedb_sql_connect(db->sql);
-	if ( ret < 0 ) {
-		free(db);
-		return NULL;
-	}
-
 	if ( format_name )
 		ret = preludedb_format_set(db, format_name);
 	else
@@ -150,20 +144,6 @@ const char *preludedb_get_format_name(preludedb_t *db)
 
 
 
-int preludedb_connect(preludedb_t *db)
-{
-	return preludedb_sql_connect(db->sql);
-}
-
-
-
-void preludedb_disconnect(preludedb_t *db)
-{
-	return preludedb_sql_disconnect(db->sql);
-}
-
-
-
 int preludedb_format_set(preludedb_t *db, const char *format_name)
 {
 	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(format_name);
@@ -203,13 +183,6 @@ int preludedb_format_autodetect(preludedb_t *db)
 
 	return ret;	
 	
-}
-
-
-
-int preludedb_reconnect(preludedb_t *db) 
-{
-	return preludedb_sql_connect(db->sql);
 }
 
 

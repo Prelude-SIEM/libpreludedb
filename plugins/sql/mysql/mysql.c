@@ -76,7 +76,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 				port, NULL, 0) )
 		return 0;
 
-	return preludedb_error(PRELUDEDB_ERROR_CANNOT_CONNECT);
+	return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
 }
 
 

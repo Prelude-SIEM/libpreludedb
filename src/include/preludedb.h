@@ -46,13 +46,8 @@ void preludedb_destroy(preludedb_t *db);
 
 const char *preludedb_get_format_name(preludedb_t *db);
 
-int preludedb_connect(preludedb_t *db);
-void preludedb_disconnect(preludedb_t *db);
-
 int preludedb_format_set(preludedb_t *db, const char *format_name);
 int preludedb_format_autodetect(preludedb_t *db);
-
-int preludedb_reconnect(preludedb_t *db);
 
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db);
 

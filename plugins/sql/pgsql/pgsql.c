@@ -74,7 +74,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
         if ( PQstatus(s->pgsql) == CONNECTION_BAD ) {
                 PQfinish(s->pgsql);
 		free(s);
-		return preludedb_error(PRELUDEDB_ERROR_CANNOT_CONNECT);
+		return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
 
 	*session = s;

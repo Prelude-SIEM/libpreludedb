@@ -31,18 +31,17 @@ typedef enum {
         PRELUDEDB_ERROR_NO_ERROR = 0,
         PRELUDEDB_ERROR_GENERIC = 1,
         PRELUDEDB_ERROR_INVALID_SETTINGS_STRING = 2,
-        PRELUDEDB_ERROR_CANNOT_CONNECT = 3,
-        PRELUDEDB_ERROR_DISCONNECTED = 4,
-        PRELUDEDB_ERROR_QUERY = 5,
-        PRELUDEDB_ERROR_INVALID_COLUMN_NUM = 6,
-        PRELUDEDB_ERROR_INVALID_COLUMN_NAME = 7,
-        PRELUDEDB_ERROR_INVALID_VALUE = 8,
-        PRELUDEDB_ERROR_INVALID_VALUE_TYPE = 9,
-        PRELUDEDB_ERROR_UNKNOWN_SQL_PLUGIN = 10,
-        PRELUDEDB_ERROR_UNKNOWN_FORMAT_PLUGIN = 11,
-        PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION = 12,
-        PRELUDEDB_ERROR_NOT_IN_TRANSACTION = 13,
-	PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT = 14
+        PRELUDEDB_ERROR_CONNECTION = 3,
+        PRELUDEDB_ERROR_QUERY = 4,
+        PRELUDEDB_ERROR_INVALID_COLUMN_NUM = 5,
+        PRELUDEDB_ERROR_INVALID_COLUMN_NAME = 6,
+        PRELUDEDB_ERROR_INVALID_VALUE = 7,
+        PRELUDEDB_ERROR_INVALID_VALUE_TYPE = 8,
+        PRELUDEDB_ERROR_UNKNOWN_SQL_PLUGIN = 9,
+        PRELUDEDB_ERROR_UNKNOWN_FORMAT_PLUGIN = 10,
+        PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION = 11,
+        PRELUDEDB_ERROR_NOT_IN_TRANSACTION = 12,
+	PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT = 13
 } preludedb_error_code_t;
 
 typedef prelude_error_t preludedb_error_t;
@@ -54,8 +53,8 @@ static inline preludedb_error_t preludedb_error(preludedb_error_code_t error)
 }
 
 
-static inline prelude_bool_t preludedb_error_is(preludedb_error_t error,
-						preludedb_error_code_t code)
+static inline prelude_bool_t preludedb_error_check(preludedb_error_t error,
+						   preludedb_error_code_t code)
 {
 	return (prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB &&
 		prelude_error_get_code(error) == code);

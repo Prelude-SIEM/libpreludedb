@@ -85,15 +85,19 @@ struct preludedb_sql_field {
 
 
 #define assert_connected(sql)					\
-	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED )	\
-		return -1;
+	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {	\
+		int __ret;					\
+								\
+		__ret = preludedb_sql_connect(sql);		\
+		if ( __ret < 0 )				\
+			return __ret;				\
+	}
 
 
 
-static void update_sql_from_errno(preludedb_sql_t *sql, int error)
-{
-	/* FIXME: to be implemented  */
-}
+#define update_sql_from_errno(sql, error)				\
+	if ( preludedb_error_check(error, PRELUDEDB_ERROR_CONNECTION) )	\
+		preludedb_sql_disconnect(sql)
 
 
 
@@ -222,24 +226,9 @@ void preludedb_sql_disable_query_logging(preludedb_sql_t *sql)
 
 
 
-/**
- * preludedb_sql_connect:
- * @sql: Pointer to a sql object.
- *
- * Connect to the database.
- *
- * Nota: This function must be called even on non client/server underlying database
- * to get the @sql object ready to be used.
- *
- * Returns: 0 if the database was already connected, 1 if the the database has been
- * sucessfully connected, or a negative value if an error occur.
- */
-int preludedb_sql_connect(preludedb_sql_t *sql)
+static int preludedb_sql_connect(preludedb_sql_t *sql)
 {
 	int ret;
-
-	if ( sql->status >= PRELUDEDB_SQL_STATUS_CONNECTED )
-		return 0;
 
 	ret = sql->plugin->open(sql->settings, &sql->session);
 	if ( ret < 0 )
@@ -247,22 +236,13 @@ int preludedb_sql_connect(preludedb_sql_t *sql)
 
 	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
 
-	return 1;
+	return 0;
 }
 
 
 
-/**
- * preludedb_sql_disconnect:
- * @sql: Pointer to a sql object.
- * 
- * Disconnect from the database.
- */
-void preludedb_sql_disconnect(preludedb_sql_t *sql)
+static void preludedb_sql_disconnect(preludedb_sql_t *sql)
 {
-	if ( sql->status == PRELUDEDB_SQL_STATUS_DISCONNECTED )
-		return;
-
 	sql->plugin->close(sql->session);
 
 	sql->status = PRELUDEDB_SQL_STATUS_DISCONNECTED;
@@ -476,9 +456,10 @@ int preludedb_sql_transaction_start(preludedb_sql_t *sql)
 {
 	int ret;
 
-	if ( sql->status == PRELUDEDB_SQL_STATUS_DISCONNECTED ||
-	     sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return -1;
+	if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )
+		return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
+
+	assert_connected(sql);
 
 	ret = preludedb_sql_query(sql, "BEGIN", NULL);
 	if ( ret < 0 ) {
@@ -506,13 +487,14 @@ int preludedb_sql_transaction_end(preludedb_sql_t *sql)
 	int ret;
 
 	if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
 	
 	ret = preludedb_sql_query(sql, "COMMIT", NULL);
-	if ( ret < 0 )
-		update_sql_from_errno(sql, ret);
 
 	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+
+	if ( ret < 0 )
+		update_sql_from_errno(sql, ret);
 
 	return ret;
 }
@@ -532,13 +514,14 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 	int ret;
 
 	if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
 
 	ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
-	if ( ret < 0 )
-		update_sql_from_errno(sql, ret);
 
 	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+
+	if ( ret < 0 )
+		update_sql_from_errno(sql, ret);
 
 	return ret;
 }
@@ -603,7 +586,8 @@ int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output)
  *
  * Returns: 0 on success or a negative value if an error occur.
  */
-int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input, size_t input_size, char **output)
+int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input, size_t input_size,
+				char **output)
 {
 	assert_connected(sql);
 
@@ -698,7 +682,7 @@ static int preludedb_sql_field_new(preludedb_sql_field_t **field,
 {
 	*field = malloc(sizeof (**field));
 	if ( ! field )
-		preludedb_error_from_errno(errno);
+		return preludedb_error_from_errno(errno);
 	
 	(*field)->row = row;
 	(*field)->num = num;
