@@ -1533,6 +1533,64 @@ static int get_inode(prelude_sql_connection_t *sql,
 	return -1;
 }
 
+
+static int get_checksum(prelude_sql_connection_t *sql,
+			uint64_t message_ident,
+			int target_index,
+			int file_index,
+			idmef_file_t *file)
+{
+	prelude_sql_table_t *table;
+	prelude_sql_row_t *row;
+	idmef_checksum_t *checksum;
+	int cnt = 0;
+	
+	table = prelude_sql_query(sql,
+				  "SELECT value, key, algorithm "
+				  "FROM Prelude_Checksum "
+				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
+				  message_ident, target_index, file_index);
+	if ( ! table ) {
+		if ( prelude_sql_errno(sql) ) {
+			db_log(sql);
+			goto error;
+		}
+
+		return 0;
+	}
+
+	cnt = 0;
+	while ( (row = prelude_sql_row_fetch(table)) ) {
+
+		checksum = idmef_file_new_checksum(file);
+		if ( ! checksum )
+			goto error;
+
+		if ( get_string(sql, row, 0, checksum, idmef_checksum_new_value) < 0 )
+			goto error;
+
+		if ( get_string(sql, row, 1, checksum, idmef_checksum_new_key) < 0 )
+			goto error;
+
+		if ( get_enum(sql, row, 2, checksum, idmef_checksum_new_algorithm, idmef_checksum_algorithm_to_numeric) < 0 )
+			goto error;
+
+		cnt++;
+	}
+
+	prelude_sql_table_free(table);
+	table = NULL;
+
+	return cnt;
+
+ error:
+	if ( table )
+		prelude_sql_table_free(table);
+
+	return -1;
+}
+
+
 static int get_file(prelude_sql_connection_t *sql,
 		    uint64_t message_ident,
 		    int target_index,
@@ -1544,8 +1602,8 @@ static int get_file(prelude_sql_connection_t *sql,
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
-				  "SELECT category, name, path, create_time, create_time_gmtoff, modify_time, modify_time_gmtoff, "
-				  "access_time, access_time_gmtoff, data_size, disk_size "
+				  "SELECT ident, category, name, path, create_time, create_time_gmtoff, modify_time, modify_time_gmtoff, "
+				  "access_time, access_time_gmtoff, data_size, disk_size, fstype "
 				  "FROM Prelude_File "
 				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d",
 				  message_ident, target_index);
@@ -1564,28 +1622,34 @@ static int get_file(prelude_sql_connection_t *sql,
 		if ( ! file )
 			goto error;
 
-		if ( get_enum(sql, row, 0, file, idmef_file_new_category, idmef_file_category_to_numeric) < 0 )
+		if ( get_uint64(sql, row, 0, file, idmef_file_new_ident) < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 1, file, idmef_file_new_name) < 0 )
+		if ( get_enum(sql, row, 1, file, idmef_file_new_category, idmef_file_category_to_numeric) < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 2, file, idmef_file_new_path) < 0 )
+		if ( get_string(sql, row, 2, file, idmef_file_new_name) < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 3, 4, -1, file, idmef_file_new_create_time) < 0 )
+		if ( get_string(sql, row, 3, file, idmef_file_new_path) < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 5, 6, -1, file, idmef_file_new_modify_time) < 0 )
+		if ( get_timestamp(sql, row, 4, 5, -1, file, idmef_file_new_create_time) < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 7, 8, -1, file, idmef_file_new_access_time) < 0 )
+		if ( get_timestamp(sql, row, 6, 7, -1, file, idmef_file_new_modify_time) < 0 )
 			goto error;
 
-		if ( get_uint32(sql, row, 9, file, idmef_file_new_data_size) < 0 )
+		if ( get_timestamp(sql, row, 8, 9, -1, file, idmef_file_new_access_time) < 0 )
 			goto error;
 
-		if ( get_uint32(sql, row, 10, file, idmef_file_new_disk_size) < 0 )
+		if ( get_uint32(sql, row, 10, file, idmef_file_new_data_size) < 0 )
+			goto error;
+
+		if ( get_uint32(sql, row, 11, file, idmef_file_new_disk_size) < 0 )
+			goto error;
+
+		if ( get_enum(sql, row, 12, file, idmef_file_new_fstype, idmef_file_fstype_to_numeric) < 0 )
 			goto error;
 
 		cnt++;
@@ -1606,6 +1670,9 @@ static int get_file(prelude_sql_connection_t *sql,
 			goto error;
 
 		if ( get_inode(sql, message_ident, target_index, cnt, file) < 0 )
+			goto error;
+
+		if ( get_checksum(sql, message_ident, target_index, cnt, file) < 0 )
 			goto error;
 
 		cnt++;
