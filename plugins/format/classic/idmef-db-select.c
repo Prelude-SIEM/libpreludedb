@@ -492,80 +492,88 @@ static int add_field(prelude_strbuf_t *fields, char *table,
 	ret = 0;
 
 error:
-prelude_strbuf_destroy(tmp);
-prelude_strbuf_destroy(tmp2);
+	prelude_strbuf_destroy(tmp);
+	prelude_strbuf_destroy(tmp2);
 
 	return ret;
 }
 
 
+static int relation_substring_to_sql(prelude_strbuf_t *where, char *table, char *field,
+				     idmef_relation_t rel, char *val)
+{
+	size_t len;
+
+	if ( val[1] == '*' )
+		val[1] = '%';
+
+	len = strlen(val);
+
+	if ( val[len-2] == '*' )
+		val[len-2] = '%';
+
+	return (table ?
+		prelude_strbuf_sprintf(where, "%s.%s LIKE %s", table, field, val) :
+		prelude_strbuf_sprintf(where, "%s LIKE %s", field, val));
+}
 
 
-/* NOTE: This function assumes that val is already escaped! */
+
+/* 
+ * NOTE: This function assumes that val is already escaped
+ */
 static int relation_to_sql(prelude_strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
 {
 	switch (rel) {
 	case relation_substring:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s LIKE '%%%s%%'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s LIKE '%%%s%%'", field, val);
+		return relation_substring_to_sql(where, table, field, rel, val);
 
 	case relation_regexp:
 		return -1; /* unsupported */
 
 	case relation_greater:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s > '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s > '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s > %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s > %s", field, val));
 
 	case relation_greater_or_equal:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s >= '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s >= '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s >= %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s >= %s", field, val));
 
 	case relation_less:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s < '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s < '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s < %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s < %s", field, val));
 
 
 	case relation_less_or_equal:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s <= '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s <= '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s <= %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s <= %s", field, val));
 
 	case relation_equal:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s = '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s = '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s = %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s = %s", field, val));
 
 	case relation_not_equal:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s <> '%s'", table, field, val);
-		else
-			return prelude_strbuf_sprintf(where, "%s <> '%s'", field, val);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s <> %s", table, field, val) :
+			prelude_strbuf_sprintf(where, "%s <> %s", field, val));
 
 	case relation_is_null:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s IS NULL", table, field);
-		else
-			return prelude_strbuf_sprintf(where, "%s IS NULL", field);
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s IS NULL", table, field) :
+			prelude_strbuf_sprintf(where, "%s IS NULL", field));
 
 	case relation_is_not_null:
-		if (table)
-			return prelude_strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field);
-		else
-			return prelude_strbuf_sprintf(where, "%s IS NOT NULL", field);
-
-	default:
-		return -1;
+		return (table ?
+			prelude_strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field) :
+			prelude_strbuf_sprintf(where, "%s IS NOT NULL", field));
 	}
+
+	return -1;
 }
 
 

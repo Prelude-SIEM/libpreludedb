@@ -1,3 +1,11 @@
+2003-12-28  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(relation_to_sql)
+	fit last changes of prelude_sql_escape (and underlying
+	db_escape sql plugin functions): the value is already quoted
+	cleanup
+
 2003-12-27  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/python/preludedb.py:

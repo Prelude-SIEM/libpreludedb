@@ -196,7 +196,7 @@ static char *db_escape(void *s, const char *string)
 
         escaped[len + 1] = '\'';
         escaped[len + 2] = '\0';
-        
+
         return escaped;
 }
 
