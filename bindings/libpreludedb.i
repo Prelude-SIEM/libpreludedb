@@ -172,6 +172,7 @@ typedef struct idmef_value idmef_value_t;
 
 	} else if ( size == 0 ) {
 		$result = Py_None;
+		Py_INCREF(Py_None);
 
 	} else {
 		idmef_value_t **values = *($1);
@@ -247,8 +248,10 @@ typedef struct idmef_value idmef_value_t;
 
 
 %typemap(python, argout) uint64_t *ident {
-	if ( PyInt_AsLong($result) == 0 )
+	if ( PyInt_AsLong($result) == 0 ) {
 		$result = Py_None;
+		Py_INCREF(Py_None);
+	}
 	else
 		$result = PyLong_FromUnsignedLongLong(*($1));
 };
@@ -259,8 +262,10 @@ typedef struct idmef_value idmef_value_t;
 };
 
 %typemap(argout) SWIGTYPE **OUTRESULT {
-	if ( PyInt_AsLong($result) == 0 )
+	if ( PyInt_AsLong($result) == 0 ) {
 		$result = Py_None;
+		Py_INCREF(Py_None);
+	}
 	else
 		$result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
 };
