@@ -1,3 +1,12 @@
+2003-10-20  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.i:
+	* bindings/perl/PreludeDB.pm:
+	code review: fixes and cleanup
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
 2003-10-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/classic.c:

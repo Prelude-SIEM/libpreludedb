@@ -55,14 +55,19 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	I32 len;
 	int i;
 	SV  **tv;
-	if (!SvROK($input))
+
+	if ( ! SvROK($input))
 	    croak("Argument $argnum is not a reference.");
-        if (SvTYPE(SvRV($input)) != SVt_PVAV)
+
+        if ( SvTYPE(SvRV($input)) != SVt_PVAV )
 	    croak("Argument $argnum is not an array.");
-        tempav = (AV*)SvRV($input);
+
+        tempav = (AV*) SvRV($input);
 	len = av_len(tempav);
 	$1 = (char **) malloc((len+2)*sizeof(char *));
-	for (i = 0; i <= len; i++) {
+	if ( ! $1 )
+		croak("out of memory\n");
+	for ( i = 0; i <= len; i++ ) {
 	    tv = av_fetch(tempav, i, 0);	
 	    $1[i] = (char *) SvPV_nolen(*tv);
         }
@@ -75,60 +80,68 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 
 %typemap(out) prelude_sql_field_t * {
 
-	switch ( prelude_sql_field_info_type($1) ) {
-	case dbtype_int32:
-                $result = newSViv(prelude_sql_field_value_int32($1));
-		argvi++;
-                break;
+	if ( $1 ) {
+		switch ( prelude_sql_field_info_type($1) ) {
+		case dbtype_int32:
+			$result = newSViv(prelude_sql_field_value_int32($1));
+			argvi++;
+			break;
 
-        case dbtype_uint32:
-                $result = newSVuv(prelude_sql_field_value_uint32($1));
-		argvi++;
-                break;
+		case dbtype_uint32:
+			$result = newSVuv(prelude_sql_field_value_uint32($1));
+			argvi++;
+			break;
 
-        case dbtype_int64: case dbtype_uint64:
-                $result = newSVpv(prelude_sql_field_value($1), 0);
-		argvi++;
-                break;
+		case dbtype_int64: case dbtype_uint64:
+			$result = newSVpv(prelude_sql_field_value($1), 0);
+			argvi++;
+			break;
 
-        case dbtype_float:
-                $result = newSVnv((double) prelude_sql_field_value_float($1));
-		argvi++;
-                break;
+		case dbtype_float:
+			$result = newSVnv((double) prelude_sql_field_value_float($1));
+			argvi++;
+			break;
 
-        case dbtype_double:
-                $result = newSVnv(prelude_sql_field_value_double($1));
-		argvi++;
-                break;
+		case dbtype_double:
+			$result = newSVnv(prelude_sql_field_value_double($1));
+			argvi++;
+			break;
 
-        case dbtype_string:
-                $result = newSVpv(prelude_sql_field_value($1), 0);
-		argvi++;
-                break;
+		case dbtype_string:
+			$result = newSVpv(prelude_sql_field_value($1), 0);
+			argvi++;
+			break;
 
-        default:
-		/* nop */;
+		default:
+			/* nop */;
+		}
 	}
 };
 
 %typemap(in) uint64_t {
-	sscanf(SvPV_nolen($input), "%llu", &($1));
+	if ( SvIOK($input) ) {
+		$1 = (uint64_t) SvIV($input);
+
+	} else {
+		if ( sscanf(SvPV_nolen($input), "%llu", &($1)) < 1 ) {
+			croak("Argument %s is not an unsigned 64 bits integer\n", SvPV_nolen($input));
+		}
+	}
 };
 
 %typemap(out) uint64_t {
 	char tmp[32];
 	int len;
 
-	len = sprintf(tmp, "%llu", $1);
-	$result = sv_2mortal(newSVpv(tmp, len));
-	argvi++;
+	len = snprintf(tmp, sizeof (tmp), "%llu", $1);
+
+	if ( len >= 0 && len < sizeof (tmp) ) {
+		$result = sv_2mortal(newSVpv(tmp, len));
+		argvi++;
+	}
 };
 
 /* this piece of code is not thread safe... */
-
-/*
- * FIXME: do data checking
- */
 
 %typemap(in) prelude_db_alert_uident_t * {
 	static prelude_db_alert_uident_t uident;
@@ -136,13 +149,37 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	SV **alert_ident;
 	SV **analyzerid;
 
+	/* fetch hash */
+	if ( ! SvROK($input) || SvTYPE(SvRV($input)) != SVt_PVHV ) {
+		croak("Argument is not a hash reference value\n");
+	}
+
 	hv = (HV *) SvRV($input);
+	/* *** */
 
+	/* fetch alert_ident field from the hash */
 	alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
-	sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
 
+	if ( ! alert_ident )
+		croak("Field alert_ident of hash does not exist\n");
+
+	if ( ! SvPOK(*alert_ident) && ! SvIOK(*alert_ident) )
+		croak("Field alert_ident of hash is not a simple scalar as expected\n");
+
+	sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+	/* *** */
+
+	/* fetch analyzerid from the hash  */
 	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+
+	if ( ! analyzerid )
+		croak("Field analyzerid of hash does not exist\n");
+
+	if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+		croak("Field analyzerid of hash is not a simple scalar as expected\n");
+
 	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+	/* ***  */
 
 	$1 = &uident;
 };
@@ -181,13 +218,37 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	SV **heartbeat_ident;
 	SV **analyzerid;
 
+	/* fetch hash */
+	if ( ! SvROK($input) || SvTYPE(SvRV($input)) != SVt_PVHV ) {
+		croak("Argument is not a hash reference value\n");
+	}
+
 	hv = (HV *) SvRV($input);
+	/* *** */
 
+	/* fetch heartbeat_ident field from the hash */
 	heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
-	sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
 
+	if ( ! heartbeat_ident )
+		croak("Field heartbeat_ident of hash does not exist\n");
+
+	if ( ! SvPOK(*heartbeat_ident) && ! SvIOK(*heartbeat_ident) )
+		croak("Field heartbeat_ident of hash is not a simple scalar as expected\n");
+
+	sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+	/* *** */
+
+	/* fetch analyzerid from the hash  */
 	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+
+	if ( ! analyzerid )
+		croak("Field analyzerid of hash does not exist\n");
+
+	if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+		croak("Field analyzerid of hash is not a simple scalar as expected\n");
+
 	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+	/* ***  */
 
 	$1 = &uident;
 };

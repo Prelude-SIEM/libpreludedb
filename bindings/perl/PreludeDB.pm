@@ -49,6 +49,7 @@ sub	new
 
     if ( @_ == 1 ) {
 	$conn_string = $_[0];
+	return undef unless ( $conn_string );
 
     } else {
 	my %opt = @_;
@@ -109,10 +110,14 @@ sub	get_sql_connection
 sub	get_alert_uident_list
 {
      my	$self = shift;
-     my	$criteria = _get_criteria(shift);
+     my	$criteria;
      my	$uident_list_handle;
      my	@uident_list;
      my	$uident;
+
+     if ( defined $_[0] ) {
+	 $criteria = _get_criteria($_[0]) or return();
+     }
 
      $uident_list_handle = PreludeDB::prelude_db_interface_get_alert_uident_list($$self, $$criteria) or return ();
 
@@ -128,10 +133,14 @@ sub	get_alert_uident_list
 sub	get_heartbeat_uident_list
 {
     my	$self = shift;
-    my	$criteria = _get_criteria(shift);
+    my	$criteria;
     my	$uident_list_handle;
     my	@uident_list;
     my	$uident;
+
+    if ( defined $_[0] ) {
+	$criteria = _get_criteria($_[0]) or return();
+    }
 
     $uident_list_handle = PreludeDB::prelude_db_interface_get_heartbeat_uident_list($$self, $$criteria) or return ();
 
@@ -214,6 +223,11 @@ sub	_convert_selected_object_list
 	} else {
 	    my $object;
 
+	    unless ( $_ ) {
+		Prelude::idmef_selection_destroy($selection);
+		return undef;
+	    }
+
 	    $object = Prelude::idmef_object_new_fast($_);
 	    unless ( $object ) {
 		Prelude::idmef_selection_destroy($selection);
@@ -234,7 +248,7 @@ sub	_convert_selected_object_list
 sub	get_alert
 {
     my	$self = shift;
-    my	$uident = shift;
+    my	$uident = shift || return undef;
     my	@object_list = @_;
     my	$object_list_handle;
     my	$message;
@@ -245,7 +259,7 @@ sub	get_alert
 
     $message = PreludeDB::prelude_db_interface_get_alert($$self, $uident, $object_list_handle);
 
-    Prelude::idmef_selection_destroy($object_list_handle) if ( defined $object_list_handle );
+    Prelude::idmef_selection_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
@@ -253,7 +267,7 @@ sub	get_alert
 sub	get_heartbeat
 {
     my	$self = shift;
-    my	$uident = shift;
+    my	$uident = shift || return undef;
     my	@object_list = @_;
     my	$object_list_handle;
     my	$message;
@@ -264,7 +278,7 @@ sub	get_heartbeat
 
     $message = PreludeDB::prelude_db_interface_get_heartbeat($$self, $uident, $object_list_handle);
 
-    Prelude::idmef_selection_destroy($object_list_handle) if ( defined $object_list_handle );
+    Prelude::idmef_selection_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
@@ -298,14 +312,20 @@ sub	get_values
     my	$value;
     my	@result_list;
 
-    return () if ( not defined $opt{-object_list} || @{ $opt{-object_list} } == 0 );
-
+    (defined $opt{-object_list} && @{ $opt{-object_list} } > 0) or return ();
     $selection = _convert_selected_object_list(@{ $opt{-object_list} }) or return ();
-    $criteria = _get_criteria($opt{-criteria}) if ( defined $opt{-criteria} );
+
+    if ( defined $opt{-criteria} ) {
+	$criteria = _get_criteria($opt{-criteria});
+	unless ( $criteria ) {
+	    Prelude::idmef_selection_destroy($selection);
+	    return ();
+	}
+    }
+
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
 
     $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $limit);
-
     unless ( $res ) {
 	Prelude::idmef_selection_destroy($selection);
 	return ();
@@ -329,7 +349,6 @@ sub	get_values
 	    unless ( defined $tmp ) {
 		Prelude::idmef_selection_destroy($selection);
 		Prelude::idmef_object_value_list_destroy($objval_list);
-		Prelude::idmef_value_destroy($value);
 		return ();
 	    }
 
@@ -418,7 +437,7 @@ package PreludeDBSQLTable;
 sub	field_name
 {
     my	$self = shift;
-    my	$i = shift;
+    my	$i = shift || return undef;
 
     return PreludeDB::prelude_sql_field_name($$self, $i);
 }
@@ -497,7 +516,7 @@ package PreludeDBSQLRow;
 sub	field_fetch
 {
     my	$self = shift;
-    my	$field_id = shift;
+    my	$field_id = shift || return undef;
     my	$field;
 
     $field = ($field_id =~ /^\d+$/ ? 

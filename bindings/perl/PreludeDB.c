@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.12 2003/10/08 09:59:06 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.13 2003/10/20 07:35:11 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -1085,13 +1085,37 @@ XS(_wrap_prelude_db_interface_get_alert) {
             SV **alert_ident;
             SV **analyzerid;
             
+            /* fetch hash */
+            if ( ! SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV ) {
+                croak("Argument is not a hash reference value\n");
+            }
+            
             hv = (HV *) SvRV(ST(1));
+            /* *** */
             
+            /* fetch alert_ident field from the hash */
             alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
-            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
             
+            if ( ! alert_ident )
+            croak("Field alert_ident of hash does not exist\n");
+            
+            if ( ! SvPOK(*alert_ident) && ! SvIOK(*alert_ident) )
+            croak("Field alert_ident of hash is not a simple scalar as expected\n");
+            
+            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+            /* *** */
+            
+            /* fetch analyzerid from the hash  */
             analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            
+            if ( ! analyzerid )
+            croak("Field analyzerid of hash does not exist\n");
+            
+            if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+            croak("Field analyzerid of hash is not a simple scalar as expected\n");
+            
             sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            /* ***  */
             
             arg2 = &uident;
         }
@@ -1137,13 +1161,37 @@ XS(_wrap_prelude_db_interface_get_heartbeat) {
             SV **heartbeat_ident;
             SV **analyzerid;
             
+            /* fetch hash */
+            if ( ! SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV ) {
+                croak("Argument is not a hash reference value\n");
+            }
+            
             hv = (HV *) SvRV(ST(1));
+            /* *** */
             
+            /* fetch heartbeat_ident field from the hash */
             heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
-            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
             
+            if ( ! heartbeat_ident )
+            croak("Field heartbeat_ident of hash does not exist\n");
+            
+            if ( ! SvPOK(*heartbeat_ident) && ! SvIOK(*heartbeat_ident) )
+            croak("Field heartbeat_ident of hash is not a simple scalar as expected\n");
+            
+            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+            /* *** */
+            
+            /* fetch analyzerid from the hash  */
             analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            
+            if ( ! analyzerid )
+            croak("Field analyzerid of hash does not exist\n");
+            
+            if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+            croak("Field analyzerid of hash is not a simple scalar as expected\n");
+            
             sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            /* ***  */
             
             arg2 = &uident;
         }
@@ -1188,13 +1236,37 @@ XS(_wrap_prelude_db_interface_delete_alert) {
             SV **alert_ident;
             SV **analyzerid;
             
+            /* fetch hash */
+            if ( ! SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV ) {
+                croak("Argument is not a hash reference value\n");
+            }
+            
             hv = (HV *) SvRV(ST(1));
+            /* *** */
             
+            /* fetch alert_ident field from the hash */
             alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
-            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
             
+            if ( ! alert_ident )
+            croak("Field alert_ident of hash does not exist\n");
+            
+            if ( ! SvPOK(*alert_ident) && ! SvIOK(*alert_ident) )
+            croak("Field alert_ident of hash is not a simple scalar as expected\n");
+            
+            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+            /* *** */
+            
+            /* fetch analyzerid from the hash  */
             analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            
+            if ( ! analyzerid )
+            croak("Field analyzerid of hash does not exist\n");
+            
+            if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+            croak("Field analyzerid of hash is not a simple scalar as expected\n");
+            
             sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            /* ***  */
             
             arg2 = &uident;
         }
@@ -1234,13 +1306,37 @@ XS(_wrap_prelude_db_interface_delete_heartbeat) {
             SV **heartbeat_ident;
             SV **analyzerid;
             
+            /* fetch hash */
+            if ( ! SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV ) {
+                croak("Argument is not a hash reference value\n");
+            }
+            
             hv = (HV *) SvRV(ST(1));
+            /* *** */
             
+            /* fetch heartbeat_ident field from the hash */
             heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
-            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
             
+            if ( ! heartbeat_ident )
+            croak("Field heartbeat_ident of hash does not exist\n");
+            
+            if ( ! SvPOK(*heartbeat_ident) && ! SvIOK(*heartbeat_ident) )
+            croak("Field heartbeat_ident of hash is not a simple scalar as expected\n");
+            
+            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+            /* *** */
+            
+            /* fetch analyzerid from the hash  */
             analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            
+            if ( ! analyzerid )
+            croak("Field analyzerid of hash does not exist\n");
+            
+            if ( ! SvPOK(*analyzerid) && ! SvIOK(*analyzerid) )
+            croak("Field analyzerid of hash is not a simple scalar as expected\n");
+            
             sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            /* ***  */
             
             arg2 = &uident;
         }
@@ -2301,39 +2397,41 @@ XS(_wrap_prelude_sql_field_fetch) {
         result = (prelude_sql_field_t *)prelude_sql_field_fetch(arg1,arg2);
         
         {
-            switch ( prelude_sql_field_info_type(result) ) {
-                case dbtype_int32:
-                ST(argvi) = newSViv(prelude_sql_field_value_int32(result));
-                argvi++;
-                break;
-                
-                case dbtype_uint32:
-                ST(argvi) = newSVuv(prelude_sql_field_value_uint32(result));
-                argvi++;
-                break;
-                
-                case dbtype_int64: case dbtype_uint64:
-                ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
-                argvi++;
-                break;
-                
-                case dbtype_float:
-                ST(argvi) = newSVnv((double) prelude_sql_field_value_float(result));
-                argvi++;
-                break;
-                
-                case dbtype_double:
-                ST(argvi) = newSVnv(prelude_sql_field_value_double(result));
-                argvi++;
-                break;
-                
-                case dbtype_string:
-                ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
-                argvi++;
-                break;
-                
-                default:
-                /* nop */;
+            if ( result ) {
+                switch ( prelude_sql_field_info_type(result) ) {
+                    case dbtype_int32:
+                    ST(argvi) = newSViv(prelude_sql_field_value_int32(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_uint32:
+                    ST(argvi) = newSVuv(prelude_sql_field_value_uint32(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_int64: case dbtype_uint64:
+                    ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
+                    argvi++;
+                    break;
+                    
+                    case dbtype_float:
+                    ST(argvi) = newSVnv((double) prelude_sql_field_value_float(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_double:
+                    ST(argvi) = newSVnv(prelude_sql_field_value_double(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_string:
+                    ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
+                    argvi++;
+                    break;
+                    
+                    default:
+                    /* nop */;
+                }
             }
         }
         XSRETURN(argvi);
@@ -2367,39 +2465,41 @@ XS(_wrap_prelude_sql_field_fetch_by_name) {
         result = (prelude_sql_field_t *)prelude_sql_field_fetch_by_name(arg1,(char const *)arg2);
         
         {
-            switch ( prelude_sql_field_info_type(result) ) {
-                case dbtype_int32:
-                ST(argvi) = newSViv(prelude_sql_field_value_int32(result));
-                argvi++;
-                break;
-                
-                case dbtype_uint32:
-                ST(argvi) = newSVuv(prelude_sql_field_value_uint32(result));
-                argvi++;
-                break;
-                
-                case dbtype_int64: case dbtype_uint64:
-                ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
-                argvi++;
-                break;
-                
-                case dbtype_float:
-                ST(argvi) = newSVnv((double) prelude_sql_field_value_float(result));
-                argvi++;
-                break;
-                
-                case dbtype_double:
-                ST(argvi) = newSVnv(prelude_sql_field_value_double(result));
-                argvi++;
-                break;
-                
-                case dbtype_string:
-                ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
-                argvi++;
-                break;
-                
-                default:
-                /* nop */;
+            if ( result ) {
+                switch ( prelude_sql_field_info_type(result) ) {
+                    case dbtype_int32:
+                    ST(argvi) = newSViv(prelude_sql_field_value_int32(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_uint32:
+                    ST(argvi) = newSVuv(prelude_sql_field_value_uint32(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_int64: case dbtype_uint64:
+                    ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
+                    argvi++;
+                    break;
+                    
+                    case dbtype_float:
+                    ST(argvi) = newSVnv((double) prelude_sql_field_value_float(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_double:
+                    ST(argvi) = newSVnv(prelude_sql_field_value_double(result));
+                    argvi++;
+                    break;
+                    
+                    case dbtype_string:
+                    ST(argvi) = newSVpv(prelude_sql_field_value(result), 0);
+                    argvi++;
+                    break;
+                    
+                    default:
+                    /* nop */;
+                }
             }
         }
         XSRETURN(argvi);
@@ -2660,9 +2760,12 @@ XS(_wrap_prelude_sql_field_value_uint64) {
             char tmp[32];
             int len;
             
-            len = sprintf(tmp, "%llu", result);
-            ST(argvi) = sv_2mortal(newSVpv(tmp, len));
-            argvi++;
+            len = snprintf(tmp, sizeof (tmp), "%llu", result);
+            
+            if ( len >= 0 && len < sizeof (tmp) ) {
+                ST(argvi) = sv_2mortal(newSVpv(tmp, len));
+                argvi++;
+            }
         }
         XSRETURN(argvi);
         fail:
