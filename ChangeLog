@@ -1,3 +1,13 @@
+2003-12-27  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* src/include/Makefile.am (include_HEADERS): 
+	* src/Makefile.am (libpreludedb_la_SOURCES): 
+	remove strbuf.[ch].
+
+	* plugins/format/classic/idmef-db-select.c: 
+	use prelude-strbuf instead of libpreludedb own strbuf
+	implementation.
+
 2003-12-26  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* configure.in:

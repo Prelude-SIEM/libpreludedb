@@ -27,7 +27,9 @@
 #include <string.h>
 #include <inttypes.h>
 #include <sys/types.h>
+#include <stdarg.h>
 
+#include <libprelude/prelude-strbuf.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-util.h>
@@ -38,7 +40,6 @@
 #include "db-connection.h"
 #include "db-object.h"
 #include "db-object-selection.h"
-#include "strbuf.h"
 
 #include "idmef-db-select.h"
 
@@ -230,32 +231,32 @@ static void table_list_destroy(table_list_t *tlist)
 
 
 
-static strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
+static prelude_strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
 {
-	strbuf_t *buf;
 	int ret;
 	struct list_head *tmp;
 	table_entry_t *entry;
-
-	buf = strbuf_new();
+	prelude_strbuf_t *buf;
+        
+	buf = prelude_strbuf_new();
 	if ( ! buf )
 		return NULL;
 
-	ret = strbuf_sprintf(buf, "%s", tlist->top_table);
+	ret = prelude_strbuf_sprintf(buf, "%s", tlist->top_table);
 	if ( ret < 0 )
 		goto error;
 
 	list_for_each(tmp, &tlist->tables) {
 		entry = list_entry(tmp, table_entry_t, list);
-		ret = strbuf_sprintf(buf, " LEFT JOIN %s AS %s ON %s.%s = %s.%s",
-					  entry->table, entry->alias, tlist->top_table,
-					  entry->top_field, entry->alias,
-					  entry->ident_field);
+		ret = prelude_strbuf_sprintf(buf, " LEFT JOIN %s AS %s ON %s.%s = %s.%s",
+                                             entry->table, entry->alias, tlist->top_table,
+                                             entry->top_field, entry->alias,
+                                             entry->ident_field);
 		if ( ret < 0 )
 			goto error;
 
 		if ( entry->condition ) {
-			ret = strbuf_sprintf(buf, " AND (%s)", entry->condition);
+			ret = prelude_strbuf_sprintf(buf, " AND (%s)", entry->condition);
 			if ( ret < 0 )
 				goto error;
 		}
@@ -264,21 +265,21 @@ static strbuf_t *table_list_to_strbuf_for_alerts(table_list_t *tlist)
 	return buf;
 
 error:
-	strbuf_destroy(buf);
+	prelude_strbuf_destroy(buf);
 	return NULL;
 }
 
 
 
 
-static strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, strbuf_t *where)
+static prelude_strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, prelude_strbuf_t *where)
 {
-	strbuf_t *buf;
 	int ret;
 	struct list_head *tmp;
 	table_entry_t *entry;
-
-	buf = strbuf_new();
+        prelude_strbuf_t *buf;
+        
+	buf = prelude_strbuf_new();
 	if ( ! buf )
 		return NULL;
 
@@ -288,26 +289,26 @@ static strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, strbuf_t *
 	 * source/target combinations, even the ones that never appeared
 	 * in one alert. 
 	 */
-	ret = strbuf_sprintf(buf, "%s", tlist->top_table);
+	ret = prelude_strbuf_sprintf(buf, "%s", tlist->top_table);
 	if ( ret < 0 ) 
 		goto error;
 
 	list_for_each(tmp, &tlist->tables) {
 		entry = list_entry(tmp, table_entry_t, list);
-		ret = strbuf_sprintf(buf, ", %s AS %s",
-					  entry->table, entry->alias);
+		ret = prelude_strbuf_sprintf(buf, ", %s AS %s",
+                                             entry->table, entry->alias);
 		if ( ret < 0 )
 			goto error;
 		
-		ret = strbuf_sprintf(where, "%s%s.%s = %s.%s",
-				     strbuf_empty(where) ? "" : " AND ",
-				     tlist->top_table, entry->top_field, 
-				     entry->alias, entry->ident_field);
+		ret = prelude_strbuf_sprintf(where, "%s%s.%s = %s.%s",
+                                            prelude_strbuf_is_empty(where) ? "" : " AND ",
+                                             tlist->top_table, entry->top_field, 
+                                             entry->alias, entry->ident_field);
 		if ( ret < 0 )
 			goto error;
 
 		if ( entry->condition ) {
-			ret = strbuf_sprintf(where, " AND (%s)", entry->condition);
+			ret = prelude_strbuf_sprintf(where, " AND (%s)", entry->condition);
 			if ( ret < 0 )
 				goto error;
 		}
@@ -316,7 +317,7 @@ static strbuf_t *table_list_to_strbuf_for_values(table_list_t *tlist, strbuf_t *
 	return buf;
 
 error:
-	strbuf_destroy(buf);
+	prelude_strbuf_destroy(buf);
 	return NULL;
 }
 
@@ -422,67 +423,67 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 
 
-static int aggregate_function_to_sql(strbuf_t *buf, int flags, char *field)
+static int aggregate_function_to_sql(prelude_strbuf_t *buf, int flags, char *field)
 {
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN )
-		return strbuf_sprintf(buf, "MIN(%s)", field);
+		return prelude_strbuf_sprintf(buf, "MIN(%s)", field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX )
-		return strbuf_sprintf(buf, "MAX(%s)", field);
+		return prelude_strbuf_sprintf(buf, "MAX(%s)", field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG )
-		return strbuf_sprintf(buf, "AVG(%s)", field);
+		return prelude_strbuf_sprintf(buf, "AVG(%s)", field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD )
-		return strbuf_sprintf(buf, "STD(%s)", field);
+		return prelude_strbuf_sprintf(buf, "STD(%s)", field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT)
-		return strbuf_sprintf(buf, "COUNT(%s)", field);
+		return prelude_strbuf_sprintf(buf, "COUNT(%s)", field);
 
-	return strbuf_sprintf(buf, "%s", field);
+	return prelude_strbuf_sprintf(buf, "%s", field);
 }
 
 
 
 
-static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
-		     int flags)
+static int add_field(prelude_strbuf_t *fields, char *table,
+                     char *field, char *alias, int flags)
 {
-	strbuf_t *tmp, *tmp2;
 	int ret;
-
-	tmp = strbuf_new();
+	prelude_strbuf_t *tmp, *tmp2;
+        
+	tmp = prelude_strbuf_new();
 	if ( ! tmp )
 		return -1;
 	
-	tmp2 = strbuf_new();
+	tmp2 = prelude_strbuf_new();
 	if ( ! tmp )
 		return -1;
 
 	if ( table ) {
-		ret = strbuf_sprintf(tmp2, "%s.%s", table, field);
+		ret = prelude_strbuf_sprintf(tmp2, "%s.%s", table, field);
 		if ( ret < 0 )
 			goto error;
 	}
 
-	ret = aggregate_function_to_sql(tmp, flags, strbuf_string(tmp2));
+	ret = aggregate_function_to_sql(tmp, flags, prelude_strbuf_get_string(tmp2));
 	if ( ret < 0 )
 		goto error;
 
 	if ( alias ) {
-		ret = strbuf_sprintf(tmp, " AS %s", alias);
+		ret = prelude_strbuf_sprintf(tmp, " AS %s", alias);
 		if ( ret < 0 )
 			goto error;
 	}
 
 	/* Add the field to list  */
-	if ( strbuf_empty(fields) ) {
+	if ( prelude_strbuf_is_empty(fields) ) {
 		/* list empty */
-		ret = strbuf_sprintf(fields, "%s", strbuf_string(tmp));
+		ret = prelude_strbuf_sprintf(fields, "%s", prelude_strbuf_get_string(tmp));
 		if ( ret < 0 )
 			goto error;
 	} else {
-		ret = strbuf_sprintf(fields, ", %s", strbuf_string(tmp));
+		ret = prelude_strbuf_sprintf(fields, ", %s", prelude_strbuf_get_string(tmp));
 		if ( ret < 0 )
 			goto error;
 	}
@@ -491,8 +492,8 @@ static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
 	ret = 0;
 
 error:
-	strbuf_destroy(tmp);
-	strbuf_destroy(tmp2);
+prelude_strbuf_destroy(tmp);
+prelude_strbuf_destroy(tmp2);
 
 	return ret;
 }
@@ -501,66 +502,66 @@ error:
 
 
 /* NOTE: This function assumes that val is already escaped! */
-static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
+static int relation_to_sql(prelude_strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
 {
 	switch (rel) {
 	case relation_substring:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s LIKE '%%%s%%'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s LIKE '%%%s%%'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s LIKE '%%%s%%'", field, val);
+			return prelude_strbuf_sprintf(where, "%s LIKE '%%%s%%'", field, val);
 
 	case relation_regexp:
 		return -1; /* unsupported */
 
 	case relation_greater:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s > '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s > '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s > '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s > '%s'", field, val);
 
 	case relation_greater_or_equal:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s >= '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s >= '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s >= '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s >= '%s'", field, val);
 
 	case relation_less:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s < '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s < '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s < '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s < '%s'", field, val);
 
 
 	case relation_less_or_equal:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s <= '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s <= '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s <= '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s <= '%s'", field, val);
 
 	case relation_equal:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s = '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s = '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s = '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s = '%s'", field, val);
 
 	case relation_not_equal:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s <> '%s'", table, field, val);
+			return prelude_strbuf_sprintf(where, "%s.%s <> '%s'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s <> '%s'", field, val);
+			return prelude_strbuf_sprintf(where, "%s <> '%s'", field, val);
 
 	case relation_is_null:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s IS NULL", table, field);
+			return prelude_strbuf_sprintf(where, "%s.%s IS NULL", table, field);
 		else
-			return strbuf_sprintf(where, "%s IS NULL", field);
+			return prelude_strbuf_sprintf(where, "%s IS NULL", field);
 
 	case relation_is_not_null:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field);
+			return prelude_strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field);
 		else
-			return strbuf_sprintf(where, "%s IS NOT NULL", field);
+			return prelude_strbuf_sprintf(where, "%s IS NOT NULL", field);
 
 	default:
 		return -1;
@@ -590,7 +591,7 @@ static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, 
 
 
 static int criterion_to_sql(prelude_sql_connection_t *conn,
-			    strbuf_t *where,
+			   prelude_strbuf_t *where,
 			    table_list_t *tables,
 			    idmef_criterion_t *criterion)
 {
@@ -649,7 +650,7 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 
 
 static int criteria_to_sql(prelude_sql_connection_t *conn,
-			   strbuf_t *where,
+			   prelude_strbuf_t *where,
 			   table_list_t *tables,
 			   idmef_criteria_t *criteria)
 {
@@ -675,7 +676,7 @@ static int criteria_to_sql(prelude_sql_connection_t *conn,
 				return -1;
 			}
 
-			if ( strbuf_sprintf(where, " %s ", operator) < 0 )
+			if ( prelude_strbuf_sprintf(where, " %s ", operator) < 0 )
 				return -1;
 
 		}
@@ -685,13 +686,13 @@ static int criteria_to_sql(prelude_sql_connection_t *conn,
 				return -1;
 
 		} else {
-			if ( strbuf_sprintf(where, " ( ") < 0 )
+			if ( prelude_strbuf_sprintf(where, " ( ") < 0 )
 				return -1;
 
 			if ( criteria_to_sql(conn, where, tables, criteria_ptr) < 0 )
 				return -1;
 
-			if ( strbuf_sprintf(where, " ) ") < 0 )
+			if ( prelude_strbuf_sprintf(where, " ) ") < 0 )
 				return -1;
 		}
 
@@ -717,7 +718,7 @@ static char *object_to_table(table_list_t *tables, db_object_t *db_object)
 
 
 
-static int object_to_field(strbuf_t *fields,
+static int object_to_field(prelude_strbuf_t *fields,
 			   idmef_object_t *object, int flags,
 			   db_object_t *db_object,
 			   char *table_alias)
@@ -763,21 +764,21 @@ static int object_to_field(strbuf_t *fields,
 
 
 
-static int object_to_group(strbuf_t *group, int flags, int index)
+static int object_to_group(prelude_strbuf_t *group, int flags, int index)
 {
 	int retval;
 
 	if ( !(flags & PRELUDEDB_SELECTED_OBJECT_GROUP_BY) )
 		return 0;
 
-	retval = strbuf_sprintf(group, "%s%d", strbuf_empty(group) ? "" : ",",	index);
+	retval = prelude_strbuf_sprintf(group, "%s%d", prelude_strbuf_is_empty(group) ? "" : ",", index);
 
 	return (retval < 0) ? -1 : 1;
 }
 
 
 
-static int object_to_order(strbuf_t *order_buf, int flags, int index)
+static int object_to_order(prelude_strbuf_t *order_buf, int flags, int index)
 {
 	int retval;
 	char *order;
@@ -789,9 +790,9 @@ static int object_to_order(strbuf_t *order_buf, int flags, int index)
 	else
 		return 0;
 
-	retval = strbuf_sprintf(order_buf, "%s%d %s",
-				strbuf_empty(order_buf) ? "" : ",",
-				index, order);
+	retval = prelude_strbuf_sprintf(order_buf, "%s%d %s",
+			prelude_strbuf_is_empty(order_buf) ? "" : ",",
+			index, order);
 
 	return (retval < 0) ? -1 : 1;
 }
@@ -804,10 +805,10 @@ static int object_to_order(strbuf_t *order_buf, int flags, int index)
  * relevant buffer just in case
  */
 static int objects_to_sql(prelude_sql_connection_t *conn,
-			  strbuf_t *fields,
-			  strbuf_t *where,
-			  strbuf_t *group,
-			  strbuf_t *order,
+			  prelude_strbuf_t *fields,
+			  prelude_strbuf_t *where,
+			  prelude_strbuf_t *group,
+			  prelude_strbuf_t *order,
 			  table_list_t *tables,
 			  prelude_db_object_selection_t *selection)
 {
@@ -858,14 +859,14 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 
 
 
-static int join_wheres(strbuf_t *out, strbuf_t *in)
+static int join_wheres(prelude_strbuf_t *out,prelude_strbuf_t *in)
 {
 	int ret = 0;
 
-	if ( ! strbuf_empty(in) ) {
-		ret = strbuf_sprintf(out, "%s(%s) ",
-				     strbuf_empty(out) ? "" : "AND ",
-				     strbuf_string(in));
+	if ( ! prelude_strbuf_is_empty(in) ) {
+		ret = prelude_strbuf_sprintf(out, "%s(%s) ",
+				    prelude_strbuf_is_empty(out) ? "" : "AND ",
+				    prelude_strbuf_get_string(in));
 	}
 	
 	return ret;
@@ -874,7 +875,7 @@ static int join_wheres(strbuf_t *out, strbuf_t *in)
 
 
 
-static strbuf_t *build_request(prelude_sql_connection_t *conn,
+static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       prelude_db_object_selection_t *selection,
 			       idmef_criteria_t *criteria,
 			       int distinct,
@@ -882,8 +883,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       int offset,
 			       int as_values)
 {
-	strbuf_t *request = NULL;
-	strbuf_t 
+	prelude_strbuf_t 
+		*request = NULL,
 		*str_tables = NULL,
 		*where1 = NULL,
 		*where2 = NULL,
@@ -897,11 +898,11 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	table_list_t *tables = NULL;
 	int ret = -1;
 
-	request = strbuf_new();
+	request = prelude_strbuf_new();
 	if ( ! request )
 		goto error;
 
-	fields = strbuf_new();
+	fields = prelude_strbuf_new();
 	if ( ! fields )
 		goto error;
 
@@ -909,45 +910,45 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! tables )
 		goto error;
 
-	where1 = strbuf_new();
+	where1 = prelude_strbuf_new();
 	if ( ! where1 )
 		goto error;
 
-	where2 = strbuf_new();
+	where2 = prelude_strbuf_new();
 	if ( ! where2 )
 		goto error;
 	
-	where3 = strbuf_new();
+	where3 = prelude_strbuf_new();
 	if ( ! where3 )
 		goto error;
 	
-	where = strbuf_new();
+	where = prelude_strbuf_new();
 	if ( ! where )
 		goto error;
 
-	group = strbuf_new();
+	group = prelude_strbuf_new();
 	if ( ! group )
 		goto error;
 
-	order = strbuf_new();
+	order = prelude_strbuf_new();
 	if ( ! order )
 		goto error;
 
 	if ( limit >= 0 ) {
-		lim = strbuf_new();
+		lim = prelude_strbuf_new();
 		if ( ! lim )
 			goto error;
 
-		if ( strbuf_sprintf(lim, "LIMIT %d", limit) < 0 )
+		if ( prelude_strbuf_sprintf(lim, "LIMIT %d", limit) < 0 )
 			goto error;
 	}
 
 	if ( offset >= 0 ) {
-		off = strbuf_new();
+		off = prelude_strbuf_new();
 		if ( ! off )
 			goto error;
 
-		if ( strbuf_sprintf(off, "OFFSET %d", offset) < 0 )
+		if ( prelude_strbuf_sprintf(off, "OFFSET %d", offset) < 0 )
 			goto error;
 	}
 
@@ -984,16 +985,16 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;
 
 	/* build the query */
-	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s %s;",
+	ret = prelude_strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s %s;",
 			     distinct ? " DISTINCT" : "",
-		             strbuf_string(fields),
-		             strbuf_string(str_tables),
-			     strbuf_empty(where) ? "" : "WHERE",
-		             strbuf_string(where),
-			     strbuf_empty(group) ? "" : "GROUP BY", strbuf_string(group),
-			     strbuf_empty(order) ? "" : "ORDER BY", strbuf_string(order),
-			     lim ? strbuf_string(lim) : "",
-			     off ? strbuf_string(off) : "");
+		             prelude_strbuf_get_string(fields),
+		             prelude_strbuf_get_string(str_tables),
+			     prelude_strbuf_is_empty(where) ? "" : "WHERE",
+		             prelude_strbuf_get_string(where),
+			     prelude_strbuf_is_empty(group) ? "" : "GROUP BY", prelude_strbuf_get_string(group),
+			     prelude_strbuf_is_empty(order) ? "" : "ORDER BY", prelude_strbuf_get_string(order),
+			     lim ? prelude_strbuf_get_string(lim) : "",
+			     off ? prelude_strbuf_get_string(off) : "");
 	if ( ret < 0 )
 		goto error;
 
@@ -1005,40 +1006,40 @@ error:
 		table_list_destroy(tables);
 
 	if ( str_tables )
-		strbuf_destroy(str_tables);
+		prelude_strbuf_destroy(str_tables);
 
 	if ( fields )
-		strbuf_destroy(fields);
+		prelude_strbuf_destroy(fields);
 
 	if ( where1 )
-		strbuf_destroy(where1);
+		prelude_strbuf_destroy(where1);
 
 	if ( where2 )
-		strbuf_destroy(where2);
+		prelude_strbuf_destroy(where2);
 
 	if ( where3 )
-		strbuf_destroy(where3);
+		prelude_strbuf_destroy(where3);
 	
 	if ( where )
-		strbuf_destroy(where);
+		prelude_strbuf_destroy(where);
 
 	if ( group )
-		strbuf_destroy(group);
+		prelude_strbuf_destroy(group);
 
 	if ( order )
-		strbuf_destroy(order);
+		prelude_strbuf_destroy(order);
 
 	if ( lim )
-		strbuf_destroy(lim);
+		prelude_strbuf_destroy(lim);
 
 	if ( off )
-		strbuf_destroy(off);
+		prelude_strbuf_destroy(off);
 
 	if ( ret >= 0 )
 		return request;
 
 	if ( request )
-		strbuf_destroy(request);
+		prelude_strbuf_destroy(request);
 
 	return NULL;
 }
@@ -1055,7 +1056,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     int as_values)
 {
 	prelude_sql_connection_t *sql;
-	strbuf_t *request;
+	prelude_strbuf_t *request;
 	prelude_sql_table_t *table;
 
 	if ( prelude_db_connection_get_type(conn) != prelude_db_type_sql ) {
@@ -1069,12 +1070,12 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 	if ( ! request )
 		return NULL;
 
-	table = prelude_sql_query(sql, strbuf_string(request));
+	table = prelude_sql_query(sql, prelude_strbuf_get_string(request));
 	if ( ! table && prelude_sql_errno(sql) ) {
 		log(LOG_ERR, "Query %s failed: %s\n",
-		    strbuf_string(request),
+		    prelude_strbuf_get_string(request),
 		    prelude_sql_errno(sql) ? prelude_sql_error(sql) : "unknown error");
-		strbuf_destroy(request);
+		prelude_strbuf_destroy(request);
 		return NULL;
 	}
 
@@ -1082,7 +1083,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 	log(LOG_INFO, "query returned %d rows\n", table ? prelude_sql_rows_num(table) : 0);
 #endif
 
-	strbuf_destroy(request);
+	prelude_strbuf_destroy(request);
 
 	return table;
 }

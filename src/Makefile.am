@@ -7,7 +7,6 @@ libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\
 	gdb.c				\
-	strbuf.c			\
 	db.c				\
 	db-message-ident.c		\
 	db-interface.c			\
