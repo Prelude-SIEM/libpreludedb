@@ -74,7 +74,7 @@ CREATE TABLE Prelude_Analyzer (
  _parent_type VARCHAR(1) NOT NULL, /* A=Alert H=Hearbeat */
  _index NUMERIC(3) NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident,_index),
- analyzerid NUMERIC(20) NOT NULL,
+ analyzerid VARCHAR(255) NULL,
  name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
  model VARCHAR(255) NULL,
