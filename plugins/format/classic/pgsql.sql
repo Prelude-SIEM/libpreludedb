@@ -72,14 +72,14 @@ drop table Prelude_Action;
 create table Prelude_Action (
 alert_ident          INT8                 not null,
 description          VARCHAR(255)         null,
-category             VARCHAR(18)	  null default 'other' /*,*/
+category             VARCHAR(18)          null default 'other'/*,*/
 /* constraint PK_PRELUDE_ACTION primary key (alert_ident) */
 );
 
 create table Prelude_AdditionalData (
 parent_ident         INT8                 not null,
 parent_type          VARCHAR(1)           not null,
-type                 VARCHAR(10)	  null default 'string',
+type                 VARCHAR(10)          null default 'string',
 meaning              VARCHAR(255)         null,
 data                 TEXT                 null/*,*/
 /*INDEX                (parent_ident,parent_type) null*/
@@ -89,7 +89,7 @@ create table Prelude_Address (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
-category	     VARCHAR(20)	  null default 'unknown',
+category             VARCHAR(20)          null default 'unknown',
 vlan_name            VARCHAR(255)         null,
 vlan_num             INT4                 null,
 address              VARCHAR(255)         not null,
@@ -119,7 +119,7 @@ constraint PK_PRELUDE_ANALYZER primary key (parent_ident, parent_type, ident)
 create table Prelude_AnalyzerTime (
 parent_ident         INT8                 not null,
 parent_type          VARCHAR(1)           not null,
-time                 TIMESTAMP	          not null,
+time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_ANALYZERTIME primary key (parent_ident, parent_type)
 );
@@ -131,7 +131,7 @@ constraint PK_PRELUDE_ASSESSMENT primary key (alert_ident)
 
 create table Prelude_Classification (
 alert_ident          INT8                 not null,
-origin               VARCHAR(16)	  null default 'unknown',
+origin               VARCHAR(16)          null default 'unknown',
 name                 VARCHAR(255)         not null,
 url                  VARCHAR(255)         not null /*,*/
 /* INDEX                (alert_ident)        null */
@@ -140,7 +140,7 @@ url                  VARCHAR(255)         not null /*,*/
 create table Prelude_Confidence (
 alert_ident          INT8                 not null,
 confidence           FLOAT8               null,
-rating               VARCHAR(8) 	  null default 'numeric',
+rating               VARCHAR(8)           null default 'numeric',
 constraint PK_PRELUDE_CONFIDENCE primary key (alert_ident)
 );
 
@@ -159,14 +159,14 @@ constraint PK_PRELUDE_CORRELATIONALERT_AL primary key (ident, alert_ident)
 create table Prelude_CreateTime (
 parent_ident         INT8                 not null,
 parent_type          VARCHAR(1)           not null,
-time                 TIMESTAMP	          not null,
+time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_CREATETIME primary key (parent_ident, parent_type)
 );
 
 create table Prelude_DetectTime (
 alert_ident          INT8                 not null,
-time                 TIMESTAMP	          not null,
+time                 TIMESTAMP            not null,
 ntpstamp             VARCHAR(21)          not null,
 constraint PK_PRELUDE_DETECTTIME primary key (alert_ident)
 );
@@ -174,10 +174,10 @@ constraint PK_PRELUDE_DETECTTIME primary key (alert_ident)
 create table Prelude_File (
 alert_ident          INT8                 not null,
 target_ident         INT8                 not null,
-ident		     INT8		  not null,
+ident                INT8                 not null,
 path                 VARCHAR(255)         not null,
 name                 VARCHAR(255)         not null,
-category             VARCHAR(9)		  null,
+category             VARCHAR(9)           null,
 create_time          TIMESTAMP            null,
 modify_time          TIMESTAMP            null,
 access_time          TIMESTAMP            null,
@@ -189,7 +189,7 @@ disk_size            INT4                 null /*,*/
 create table Prelude_FileAccess (
 alert_ident          INT8                 not null,
 target_ident         INT8                 not null,
-file_ident	     INT8		  not null,
+file_ident           INT8                 not null,
 path_file            VARCHAR(255)         not null,
 name_file            VARCHAR(255)         not null,
 userId_ident         INT4                 not null,
@@ -211,16 +211,16 @@ constraint PK_PRELUDE_HEARTBEAT primary key (ident)
 create table Prelude_Impact (
 alert_ident          INT8                 not null,
 description          VARCHAR(255)         null,
-severity             VARCHAR(7)		  null,
-completion           VARCHAR(9)		  null,
-type                 VARCHAR(6)		  null default 'other',
+severity             VARCHAR(7)           null,
+completion           VARCHAR(9)           null,
+type                 VARCHAR(6)           null default 'other',
 constraint PK_PRELUDE_IMPACT primary key (alert_ident)
 );
 
 create table Prelude_Inode (
 alert_ident          INT8                 not null,
 target_ident         INT8                 not null,
-file_ident	     INT8		  not null,
+file_ident           INT8                 not null,
 path_file            VARCHAR(255)         not null,
 name_file            VARCHAR(255)         not null,
 change_time          TIMESTAMP            null,
@@ -235,10 +235,10 @@ c_minor_device       INT4                 null/*,*/
 create table Prelude_Linkage (
 alert_ident          INT8                 not null,
 target_ident         INT8                 not null,
-file_ident	     INT8		  not null,
+file_ident           INT8                 not null,
 name                 VARCHAR(255)         not null,
 path                 VARCHAR(255)         not null,
-category             VARCHAR(14)	  not null /*,*/
+category             VARCHAR(14)          not null /*,*/
 /* INDEX                (alert_ident,target_ident) null*/
 );
 
@@ -246,7 +246,7 @@ create table Prelude_Node (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
-category             VARCHAR(9)		  null default 'unknown',
+category             VARCHAR(9)           null default 'unknown',
 location             VARCHAR(255)         null,
 name                 VARCHAR(255)         null,
 constraint PK_PRELUDE_NODE primary key (alert_ident, parent_type, parent_ident)
@@ -290,7 +290,7 @@ create table Prelude_SNMPService (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
-pg_oid                  VARCHAR(255)         null,
+pg_oid               VARCHAR(255)         null,
 community            VARCHAR(255)         null,
 command              VARCHAR(255)         null,
 constraint PK_PRELUDE_SNMPSERVICE primary key (alert_ident, parent_type, parent_ident)
@@ -310,14 +310,14 @@ create table Prelude_ServicePortlist (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
-portlist	     VARCHAR(255)         not null /*,*/
+portlist             VARCHAR(255)         not null /*,*/
 /* INDEX                (alert_ident,parent_type,parent_ident) null */
 );
 
 create table Prelude_Source (
 alert_ident          INT8                 not null,
 ident                INT4                 not null,
-spoofed              VARCHAR(8)		  null default 'unknown',
+spoofed              VARCHAR(8)           null default 'unknown',
 interface            VARCHAR(255)         null,
 constraint PK_PRELUDE_SOURCE primary key (alert_ident, ident)
 );
@@ -325,7 +325,7 @@ constraint PK_PRELUDE_SOURCE primary key (alert_ident, ident)
 create table Prelude_Target (
 alert_ident          INT8                 not null,
 ident                INT4                 not null,
-decoy                VARCHAR(8)		  null default 'unknown',
+decoy                VARCHAR(8)           null default 'unknown',
 interface            VARCHAR(255)         null,
 constraint PK_PRELUDE_TARGET primary key (alert_ident, ident)
 );
@@ -341,7 +341,7 @@ create table Prelude_User (
 alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
-category             VARCHAR(12)	  null default 'unknown',
+category             VARCHAR(12)          null default 'unknown',
 constraint PK_PRELUDE_USER primary key (alert_ident, parent_type, parent_ident)
 );
 
@@ -350,7 +350,7 @@ alert_ident          INT8                 not null,
 parent_type          VARCHAR(1)           not null,
 parent_ident         INT8                 not null,
 ident                INT4                 not null,
-type                 VARCHAR(14)	  null default 'original-user',
+type                 VARCHAR(14)          null default 'original-user',
 name                 VARCHAR(255)         null,
 number               VARCHAR(255)         null,
 constraint PK_PRELUDE_USERID primary key (alert_ident, parent_type, parent_ident, ident)
