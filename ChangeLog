@@ -1,3 +1,8 @@
+2004-01-30  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* plugins/sql/mysql/mysql.c (db_escape): 
+	s/string/buf/
+
 2004-01-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/sql.c:

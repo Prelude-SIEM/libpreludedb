@@ -164,7 +164,7 @@ static char *db_escape(void *s, const char *buf, size_t len)
 
 	session->dberrno = 0;
 	
-        if ( ! string )
+        if ( ! buf )
                 return strdup("NULL");
         
         /*
@@ -188,9 +188,9 @@ static char *db_escape(void *s, const char *buf, size_t len)
         escaped[0] = '\'';
         
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
-        len = mysql_real_escape_string(session->mysql, escaped + 1, string, len);
+        len = mysql_real_escape_string(session->mysql, escaped + 1, buf, len);
 #else
-        len = mysql_escape_string(escaped + 1, string, len);
+        len = mysql_escape_string(escaped + 1, buf, len);
 #endif
 
         escaped[len + 1] = '\'';
