@@ -357,3 +357,5 @@ sub	field_fetch
 
     return $field;
 }
+
+1;

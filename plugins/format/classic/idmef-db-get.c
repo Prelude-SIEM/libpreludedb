@@ -505,7 +505,7 @@ static int get_user(prelude_sql_connection_t *sql,
 
 	prelude_sql_table_free(table);
 
-	if ( get_userid(sql, alert_ident, parent_ident, parent_type, parent, (void (*)(void *, void *)) idmef_user_set_userid) < 0 )
+	if ( get_userid(sql, alert_ident, parent_ident, parent_type, user, (void (*)(void *, void *)) idmef_user_set_userid) < 0 )
 		goto error;
 
 	parent_set_field(parent, user);

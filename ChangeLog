@@ -1,3 +1,13 @@
+2003-07-09  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	add a 1 (true value) at the end of the package's code
+
+	* plugins/format/classic/idmef-db-get.c:
+	(get_user)
+	bug fix, "parent" was passed as parent argument of function get_userid
+	instead of "user"
+
 2003-07-08  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-insert.c:
