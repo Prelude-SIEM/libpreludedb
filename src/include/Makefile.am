@@ -9,7 +9,6 @@ include_HEADERS = 		\
 	db-type.h		\
 	db-connection.h		\
 	db-connection-data.h	\
-	idmef-object-list.h	\
 	sql-connection-data.h	\
 	sql.h			\
 	param-string.h		\

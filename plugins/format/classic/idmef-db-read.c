@@ -579,9 +579,10 @@ struct db_handle {
 	prelude_sql_table_t *table;
 	idmef_cache_t *cache;
 	idmef_cached_object_t **cached;
-	idmef_object_t **objects;	
+	idmef_object_t **objects;
 	int object_count;
 	int line;
+	prelude_sql_row_t *row;
 	uint64_t prev_ident;
 };
 
@@ -589,51 +590,60 @@ struct db_handle {
 int idmef_db_read(void *handle)
 {
 	struct db_handle *data = handle;
-	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
 	idmef_value_t *val;
 	uint64_t ident;
 	int i, ret;	
+
+	do {
 	
-	row = prelude_sql_row_fetch(data->table);
-	if ( ! row ) {
-		prelude_sql_table_free(data->table);
-		free(data->cached);
-		free(data->objects);
-		free(data);
-		/* cache will be freed by the caller */
-		return 0; /* no more data */
-	}
-
-	field = prelude_sql_field_fetch_by_name(row, "ident");
-	if ( ! field ) {
-		log(LOG_ERR, "could not find 'ident' field!\n");
-		return -1;
-	}
+		if ( ! data->row ) {
+			data->row = prelude_sql_row_fetch(data->table);
+			if ( ! data->row ) {
+				prelude_sql_table_free(data->table);
+				free(data->cached);
+				free(data->objects);
+				free(data);
+				/* cache will be freed by the caller */
+				return 0; /* no more data */
+			}
+		} else 		
+			idmef_cache_purge(data->cache);
 	
-	ident = prelude_sql_field_value_uint64(field);
-
-	if ( ( data->line++ ) && ( data->prev_ident != ident ) ) {
-		idmef_cache_purge(data->cache);
-		data->prev_ident = ident;
-	}
-
-	data->prev_ident = ident;
-
-	i = 0;		
-	for ( i = 0; i < data->object_count; i++ ) {
-		field = prelude_sql_field_fetch(row, i);
-		val = prelude_sql_field_value_idmef(field);
-			
-		ret = idmef_cached_object_set(data->cached[i], val);
-		if ( ret < 0 ) {
-			log(LOG_ERR, "error in IDMEF cache operation!\n");
-			return -i;
+		field = prelude_sql_field_fetch_by_name(data->row, "ident");
+		if ( ! field ) {
+			log(LOG_ERR, "could not find 'ident' field!\n");
+			return -1;
 		}
-	} 
-		
-	prelude_sql_row_free(row);
+	
+		ident = prelude_sql_field_value_uint64(field);
 
+		if ( ( data->line++ ) && ( data->prev_ident != ident ) ) {
+			data->prev_ident = ident;
+			return 1;
+		}
+
+		data->prev_ident = ident;
+
+		i = 0;		
+		for ( i = 0; i < data->object_count; i++ ) {
+			field = prelude_sql_field_fetch(data->row, i);
+			val = prelude_sql_field_value_idmef(field);
+			
+			ret = idmef_cached_object_set(data->cached[i], val);
+			if ( ret < 0 ) {
+				log(LOG_ERR, "error in IDMEF cache operation!\n");
+				return -i;
+			}
+		} 
+
+		prelude_sql_row_free(data->row);
+		data->row = NULL;
+	
+	} while(1);
+	
+	/* not reached */
+	
 	return 1;
 
 }
@@ -789,6 +799,7 @@ void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache,
 	handle->objects = objects;	
 	handle->object_count = object_count;
 	handle->line = 0;
+	handle->row = NULL;
 
 	return handle;
 }
