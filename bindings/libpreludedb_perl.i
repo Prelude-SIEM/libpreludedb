@@ -87,7 +87,7 @@
 	if ( SvTYPE(SvRV($input)) != SVt_PVAV )
 		croak("want a reference to an array");
 
-	av = SvRV($input);
+	av = (AV *) SvRV($input);
 
 	len = av_len(av);
 

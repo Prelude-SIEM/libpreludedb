@@ -234,9 +234,6 @@ PyObject *swig_python_data(idmef_data_t *data)
 
 %ignore preludedb_new;
 
-prelude_bool_t preludedb_error_check(preludedb_error_t error, preludedb_error_code_t code);
-const char *preludedb_strerror(preludedb_error_t error);
-
 %rename(preludedb_new) wrap_preludedb_new;
 %inline %{
 preludedb_t *wrap_preludedb_new(preludedb_sql_t *sql, const char *format_name)
