@@ -70,7 +70,7 @@ static int add_criterion(idmef_value_t *val, void *extra)
 	
 	return idmef_criterion_add(data->crit, 
 				   idmef_criterion_new(data->obj, relation_equal, 
-				   		       idmef_value_clone(val)));
+				   		       idmef_value_ref(val)));
 }
 
 

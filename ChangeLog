@@ -1,3 +1,8 @@
+2003-04-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic.c(add_criterion):
+	use idmef_value_ref() instead of idmef_value_clone()
+
 2003-03-16  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-read.c:
