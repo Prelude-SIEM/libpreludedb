@@ -1,0 +1,85 @@
+PreludeDB Library (http://www.prelude-ids.org)
+by Nicolas Delon <nicolas.delon@prelude-ids.com>
+
+
+PreludeDB Library Overview
+========================
+
+The PreludeDB Library provides an abstraction layer uppon the type and the format
+of the database used to store IDMEF alerts.
+It allows the developpers to use the database easily and efficiently without worrying
+about SQL and to have a code that is independant of the type/format of the database.
+
+
+
+IRC
+===
+
+If there's something you just can't find out elsewhere, you want to 
+give feedback directly to the authors or you're just bored, visit 
+#prelude on irc.freenode.net
+
+
+
+Get Support
+===========
+
+
+Prelude-user mailing list archives can be accessed at:
+	http://www.prelude-ids.org/mailman/listinfo
+
+
+Commercial Support is available through the PreludeIDS Technologies company:
+	http://www.prelude-ids.com, info@prelude-ids.com
+
+
+
+Help development
+================
+
+1. SUBMITTING PATCHES
+
+The Prelude source is constantly changing. If you want to submit a patch,
+please do so from the most recent CVS source tree, subscribe to the 
+prelude-devel mailing list by sending a mail to:
+
+        prelude-devel-subscribe@prelude-ids.org
+
+and post your patch with a description of functionality.
+You can also attach patches to bugs on 
+
+        http://trac.prelude-ids.org
+
+
+2. BUGS
+
+If you find any bugs, please report them to:
+
+	http://trac.prelude-ids.org
+
+Please make sure that what you're reporting is actually a BUG and not
+a problem on your side.
+
+
+3. SUGGESTIONS
+
+Subscribe to prelude-devel and give us your suggestions.
+
+
+
+How to install the PreludeDB Library
+==================================
+
+
+If you don't want to build the PreludeDB Library yourself, you can get 
+prebuild rpm and debian packages at http://www.prelude-ids.org.
+
+If you want to build PreludeDB, unpack the tarball and cd into the
+newly created directory. Then type :
+
+	./configure
+	make
+	
+If everything works, su to root and type:
+
+	make install
