@@ -187,7 +187,7 @@ static int insert_node(preludedb_sql_t *sql,
                        idmef_node_t *node)
 {
         int ret;
-        idmef_address_t *address;
+        idmef_address_t *address, *last_address;
         char *location, *name, *category, *ident;
 	int index;
 
@@ -235,13 +235,21 @@ static int insert_node(preludedb_sql_t *sql,
                 return ret;
 
 	index = 0;
-        address = NULL;
+        last_address = address = NULL;
         while ( (address = idmef_node_get_next_address(node, address)) ) {
 
                 ret = insert_address(sql, parent_type, message_ident, parent_index, index++, address);
 		if ( ret < 0 )
                         return ret;
+
+		last_address = address;
         }
+
+	if ( last_address ) {
+		ret = insert_address(sql, parent_type, message_ident, parent_index, -1, last_address);
+		if ( ret < 0 )
+			return ret;
+	}
 
         return 0;
 }
@@ -304,7 +312,7 @@ static int insert_user(preludedb_sql_t *sql, char parent_type, uint64_t message_
 		       idmef_user_t *user) 
 {
         char *category, *ident;
-        idmef_user_id_t *user_id;
+        idmef_user_id_t *user_id, *last_user_id;
 	int index;
         int ret;
         
@@ -335,15 +343,71 @@ static int insert_user(preludedb_sql_t *sql, char parent_type, uint64_t message_
                 return ret;
 
 	index = 0;
-        user_id = NULL;
+        last_user_id = user_id = NULL;
         while ( (user_id = idmef_user_get_next_user_id(user, user_id)) ) {
 
                 ret = insert_user_id(sql, parent_type, message_ident, parent_index, 0, 0, index++, user_id);
 		if ( ret < 0 )
                         return ret;
+
+		last_user_id = user_id;
         }
 
+	if ( last_user_id ) {
+		ret = insert_user_id(sql, parent_type, message_ident, parent_index, 0, 0, -1, last_user_id);
+		if ( ret < 0 )
+			return ret;
+	}
+
         return 1;
+}
+
+
+
+static int insert_process_arg(preludedb_sql_t *sql,
+			      char parent_type, uint64_t message_ident, int parent_index, int arg_index,
+			      prelude_string_t *arg)
+{
+	char *tmp;
+	int ret;
+
+	ret = preludedb_sql_escape(sql, get_string(arg), &tmp);
+	if ( ret < 0 )
+		return ret;
+                
+	ret = preludedb_sql_insert(sql, "Prelude_ProcessArg",
+				   "_parent_type, _message_ident, _parent0_index, _index, arg",
+				   "'%c', %" PRIu64 ", %d, %d, %s",
+				   parent_type, message_ident, parent_index, arg_index,
+				   tmp);
+
+	free(tmp);
+
+	return ret;	
+}
+
+
+
+static int insert_process_env(preludedb_sql_t *sql,
+			      char parent_type, uint64_t message_ident, int parent_index, int env_index,
+			      prelude_string_t *env)
+{
+	char *tmp;
+	int ret;
+
+	ret = preludedb_sql_escape(sql, get_string(env), &tmp);
+	if ( ret < 0 )
+		return ret;
+                
+	ret = preludedb_sql_insert(sql, "Prelude_ProcessEnv",
+				   "_parent_type, _message_ident, _parent0_index, _index, arg",
+				   "'%c', %" PRIu64 ", %d, %d, %s",
+				   parent_type, message_ident, parent_index, env_index,
+				   tmp);
+
+	free(tmp);
+
+	return ret;
 }
 
 
@@ -351,9 +415,9 @@ static int insert_user(preludedb_sql_t *sql, char parent_type, uint64_t message_
 static int insert_process(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, int parent_index,
                           idmef_process_t *process) 
 {
-        prelude_string_t *process_arg;
-        prelude_string_t *process_env;
-        char *name, *path, *arg, *env, pid[16], *ident;
+        prelude_string_t *process_arg, *last_process_arg;
+        prelude_string_t *process_env, *last_process_env;
+        char *name, *path, pid[16], *ident;
 	int index;
         int ret;
 
@@ -393,45 +457,25 @@ static int insert_process(preludedb_sql_t *sql, char parent_type, uint64_t messa
                 return ret;
 
 	index = 0;
-        process_arg = NULL;
+        last_process_arg = process_arg = NULL;
         while ( (process_arg = idmef_process_get_next_arg(process, process_arg)) ) {
+		ret = insert_process_arg(sql, parent_type, message_ident, parent_index, index++, process_arg);
+		if ( ret < 0 )
+			return ret;
 
-                ret = preludedb_sql_escape(sql, get_string(process_arg), &arg);
-                if ( ret < 0 )
-                        return ret;
-                
-                ret = preludedb_sql_insert(sql, "Prelude_ProcessArg",
-					   "_parent_type, _message_ident, _parent0_index, _index, arg",
-					   "'%c', %" PRIu64 ", %d, %d, %s",
-					   parent_type, message_ident, parent_index, index++,
-					   arg);
-
-                free(arg);
-
-                if ( ret < 0 )
-                        return ret;
+		last_process_arg = process_arg;
         }
 
 	index = 0;
-        process_env = NULL;
+        last_process_env = process_env = NULL;
         while ( (process_env = idmef_process_get_next_env(process, process_env)) ) {
+		ret = insert_process_env(sql, parent_type, message_ident, parent_index, index++, process_env);
+		if ( ret < 0 )
+			return ret;
 
-                ret = preludedb_sql_escape(sql, get_string(process_env), &env);
-                if ( ret < 0 )
-                        return ret;
-
-                ret = preludedb_sql_insert(sql, "Prelude_ProcessEnv",
-					   "_parent_type, _message_ident, _parent0_index, _index, env",
-					   "'%c', %" PRIu64 ", %d, %d, %s",
-					   parent_type, message_ident, parent_index, index++,
-					   env);
-                                 
-                free(env);
-
-                if ( ret < 0 )
-                        return ret;
+		last_process_env = process_env;
         }
-
+	
         return 1;
 }
 
@@ -502,11 +546,36 @@ static int insert_snmp_service(preludedb_sql_t *sql, char parent_type, uint64_t 
 
 
 
-static int insert_web_service(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, int parent_index,
+static int insert_web_service_arg(preludedb_sql_t *sql,
+				  char parent_type, uint64_t message_ident, int parent_index, int arg_index,
+				  prelude_string_t *arg)
+{
+	char *tmp;
+	int ret;
+
+	ret = preludedb_sql_escape(sql, get_string(arg), &tmp);
+	if ( ret < 0 )
+		return ret;
+                
+	ret = preludedb_sql_insert(sql, "Prelude_WebServiceArg",
+				   "_parent_type, _message_ident, _parent0_index, _index, arg",
+				   "'%c', %" PRIu64 ", %d, %d, %s",
+				   parent_type, message_ident, parent_index, arg_index,
+				   arg);
+
+	free(arg);
+
+	return ret;
+}
+
+
+
+static int insert_web_service(preludedb_sql_t *sql,
+			      char parent_type, uint64_t message_ident, int parent_index,
 			      idmef_web_service_t *web_service) 
 {
-	prelude_string_t *web_service_arg;
-        char *url, *cgi, *method, *arg;
+	prelude_string_t *web_service_arg, *last_web_service_arg;
+        char *url, *cgi, *method;
 	int index = 0;
         int ret;
         
@@ -543,25 +612,20 @@ static int insert_web_service(preludedb_sql_t *sql, char parent_type, uint64_t m
         free(method);
 
 	index = 0;
-	web_service_arg = NULL;
+	last_web_service_arg = web_service_arg = NULL;
 	while ( (web_service_arg = idmef_web_service_get_next_arg(web_service, web_service_arg)) ) {
+		ret = insert_web_service_arg(sql, parent_type, message_ident, parent_index, index++, web_service_arg);
+		if ( ret < 0 )
+			return ret;
 
-                ret = preludedb_sql_escape(sql, get_string(web_service_arg), &arg);
-                if ( ret < 0 )
-                        return ret;
-                
-                ret = preludedb_sql_insert(sql, "Prelude_WebServiceArg",
-					   "_parent_type, _message_ident, _parent0_index, _index, arg",
-					   "'%c', %" PRIu64 ", %d, %d, %s",
-					   parent_type, message_ident, parent_index, index++,
-					   arg);
-
-                free(arg);
-
-                if ( ret < 0 )
-                        return ret;
+		last_web_service_arg = web_service_arg;		
         }
 
+	if ( last_web_service_arg ) {
+		ret = insert_web_service_arg(sql, parent_type, message_ident, parent_index, -1, last_web_service_arg);
+		if ( ret < 0 )
+			return ret;
+	}
 
         return 1;
 }
@@ -730,12 +794,35 @@ static int insert_linkage(preludedb_sql_t *sql, uint64_t message_ident, int targ
 
 
 
+static int insert_file_access_permission(preludedb_sql_t *sql,
+					 uint64_t message_ident, int target_index, int file_index, int file_access_index, int perm_index,
+					 prelude_string_t *perm)
+{
+	char *tmp;
+	int ret;
+
+	ret = preludedb_sql_escape(sql, get_string(perm), &tmp);
+	if ( ret < 0 )
+		return ret;
+
+	ret = preludedb_sql_insert(sql, "Prelude_FileAccess_Permission",
+				   "_message_ident, _parent0_index, _parent1_index, _parent2_index, _index, permission",
+				   "%" PRIu64 ", %d, %d, %d, %s",
+				   message_ident, target_index, file_index, file_access_index, perm_index,
+				   tmp);
+
+	free(tmp);
+
+	return ret;
+}
+
+
+
 static int insert_file_access(preludedb_sql_t *sql,
 			      uint64_t message_ident, int target_index, int file_index, int file_access_index,
                               idmef_file_access_t *file_access)
 {
-	prelude_string_t *file_access_permission;
-	char *permission;
+	prelude_string_t *file_access_permission, *last_file_access_permission;
 	int index;
         int ret;
 
@@ -748,24 +835,24 @@ static int insert_file_access(preludedb_sql_t *sql,
                 return ret;
 
 	index = 0;
-	file_access_permission = NULL;
+	last_file_access_permission = file_access_permission = NULL;
 	while ( (file_access_permission = idmef_file_access_get_next_permission(file_access, file_access_permission)) ) {
+		ret = insert_file_access_permission(sql,
+						    message_ident, target_index, file_index, file_access_index, index++,
+						    file_access_permission);
+		if ( ret < 0 )
+			return ret;
 
-                ret = preludedb_sql_escape(sql, get_string(file_access_permission), &permission);
-                if ( ret < 0 )
-                        return ret;
-                
-                ret = preludedb_sql_insert(sql, "Prelude_FileAccess_Permission",
-					   "_message_ident, _parent0_index, _parent1_index, _parent2_index, _index, permission",
-					   "%" PRIu64 ", %d, %d, %d, %s",
-					   message_ident, target_index, file_index, file_access_index, index++,
-					   permission);
-
-                free(permission);
-
-                if ( ret < 0 )
-                        return ret;
+		last_file_access_permission = file_access_permission;
         }
+
+	if ( last_file_access_permission ) {
+		ret = insert_file_access_permission(sql,
+						    message_ident, target_index, file_index, file_access_index, -1,
+						    last_file_access_permission);
+		if ( ret < 0 )
+			return ret;
+	}
 
         ret = insert_user_id(sql, 'F', message_ident, target_index, file_index, file_access_index, 0,
 			     idmef_file_access_get_user_id(file_access));
@@ -819,9 +906,9 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
                        idmef_file_t *file) 
 {
         int ret = -1;
-        idmef_linkage_t *linkage;
-	idmef_checksum_t *checksum;
-        idmef_file_access_t *file_access;
+        idmef_linkage_t *linkage, *last_linkage;
+	idmef_checksum_t *checksum, *last_checksum;
+        idmef_file_access_t *file_access, *last_file_access;
 	int index;
         char *name = NULL, *path = NULL, *category = NULL, *fstype = NULL, *ident = NULL, data_size[32], disk_size[32];
         char ctime[IDMEF_TIME_MAX_STRING_SIZE], ctime_gmtoff[16];
@@ -879,32 +966,56 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
                 goto error;
 
 	index = 0;
-        file_access = NULL;
+        last_file_access = file_access = NULL;
         while ( (file_access = idmef_file_get_next_file_access(file, file_access)) ) {
 
                 ret = insert_file_access(sql, message_ident, target_index, file_index, index++, file_access);
 		if ( ret < 0 )
 			goto error;
+
+		last_file_access = file_access;
         }
 
+	if ( last_file_access ) {
+		ret = insert_file_access(sql, message_ident, target_index, file_index, -1, last_file_access);
+		if ( ret < 0 )
+			goto error;
+	}
+
 	index = 0;
-        linkage = NULL;
+        last_linkage = linkage = NULL;
         while ( (linkage = idmef_file_get_next_linkage(file, linkage)) ) {
 
                 ret = insert_linkage(sql, message_ident, target_index, file_index, index++, linkage);
 		if ( ret < 0 )
 			goto error;
+
+		last_linkage = linkage;
         }
+
+	if ( last_linkage ) {
+		ret = insert_linkage(sql, message_ident, target_index, file_index, -1, last_linkage);
+		if ( ret < 0 )
+			return ret;
+	}
 
         ret = insert_inode(sql, message_ident, target_index, file_index, idmef_file_get_inode(file));
 	if ( ret < 0 )
 		goto error;
 
 	index = 0;
-	checksum = NULL;
+	last_checksum = checksum = NULL;
 	while ( (checksum = idmef_file_get_next_checksum(file, checksum)) ) {
 
 		ret = insert_checksum(sql, message_ident, target_index, file_index, index++, checksum);
+		if ( ret < 0 )
+			goto error;
+
+		last_checksum = checksum;
+	}
+
+	if ( last_checksum ) {
+		ret = insert_checksum(sql, message_ident, target_index, file_index, -1, last_checksum);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -989,7 +1100,7 @@ static int insert_source(preludedb_sql_t *sql, uint64_t message_ident, int index
 static int insert_target(preludedb_sql_t *sql, uint64_t message_ident, int target_index, idmef_target_t *target)
 {
         int ret;
-        idmef_file_t *file;
+        idmef_file_t *file, *last_file;
 	int index;
         char *interface, *decoy, *ident;
         
@@ -1040,13 +1151,21 @@ static int insert_target(preludedb_sql_t *sql, uint64_t message_ident, int targe
                 return ret;
 
         index = 0;
-        file = NULL;
+        last_file = file = NULL;
         while ( (file = idmef_target_get_next_file(target, file)) ) {
 
                 ret = insert_file(sql, message_ident, target_index, index++, file);
 		if ( ret < 0 )
                         return ret;
+
+		last_file = file;
         }
+
+	if ( last_file ) {
+		ret = insert_file(sql, message_ident, target_index, -1, last_file);
+		if ( ret < 0 )
+			return ret;
+	}
 
         return 1;
 }
@@ -1190,7 +1309,7 @@ static int insert_reference(preludedb_sql_t *sql,
 static int insert_classification(preludedb_sql_t *sql, uint64_t message_ident, idmef_classification_t *classification) 
 {
         char *text, *ident;
-	idmef_reference_t *reference;
+	idmef_reference_t *reference, *last_reference;
 	int index;
         int ret;
 
@@ -1216,13 +1335,20 @@ static int insert_classification(preludedb_sql_t *sql, uint64_t message_ident, i
         free(ident);
 
 	index = 0;
-	reference = NULL;
+	last_reference = reference = NULL;
 	while ( (reference = idmef_classification_get_next_reference(classification, reference)) ) {
 
 		ret = insert_reference(sql, message_ident, index++, reference);
 		if ( ret < 0 )
 			return ret;
 
+		last_reference = reference;
+	}
+
+	if ( last_reference ) {
+		ret = insert_reference(sql, message_ident, -1, last_reference);
+		if ( ret < 0 )
+			return ret;
 	}
 
 	return 1;
@@ -1435,7 +1561,7 @@ static int insert_confidence(preludedb_sql_t *sql, uint64_t message_ident, idmef
 
 static int insert_assessment(preludedb_sql_t *sql, uint64_t message_ident, idmef_assessment_t *assessment) 
 {
-        idmef_action_t *action;
+        idmef_action_t *action, *last_action;
 	int index;
 	int ret;
 
@@ -1452,15 +1578,23 @@ static int insert_assessment(preludedb_sql_t *sql, uint64_t message_ident, idmef
                 return -1;
 
 	index = 0;
-        action = NULL;
+        last_action = action = NULL;
         while ( (action = idmef_assessment_get_next_action(assessment, action)) ) {
 
                 ret = insert_action(sql, message_ident, index++, action);
 		if ( ret < 0 )
                         return ret;
+
+		last_action = action;
         }
-        
-        return 1;
+
+	if ( last_action ) {
+		ret = insert_action(sql, message_ident, -1, last_action);
+		if ( ret < 0 )
+			return ret;
+	}
+
+	return 1;
 }
 
 
@@ -1526,7 +1660,7 @@ static int insert_alertident(preludedb_sql_t *sql,
 static int insert_tool_alert(preludedb_sql_t *sql, uint64_t message_ident, idmef_tool_alert_t *tool_alert) 
 {
         char *name, *command;
-	idmef_alertident_t *alertident;
+	idmef_alertident_t *alertident, *last_alertident;
 	int index;
         int ret;
 
@@ -1551,9 +1685,17 @@ static int insert_tool_alert(preludedb_sql_t *sql, uint64_t message_ident, idmef
         free(command);
 
 	index = 0;
-	alertident = NULL;
+	last_alertident = alertident = NULL;
 	while ( (alertident = idmef_tool_alert_get_next_alertident(tool_alert, alertident)) ) {
 		ret = insert_alertident(sql, 'T', message_ident, index++, alertident);
+		if ( ret < 0 )
+			return ret;
+
+		last_alertident = alertident;
+	}
+
+	if ( ret < 0 ) {
+		ret = insert_alertident(sql, 'T', message_ident, -1, alertident);
 		if ( ret < 0 )
 			return ret;
 	}
@@ -1567,7 +1709,7 @@ static int insert_correlation_alert(preludedb_sql_t *sql, uint64_t message_ident
 				    idmef_correlation_alert_t *correlation_alert) 
 {
         char *name;
-	idmef_alertident_t *alertident;
+	idmef_alertident_t *alertident, *last_alertident;
 	int index;
         int ret;
 
@@ -1587,10 +1729,18 @@ static int insert_correlation_alert(preludedb_sql_t *sql, uint64_t message_ident
                 return ret;
 
 	index = 0;
-	alertident = NULL;
+	last_alertident = alertident = NULL;
 	while ( (alertident = idmef_correlation_alert_get_next_alertident(correlation_alert, alertident)) ) {
 
 		ret = insert_alertident(sql, 'C', message_ident, index++, alertident);
+		if ( ret < 0 )
+			return ret;
+
+		last_alertident = alertident;
+	}
+
+	if ( last_alertident ) {
+		ret = insert_alertident(sql, 'C', message_ident, -1, last_alertident);
 		if ( ret < 0 )
 			return ret;
 	}
@@ -1654,10 +1804,10 @@ static int insert_message_messageid(preludedb_sql_t *sql, const char *table_name
 static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert) 
 {
         uint64_t ident;
-        idmef_source_t *source;
-        idmef_target_t *target;
-        idmef_analyzer_t *analyzer;
-        idmef_additional_data_t *additional_data;
+        idmef_source_t *source, *last_source;
+        idmef_target_t *target, *last_target;
+        idmef_analyzer_t *analyzer, *last_analyzer;
+        idmef_additional_data_t *additional_data, *last_additional_data;
 	int index;
 	int ret;
 
@@ -1712,44 +1862,76 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
         }
 
         index = 0;
-        analyzer = NULL;
+        last_analyzer = analyzer = NULL;
         while ( (analyzer = idmef_alert_get_next_analyzer(alert, analyzer)) ) {
                 
                 ret = insert_analyzer(sql, 'A', ident, index++, analyzer);
 		if ( ret < 0 )
                         return ret;
+
+		last_analyzer = analyzer;
         }
 
+	if ( last_analyzer ) {
+		ret = insert_analyzer(sql, 'A', ident, -1, last_analyzer);
+		if ( ret < 0 )
+			return ret;
+	}
+
         index = 0;
-        source = NULL;
+        last_source = source = NULL;
         while ( (source = idmef_alert_get_next_source(alert, source)) ) {
                 
                 ret = insert_source(sql, ident, index++, source);
 		if ( ret < 0 )
                         return ret;
+
+		last_source = source;
         }
 
+	if ( last_source ) {
+		ret = insert_source(sql, ident, -1, last_source);
+		if ( ret < 0 )
+			return ret;
+	}
+
         index = 0;
-        target = NULL;
+        last_target = target = NULL;
         while ( (target = idmef_alert_get_next_target(alert, target)) ) {
 
                 ret = insert_target(sql, ident, index++, target);
 		if ( ret < 0 )
                         return ret;
+
+		last_target = target;
         }
+
+	if ( last_target ) {
+		ret = insert_target(sql, ident, -1, last_target);
+		if ( ret < 0 )
+			return ret;
+	}
 
 	ret = insert_classification(sql, ident, idmef_alert_get_classification(alert));
 	if ( ret < 0 )
 		return ret;
 
 	index = 0;
-        additional_data = NULL;
+        last_additional_data = additional_data = NULL;
         while ( (additional_data = idmef_alert_get_next_additional_data(alert, additional_data)) ) {
 
                 ret = insert_additional_data(sql, 'A', ident, index++, additional_data);
 		if ( ret < 0 )
                         return ret;
+
+		last_additional_data = additional_data;
         }
+
+	if ( last_additional_data ) {
+		ret = insert_additional_data(sql, 'A', ident, -1, last_additional_data);
+		if ( ret < 0 )
+			return ret;
+	}
 
         return 1;
 }
@@ -1759,9 +1941,9 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
 static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat) 
 {
         uint64_t ident;
-        idmef_analyzer_t *analyzer;
+        idmef_analyzer_t *analyzer, *last_analyzer;
         char heartbeat_interval[16], *messageid;
-        idmef_additional_data_t *additional_data;
+        idmef_additional_data_t *additional_data, *last_additional_data;
         unsigned int index;
 	int ret;
 
@@ -1787,13 +1969,21 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
                 return ret;
 
         index = 0;
-        analyzer = NULL;
+        last_analyzer = analyzer = NULL;
         while ( (analyzer = idmef_heartbeat_get_next_analyzer(heartbeat, analyzer)) ) {
                 
                 ret = insert_analyzer(sql, 'H', ident, index++, analyzer);
 		if ( ret < 0 )
                         return ret;
+
+		last_analyzer = analyzer;
         }
+
+	if ( last_analyzer ) {
+		ret = insert_analyzer(sql, 'H', ident, -1, last_analyzer);
+		if ( ret < 0 )
+			return ret;
+	}
         
         ret = insert_createtime(sql, 'H', ident, idmef_heartbeat_get_create_time(heartbeat));
 	if ( ret < 0 )
@@ -1804,13 +1994,21 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
                 return ret;
 
 	index = 0;
-        additional_data = NULL;
+        last_additional_data = additional_data = NULL;
         while ( (additional_data = idmef_heartbeat_get_next_additional_data(heartbeat, additional_data)) ) {
 
                 ret = insert_additional_data(sql, 'H', ident, index++, additional_data);
 		if ( ret < 0 )
 			return ret;
+
+		last_additional_data = additional_data;
         }
+
+	if ( last_additional_data ) {
+		ret = insert_additional_data(sql, 'H', ident, -1, last_additional_data);
+		if ( ret < 0 )
+			return ret;
+	}
 
         return 1;
 }

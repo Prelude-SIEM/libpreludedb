@@ -341,7 +341,7 @@ DROP TABLE IF EXISTS Prelude_Node;
 CREATE TABLE Prelude_Node (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
- _parent0_index TINYINT UNSIGNED NOT NULL,
+ _parent0_index TINYINT NOT NULL,
  PRIMARY KEY(_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
