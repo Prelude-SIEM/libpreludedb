@@ -80,7 +80,7 @@ int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude
 
 int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_message_ident_t *ident);
 
-int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
+int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, idmef_message_t *msg);
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 prelude_db_object_selection_t *object_selection,

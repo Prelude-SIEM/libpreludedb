@@ -151,7 +151,7 @@ char *prelude_db_interface_get_name(prelude_db_interface_t *db)
 
 char *prelude_db_interface_get_format(prelude_db_interface_t *db) 
 {
-        return db ? plugin_name(db->format) : NULL;
+        return db ? db->format->name : NULL;
 }
 
 
@@ -208,7 +208,7 @@ static int db_connection_delete_filter(prelude_db_interface_t *conn, const char 
 
 
 
-int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg)
+int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, idmef_message_t *msg)
 {
 	if ( ! interface )
 		return -1;

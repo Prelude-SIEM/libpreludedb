@@ -259,7 +259,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	criterion = idmef_criterion_new(object, relation_equal, value);
+	criterion = idmef_criterion_new(object, idmef_criterion_value_new_fixed(value), IDMEF_VALUE_RELATION_EQUAL);
 	if ( ! criterion ) {
 		idmef_object_destroy(object);
 		idmef_value_destroy(value);
@@ -272,11 +272,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	if ( idmef_criteria_add_criterion(criteria, criterion, operator_and) < 0 ) {
-		idmef_criterion_destroy(criterion);
-		idmef_criteria_destroy(criteria);
-		return NULL;
-	}
+        idmef_criteria_set_criterion(criteria, criterion);
 
 	selection = object_list_to_selection(object_list);
 	if ( ! selection ) {
@@ -440,8 +436,8 @@ static idmef_value_t *sql_field_to_idmef_value(idmef_object_t *object,
 	log(LOG_INFO, " * read value: %s\n", char_val);
 #endif
 
-	switch ( idmef_object_get_type(object) ) {
-	case type_time: {
+	switch ( idmef_object_get_value_type(object) ) {
+	case IDMEF_VALUE_TYPE_TIME: {
 		idmef_time_t *time;
 
 		time = idmef_time_new_db_timestamp(char_val);

@@ -605,7 +605,7 @@ static const char *db_field_value(void *s, void *t, void *r, void *f)
 
 static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
 				    prelude_sql_time_constraint_type_t type,
-				    idmef_relation_t relation, int value, int gmt_offset)
+				    idmef_value_relation_t relation, int value, int gmt_offset)
 {
 	char buf[128];
 	const char *sql_relation;

@@ -769,43 +769,30 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 
 
 
-const char *prelude_sql_idmef_relation_to_string(idmef_relation_t relation)
+const char *prelude_sql_idmef_relation_to_string(idmef_value_relation_t relation)
 {
-	switch ( relation ) {
-	case relation_substring:
-		return "LIKE";
+        int i;
+        struct tbl {
+                idmef_value_relation_t relation;
+                const char *name;
+        } tbl[] = {
+                { IDMEF_VALUE_RELATION_SUBSTR,                            "LIKE" },
+                { IDMEF_VALUE_RELATION_REGEX,                               NULL },
+                { IDMEF_VALUE_RELATION_GREATER,                              ">" },
+                { IDMEF_VALUE_RELATION_GREATER|IDMEF_VALUE_RELATION_EQUAL,  ">=" },
+                { IDMEF_VALUE_RELATION_LESSER,                               "<" },
+                { IDMEF_VALUE_RELATION_LESSER|IDMEF_VALUE_RELATION_EQUAL,   "<=" },
+                { IDMEF_VALUE_RELATION_EQUAL,                                "=" },
+                { IDMEF_VALUE_RELATION_NOT_EQUAL,                           "!=" },
+                { IDMEF_VALUE_RELATION_IS_NULL,                        "IS NULL" },
+                { IDMEF_VALUE_RELATION_IS_NOT_NULL,                "IS NOT NULL" },
+                { 0, NULL },
+        };
 
-	case relation_regexp:
-		return NULL;
-
-	case relation_greater:
-		return ">";
-
-	case relation_greater_or_equal:
-		return ">=";
-
-	case relation_less:
-		return "<";
-
-	case relation_less_or_equal:
-		return "<=";
-
-	case relation_equal:
-		return "=";
-
-	case relation_not_equal:
-		return "!=";
-
-	case relation_is_null:
-		return "IS NULL";
-
-	case relation_is_not_null:
-		return "IS NOT NULL";
-
-	default:
-		/* nop */;
-	}
-
+        for ( i = 0; tbl[i].relation != 0; i++ )
+                if ( relation == tbl[i].relation )
+                        return tbl[i].name;
+        
 	return NULL;
 }
 
@@ -814,7 +801,7 @@ const char *prelude_sql_idmef_relation_to_string(idmef_relation_t relation)
 static int build_time_constraint(prelude_sql_connection_t *conn,
 				 prelude_strbuf_t *output, const char *field,
 				 prelude_sql_time_constraint_type_t type,
-				 idmef_relation_t relation, int value)
+				 idmef_value_relation_t relation, int value)
 {
 	int gmt_offset;
 
@@ -855,7 +842,7 @@ static const struct {
 static int build_criterion_non_linear_time_value_relation_equal(prelude_sql_connection_t *conn,
 								prelude_strbuf_t *output,
 								const char *field,
-								idmef_relation_t relation,
+								idmef_value_relation_t relation,
 								idmef_criterion_value_non_linear_time_t *time)
 {
 	int i;
@@ -890,7 +877,7 @@ static int build_criterion_non_linear_time_value_relation_not_equal(prelude_sql_
 		return -1;
 
 	if ( build_criterion_non_linear_time_value_relation_equal(conn, output,
-								  field, relation_equal, time) < 0 )
+								  field, IDMEF_VALUE_RELATION_EQUAL, time) < 0 )
 		return -1;
 
 	return prelude_strbuf_cat(output, ")");
@@ -901,7 +888,7 @@ static int build_criterion_non_linear_time_value_relation_not_equal(prelude_sql_
 static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 				     prelude_strbuf_t *output,
 				     const char *field,
-				     idmef_relation_t relation,
+				     idmef_value_relation_t relation,
 				     idmef_criterion_value_non_linear_time_t *time)
 {
 	struct tm tm;
@@ -910,7 +897,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 	char buf[MAX_UTC_DATETIME_SIZE];
 	int offset = 0;
 
-	if ( relation == relation_greater || relation == relation_less_or_equal )
+	if ( relation == IDMEF_VALUE_RELATION_GREATER || relation == (IDMEF_VALUE_RELATION_LESSER|IDMEF_VALUE_RELATION_EQUAL) )
 		offset = 1;
 
 	month = idmef_criterion_value_non_linear_time_get_month(time);
@@ -960,7 +947,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 		tm.tm_year += offset;
 	}
 
-	if ( relation & IDMEF_RELATION_LESSER )
+	if ( relation & IDMEF_VALUE_RELATION_LESSER )
 		tm.tm_sec -= 1;
 
 	t.sec = mktime(&tm);
@@ -971,7 +958,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 
 	if ( prelude_strbuf_sprintf(output, "%s %s %s",
 				    field,
-				    prelude_sql_idmef_relation_to_string(relation | IDMEF_RELATION_EQUAL),
+				    prelude_sql_idmef_relation_to_string(relation|IDMEF_VALUE_RELATION_EQUAL),
 				    buf) < 0 )
 		return -1;
 
@@ -983,7 +970,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 static int build_criterion_hour(prelude_sql_connection_t *conn,
 				prelude_strbuf_t *output,
 				const char *field,
-				idmef_relation_t relation,
+				idmef_value_relation_t relation,
 				idmef_criterion_value_non_linear_time_t *timeval)
 {
 	int hour, min, sec;
@@ -996,7 +983,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 	min = idmef_criterion_value_non_linear_time_get_min(timeval);
 	sec = idmef_criterion_value_non_linear_time_get_sec(timeval);
 
-	if ( relation & IDMEF_RELATION_EQUAL )
+	if ( relation & IDMEF_VALUE_RELATION_EQUAL )
 		relation_offset = 0;
 	else
 		relation_offset = 1;
@@ -1026,7 +1013,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 				      field, interval,
 				      field, interval,
 				      field, interval,
-				      prelude_sql_idmef_relation_to_string(relation | IDMEF_RELATION_EQUAL),
+				      prelude_sql_idmef_relation_to_string(relation | IDMEF_VALUE_RELATION_EQUAL),
 				      total_seconds);
 }
 
@@ -1035,7 +1022,7 @@ static int build_criterion_hour(prelude_sql_connection_t *conn,
 static int build_criterion_non_linear_time_value_relation_lesser_or_greater(prelude_sql_connection_t *conn,
 									    prelude_strbuf_t *output,
 									    const char *field,
-									    idmef_relation_t relation,
+									    idmef_value_relation_t relation,
 									    idmef_criterion_value_non_linear_time_t *time)
 {
 	int tmp;
@@ -1065,18 +1052,18 @@ static int build_criterion_non_linear_time_value_relation_lesser_or_greater(prel
 static int build_criterion_non_linear_time_value(prelude_sql_connection_t *conn,
 						 prelude_strbuf_t *output,
 						 const char *field,
-						 idmef_relation_t relation,
+						 idmef_value_relation_t relation,
 						 idmef_criterion_value_non_linear_time_t *time)
 {
-	if ( relation == relation_equal )
+	if ( relation == IDMEF_VALUE_RELATION_EQUAL )
 		return build_criterion_non_linear_time_value_relation_equal
 			(conn, output, field, relation, time);
 
-	if ( relation == relation_not_equal )
+	if ( relation == IDMEF_VALUE_RELATION_NOT_EQUAL )
 		return build_criterion_non_linear_time_value_relation_not_equal
 			(conn, output, field, time);
 
-	if ( relation & (IDMEF_RELATION_LESSER | IDMEF_RELATION_GREATER) )
+	if ( relation & (IDMEF_VALUE_RELATION_LESSER | IDMEF_VALUE_RELATION_GREATER) )
 		return build_criterion_non_linear_time_value_relation_lesser_or_greater
 			(conn, output, field, relation, time);
 
@@ -1100,46 +1087,36 @@ static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf,
 
 static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf, size_t size)
 {
+        char *input;
+        size_t i = 0;
 	idmef_string_t *string;
-	char *output = buf;
-	char *input;
-	int output_offset = 0;
-	int input_offset = 0;
 
 	string = idmef_value_get_string(value);
 	if ( ! string )
 		return -1;
 
-	input = idmef_string_get_string(string);
+        input = idmef_string_get_string(string);
+        
+        while ( *input ) {
 
-	while ( input[input_offset] && output_offset < size ) {
-		switch ( input[input_offset] ) {
-		case '*':
-			output[output_offset] = '%';
-			output_offset++;
-			input_offset++;
-			break;
+                if ( i == (size - 1) )
+                        return -1;
+                
+                if ( *input == '*' )
+                        buf[i++] = '%';
+                
+                else if ( *input == '\\' && *(input + 1) == '*' ) {
+                        input++;
+                        buf[i++] = '*';
+                }
+                
+                else buf[i++] = *input;
 
-		case '\\':
-			if ( input[input_offset + 1] == '*' ) {
-				output[output_offset] = '*';
-				output_offset++;
-				input_offset += 2;
-				break;
-			}
+                input++;
+        }
 
-			/* no break here  */
-
-		default:
-			output[input_offset++] = input[output_offset++];
-		}
-	}
-
-	if ( output_offset >= size )
-		return -1;
-
-	output[output_offset] = 0;
-
+        buf[i] = 0;
+        
 	return 0;
 }
 
@@ -1148,16 +1125,16 @@ static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf,
 static int build_criterion_fixed_sql_value(prelude_sql_connection_t *conn,
 					   prelude_strbuf_t *output,
 					   idmef_value_t *value,
-					   idmef_relation_t relation)
+					   idmef_value_relation_t relation)
 {
 	char buf[SQL_MAX_VALUE_LEN];
 	char *tmp;
 	int ret;
 
-	if ( idmef_value_get_type(value) == type_time )
+	if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME )
 		ret = build_criterion_fixed_sql_time_value(value, buf, sizeof (buf));
 
-	else if ( relation == relation_substring )
+	else if ( relation == IDMEF_VALUE_RELATION_SUBSTR )
 		ret = build_criterion_fixed_sql_like_value(value, buf, sizeof (buf));
 
 	else
@@ -1179,7 +1156,7 @@ static int build_criterion_fixed_sql_value(prelude_sql_connection_t *conn,
 
 
 
-static int build_criterion_relation(prelude_strbuf_t *output, idmef_relation_t relation)
+static int build_criterion_relation(prelude_strbuf_t *output, idmef_value_relation_t relation)
 {
 	const char *tmp;
 
@@ -1194,7 +1171,7 @@ static int build_criterion_relation(prelude_strbuf_t *output, idmef_relation_t r
 static int build_criterion_fixed_value(prelude_sql_connection_t *conn,
 				       prelude_strbuf_t *output,
 				       const char *field,
-				       idmef_relation_t relation,
+				       idmef_value_relation_t relation,
 				       idmef_value_t *value)
 {
 	if ( prelude_strbuf_sprintf(output, "%s ", field) < 0 )
@@ -1213,7 +1190,7 @@ static int build_criterion_fixed_value(prelude_sql_connection_t *conn,
 int prelude_sql_build_criterion(prelude_sql_connection_t *conn,
 				prelude_strbuf_t *output,
 				const char *field,
-				idmef_relation_t relation, idmef_criterion_value_t *value)
+				idmef_value_relation_t relation, idmef_criterion_value_t *value)
 {
 	switch ( idmef_criterion_value_get_type(value) ) {
 	case idmef_criterion_value_type_fixed:

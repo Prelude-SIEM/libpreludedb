@@ -65,7 +65,6 @@ typedef struct table_list {
 
 
 
-
 static char *normalize_condition(char *condition, char *table, char *alias)
 {
 	char buf[1024];
@@ -499,107 +498,6 @@ error:
 }
 
 
-static int relation_substring_to_sql(prelude_strbuf_t *where, char *table, char *field,
-				     idmef_relation_t rel, char *val)
-{
-	size_t len;
-
-	if ( val[1] == '*' )
-		val[1] = '%';
-
-	len = strlen(val);
-
-	if ( len >= 2 && val[len - 2] == '*' )
-		val[len - 2] = '%';
-
-	return (table ?
-		prelude_strbuf_sprintf(where, "%s.%s LIKE %s", table, field, val) :
-		prelude_strbuf_sprintf(where, "%s LIKE %s", field, val));
-}
-
-
-
-/* 
- * NOTE: This function assumes that val is already escaped
- */
-static int relation_to_sql(prelude_strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
-{
-	switch (rel) {
-	case relation_substring:
-		return relation_substring_to_sql(where, table, field, rel, val);
-
-	case relation_regexp:
-		return -1; /* unsupported */
-
-	case relation_greater:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s > %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s > %s", field, val));
-
-	case relation_greater_or_equal:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s >= %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s >= %s", field, val));
-
-	case relation_less:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s < %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s < %s", field, val));
-
-
-	case relation_less_or_equal:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s <= %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s <= %s", field, val));
-
-	case relation_equal:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s = %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s = %s", field, val));
-
-	case relation_not_equal:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s <> %s", table, field, val) :
-			prelude_strbuf_sprintf(where, "%s <> %s", field, val));
-
-	case relation_is_null:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s IS NULL", table, field) :
-			prelude_strbuf_sprintf(where, "%s IS NULL", field));
-
-	case relation_is_not_null:
-		return (table ?
-			prelude_strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field) :
-			prelude_strbuf_sprintf(where, "%s IS NOT NULL", field));
-
-	default:
-		/* nop */;
-	}
-
-	return -1;
-}
-
-
-static char *value_to_sql(prelude_sql_connection_t *conn, idmef_value_t *value, char *buf, size_t size)
-{
-	if ( idmef_value_get_type(value) == type_time ) {
-		idmef_time_t *time;
-
-		time = idmef_value_get_time(value);
-		if ( ! time )
-			return NULL;
-
-		if ( idmef_time_get_db_timestamp(time, buf, size) < 0 )
-			return NULL;
-	} else {
-		if ( idmef_value_to_string(value, buf, size) < 0 )
-			return NULL;
-	}
-
-	return prelude_sql_escape(conn, buf);
-}
-
-
 
 static int criterion_to_sql(prelude_sql_connection_t *conn,
 			    prelude_strbuf_t *where,
@@ -608,12 +506,9 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 {
 	idmef_object_t *object;
 	db_object_t *db;
-	char buf[VALLEN];
 	char field_name[128];
 	char *table, *field, *function, *top_table, *top_field, *ident_field;
 	char *condition, *table_alias;
-	idmef_relation_t relation;
-	char *value = NULL;
 	int ret;
 
 	object = idmef_criterion_get_object(criterion);
@@ -636,26 +531,11 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	condition = db_object_get_condition(db);
 	ident_field = db_object_get_ident_field(db);
 
-	relation = idmef_criterion_get_relation(criterion);
-
 	/* Add table to JOIN list */
 	table_alias = add_table(tables, table, top_table, top_field,
 				ident_field, condition);
 	if ( ! table_alias )
 		return -1;
-
-/* 	if ( idmef_criterion_get_value(criterion) ) { */
-/* 		value = value_to_sql(conn, idmef_criterion_get_value(criterion), buf, VALLEN); */
-/* 		if ( ! value ) */
-/* 			return -2; */
-/* 	} */
-
-/* 	retval = relation_to_sql(where, */
-/* 				 field ? table_alias : NULL, */
-/* 				 field ? field : function, */
-/* 				 relation, value); */
-
-/* 	free(value); */
 
 	if ( table_alias )
 		ret = snprintf(field_name, sizeof (field_name), "%s.%s", table_alias, field);
@@ -666,61 +546,41 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 		return -1;
 
 	return prelude_sql_build_criterion(conn, where, field_name,
-					   relation, idmef_criterion_get_value(criterion));
+					   idmef_criterion_get_relation(criterion),
+                                           idmef_criterion_get_value(criterion));
 }
 
 
-static int criteria_to_sql(prelude_sql_connection_t *conn,
-			   prelude_strbuf_t *where,
-			   table_list_t *tables,
-			   idmef_criteria_t *criteria)
+
+
+static int criteria_to_sql(prelude_sql_connection_t *conn, prelude_strbuf_t *where,
+                           table_list_t *tables, idmef_criteria_t *criteria)
 {
-	idmef_criteria_t *criteria_ptr, *criteria_prev;
-	char *operator;
+        int ret;
+        idmef_criteria_t *or, *and;
 
-	criteria_ptr = NULL;
-	criteria_prev = NULL;
-	while ( (criteria_ptr = idmef_criteria_get_next(criteria, criteria_ptr)) ) {
+        or = idmef_criteria_get_or(criteria);
+        and = idmef_criteria_get_and(criteria);
+        
+        if ( or )
+                prelude_strbuf_sprintf(where, "((");
 
-		if ( criteria_prev ) {
-			switch ( idmef_criteria_get_operator(criteria_prev) ) {
-			case operator_and:
-				operator = "AND";
-				break;
+        ret = criterion_to_sql(conn, where, tables, idmef_criteria_get_criterion(criteria));
+        if ( ret < 0 )
+                return -1;
 
-			case operator_or:
-				operator = "OR";
-				break;
+        if ( and ) {
+                prelude_strbuf_sprintf(where, " AND ");
+                ret = criteria_to_sql(conn, where, tables, and);
+        }
 
-			default:
-				log(LOG_ERR, "unknown operator %d\n", idmef_criteria_get_operator(criteria_prev));
-				return -1;
-			}
+        if ( or ) {
+                prelude_strbuf_sprintf(where, ") OR (");
+                ret = criteria_to_sql(conn, where, tables, or);                
+                prelude_strbuf_sprintf(where, "))");
+        }
 
-			if ( prelude_strbuf_sprintf(where, " %s ", operator) < 0 )
-				return -1;
-
-		}
-
-		if ( idmef_criteria_is_criterion(criteria_ptr) ) {
-			if ( criterion_to_sql(conn, where, tables, idmef_criteria_get_criterion(criteria_ptr)) < 0 )
-				return -1;
-
-		} else {
-			if ( prelude_strbuf_sprintf(where, " ( ") < 0 )
-				return -1;
-
-			if ( criteria_to_sql(conn, where, tables, criteria_ptr) < 0 )
-				return -1;
-
-			if ( prelude_strbuf_sprintf(where, " ) ") < 0 )
-				return -1;
-		}
-
-		criteria_prev = criteria_ptr;
-	}
-
-	return 0;
+        return 0;
 }
 
 
@@ -982,11 +842,11 @@ static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;
 
 	/* criterion is optional */
-	if ( criteria ) {
-		ret = criteria_to_sql(conn, where2, tables, criteria);
-		if ( ret < 0 )
-			goto error;
-	}
+	if ( criteria ) {                
+                ret = criteria_to_sql(conn, where, tables, criteria);
+                if ( ret < 0 )
+                        goto error;
+        }
 
 	if ( as_values )
 		str_tables = table_list_to_strbuf_for_values(tables, where3);
