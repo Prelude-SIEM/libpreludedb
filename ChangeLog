@@ -1,5 +1,22 @@
 2003-10-21  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/include/plugin-format.h:
+	* src/include/db-interface.c:
+	* src/db-interface.c:
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/format/classic/include/idmef-db-select.h:
+	reintroduced support for "SELECT DISTINCT". 
+
+	* plugins/format/classic/include/idmef-db-select.h:
+	#define'd some useful symbolic names for three int parameters of
+	idmef_db_select(). 
+	
+	* bindings/perl/PreludeDB.c:
+	regenerated. 
+
+2003-10-21  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* plugins/format/classic/idmef-db-select.c:
 	(table_list_to_strbuf): renamed to table_list_to_strbuf_for_alerts().
 	(table_list_to_strbuf_for_values): implemented. This function uses

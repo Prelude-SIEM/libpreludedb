@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.13 2003/10/20 07:35:11 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.14 2003/10/21 15:38:24 kzaraska Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -1395,12 +1395,13 @@ XS(_wrap_prelude_db_interface_select_values) {
         idmef_selection_t *arg2 = (idmef_selection_t *) 0 ;
         idmef_criteria_t *arg3 = (idmef_criteria_t *) 0 ;
         int arg4 ;
+        int arg5 ;
         void *result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 4) || (items > 4)) {
-            SWIG_croak("Usage: prelude_db_interface_select_values(interface,selection,criteria,limit);");
+        if ((items < 5) || (items > 5)) {
+            SWIG_croak("Usage: prelude_db_interface_select_values(interface,selection,criteria,distinct,limit);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -1418,7 +1419,8 @@ XS(_wrap_prelude_db_interface_select_values) {
             }
         }
         arg4 = (int) SvIV(ST(3));
-        result = (void *)prelude_db_interface_select_values(arg1,arg2,arg3,arg4);
+        arg5 = (int) SvIV(ST(4));
+        result = (void *)prelude_db_interface_select_values(arg1,arg2,arg3,arg4,arg5);
         
         ST(argvi) = sv_newmortal();
         SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_void,0);

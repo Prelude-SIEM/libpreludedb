@@ -881,6 +881,7 @@ static int join_wheres(strbuf_t *out, strbuf_t *in)
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			       idmef_selection_t *selection,
 			       idmef_criteria_t *criteria,
+			       int distinct,
 			       int limit,
 			       int as_values)
 {
@@ -976,7 +977,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;	
 
 	/* build the query */
-	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s %s;",
+	ret = strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s;",
+			     distinct ? " DISTINCT" : "",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),
 			     strbuf_empty(where) ? "" : "WHERE",
@@ -1036,6 +1038,7 @@ error:
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 				     idmef_selection_t *selection,
 				     idmef_criteria_t *criteria,
+				     int distinct,
 				     int limit, 
 				     int as_values)
 {
@@ -1050,7 +1053,7 @@ prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, selection, criteria, limit, as_values);
+	request = build_request(sql, selection, criteria, distinct, limit, as_values);
 	if ( ! request )
 		return NULL;
 

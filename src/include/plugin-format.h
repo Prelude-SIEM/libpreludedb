@@ -57,6 +57,7 @@ typedef struct {
 	void *(*format_select_values)(prelude_db_connection_t *connection,
 			              idmef_selection_t *selection,
 				      idmef_criteria_t *criteria,
+				      int distinct,
 				      int limit);
 
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,

@@ -473,6 +473,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 					 idmef_selection_t *selection,
 					 idmef_criteria_t *criteria,
+					 int distinct,
 					 int limit)
 {
 	if ( ! interface || 
@@ -481,7 +482,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 		return NULL;
 	
 	return interface->format->format_select_values
-                (interface->db_connection, selection, criteria, limit);
+                (interface->db_connection, selection, criteria, distinct, limit);
 }
 
 
