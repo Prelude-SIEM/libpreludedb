@@ -22,24 +22,24 @@
 } while(0)
 
 
-struct sql_table {
+struct prelude_sql_table {
 	char name[MAX_NAME_LEN + 1];
 	struct list_head row_list;
 };
 
 
-struct sql_row {
+struct prelude_sql_row {
 	struct list_head list;
 
 	int fields;
-	sql_field_t **field;
+	prelude_sql_field_t **field;
 };
 
 
 
-struct sql_field {
+struct prelude_sql_field {
 	struct list_head list;
-	sql_field_type_t type;
+	prelude_sql_field_type_t type;
 	char name[MAX_NAME_LEN + 1];
         
 	union {
@@ -57,9 +57,9 @@ struct sql_field {
 
 
 
-sql_field_t *sql_field_new(const char *name, sql_field_type_t type, const char *val)
+prelude_sql_field_t *prelude_sql_field_new(const char *name, prelude_sql_field_type_t type, const char *val)
 {
-	sql_field_t *f;
+	prelude_sql_field_t *f;
 	
 	allocate(f, NULL);
 	strncpy(f->name, name, sizeof(f->name));
@@ -109,7 +109,7 @@ sql_field_t *sql_field_new(const char *name, sql_field_type_t type, const char *
 
 
 
-int sql_field_to_string(sql_field_t *f, char *buf, int len)
+int prelude_sql_field_to_string(prelude_sql_field_t *f, char *buf, int len)
 {
 	if ( ! f || ! buf )
 		return -1;
@@ -149,7 +149,7 @@ int sql_field_to_string(sql_field_t *f, char *buf, int len)
 
 
 
-int sql_field_destroy(sql_field_t *f)
+int prelude_sql_field_destroy(prelude_sql_field_t *f)
 {
 	if ( ! f )
 		return -1;
@@ -164,9 +164,9 @@ int sql_field_destroy(sql_field_t *f)
 
 
 
-sql_row_t *sql_row_new(int cols)
+prelude_sql_row_t *prelude_sql_row_new(int cols)
 {
-	sql_row_t *row;
+	prelude_sql_row_t *row;
 	
 	if ( ! cols )
 		return NULL;
@@ -176,7 +176,7 @@ sql_row_t *sql_row_new(int cols)
 	/*
          * don't use allocate here to clean up in case of failure
          */
-	row->field = calloc(cols, sizeof(sql_field_t *));
+	row->field = calloc(cols, sizeof(prelude_sql_field_t *));
 	if ( ! row->field ) {
 		log(LOG_ERR, "memory exhausted.\n");
 		free(row);
@@ -191,7 +191,7 @@ sql_row_t *sql_row_new(int cols)
 
 
 
-int sql_row_add_field(sql_row_t *row, int column, sql_field_t *field)
+int prelude_sql_row_add_field(prelude_sql_row_t *row, int column, prelude_sql_field_t *field)
 {
 	if ( ! row || column < 0 || column > row->fields || row->field[column] )
 		return -1;
@@ -204,7 +204,7 @@ int sql_row_add_field(sql_row_t *row, int column, sql_field_t *field)
 
 
 
-int sql_row_delete_field(sql_row_t *row, int column)
+int prelude_sql_row_delete_field(prelude_sql_row_t *row, int column)
 {
 	if ( ! row || column > row->fields || column < 0 )
 		return -1;
@@ -217,9 +217,9 @@ int sql_row_delete_field(sql_row_t *row, int column)
 
 
 
-int sql_row_destroy_field(sql_row_t *row, int column)
+int prelude_sql_row_destroy_field(prelude_sql_row_t *row, int column)
 {
-	sql_field_t *f;
+	prelude_sql_field_t *f;
 	
 	if ( ! row || column > row->fields || column < 0 )
 		return -1;
@@ -227,13 +227,13 @@ int sql_row_destroy_field(sql_row_t *row, int column)
 	f = row->field[column];
 	row->field[column] = NULL;
 	
-	return sql_field_destroy(f);
+	return prelude_sql_field_destroy(f);
 }
 
 
 
 
-int sql_row_find_field(sql_row_t *row, const char *name)
+int prelude_sql_row_find_field(prelude_sql_row_t *row, const char *name)
 {
 	int i = 0;
 
@@ -251,7 +251,7 @@ int sql_row_find_field(sql_row_t *row, const char *name)
 
 
 
-sql_field_t *sql_row_get_field(sql_row_t *row, int field)
+prelude_sql_field_t *prelude_sql_row_get_field(prelude_sql_row_t *row, int field)
 {
 	if ( ! row || ! field)
 		return NULL;
@@ -261,12 +261,12 @@ sql_field_t *sql_row_get_field(sql_row_t *row, int field)
 
 
 
-int sql_row_destroy(sql_row_t *row)
+int prelude_sql_row_destroy(prelude_sql_row_t *row)
 {
 	int i;
 	
 	for ( i = 0; i < row->fields; i++ )
-		sql_row_destroy_field(row, i);
+		prelude_sql_row_destroy_field(row, i);
 	
 	free(row->field);	
 	free(row);
@@ -276,9 +276,9 @@ int sql_row_destroy(sql_row_t *row)
 
 
 
-sql_table_t *sql_table_new(const char *name)
+prelude_sql_table_t *prelude_sql_table_new(const char *name)
 {
-	sql_table_t *t;
+	prelude_sql_table_t *t;
 
 	allocate(t, NULL);
 
@@ -290,7 +290,7 @@ sql_table_t *sql_table_new(const char *name)
 
 
 
-int sql_table_add_row(sql_table_t *table, sql_row_t *row)
+int prelude_sql_table_add_row(prelude_sql_table_t *table, prelude_sql_row_t *row)
 {
 	if ( ! table || ! row )
 		return -1;
@@ -302,35 +302,35 @@ int sql_table_add_row(sql_table_t *table, sql_row_t *row)
 
 
 
-void sql_table_delete_row(sql_row_t *row)
+void prelude_sql_table_delete_row(prelude_sql_row_t *row)
 {
 	list_del(&row->list);
 }
 
 
 
-void sql_table_iterate(sql_table_t *table, void (*callback)(sql_row_t *row))
+void prelude_sql_table_iterate(prelude_sql_table_t *table, void (*callback)(prelude_sql_row_t *row))
 {
-	sql_row_t *row;
+	prelude_sql_row_t *row;
 	struct list_head *tmp;
 	
 	list_for_each(tmp, &table->row_list) {
-		row = list_entry(tmp, sql_row_t, list);
+		row = list_entry(tmp, prelude_sql_row_t, list);
 		callback(row);
 	}
 }
 
 
 
-int sql_table_destroy(sql_table_t *table)
+int prelude_sql_table_destroy(prelude_sql_table_t *table)
 {
-        sql_row_t *row;
+        prelude_sql_row_t *row;
 	struct list_head *tmp, *n;
 	
 	list_for_each_safe(tmp, n, &table->row_list) {
-		row = list_entry(tmp, sql_row_t, list);
-		sql_table_delete_row(row);
-		sql_row_destroy(row);
+		row = list_entry(tmp, prelude_sql_row_t, list);
+		prelude_sql_table_delete_row(row);
+		prelude_sql_row_destroy(row);
 	}
         
 	free(table);

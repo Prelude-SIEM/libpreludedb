@@ -289,7 +289,7 @@ static char *db_escape(void *s, const char *string)
 /*
  * Execute SQL query, return table
  */
-static sql_table_t *db_query(void *s, const char *query)
+static prelude_sql_table_t *db_query(void *s, const char *query)
 {
 	log(LOG_ERR, "db_query() is not implemented in MySQL plugin.\n");	
 	return NULL;

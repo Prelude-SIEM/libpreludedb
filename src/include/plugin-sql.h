@@ -52,7 +52,7 @@ typedef struct {
         int (*db_connect) (void *session);
         char *(*db_escape)(void *session, const char *input);
         int (*db_command)(void *session, const char *query);
-        sql_table_t *(*db_query)(void *session, const char *query);
+        prelude_sql_table_t *(*db_query)(void *session, const char *query);
         int (*db_begin)(void *session);
         int (*db_commit)(void *session);
         int (*db_rollback)(void *session);
@@ -99,8 +99,9 @@ typedef struct {
 #define plugin_set_closing_func(p, f) plugin_close_func(p) = (f)
 
 
-
 int sql_plugins_init(const char *dirname);
+
+plugin_generic_t *plugin_init(int argc, char **argv);
 
 #endif /* _LIBPRELUDEDB_PLUGIN_DB_H */
 

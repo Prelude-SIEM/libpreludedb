@@ -1,9 +1,28 @@
 2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/sql-table.c:
+	* src/include/sql-table.h:
+	prefix public functions and structures with prelude_ 
+	(so all public SQL functions are now prefixed with prelude_sql_)
+
+	* plugins/sql/mysql/mysql.c:
+	* plugins/sql/pgsql/pgsql.c:
+	* src/sql.c:
+	* src/include/sql.h:
+	* src/include/plugin-sql.h:
+	update accordingly.
+	
+	* src/include/plugin-sql.h:
+	add missing plugin_init() prototype.
+
+	* src/include/format.h:
+	removed.
+
+2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/include/format.h:
 	* src/sql.c:
-	prefix public functions with prelude_ (so all public SQL functions
-	are now prefixed with prelude_sql_)
+	prefix public functions and structures with prelude_ 
 
 	* src/include/format.h:
 	* src/db-interface.c:

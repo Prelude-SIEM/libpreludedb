@@ -218,28 +218,28 @@ static char *db_escape(void *s, const char *str)
 
 
 
-static int get_query_result(const char *query, PGresult *res, sql_table_t *table) 
+static int get_query_result(const char *query, PGresult *res, prelude_sql_table_t *table) 
 {
         int i, j;
-        sql_row_t *row;
+        prelude_sql_row_t *row;
         const char *name;
-        sql_field_t *field;
+        prelude_sql_field_t *field;
         int tuples, fields;
-        sql_field_type_t type;
+        prelude_sql_field_type_t type;
         
         tuples = PQntuples(res);
         fields = PQnfields(res);
         	
         for ( i = 0; i < tuples; i++ ) {
                 
-                row = sql_row_new(fields);
+                row = prelude_sql_row_new(fields);
                 if ( ! row ) {
                         log(LOG_ERR, "Query \"%s\": could not create table row\n", query);
                         errno = -ERR_PLUGIN_DB_RESULT_ROW_ERROR;
                         return -1;
                 }
         		
-                sql_table_add_row(table, row);
+                prelude_sql_table_add_row(table, row);
                 
                 for ( j = 0; j < fields; j++ ) {
 
@@ -275,7 +275,7 @@ static int get_query_result(const char *query, PGresult *res, sql_table_t *table
 
                         name = PQfname(res, j);
                         
-                        field = sql_field_new(name, type, PQgetvalue(res, i, j));
+                        field = prelude_sql_field_new(name, type, PQgetvalue(res, i, j));
                         if ( ! field ) {
                                 log(LOG_ERR, "Query \"%s\": couldn't create result field \"%s\"\n", query, name);
                                 errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
@@ -292,11 +292,11 @@ static int get_query_result(const char *query, PGresult *res, sql_table_t *table
 /*
  * Execute SQL query, return table
  */
-static sql_table_t *db_query(void *s, const char *query)
+static prelude_sql_table_t *db_query(void *s, const char *query)
 {
         int ret;
         PGresult *res;
-        sql_table_t *table;
+        prelude_sql_table_t *table;
         session_t *session = s;
        
 	if ( session->status != connected && session->status != transaction ) {
@@ -304,7 +304,7 @@ static sql_table_t *db_query(void *s, const char *query)
 		return NULL;
 	}
 
-	table = sql_table_new("Results");
+	table = prelude_sql_table_new("Results");
 	if ( ! table ) {
 		log(LOG_ERR, "Query: \"%s\": could not create result table\n", query);
 		errno = -ERR_PLUGIN_DB_RESULT_TABLE_ERROR;
@@ -330,7 +330,7 @@ static sql_table_t *db_query(void *s, const char *query)
         
         ret = get_query_result(query, res, table);
         if ( ret < 0 ) {
-                sql_table_destroy(table);
+                prelude_sql_table_destroy(table);
                 table = NULL;
         }
         

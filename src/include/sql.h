@@ -6,7 +6,7 @@ typedef struct prelude_sql_connection prelude_sql_connection_t;
 
 int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...);
 
-sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...);
+prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...);
 
 char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string);
 

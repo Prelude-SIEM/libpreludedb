@@ -207,10 +207,10 @@ int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const 
 
 
 
-sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...)
+prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...)
 {
         va_list ap;
-        sql_table_t *ret;
+        prelude_sql_table_t *ret;
         int query_length = 0;
         char query_static[DB_REQUEST_LENGTH], *query;
         
