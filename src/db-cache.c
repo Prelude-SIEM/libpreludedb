@@ -157,8 +157,8 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
 {
         int ret;
         uint8_t tag;
-        prelude_msg_t *msg;
         idmef_message_t *idmef;
+        prelude_msg_t *msg = NULL;
         
         ret = prelude_msg_read(&msg, fd);
         if ( ret != prelude_msg_finished )
