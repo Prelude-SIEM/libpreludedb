@@ -143,7 +143,7 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	if ( idmef_selection_add_object(selection, alert_ident, function_none) < 0 ) {
+	if ( idmef_selection_add_object(selection, alert_ident) < 0 ) {
 		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(alert_ident));
 		idmef_object_destroy(alert_ident);
 		idmef_object_destroy(analyzerid);
@@ -151,7 +151,7 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	if ( idmef_selection_add_object(selection, analyzerid, function_none) < 0 ) {
+	if ( idmef_selection_add_object(selection, analyzerid) < 0 ) {
 		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(analyzerid));
 		idmef_object_destroy(analyzerid);
 		idmef_selection_destroy(selection);
@@ -245,7 +245,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		idmef_selection_set_object_iterator(selection);
+		idmef_selection_set_iterator(selection);
 
 #ifdef DEBUG
 		log(LOG_INFO, "+ row %d\n", cnt);
@@ -310,7 +310,7 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 					  prelude_db_alert_uident_t *uident,
 					  idmef_selection_t *selection)
 {
-	idmef_object_t *obj;
+	idmef_object_t *object;
 	int lists, n;
 	uint64_t ident = uident->alert_ident;
 
@@ -319,9 +319,9 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 
 	n = 0;
 
-	idmef_selection_set_object_iterator(selection);
-	while ( (obj = idmef_selection_get_next_object(selection)) ) {
-		lists = idmef_object_has_lists(obj);
+	idmef_selection_set_iterator(selection);
+	while ( (object = idmef_selection_get_next_object(selection)) ) {
+		lists = idmef_object_has_lists(object);
 		if ( lists > 1 )
 			return get_alert(connection, ident);
 
@@ -338,7 +338,7 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 					      prelude_db_heartbeat_uident_t *uident,
 					      idmef_selection_t *selection)
 {
-	idmef_object_t *obj;
+	idmef_object_t *object;
 	int lists, n;
 	uint64_t ident = uident->heartbeat_ident;
 
@@ -347,9 +347,9 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 
 	n = 0;
 
-	idmef_selection_set_object_iterator(selection);
-	while ( (obj = idmef_selection_get_next_object(selection)) ) {
-		lists = idmef_object_has_lists(obj);
+	idmef_selection_set_iterator(selection);
+	while ( (object = idmef_selection_get_next_object(selection)) ) {
+		lists = idmef_object_has_lists(object);
 		if ( lists > 1 )
 			return get_heartbeat(connection, ident);
 
@@ -408,7 +408,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	
 	nfields = prelude_sql_fields_num(table);	
 
-	idmef_selection_set_object_iterator(selection);
+	idmef_selection_set_iterator(selection);
 
 	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 

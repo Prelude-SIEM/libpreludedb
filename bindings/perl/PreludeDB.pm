@@ -152,7 +152,7 @@ sub	_convert_object_list
 	    return undef;
 	}
 
-	if ( Prelude::idmef_selection_add_object($object_list_handle, $object, $Prelude::function_none) < 0 ) {
+	if ( Prelude::idmef_selection_add_object($object_list_handle, $object) < 0 ) {
 	    Prelude::idmef_object_destroy($object);
 	    Prelude::idmef_selection_destroy($object_list_handle);
 	    return undef;

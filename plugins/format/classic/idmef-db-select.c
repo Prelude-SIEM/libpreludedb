@@ -649,7 +649,8 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		   table_list_t *tables,
 		   idmef_selection_t *selection)
 {
-	idmef_object_t *obj;
+	idmef_selected_object_t *selected;
+	idmef_object_t *object;
 	db_object_t *db;
 	char *table;
 	char *field;
@@ -676,13 +677,15 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		goto error;
 	}
 
-	idmef_selection_set_object_iterator(selection);
-	while ( (obj = idmef_selection_get_next_object(selection)) ) {
+	idmef_selection_set_iterator(selection);
+	while ( (selected = idmef_selection_get_next_selected_object(selection)) ) {
 
-		db = db_object_find(obj);
+		object = idmef_selected_object_get_object(selected);
+
+		db = db_object_find(object);
 		if ( ! db ) {
-			const char *objname = idmef_object_get_name(obj);
-			char *objnum = idmef_object_get_numeric(obj);
+			const char *objname = idmef_object_get_name(object);
+			char *objnum = idmef_object_get_numeric(object);
 
 			log(LOG_ERR, "object %s [%s] not handled by database specification!\n",
 				     objname, objnum);
@@ -709,16 +712,16 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		 * Add field to SELECT list, with alias if we're dealing with
 		 * alert.ident or heartbeat.ident
 		 */
-		if ( ( idmef_object_compare(obj, alert) == 0 ) ||
-		     ( idmef_object_compare(obj, heartbeat) == 0 ) )
+		if ( ( idmef_object_compare(object, alert) == 0 ) ||
+		     ( idmef_object_compare(object, heartbeat) == 0 ) )
 		     	ret = add_field(fields, table, field, "ident", 
-		     			idmef_selection_get_function(selection));
+		     			idmef_selected_object_get_function(selected));
 		else
 			ret = add_field(fields,
 					field ? table_alias : NULL,
 					field ? field : function,
 					NULL, 
-					idmef_selection_get_function(selection));
+					idmef_selected_object_get_function(selected));
 
 		if ( ret < 0 )
 			goto error;
