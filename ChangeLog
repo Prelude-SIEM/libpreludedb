@@ -1,3 +1,9 @@
+2003-02-18  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/pgsql.sql:
+	included a patch from Herve Debar <herve.debar@francetelecom.com>
+	(commenting out an unneeded ",")
+
 2003-02-15  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-read.c:
