@@ -66,7 +66,6 @@ static int _get_ ## name (preludedb_sql_t *sql, preludedb_sql_row_t *row,			\
 get_(uint8_t, uint8)
 get_(uint16_t, uint16)
 get_(uint32_t, uint32)
-get_(uint64_t, uint64)
 get_(float, float)
 
 #define get_uint8(sql, row, index, parent, parent_new_child) \
@@ -77,9 +76,6 @@ get_(float, float)
 
 #define get_uint32(sql, row, index, parent, parent_new_child) \
 	_get_uint32(sql, row, index, parent, (int (*)(void *, uint32_t **)) parent_new_child)
-
-#define get_uint64(sql, row, index, parent, parent_new_child) \
-	_get_uint64(sql, row, index, parent, (int (*)(void *, uint64_t **)) parent_new_child)
 
 #define get_float(sql, row, index, parent, parent_new_child) \
 	_get_float(sql, row, index, parent, (int (*)(void *, float **)) parent_new_child)
@@ -904,7 +900,7 @@ static int get_action(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_assessment_new_action(assessment, &action);
+		ret = idmef_assessment_new_action(assessment, &action, -1);
 		if ( ret < 0 )
 			return ret;
 
@@ -1112,7 +1108,7 @@ static int get_file_access(preludedb_sql_t *sql,
 
 	for ( cnt = 0; cnt < file_access_count; cnt++ ) {
 
-		ret = idmef_file_new_file_access(file, &file_access);
+		ret = idmef_file_new_file_access(file, &file_access, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1153,7 +1149,7 @@ static int get_linkage(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_file_new_linkage(file, &linkage);
+		ret = idmef_file_new_linkage(file, &linkage, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1258,7 +1254,7 @@ static int get_checksum(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_file_new_checksum(file, &checksum);
+		ret = idmef_file_new_checksum(file, &checksum, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1305,7 +1301,7 @@ static int get_file(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_target_new_file(target, &file);
+		ret = idmef_target_new_file(target, &file, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1399,7 +1395,7 @@ static int get_source(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_alert_new_source(alert, &source);
+		ret = idmef_alert_new_source(alert, &source, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1465,7 +1461,7 @@ static int get_target(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_alert_new_target(alert, &target);
+		ret = idmef_alert_new_target(alert, &target, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1675,7 +1671,7 @@ static int get_reference(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_classification_new_reference(classification, &reference);
+		ret = idmef_classification_new_reference(classification, &reference, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1771,11 +1767,11 @@ static int get_alertident(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 0, alertident, idmef_alertident_new_alertident);
+		ret = get_string(sql, row, 0, alertident, idmef_alertident_new_alertident);
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_uint64(sql, row, 1, alertident, idmef_alertident_new_analyzerid);
+		ret = get_string(sql, row, 1, alertident, idmef_alertident_new_analyzerid);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -2035,7 +2031,6 @@ static int _get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_heartbeat_
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
-	prelude_string_t *messageid;
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid, heartbeat_interval FROM Prelude_Heartbeat WHERE _ident = %" PRIu64 "", ident);

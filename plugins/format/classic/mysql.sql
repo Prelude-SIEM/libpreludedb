@@ -20,7 +20,7 @@ CREATE TABLE Prelude_AlertIdent (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('T','C') NOT NULL, # T=ToolAlert C=CorrelationAlert
  INDEX (_parent_type, _message_ident),
- alertident BIGINT UNSIGNED NOT NULL,
+ alertident VARCHAR(255) NOT NULL,
  analyzerid VARCHAR(255) NULL
 ) TYPE=InnoDB;
 

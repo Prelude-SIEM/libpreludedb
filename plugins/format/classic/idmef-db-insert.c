@@ -1006,7 +1006,6 @@ static int insert_analyzer(preludedb_sql_t *sql, uint64_t message_ident, char pa
         int ret = -1;
         char *name = NULL, *manufacturer = NULL, *model = NULL, *version = NULL, *class = NULL,
 		*ostype = NULL, *osversion = NULL, *analyzerid = NULL;
-	idmef_analyzer_t *sub_analyzer;
 
         if ( ! analyzer )
                 return 0;
@@ -1061,10 +1060,6 @@ static int insert_analyzer(preludedb_sql_t *sql, uint64_t message_ident, char pa
         ret = insert_process(sql, message_ident, parent_type, depth, idmef_analyzer_get_process(analyzer));
 	if ( ret < 0 )
 		goto error;
-
-	sub_analyzer = idmef_analyzer_get_analyzer(analyzer);
-	if ( sub_analyzer )
-		ret = insert_analyzer(sql, message_ident, parent_type, sub_analyzer, depth + 1);
 
  error:
 	if ( class )
@@ -1441,15 +1436,25 @@ static int insert_overflow_alert(preludedb_sql_t *sql, uint64_t message_ident, i
 static int insert_alertident(preludedb_sql_t *sql, uint64_t message_ident, char parent_type,
 			     idmef_alertident_t *alertident)
 {
-	char analyzerid[32];
 	int ret;
+        char *analyzerid, *messageid;
 
-	get_optional_uint64(analyzerid, sizeof(analyzerid), idmef_alertident_get_analyzerid(alertident));
+        ret = preludedb_sql_escape(sql, get_string(idmef_alertident_get_analyzerid(alertident)), &analyzerid);
+        if ( ret < 0 )
+                return ret;
 
+        ret = preludedb_sql_escape(sql, get_string(idmef_alertident_get_alertident(alertident)), &messageid);
+        if ( ret < 0 ) {
+                free(analyzerid);
+                return ret;
+        }
+        
 	ret = preludedb_sql_insert(sql, "Prelude_AlertIdent", "_message_ident, _parent_type, alertident, analyzerid",
-				 "%" PRIu64 ", '%c', %" PRIu64 ", %s",
-				 message_ident, parent_type, idmef_alertident_get_alertident(alertident), analyzerid);
+				 "%" PRIu64 ", '%c', %s, %s", message_ident, parent_type, messageid, analyzerid);
 
+        free(analyzerid);
+        free(messageid);
+        
 	return ret;
 }
 
@@ -1582,6 +1587,7 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
         uint64_t ident;
         idmef_source_t *source;
         idmef_target_t *target;
+        idmef_analyzer_t *analyzer;
         idmef_additional_data_t *additional_data;
 	int index;
 	int ret;
@@ -1597,10 +1603,15 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
 	if ( ret < 0 )
              return ret;
 
-        ret = insert_analyzer(sql, ident, 'A', idmef_alert_get_analyzer(alert), 0);
-	if ( ret < 0 )
-                return ret;
-
+        index = 0;
+        analyzer = NULL;
+        while ( (analyzer = idmef_alert_get_next_analyzer(alert, analyzer)) ) {
+                
+                ret = insert_analyzer(sql, ident, 'A', analyzer, index++);
+		if ( ret < 0 )
+                        return ret;
+        }
+        
         ret = insert_createtime(sql, ident, 'A', idmef_alert_get_create_time(alert));
 	if ( ret < 0 )
                 return ret;
@@ -1678,9 +1689,11 @@ static int insert_alert(preludedb_sql_t *sql, idmef_alert_t *alert)
 static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat) 
 {
         uint64_t ident;
+        idmef_analyzer_t *analyzer;
         char heartbeat_interval[16], *messageid;
         idmef_additional_data_t *additional_data;
 	int ret;
+        unsigned int index;
 
         if ( ! heartbeat )
                 return 0;
@@ -1702,11 +1715,16 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
         ret = get_last_insert_ident(sql, "Prelude_Heartbeat", &ident);
         if ( ret < 0 )
                 return ret;
-        
-        ret = insert_analyzer(sql, ident, 'H', idmef_heartbeat_get_analyzer(heartbeat), 0);
-	if ( ret < 0 )
-                return ret;
 
+        index = 0;
+        analyzer = NULL;
+        while ( (analyzer = idmef_heartbeat_get_next_analyzer(heartbeat, analyzer)) ) {
+                
+                ret = insert_analyzer(sql, ident, 'H', analyzer, index++);
+		if ( ret < 0 )
+                        return ret;
+        }
+        
         ret = insert_createtime(sql, ident, 'H', idmef_heartbeat_get_create_time(heartbeat));
 	if ( ret < 0 )
                 return ret;

@@ -19,8 +19,8 @@ DROP TABLE Prelude_AlertIdent;
 CREATE TABLE Prelude_AlertIdent (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* T=ToolAlert C=CorrelationAlert */
- alertident NUMERIC(20) NOT NULL,
- analyzerid NUMERIC(20) NULL
+ alertident VARCHAR(255) NOT NULL,
+ analyzerid VARCHAR(255) NULL
 );
 
 CREATE INDEX prelude_alertident_index ON Prelude_AlertIdent (_parent_type, _message_ident);
@@ -71,7 +71,7 @@ DROP TABLE Prelude_Analyzer;
 CREATE TABLE Prelude_Analyzer (
  _message_ident NUMERIC(20) NOT NULL,
  _parent_type VARCHAR(1) NOT NULL, /* A=Alert H=Hearbeat */
- _depth NUMERIC(1) NOT NULL,
+ _index NUMERIC(1) NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident,_depth),
  analyzerid NUMERIC(20) NOT NULL,
  name VARCHAR(255) NULL,
