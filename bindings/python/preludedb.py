@@ -239,7 +239,7 @@ class PreludeDB:
         if not ident_handle:
             raise Error()
 
-        message_handle = get_message_func(self.res, ident_handle, None)
+        message_handle = get_message_func(self.res, ident_handle)
         
         _preludedb.prelude_db_message_ident_destroy(ident_handle)
 
