@@ -229,7 +229,8 @@ class PreludeDB:
         if not ident_list_handle:
             return None
         
-        return PreludeDBMessageIdentList(ident_list_handle,
+        return PreludeDBMessageIdentList(self,
+                                         ident_list_handle,
                                          _preludedb.prelude_db_interface_heartbeat_ident_list_destroy,
                                          _preludedb.prelude_db_interface_get_next_heartbeat_ident,
                                          _preludedb.prelude_db_interface_get_heartbeat_ident_list_len)
