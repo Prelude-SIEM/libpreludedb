@@ -36,9 +36,7 @@
 #include "preludedb-sql.h"
 #include "preludedb-error.h"
 
-#include "db-path.h"
-
-#include "idmef-db-get.h"
+#include "classic-get.h"
 
 #define db_log(sql) prelude_log(PRELUDE_LOG_ERR, "%s\n", prelude_sql_error(sql))
 #define log_memory_exhausted() prelude_log(PRELUDE_LOG_ERR, "memory exhausted !\n")
@@ -1963,7 +1961,7 @@ static int get_alert_messageid(preludedb_sql_t *sql, uint64_t ident, idmef_alert
 }
 
 
-int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
+int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_alert_t *alert;
 	int ret;
@@ -2070,7 +2068,7 @@ static int _get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_heartbeat_
 
 
 
-int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
+int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_heartbeat_t *heartbeat;
 	int ret;

@@ -35,7 +35,7 @@
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 
-#include "idmef-db-delete.h"
+#include "classic-delete.h"
 
 
 static int delete_message(preludedb_sql_t *sql, uint64_t ident, unsigned int count, const char *queries[])
@@ -65,7 +65,7 @@ static int delete_message(preludedb_sql_t *sql, uint64_t ident, unsigned int cou
 
 
 
-int delete_alert(preludedb_sql_t *sql, uint64_t ident)
+int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
 {
 	static const char *queries[] = {
 		"DELETE FROM Prelude_Action WHERE _message_ident = %" PRIu64,
@@ -110,7 +110,7 @@ int delete_alert(preludedb_sql_t *sql, uint64_t ident)
 
 
 
-int delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
+int classic_delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
 {
 	static const char *queries[] = {
 		"DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,

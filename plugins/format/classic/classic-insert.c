@@ -35,7 +35,7 @@
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 
-#include "idmef-db-insert.h"
+#include "classic-insert.h"
 
 
 static inline const char *get_string(prelude_string_t *string)
@@ -1817,7 +1817,7 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
 
 
 
-int idmef_db_insert(preludedb_sql_t *sql, idmef_message_t *message)
+int classic_insert(preludedb_sql_t *sql, idmef_message_t *message)
 {
         int ret;
 

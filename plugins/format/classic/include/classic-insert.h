@@ -1,6 +1,7 @@
 /*****
 *
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -21,11 +22,9 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
-#define _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
+#ifndef _LIBPRELUDEDB_CLASSIC_INSERT_H
+#define _LIBPRELUDEDB_CLASSIC_INSERT_H
 
-int delete_alert(preludedb_sql_t *sql, uint64_t ident);
+int classic_insert(preludedb_sql_t *sql, idmef_message_t *message);
 
-int delete_heartbeat(preludedb_sql_t *sql, uint64_t ident);
-
-#endif /* _LIBPRELUDEDB_CLASSIC_DB_DELETE_H */
+#endif /* _LIBPRELUDEDB_CLASSIC_INSERT_H */

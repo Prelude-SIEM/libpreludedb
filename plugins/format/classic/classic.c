@@ -1,6 +1,5 @@
 /*****
 *
-* Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
@@ -38,10 +37,13 @@
 #include "preludedb.h"
 #include "preludedb-plugin-format.h"
 
-#include "idmef-db-insert.h"
-#include "idmef-db-get.h"
-#include "idmef-db-delete.h"
-#include "idmef-db-path.h"
+#include "classic-insert.h"
+#include "classic-get.h"
+#include "classic-delete.h"
+#include "classic-sql-join.h"
+#include "classic-sql-select.h"
+#include "classic-path-resolve.h"
+
 
 
 int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data);
@@ -60,9 +62,9 @@ struct db_result {
 
 
 
-static int classic_get_message_idents_set_order(preludedb_sql_t *sql,
-						idmef_class_id_t message_type, preludedb_result_idents_order_t order,
-						classic_join_t *join, classic_select_t *select)
+static int get_message_idents_set_order(preludedb_sql_t *sql,
+					idmef_class_id_t message_type, preludedb_result_idents_order_t order,
+					classic_sql_join_t *join, classic_sql_select_t *select)
 {
 	preludedb_selected_path_t *selected_path;
 	idmef_path_t *path;
@@ -85,7 +87,7 @@ static int classic_get_message_idents_set_order(preludedb_sql_t *sql,
 		return ret;
 	}
 
-	ret = classic_resolve_selected(sql, selected_path, join, select);
+	ret = classic_path_resolve_selected(sql, selected_path, join, select);
 
 	preludedb_selected_path_destroy(selected_path);
 
@@ -93,41 +95,43 @@ static int classic_get_message_idents_set_order(preludedb_sql_t *sql,
 }
 
 
-static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t message_type,
-				      const idmef_criteria_t *criteria, int limit, int offset, preludedb_result_idents_order_t order,
-				      preludedb_sql_table_t **table)
+
+static int get_message_idents(preludedb_sql_t *sql, idmef_class_id_t message_type,
+			      const idmef_criteria_t *criteria, int limit, int offset,
+			      preludedb_result_idents_order_t order,
+			      preludedb_sql_table_t **table)
 {
 	prelude_string_t *query;
 	prelude_string_t *where = NULL;
-	classic_join_t *join;
-	classic_select_t *select;
+	classic_sql_join_t *join;
+	classic_sql_select_t *select;
 	int ret;
 
 	ret = prelude_string_new(&query);
 	if ( ret < 0 )
 		return ret;
 
-	ret = classic_join_new(&join);
+	ret = classic_sql_join_new(&join);
 	if ( ret < 0 ) {
 		prelude_string_destroy(query);
 		return ret;
 	}
 
-	ret = classic_select_new(&select);
+	ret = classic_sql_select_new(&select);
 	if ( ret < 0 ) {
 		prelude_string_destroy(query);
-		classic_join_destroy(join);
+		classic_sql_join_destroy(join);
 		return ret;
 	}
 
-	classic_join_set_top_class(join, message_type);
+	classic_sql_join_set_top_class(join, message_type);
 
-	ret = classic_select_add_field(select, "DISTINCT(top_table._ident)", 0);
+	ret = classic_sql_select_add_field(select, "DISTINCT(top_table._ident)", 0);
 	if ( ret < 0 )
 		goto error;
 
 	if ( order ) {
-		ret = classic_get_message_idents_set_order(sql, message_type, order, join, select);
+		ret = get_message_idents_set_order(sql, message_type, order, join, select);
 		if ( ret < 0 )
 			return ret;
 	}
@@ -137,7 +141,7 @@ static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t mes
 		if ( ret < 0 )
 			goto error;
 
-		ret = classic_resolve_criteria(sql, criteria, join, where);
+		ret = classic_path_resolve_criteria(sql, criteria, join, where);
 		if ( ret < 0 ) {
 			prelude_string_destroy(where);
 			goto error;
@@ -148,7 +152,7 @@ static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t mes
 	if ( ret < 0 )
 		goto error;
 
-	ret = classic_select_fields_to_string(select, query);
+	ret = classic_sql_select_fields_to_string(select, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -156,7 +160,7 @@ static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t mes
 	if ( ret < 0 )
 		goto error;
 
-	ret = classic_join_to_string(join, query);
+	ret = classic_sql_join_to_string(join, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -170,7 +174,7 @@ static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t mes
 			goto error;
 	}
 
-	ret = classic_select_modifiers_to_string(select, query);
+	ret = classic_sql_select_modifiers_to_string(select, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -184,20 +188,20 @@ static int classic_get_message_idents(preludedb_sql_t *sql, idmef_class_id_t mes
 	prelude_string_destroy(query);
 	if ( where )
 		prelude_string_destroy(where);
-	classic_join_destroy(join);
-	classic_select_destroy(select);
+	classic_sql_join_destroy(join);
+	classic_sql_select_destroy(select);
 
 	return ret;
 }
+
 
 
 static int classic_get_alert_idents(preludedb_sql_t *sql, idmef_criteria_t *criteria,
 				    int limit, int offset, preludedb_result_idents_order_t order,
 				    void **res)
 {
-	return classic_get_message_idents(sql, IDMEF_CLASS_ID_ALERT,
-					  criteria, limit, offset, order,
-					  (preludedb_sql_table_t **) res);
+	return get_message_idents(sql, IDMEF_CLASS_ID_ALERT, criteria, limit, offset, order,
+				  (preludedb_sql_table_t **) res);
 }
 
 
@@ -206,9 +210,8 @@ static int classic_get_heartbeat_idents(preludedb_sql_t *sql, idmef_criteria_t *
 					int limit, int offset, preludedb_result_idents_order_t order,
 					void **res)
 {
-	return classic_get_message_idents(sql, IDMEF_CLASS_ID_HEARTBEAT,
-					  criteria, limit, offset, order,
-					  (preludedb_sql_table_t **) res);
+	return get_message_idents(sql, IDMEF_CLASS_ID_HEARTBEAT, criteria, limit, offset, order,
+				  (preludedb_sql_table_t **) res);
 }
 
 
@@ -248,68 +251,33 @@ static void classic_destroy_message_idents_resource(void *res)
 
 
 
-static int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
-{
-	return get_alert(sql, ident, message);
-}
-
-
-
-static int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
-{
-	return get_heartbeat(sql, ident, message);
-}
-
-
-
-static int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
-{
-	return delete_alert(sql, ident);
-}
-
-
-
-static int classic_delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
-{
-	return delete_heartbeat(sql, ident);
-}
-
-
-
-static int classic_insert_idmef_message(preludedb_sql_t *sql, idmef_message_t *message)
-{
-	return idmef_db_insert(sql, message);
-}
-
-
-
 static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *selection, 
 			      idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res)
 {
 	prelude_string_t *where = NULL;
 	prelude_string_t *query;
-	classic_join_t *join;
-	classic_select_t *select;
+	classic_sql_join_t *join;
+	classic_sql_select_t *select;
 	int ret;
 
-	ret = classic_join_new(&join);
+	ret = classic_sql_join_new(&join);
 	if ( ret < 0 )
 		return ret;
 
-	ret = classic_select_new(&select);
+	ret = classic_sql_select_new(&select);
 	if ( ret < 0 ) {
-		classic_join_destroy(join);
+		classic_sql_join_destroy(join);
 		return ret;
 	}
 
 	ret = prelude_string_new(&query);
 	if ( ret < 0 ) {
-		classic_join_destroy(join);
-		classic_select_destroy(select);
+		classic_sql_join_destroy(join);
+		classic_sql_select_destroy(select);
 		return ret;
 	}
 
-	ret = classic_resolve_selection(sql, selection, join, select);
+	ret = classic_path_resolve_selection(sql, selection, join, select);
 	if ( ret < 0 )
 		goto error;
 
@@ -318,7 +286,7 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 		if ( ret < 0 )
 			goto error;
 
-		ret = classic_resolve_criteria(sql, criteria, join, where);
+		ret = classic_path_resolve_criteria(sql, criteria, join, where);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -333,7 +301,7 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 			goto error;
 	}
 
-	ret = classic_select_fields_to_string(select, query);
+	ret = classic_sql_select_fields_to_string(select, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -341,7 +309,7 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 	if ( ret < 0 )
 		goto error;
 
-	ret = classic_join_to_string(join, query);
+	ret = classic_sql_join_to_string(join, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -351,7 +319,7 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 			goto error;
 	}
 
-	ret = classic_select_modifiers_to_string(select, query);
+	ret = classic_sql_select_modifiers_to_string(select, query);
 	if ( ret < 0 )
 		goto error;
 
@@ -365,8 +333,8 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 	prelude_string_destroy(query);
 	if ( where )
 		prelude_string_destroy(where);
-	classic_join_destroy(join);
-	classic_select_destroy(select);
+	classic_sql_join_destroy(join);
+	classic_sql_select_destroy(select);
 
 	return ret;
 }
@@ -539,7 +507,7 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *d
 	preludedb_plugin_format_set_get_heartbeat_func(&classic_plugin, classic_get_heartbeat);
 	preludedb_plugin_format_set_delete_alert_func(&classic_plugin, classic_delete_alert);
 	preludedb_plugin_format_set_delete_heartbeat_func(&classic_plugin, classic_delete_heartbeat);
-	preludedb_plugin_format_set_insert_message_func(&classic_plugin, classic_insert_idmef_message);
+	preludedb_plugin_format_set_insert_message_func(&classic_plugin, classic_insert);
 	preludedb_plugin_format_set_get_values_func(&classic_plugin, classic_get_values);
 	preludedb_plugin_format_set_get_next_values_func(&classic_plugin, classic_get_next_values);
 	preludedb_plugin_format_set_destroy_values_resource_func(&classic_plugin, classic_destroy_values_resource);

@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -21,34 +21,11 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
-#define _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
+#ifndef _LIBPRELUDEDB_CLASSIC_GET_H
+#define _LIBPRELUDEDB_CLASSIC_GET_H
 
-typedef struct db_path db_path_t;
+int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
 
-int db_paths_init(const char *file);
+int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
 
-db_path_t *db_path_find(idmef_path_t *path);
-
-char *db_path_get_table(db_path_t *path);
-
-char *db_path_get_field(db_path_t *path);
-
-char *db_path_get_function(db_path_t *path);
-
-char *db_path_get_top_table(db_path_t *path);
-
-char *db_path_get_top_field(db_path_t *path);
-
-char *db_path_get_condition(db_path_t *path);
-
-char *db_path_get_ident_field(db_path_t *path);
-
-char *db_path_get_usec_field(db_path_t *path);
-
-char *db_path_get_gmtoff_field(db_path_t *path);
-
-void db_paths_destroy(void);
-
-#endif /* _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H */
-
+#endif /* ! _LIBPRELUDEDB_CLASSIC_GET_H  */

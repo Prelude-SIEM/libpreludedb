@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
+* Copyright (C) 2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -21,11 +21,19 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_DB_GET_H
-#define _LIBPRELUDEDB_CLASSIC_DB_GET_H
+#ifndef _LIBPRELUDEDB_CLASSIC_PATH_RESOLVE_H
+#define _LIBPRELUDEDB_CLASSIC_PATH_RESOLVE_H
 
-int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
 
-int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
+int classic_path_resolve_selected(preludedb_sql_t *sql,
+				  const preludedb_selected_path_t *selected,
+				  classic_sql_join_t *join, classic_sql_select_t *select);
+int classic_path_resolve_selection(preludedb_sql_t *sql,
+				   const preludedb_path_selection_t *selection,
+				   classic_sql_join_t *join, classic_sql_select_t *select);
+int classic_path_resolve_criteria(preludedb_sql_t *sql,
+				  const idmef_criteria_t *criteria,
+				  classic_sql_join_t *join, prelude_string_t *output);
 
-#endif /* ! _LIBPRELUDEDB_CLASSIC_DB_GET_H  */
+
+#endif /* _LIBPRELUDEDB_CLASSIC_PATH_RESOLVE_H */
