@@ -234,7 +234,6 @@ DROP TABLE IF EXISTS Prelude_CreateTime;
 CREATE TABLE Prelude_CreateTime (
  parent_ident BIGINT UNSIGNED NOT NULL, # Ident of an alert or of an heartbeat
  parent_type ENUM('A','H') NOT NULL DEFAULT 'A', # A=Alert H=Hearbeat
- gmt_offset INT NOT NULL,
  time DATETIME NOT NULL,	# this is the content of the CreateTime itself
  ntpstamp VARCHAR(21) NOT NULL,
 PRIMARY KEY (parent_ident,parent_type),
@@ -245,7 +244,6 @@ INDEX (time)
 DROP TABLE IF EXISTS Prelude_DetectTime;
 CREATE TABLE Prelude_DetectTime (
  alert_ident BIGINT UNSIGNED NOT NULL,	# Ident of an alert
- gmt_offset INT NOT NULL,
  time DATETIME NOT NULL,	
  ntpstamp VARCHAR(21) NOT NULL,
 PRIMARY KEY (alert_ident),
@@ -257,7 +255,6 @@ DROP TABLE IF EXISTS Prelude_AnalyzerTime;
 CREATE TABLE Prelude_AnalyzerTime (
  parent_ident BIGINT UNSIGNED NOT NULL, # Ident of an alert or of an heartbeat
  parent_type ENUM('A','H') NOT NULL DEFAULT 'A', # A=Alert H=Hearbeat
-  gmt_offset INT NOT NULL,
  time DATETIME NOT NULL,
  ntpstamp VARCHAR(21) NOT NULL,
 PRIMARY KEY (parent_ident,parent_type),
