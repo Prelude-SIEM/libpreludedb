@@ -949,6 +949,9 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t message_iden
 	if ( class )
 		free(class);
 
+	if ( name )
+		free(name);
+
 	if ( model )
 		free(model);
 
