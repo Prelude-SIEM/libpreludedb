@@ -1,3 +1,76 @@
+2003-01-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/sql/mysql.c:
+	* plugins/sql/pgsql.c:
+	(db_query): don't change session status to st_query if there are
+	no results. Remove unneeded st_transaction state (backend will
+	check these things anyhow). Patch from Nicolas Delon 
+	<delon.nicolas@wanadoo.fr> (with my cooperation ;)). 
+	
+	* src/sql.c:
+	Patch from Nicolas Delon <delon.nicolas@wanadoo.fr>:
+	(prelude_sql_insert):
+	fix bug in error handling. 
+	(prelude_sql_row_free):
+	Check for NULL argument. 
+	(prelude_sql_field_info_type):
+	Implemented. 
+	
+	* src/include/sql.h:
+	Patch from Nicolas Delon <delon.nicolas@wanadoo.fr>:
+	updated accordingly. 
+
+	* plugins/format/classic/idmef-db-output.c:
+	added error handling. Added transaction support: BEGIN; at the 
+	start, COMMIT; when we're done or ROLLBACK on error. Finally :)
+
+	* src/idmef-db-values.c:
+	* src/include/idmef-db-values.h:
+	new file. Implementation of container datatype for data read
+	from database will be placed here. 
+
+	* src/strbuf.c:
+	* src/include/strbuf.h:
+	new file. Provides a dynamically resizable char * buffer. 
+
+	* src/idmef-object-list.c:
+	* src/include/idmef-object-list.h:
+	new file. Local implementation of lists of idmef_object_t objects. 
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	modified accordingly
+
+	* src/plugin-format.h:
+        API change: add hooks for alert reading function.
+
+	* plugins/format/classic/idmef-db-read.c:
+	* plugins/format/classic/include/idmef-db-read.h:
+	new file. Alert reading code will be placed here. 
+
+	* plugins/format/classic/classic.c:
+	register callback for alert reading. Remove check for database
+	type duplicating the one from idmef-db-output.c. 
+
+	* plugins/format/classic/Makefile.am:
+	modified accordingly. 
+
+	* plugins/format/classic/include/idmef-db-output.h:
+	change preprocessor macros to avoid names clash. 
+
+	* plugins/format/classic/classic.c:
+	add support for alert reading API. 
+
+	* src/db-interface.c:
+	* src/include/db-interface.c:
+	(prelude_db_interface_read_idmef_objects): implemented. 
+
+	* src/db.c:
+	fix includes adapting to new API. Update copyright notice. 
+
+	* src/format-plugins.c:
+	fix includes adapting to new API.
+
 2003-01-04  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/sql/mysql/mysql.c:
