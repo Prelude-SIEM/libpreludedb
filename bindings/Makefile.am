@@ -45,7 +45,7 @@ endif
 
 python/_preludedb.c: $(BINDING_DEPENDS)
 if HAVE_SWIG
-	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -interface _preludedb -module preludedb $<
+	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -noproxy -interface _preludedb -module _preludedb $<
 endif
 
 
