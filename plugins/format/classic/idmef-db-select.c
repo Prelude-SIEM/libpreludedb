@@ -506,9 +506,9 @@ static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_rela
 	switch (rel) {
 	case relation_substring:
 		if (table)
-			return strbuf_sprintf(where, "%s.%s LIKE '%%%s%'", table, field, val);
+			return strbuf_sprintf(where, "%s.%s LIKE '%%%s%%'", table, field, val);
 		else
-			return strbuf_sprintf(where, "%s LIKE '%%%s%'", field, val);
+			return strbuf_sprintf(where, "%s LIKE '%%%s%%'", field, val);
 
 	case relation_regexp:
 		return -1; /* unsupported */
