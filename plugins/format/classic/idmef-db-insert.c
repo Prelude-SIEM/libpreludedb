@@ -59,14 +59,14 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
 
 
 
-static inline char *get_string(idmef_string_t *string)
+static inline char *get_string(prelude_string_t *string)
 {
         char *s;
 
         if ( ! string )
                 return NULL;
 
-        s = idmef_string_get_string(string);
+        s = prelude_string_get_string(string);
 
         return s ? s : "";
 }
@@ -244,8 +244,8 @@ static int insert_user(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
 static int insert_process(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
                           char parent_type, idmef_process_t *process) 
 {
-        idmef_string_t *process_arg;
-        idmef_string_t *process_env;
+        prelude_string_t *process_arg;
+        prelude_string_t *process_env;
         char *name, *path, *arg, *env;
         int ret;
 
@@ -275,7 +275,7 @@ static int insert_process(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         process_arg = NULL;
         while ( (process_arg = idmef_process_get_next_arg(process, process_arg)) ) {
 
-                arg = prelude_sql_escape(conn, idmef_string_get_string(process_arg));
+                arg = prelude_sql_escape(conn, get_string(process_arg));
                 if ( ! arg )
                         return -4;
                 
@@ -291,7 +291,7 @@ static int insert_process(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         process_env = NULL;
         while ( (process_env = idmef_process_get_next_env(process, process_env)) ) {
 
-                env = prelude_sql_escape(conn, idmef_string_get_string(process_env));
+                env = prelude_sql_escape(conn, get_string(process_env));
                 if ( ! env )
                         return -6;
 

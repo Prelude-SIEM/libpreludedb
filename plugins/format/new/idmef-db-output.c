@@ -108,7 +108,7 @@ static void numbers_cleanup(void)
 }
 
 #define DB_STR(x)  	db_plugin_escape(x)
-#define DB_IDMEF_STR(x)    db_plugin_escape(idmef_string(x))
+#define DB_IDMEF_STR(x)    db_plugin_escape(prelude_string(x))
 #define DB_IDENT(x)        ((x) ? int2str(x) : "NULL")
 #define DB_INT(x) 	 int2str(x)
 #define DB_INT_PTR(x)      ((x) ? int2str(*x) : "NULL")

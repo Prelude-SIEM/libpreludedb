@@ -83,7 +83,7 @@ typedef struct {
         int (*db_rollback)(void *session);
         void (*db_close)(void *session);
 	int (*db_errno)(void *session);
-	int (*db_build_time_constraint)(prelude_strbuf_t *output, const char *field,
+	int (*db_build_time_constraint)(prelude_string_t *output, const char *field,
 					prelude_sql_time_constraint_type_t type,
 					idmef_value_relation_t relation, int value, int gmt_offset);
 	int (*db_build_time_interval)(prelude_sql_time_constraint_type_t type, int value,

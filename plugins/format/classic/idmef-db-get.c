@@ -93,11 +93,11 @@ get_(float, float)
 
 static int _get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 		       int index,
-		       void *parent, idmef_string_t *(*parent_new_child)(void *parent))
+		       void *parent, prelude_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_field_t *field;
 	const char *tmp;
-	idmef_string_t *string;
+	prelude_string_t *string;
 
 	field = prelude_sql_field_fetch(row, index);
 	if ( ! field ) {
@@ -117,7 +117,7 @@ static int _get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 	if ( ! string )
 		return -1;
 
-	if ( idmef_string_set_dup(string, tmp) < 0 )
+	if ( prelude_string_set_dup(string, tmp) < 0 )
 		return -1;
 
 	return 1;
@@ -251,7 +251,7 @@ static int _get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 }
 
 #define get_string(sql, row, index, parent, parent_new_child) \
-	_get_string(sql, row, index, parent, (idmef_string_t *(*)(void *)) parent_new_child)
+	_get_string(sql, row, index, parent, (prelude_string_t *(*)(void *)) parent_new_child)
 
 #define get_data(sql, row, index, parent, parent_new_child) \
 	_get_data(sql, row, index, parent, (idmef_data_t *(*)(void *)) parent_new_child)
@@ -509,7 +509,7 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 			   uint64_t parent_ident,
 			   char parent_type,
 			   void *parent,
-			   idmef_string_t *(*parent_new_child)(void *parent))
+			   prelude_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
@@ -561,7 +561,7 @@ static int get_process_env(prelude_sql_connection_t *sql,
 			   uint64_t parent_ident,
 			   char parent_type,
 			   void *parent,
-			   idmef_string_t *(*parent_new_child)(void *parent))
+			   prelude_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
@@ -664,11 +664,11 @@ static int get_process(prelude_sql_connection_t *sql,
 	table = NULL;
 
 	if ( get_process_arg(sql, alert_ident, parent_ident, parent_type, process,
-			     (idmef_string_t *(*)(void *)) idmef_process_new_arg) < 0 )
+			     (prelude_string_t *(*)(void *)) idmef_process_new_arg) < 0 )
 		goto error;
 	
 	if ( get_process_env(sql, alert_ident, parent_ident, parent_type, process,
-			     (idmef_string_t *(*)(void *)) idmef_process_new_env) < 0 )
+			     (prelude_string_t *(*)(void *)) idmef_process_new_env) < 0 )
 		goto error;
 
 	return 1;

@@ -556,7 +556,7 @@ static const char *db_field_value(void *s, void *t, void *r, void *f)
 
 
 
-static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
+static int db_build_time_constraint(prelude_string_t *output, const char *field,
 				    prelude_sql_time_constraint_type_t type,
 				    idmef_value_relation_t relation, int value, int gmt_offset)
 {
@@ -572,35 +572,35 @@ static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
 
 	switch ( type ) {
 	case dbconstraint_year:
-		return prelude_strbuf_sprintf(output, "EXTRACT(YEAR FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s %d",
 					      buf, sql_relation, value);
 
 	case dbconstraint_month:
-		return  prelude_strbuf_sprintf(output, "EXTRACT(MONTH FROM %s) %s %d",
+		return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s) %s %d",
 					       buf, sql_relation, value);
 
 	case dbconstraint_yday:
-		return prelude_strbuf_sprintf(output, "EXTRACT(DOY FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(DOY FROM %s) %s %d",
 					      buf, sql_relation, value);
 
 	case dbconstraint_mday:
-		return prelude_strbuf_sprintf(output, "EXTRACT(DAY FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(DAY FROM %s) %s %d",
 					      buf, sql_relation, value);
 
 	case dbconstraint_wday:
-		return prelude_strbuf_sprintf(output, "EXTRACT(DOW FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(DOW FROM %s) %s %d",
 					      buf, sql_relation, value % 7 + 1);
 
 	case dbconstraint_hour:
-		return prelude_strbuf_sprintf(output, "EXTRACT(HOUR FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s) %s %d",
 					      buf, sql_relation, value);
 
 	case dbconstraint_min:
-		return prelude_strbuf_sprintf(output, "EXTRACT(MINUTE FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s) %s %d",
 					      buf, sql_relation, value);
 
 	case dbconstraint_sec:
-		return prelude_strbuf_sprintf(output, "EXTRACT(SECOND FROM %s) %s %d",
+		return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s) %s %d",
 					      buf, sql_relation, value);
 	}
 
