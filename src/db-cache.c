@@ -351,7 +351,7 @@ db_cache_t *db_cache_new(const char *directory)
         for ( i = 0; i < 10; i++ ) {
                 snprintf(dname, sizeof(dname), "%s/%d", directory, i);
 
-                ret = create_directory_if_needed(directory);
+                ret = create_directory_if_needed(dname);
                 if ( ret < 0 )
                         return NULL;
         }
