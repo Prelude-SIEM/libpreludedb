@@ -1,3 +1,11 @@
+2003-11-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB::delete_alert)
+	(PreludeDB::delete_heartbeat)
+	bug fix, forgot to port this two functions to the
+	last changes of the libpreludedb C API
+
 2003-11-23  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.i:

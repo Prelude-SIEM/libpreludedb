@@ -319,20 +319,33 @@ sub	get_heartbeat
     (shift)->get_message(\&PreludeDB::prelude_db_interface_get_heartbeat, @_);
 }
 
-sub	delete_alert
+sub	delete_message
 {
     my	$self = shift;
-    my	$uident = shift;
+    my	$delete_message_func = shift;
+    my	$ident_hash = shift;
+    my	$ident;
+    my	$retval;
 
-    return (PreludeDB::prelude_db_interface_delete_alert($$self, $uident) < 0) ? 0 : 1;
+    (defined($ident_hash->{analyzerid}) && defined($ident_hash->{ident})) or return 0;
+
+    $ident = PreludeDB::prelude_db_message_ident_new($ident_hash->{analyzerid}, $ident_hash->{ident}) or return 0;
+
+    $retval = &$delete_message_func($$self, $ident);
+
+    PreludeDB::prelude_db_message_ident_destroy($ident);
+
+    return ($retval < 0) ? 0 : 1;
+}
+
+sub	delete_alert
+{
+    (shift)->delete_message(\&PreludeDB::prelude_db_interface_delete_alert, @_);
 }
 
 sub	delete_heartbeat
 {
-    my	$self = shift;
-    my	$uident = shift;
-
-    return (PreludeDB::prelude_db_interface_delete_heartbeat($$self, $uident) < 0) ? 0 : 1;
+    (shift)->delete_message(\&PreludeDB::prelude_db_interface_delete_heartbeat, @_);
 }
 
 sub	get_values
