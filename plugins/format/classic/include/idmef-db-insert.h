@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -24,7 +25,7 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H
 
-int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg);
+int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *msg);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_OUTPUT_H */
 

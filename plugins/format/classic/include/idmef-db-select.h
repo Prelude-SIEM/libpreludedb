@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -23,10 +24,9 @@
 
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
-void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache, 
-      	               idmef_criterion_t *criterion);
 
-int idmef_db_read(void *handle);
+prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn, idmef_cache_t *cache, 
+				      idmef_criterion_t *criterion);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H */
 
