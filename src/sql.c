@@ -911,7 +911,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 	char buf[MAX_UTC_DATETIME_SIZE];
 	int offset = 0;
 
-	if ( relation == relation_greater )
+	if ( relation == relation_greater || relation == relation_less_or_equal )
 		offset = 1;
 
 	month = idmef_criterion_value_non_linear_time_get_month(time);
@@ -961,7 +961,7 @@ static int build_criterion_timestamp(prelude_sql_connection_t *conn,
 		tm.tm_year += offset;
 	}
 
-	if ( relation == relation_less )
+	if ( relation & IDMEF_RELATION_LESSER )
 		tm.tm_sec -= 1;
 
 	t.sec = mktime(&tm);

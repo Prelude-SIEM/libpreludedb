@@ -1,3 +1,9 @@
+2004-01-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/sql.c:
+	(build_criterion_timestamp)
+	bug fix, handle the "<=" relation correctly
+
 2004-01-28  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* src/sql.c (prelude_sql_escape_fast):
