@@ -38,6 +38,7 @@
 #include <libprelude/prelude-log.h>
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
+#include <libprelude/idmef.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
