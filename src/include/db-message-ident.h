@@ -21,17 +21,16 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_DB_UIDENT_H
-#define _LIBPRELUDEDB_DB_UIDENT_H
+#ifndef _LIBPRELUDEDB_MESSAGE_IDENT_H
+#define _LIBPRELUDEDB_MESSAGE_IDENT_H
 
-typedef struct {
-	uint64_t alert_ident;
-	uint64_t analyzerid;
-}	prelude_db_alert_uident_t;
+typedef struct prelude_db_message_ident prelude_db_message_ident_t;
 
-typedef struct {
-	uint64_t heartbeat_ident;
-	uint64_t analyzerid;
-}	prelude_db_heartbeat_uident_t;
+typedef struct prelude_db_message_ident_list prelude_db_message_ident_list_t;
 
-#endif /* _LIBPRELUDEDB_DB_UIDENT_H */
+prelude_db_message_ident_t *prelude_db_message_ident_new(uint64_t analyzerid, uint64_t ident);
+void prelude_db_message_ident_destroy(prelude_db_message_ident_t *ident);
+uint64_t prelude_db_message_ident_get_analyzerid(prelude_db_message_ident_t *ident);
+uint64_t prelude_db_message_ident_get_ident(prelude_db_message_ident_t *ident);
+
+#endif /* _LIBPRELUDEDB_MESSAGE_IDENT_H */
