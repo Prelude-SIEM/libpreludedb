@@ -75,9 +75,11 @@ static int find_available_session(void)
 	int i;
 
 	i = 0;
-	while (++i < PGSQL_MAX_SESSIONS) {
+	while (i < PGSQL_MAX_SESSIONS) {
 		if (sessions[i].status == available)
 			return i;
+			
+		i++;
 	}
 	
 	return -ERR_PLUGIN_DB_SESSIONS_EXHAUSTED;
@@ -90,7 +92,7 @@ static int db_setup(const char *dbhost, const char *dbport, const char *dbname,
 
 	if (is_enabled == 0) {
 		log(LOG_ERR, "pgsql plugin not enabled\n");
-		return -1;
+		return -ERR_PLUGIN_DB_PLUGIN_NOT_ENABLED;
 	}
 	
 	s = find_available_session();
@@ -130,7 +132,7 @@ static void db_shutdown(void)
 {
 	int i, ret;
 	
-	log(LOG_INFO, "plugin unsubscribed, terminating active connections\n");
+	log(LOG_INFO, "PgSQL plugin unsubscribed, terminating active connections\n");
 	for (i=0;i<PGSQL_MAX_SESSIONS;i++) {
 		if (sessions[i].status == transaction) {
 			ret = db_rollback(i);
@@ -140,6 +142,9 @@ static void db_shutdown(void)
 		
 		if (sessions[i].status == connected) 
 			db_close(i);
+		
+		/* at this point all sessions should be either closed or in 
+		   other inactive state */
 		
 		if (sessions[i].status != available)
 			db_cleanup(i);
@@ -151,7 +156,7 @@ static void db_shutdown(void)
 /*
  * Escape string with single quote
  */
-static char *db_escape(const char *str)
+static char *db_escape(int session_id, const char *str)
 {
         char *ptr;
         int i, ok, len = strlen(str);
@@ -193,7 +198,7 @@ static int db_command(int session_id, const char *query)
 		return -ERR_PLUGIN_DB_NOT_CONNECTED; 
 
 #ifdef DEBUG
-	log(LOG_INFO, "pgsql: %s\n", query);
+	log(LOG_INFO, "pgsql[%d]: %s\n", session_id, query);
 #endif
         
         ret = PQexec(sessions[session_id].pgsql, query);
@@ -383,7 +388,7 @@ static int db_connect(int session_id)
 	if ((sessions[session_id].status != allocated) && 
 	    (sessions[session_id].status != connection_failed) &&
 	    (sessions[session_id].status != connection_closed))
-		return -1;
+		return -ERR_PLUGIN_DB_ALREADY_CONNECTED;
 	
         sessions[session_id].pgsql = PQsetdbLogin(sessions[session_id].dbhost, 
 				        	sessions[session_id].dbport, 
@@ -410,11 +415,8 @@ static int db_connect(int session_id)
 static int set_pgsql_state(prelude_option_t *opt, const char *arg) 
 {
         int ret;
-
-	printf("set_pgsql_state: is_enabled = %d\n", is_enabled);
         
         if ( is_enabled == 1 ) {
-        	log(LOG_INFO, "disabling pgsql plugin\n");
                 db_shutdown();
                 
                 ret = plugin_unsubscribe((plugin_generic_t *) &plugin);
@@ -424,7 +426,6 @@ static int set_pgsql_state(prelude_option_t *opt, const char *arg)
         }
 
         else {
-        	log(LOG_INFO, "enabling pgsql plugin\n");
 		bzero(&sessions, PGSQL_MAX_SESSIONS*sizeof(session_t));
 
                 ret = plugin_subscribe((plugin_generic_t *) &plugin);
@@ -449,15 +450,7 @@ static int get_pgsql_state(char *buf, size_t size)
 
 
 plugin_generic_t *plugin_init(int argc, char **argv)
-{
-        prelude_option_t *opt;
-
-	printf("initializing psql plugin\n");
-	
-        opt = prelude_option_add(NULL, CLI_HOOK|CFG_HOOK|WIDE_HOOK, 0, "pgsql",
-                                 "Option for the PgSQL plugin", no_argument,
-                                 set_pgsql_state, get_pgsql_state);
-
+{	
 	/* system-wide options for the plugin should go in here */
 	
         plugin_set_name(&plugin, "PgSQL");

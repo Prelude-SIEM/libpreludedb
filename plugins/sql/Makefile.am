@@ -1,5 +1,4 @@
-SUBDIRS = pgsql
-#SUBDIRS = mysql pgsql
+SUBDIRS = mysql pgsql
 
 INCLUDES = -I$(top_srcdir)/libmissing -I$(top_srcdir) \
            -I$(top_srcdir)/src/include \

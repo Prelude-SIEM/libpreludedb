@@ -85,7 +85,7 @@ prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbf
 	list_add(&interface->list, &db_interfaces);
 
 	log(LOG_INFO, "- DB interface %s connected to database %s on %s format %s\n", 
-		name, dbname, dbhost, dbformat);
+		name, dbname, dbhost, interface->format->name);
 	
 	return interface;
 }
@@ -138,8 +138,6 @@ static int db_connection_delete_filter(prelude_db_interface_t *conn, const char 
 
 int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, idmef_message_t *msg)
 {
-	printf("db_interface_write_idmef_message()\n");
-
 	if (!interface)
 		return -1;
 		
@@ -203,17 +201,19 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 
 int prelude_db_init_interfaces(void)
 {
-	prelude_db_interface_t *interface;
+	prelude_db_interface_t *if1, *if2;
 	int ret;
 	
 	INIT_LIST_HEAD(&db_interfaces);
 
 	/* FIXME: read this from config file */
-	interface = prelude_db_connect_sql("iface1", "classic", "pgsql", "localhost", NULL, "prelude", "prelude", "prelude");
-	if (!interface) {
+	if1 = prelude_db_connect_sql("iface1", "classic", "pgsql", "localhost", NULL, "prelude", "prelude", "prelude");
+	if (!if1)
+		log(LOG_ERR, "pgsql connection failed!\n");
+	
+	if2 = prelude_db_connect_sql("iface2", "classic", "mysql", "lhotse", NULL, "prelude", "prelude", "prelude");
+	if (!if2)
 		log(LOG_ERR, "db connection failed\n");
-		return -1;
-	}
 	
 	return 0;
 }

@@ -38,6 +38,8 @@
 #define ERR_PLUGIN_DB_RESULT_TABLE_ERROR 7
 #define ERR_PLUGIN_DB_RESULT_ROW_ERROR 8
 #define ERR_PLUGIN_DB_RESULT_FIELD_ERROR 9
+#define ERR_PLUGIN_DB_INCORRECT_PARAMETERS 10
+#define ERR_PLUGIN_DB_ALREADY_CONNECTED 11
 
 /* used in library code */
 
@@ -48,7 +50,7 @@ typedef struct {
         int (*db_setup) (const char *dbhost, const char *dbport, const char *dbname, 
         		 const char *dbuser, const char *dbpass);
         int (*db_connect) (int session_id);
-        char *(*db_escape)(const char *input);
+        char *(*db_escape)(int session_id, const char *input);
         int (*db_insert)(int session_id, const char *query);
         sql_table_t *(*db_query)(int session_id, const char *query);
         int (*db_begin)(int session_id);

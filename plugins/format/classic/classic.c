@@ -52,8 +52,6 @@ static int format_write(prelude_db_connection_t *connection, idmef_message_t *me
 		
 	if (connection->type != sql)
 		return -2;
-
-	printf("classic: writing message\n");
 		
 	return idmef_db_output(connection, message);
 }
@@ -84,12 +82,6 @@ static int get_state(char *buf, size_t size)
 
 plugin_generic_t *plugin_init(int argc, char **argv)
 {
-        prelude_option_t *opt;
-
-        opt = prelude_option_add(NULL, CLI_HOOK|CFG_HOOK|WIDE_HOOK, 0, "classic",
-                                 "Option for the classic plugin", no_argument,
-                                 set_state, get_state);
-                                 
 	/* System wide plugin options should go in here */
         
         plugin_set_name(&plugin, "Classic");

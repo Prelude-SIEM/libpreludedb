@@ -5,7 +5,7 @@ if HAVE_MYSQL
 
 mysql_la_SOURCES = mysql.c
 mysql_la_LIBADD = @MYSQL_LIBS@
-mysqldir = $(db_plugin_dir)
+mysqldir = $(sql_plugin_dir)
 mysql_LTLIBRARIES = mysql.la
 
 endif

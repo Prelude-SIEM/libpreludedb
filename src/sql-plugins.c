@@ -162,6 +162,10 @@ int sql_insert(sql_connection_t *conn, const char *table, const char *fields, co
 	
         ret = conn->plugin->db_insert(conn->session, query);
 
+	if (ret < 0)
+		log(LOG_ERR, "[%s]->db_insert returned error code %d\n", 
+			conn->plugin->name, ret);
+
 	if ( query_dynamic )
                 free(query_dynamic);
 
@@ -226,7 +230,8 @@ char *sql_escape(sql_connection_t *conn, const char *string)
 	if (!string) 
 		return strdup("NULL");
 	
-	return (conn && conn->plugin) ? conn->plugin->db_escape(string) : NULL;
+	return (conn && conn->plugin) ? 
+		conn->plugin->db_escape(conn->session, string) : NULL;
 }
 
 
