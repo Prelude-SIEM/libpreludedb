@@ -35,8 +35,6 @@
 #include <libprelude/prelude-message.h>
 #include <libprelude/prelude-getopt.h>
 
-#include "idmef-object-list.h"
-#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
@@ -53,11 +51,13 @@ int prelude_db_init(void)
 {
 	int ret;
 
-	/* FIXME: we should rather return error here */
-	if ( initialized++ ) {
-		log(LOG_ERR, "attempt to re-initialize db subsystem! pretending to be OK\n");
+	/* 
+	 * Because we can be called many times (i.e. by different plugins
+	 * in application), we do nothing and return success when we find
+	 * we've been already initialized. 
+	 */
+	if ( initialized++ )
 		return 0;
-	}
 	
 	log(LOG_INFO, "- Starting DB subsystem\n");
 

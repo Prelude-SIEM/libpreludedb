@@ -1,0 +1,44 @@
+#
+# Prelude 0.8 database structure description file
+#
+
+object=alert.ident table=Prelude_Alert field=ident
+
+# Prelude_ToolAlert
+# Prelude_CorrelationAlert
+# Prelude_CorrelationAlert_Alerts
+# Prelude_OverflowAlert
+
+object=heartbeat.ident table=Prelude_Heartbeat field=ident
+
+#object=alert.analyzer.ident 		table=Prelude_Analyzer 		field=ident 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"
+object=alert.analyzer.analyzerid ident_field=parent_ident table=Prelude_Analyzer field=analyzerid top_table=Prelude_Alert top_field=ident condition="Prelude_Analyzer.parent_type = 'A'" 
+object=alert.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"  ident_field=parent_ident
+object=alert.analyzer.model 		table=Prelude_Analyzer 		field=model 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=alert.analyzer.version 		table=Prelude_Analyzer 		field=version 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=alert.analyzer.class 		table=Prelude_Analyzer 		field=class 		top_table=Prelude_Alert 	top_field=ident		condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=alert.analyzer.ostype 		table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=alert.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+
+object=alert.classification.origin 	table=Prelude_Classification	field=origin 		top_table=Prelude_Alert 	top_field=ident 	ident_field=alert_ident
+object=alert.classification.name 	table=Prelude_Classification	field=name 		top_table=Prelude_Alert 	top_field=ident 	ident_field=alert_ident
+object=alert.classification.url 	table=Prelude_Classification	field=url 		top_table=Prelude_Alert 	top_field=ident 	ident_field=alert_ident
+
+# ...
+# some more tables
+
+object=alert.additional_data.type 	table=Prelude_AdditionalData 	field=type 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_AdditionalData.parent_type = 'A'"  ident_field=parent_ident
+object=alert.additional_data.meaning 	table=Prelude_AdditionalData 	field=meaning 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_AdditionalData.parent_type = 'A'"  ident_field=parent_ident
+object=alert.additional_data.data 	table=Prelude_AdditionalData 	field=data 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_AdditionalData.parent_type = 'A'"  ident_field=parent_ident
+object=alert.additional_data.dlen 	table=Prelude_AdditionalData 	function=LENGTH(Prelude_AdditionalData.data) 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_AdditionalData.parent_type = 'A'"  ident_field=parent_ident
+
+
+#object=heartbeat.analyzer.ident 	table=Prelude_Analyzer 		field=ident 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=heartbeat.analyzer.model 	table=Prelude_Analyzer 		field=model 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'"	ident_field=parent_ident
+object=heartbeat.analyzer.version 	table=Prelude_Analyzer 		field=version 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'" 	ident_field=parent_ident
+object=heartbeat.analyzer.class 	table=Prelude_Analyzer 		field=class 		top_table=Prelude_Alert 	top_field=ident		condition="Prelude_Analyzer.parent_type = 'A'" 	ident_field=parent_ident
+object=heartbeat.analyzer.ostype 	table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'" 	ident_field=parent_ident
+object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Alert 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'A'" 	ident_field=parent_ident
+

@@ -30,6 +30,12 @@ strbuf_t *strbuf_new(void);
 
 int strbuf_sprintf(strbuf_t *s, const char *fmt, ...);
 
+char *strbuf_string(strbuf_t *s);
+
+int strbuf_empty(strbuf_t *s);
+
+void strbuf_clear(strbuf_t *s);
+
 void strbuf_destroy(strbuf_t *s);
 
 #endif /* _LIBPRELUDEDB_STRBUF_H */

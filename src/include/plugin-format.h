@@ -28,16 +28,20 @@
 typedef struct {
         PLUGIN_GENERIC;
         int (*format_write)(prelude_db_connection_t *connection, idmef_message_t *message);
-        idmef_db_values_t *(*format_read)(prelude_db_connection_t *connection,
-        		                  idmef_object_list_t *objects,
-        		                  idmef_criterion_t *criterion);
+        void *(*format_prepare)(prelude_db_connection_t *connection, idmef_cache_t *cache,
+        		        idmef_criterion_t *criterion);
+	int (*format_read)(void *handle);
 } plugin_format_t;
 
 #define plugin_write_func(p) (p)->format_write
 
+#define plugin_prepare_func(p) (p)->format_prepare
+
 #define plugin_read_func(p) (p)->format_read
 
 #define plugin_set_write_func(p, f) plugin_write_func(p) = (f)
+
+#define plugin_set_prepare_func(p, f) plugin_prepare_func(p) = (f)
 
 #define plugin_set_read_func(p, f) plugin_read_func(p) = (f)
 

@@ -21,12 +21,30 @@
 *
 *****/
 
+#ifndef _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
+#define _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H
 
-/* Code to come :) */
+typedef struct db_object db_object_t;
 
-struct idmef_db_values {
-	
+int db_objects_init(const char *file);
 
-	
-};
+db_object_t *db_object_find(idmef_object_t *object);
+
+char *db_object_get_table(db_object_t *object);
+
+char *db_object_get_field(db_object_t *object);
+
+char *db_object_get_function(db_object_t *object);
+
+char *db_object_get_top_table(db_object_t *object);
+
+char *db_object_get_top_field(db_object_t *object);
+
+char *db_object_get_condition(db_object_t *object);
+
+char *db_object_get_ident_field(db_object_t *object);
+
+void db_objects_destroy(void);
+
+#endif /* _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H */
 

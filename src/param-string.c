@@ -64,6 +64,7 @@ static char *find_separator(char *s, char *sep)
 			do {
 				s = strchr(s+1, '\'');
 			} while ( s && ( *(s-1) == '\\' ) ); 
+			s++;
 			continue;
 		}
 		
@@ -72,6 +73,7 @@ static char *find_separator(char *s, char *sep)
 			do {
 				s = strchr(s+1, '"');
 			} while ( s && ( *(s-1) == '\\') ); 
+			s++;
 			continue;
 			
 		}
@@ -164,10 +166,15 @@ char *parameter_value(const char *string, const char *field)
 	
 	do {
 		/*sep = strpbrk(s, " ");*/
-		sep = find_separator(s, " ");
-		if ( sep )
+		sep = find_separator(s, " \t");
+		if ( sep ) {
+			if ( sep == s ) {
+				s++;
+				continue;
+			}
+			
 			len = sep - s;
-		else
+		} else
 			len = strlen(s);
 		
 		data = strnchr(s, '=', len);
@@ -178,7 +185,7 @@ char *parameter_value(const char *string, const char *field)
 
 		data_len = s + len - data;
 		name_len = len - data_len - 1;
-		
+				
 		if ( name_len > BUFLEN )
 			name_len = BUFLEN;
 
@@ -204,7 +211,7 @@ char *parameter_value(const char *string, const char *field)
 		}
 		
 		s = sep + 1;
-	} while(sep);
+	} while (sep && *s);
 	
 	return NULL;
 }

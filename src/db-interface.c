@@ -32,8 +32,6 @@
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 
-#include "idmef-object-list.h"
-#include "idmef-db-values.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
@@ -222,14 +220,14 @@ int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, 
 
 
 
-idmef_db_values_t *prelude_db_interface_read_idmef_objects(prelude_db_interface_t *interface,
-        		   		                   idmef_object_list_t *objects,
-        		   		                   idmef_criterion_t *criterion)
+void *prelude_db_interface_prepare(prelude_db_interface_t *interface,
+     		   		   idmef_cache_t *cache,
+        		           idmef_criterion_t *criterion)
 {
 	if ( ! interface )
 		return NULL;
 		
-	if ( ! objects )
+	if ( ! cache )
 		return NULL;
 	
 	if ( ! interface->db_connection )
@@ -241,12 +239,33 @@ idmef_db_values_t *prelude_db_interface_read_idmef_objects(prelude_db_interface_
 	if ( ! interface->format )
 		return NULL;
 	
-	if ( ! interface->format->format_read )
+	if ( ! interface->format->format_prepare )
 		return NULL;
 		
-	return interface->format->format_read(interface->db_connection, objects, criterion);
+	return interface->format->format_prepare(interface->db_connection, cache, criterion);
 }
 
+
+int prelude_db_interface_read(prelude_db_interface_t *interface, 
+			      void *handle)
+{
+	if ( ! interface )
+		return -1;
+	
+	if ( ! interface->db_connection )
+		return -1;
+	
+	if ( ! interface->active )
+		return -1;
+	
+	if ( ! interface->format )
+		return -1;
+	
+	if ( ! interface->format->format_read )
+		return -1;
+		
+	return interface->format->format_read(handle);
+}
 
 
 

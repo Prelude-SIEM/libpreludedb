@@ -31,6 +31,7 @@
 
 struct strbuf {
 	char *string;
+	size_t textlen;
 	size_t len;
 };
 
@@ -54,6 +55,8 @@ strbuf_t *strbuf_new(void)
 	}
 
 	buf->string[0] = '\0';
+	buf->len = CHUNK_SIZE;
+	buf->textlen = 0;
 	
 	return buf;
 }
@@ -68,7 +71,7 @@ int strbuf_sprintf(strbuf_t *s, const char *fmt, ...)
 	
 	do {
 		va_start(ap, fmt);
-		ret = vsnprintf(s->string, s->len, fmt, ap);
+		ret = vsnprintf(s->string + s->textlen, s->len - s->textlen, fmt, ap);
 		va_end(ap);
 		
 		/*
@@ -83,8 +86,10 @@ int strbuf_sprintf(strbuf_t *s, const char *fmt, ...)
 		 * the final string if enough space had been available.)
 		 */
 		
-		if ( ( ret > 0 ) && ( ret < s->len ) )
+		if ( ( ret >= 0 ) && ( ret < s->len - s->textlen ) ) {
+			s->textlen += ret;
 			return ret;
+		}
 		
 		ptr = realloc(s->string, s->len + CHUNK_SIZE);
 		if ( ! ptr ) {
@@ -100,6 +105,25 @@ int strbuf_sprintf(strbuf_t *s, const char *fmt, ...)
 }
 
 
+
+
+char *strbuf_string(strbuf_t *s)
+{
+	return s->string;
+}
+
+
+int strbuf_empty(strbuf_t *s)
+{
+	return *(s->string) ? 0 : 1;
+}
+
+
+void strbuf_clear(strbuf_t *s)
+{
+	*(s->string) = '\0';
+	s->textlen = 0;
+}
 
 void strbuf_destroy(strbuf_t *s) 
 {

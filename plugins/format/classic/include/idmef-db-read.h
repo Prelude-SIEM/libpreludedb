@@ -23,10 +23,10 @@
 
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H
+void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache, 
+      	               idmef_criterion_t *criterion);
 
-idmef_db_values_t *idmef_db_read(prelude_db_connection_t *conn, 
-       		                 idmef_object_list_t *objects, 
-       		                 idmef_criterion_t *criterion);
+int idmef_db_read(void *handle);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_MESSAGE_READ_H */
 
