@@ -375,5 +375,3 @@ void db_objects_destroy(void)
 	
 	free(db_object_index);
 }
-
-
