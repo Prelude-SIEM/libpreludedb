@@ -1042,7 +1042,7 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 					   idmef_criterion_operator_t operator)
 {
 	int ret;
-	char buf[IDMEF_TIME_MAX_STRING_SIZE];
+	char buf[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 	prelude_string_t *string;
 	char *tmp;
 

@@ -720,7 +720,7 @@ static int insert_inode(preludedb_sql_t *sql,
 			uint64_t message_ident, int target_index, int file_index,
 			idmef_inode_t *inode) 
 {
-        char ctime[IDMEF_TIME_MAX_STRING_SIZE], ctime_gmtoff[16];
+        char ctime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], ctime_gmtoff[16];
 	char number[16], major_device[16], minor_device[16], c_major_device[16], c_minor_device[16];
         int ret;
 
@@ -911,9 +911,9 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
         idmef_file_access_t *file_access, *last_file_access;
 	int index;
         char *name = NULL, *path = NULL, *category = NULL, *fstype = NULL, *ident = NULL, data_size[32], disk_size[32];
-        char ctime[IDMEF_TIME_MAX_STRING_SIZE], ctime_gmtoff[16];
-        char mtime[IDMEF_TIME_MAX_STRING_SIZE], mtime_gmtoff[16];
-        char atime[IDMEF_TIME_MAX_STRING_SIZE], atime_gmtoff[16];
+        char ctime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], ctime_gmtoff[16];
+        char mtime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], mtime_gmtoff[16];
+        char atime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], atime_gmtoff[16];
 
         ret = preludedb_sql_time_to_timestamp(idmef_file_get_create_time(file),
 					      ctime, sizeof (ctime), ctime_gmtoff, sizeof (ctime_gmtoff), NULL, 0);
@@ -1399,7 +1399,7 @@ static int insert_additional_data(preludedb_sql_t *sql,
 
 static int insert_createtime(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, idmef_time_t *time) 
 {
-        char utc_time[IDMEF_TIME_MAX_STRING_SIZE];
+        char utc_time[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 	char utc_time_usec[16];
 	char utc_time_gmtoff[16];
         int ret;
@@ -1419,7 +1419,7 @@ static int insert_createtime(preludedb_sql_t *sql, char parent_type, uint64_t me
 
 static int insert_detecttime(preludedb_sql_t *sql, uint64_t message_ident, idmef_time_t *time) 
 {        
-        char utc_time[IDMEF_TIME_MAX_STRING_SIZE];
+        char utc_time[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 	char utc_time_usec[16];
 	char utc_time_gmtoff[16];
         int ret;
@@ -1441,7 +1441,7 @@ static int insert_detecttime(preludedb_sql_t *sql, uint64_t message_ident, idmef
 
 static int insert_analyzertime(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, idmef_time_t *time) 
 {
-        char utc_time[IDMEF_TIME_MAX_STRING_SIZE];
+        char utc_time[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 	char utc_time_usec[16];
 	char utc_time_gmtoff[16];
         int ret;

@@ -26,6 +26,8 @@
 
 #include <libprelude/prelude-string.h>
 
+#define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE sizeof ("'1970-01-01 00:00:00'")
+
 typedef enum {
 	PRELUDEDB_SQL_STATUS_DISCONNECTED = 0,
 	PRELUDEDB_SQL_STATUS_CONNECTED =    1,
