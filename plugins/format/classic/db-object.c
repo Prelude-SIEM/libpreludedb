@@ -29,6 +29,7 @@
 
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
+#include <libprelude/prelude-list.h>
 
 #include "param-string.h"
 #include "sql-connection-data.h"
@@ -37,7 +38,6 @@
 #include "db-connection.h"
 
 #include "db-object.h"
-
 
 
 struct db_object {
@@ -51,6 +51,9 @@ struct db_object {
 	char *top_field;
 	char *condition;
 	char *ident_field;
+	/* special fields for idmef_time */
+	char *usec_field;
+	char *gmtoff_field;
 };
 
 
@@ -107,6 +110,9 @@ static int db_object_new(char *descr)
 	obj->top_field = parameter_value(descr, "top_field");
 	obj->condition = parameter_value(descr, "condition");
 	obj->ident_field = parameter_value(descr, "ident_field");
+	obj->usec_field = parameter_value(descr, "usec_field");
+	obj->gmtoff_field = parameter_value(descr, "gmtoff_field");
+	
 
 	/* From idmef-cache.c -- adapted (shamelessly copying my own code :) */
 	
@@ -193,6 +199,12 @@ static void db_object_destroy(db_object_t *obj)
 		free(obj->condition);
 		
 	if ( obj->ident_field )
+		free(obj->ident_field);
+
+	if ( obj->usec_field )
+		free(obj->usec_field);
+
+	if ( obj->gmtoff_field )
 		free(obj->ident_field);
 
 	free(obj);
@@ -359,6 +371,20 @@ char *db_object_get_condition(db_object_t *object)
 char *db_object_get_ident_field(db_object_t *object)
 {
 	return object->ident_field;
+}
+
+
+
+char *db_object_get_usec_field(db_object_t *object)
+{
+	return object->usec_field;
+}
+
+
+
+char *db_object_get_gmtoff_field(db_object_t *object)
+{
+	return object->gmtoff_field;
 }
 
 

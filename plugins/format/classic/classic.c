@@ -352,15 +352,32 @@ static int get_value(prelude_sql_row_t *row, int field_cnt,
 
 	switch ( idmef_object_get_value_type(object) ) {
 	case IDMEF_VALUE_TYPE_TIME: {
+		uint32_t gmtoff = 0, usec = 0;
+		int retrieved = 1;
 		idmef_time_t *time;
 
-		field = prelude_sql_field_fetch(row, field_cnt + 1);
+		if ( ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+			 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) ) {
+			prelude_sql_field_t *gmtoff_field, *usec_field;
+
+			gmtoff_field = prelude_sql_field_fetch(row, field_cnt + 1);
+			if ( ! gmtoff_field )
+				return 0;
+			gmtoff = prelude_sql_field_value_uint32(gmtoff_field);
+
+			usec_field = prelude_sql_field_fetch(row, field_cnt + 2);
+			if ( ! usec_field )
+				return 0;		
+			usec = prelude_sql_field_value_uint32(usec_field);
+
+			retrieved += 2;
+		}
 
 		time = idmef_time_new();
 		if ( ! time )
 			return -1;
 
-		prelude_sql_time_from_timestamp(time, char_val, 0, 0);
+		prelude_sql_time_from_timestamp(time, char_val, gmtoff, usec);
 
 		*value = idmef_value_new_time(time);
 		if ( ! *value ) {
@@ -368,7 +385,7 @@ static int get_value(prelude_sql_row_t *row, int field_cnt,
 			return -1;
 		}
 
-		return 1;
+		return retrieved;
 	}
 	default:
 		*value = idmef_value_new_for_object(object, char_val);

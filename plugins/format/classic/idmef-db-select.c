@@ -27,6 +27,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include <stdarg.h>
 
 #include <libprelude/prelude-log.h>
@@ -603,52 +604,6 @@ static char *object_to_table(table_list_t *tables, db_object_t *db_object)
 
 
 
-static int object_to_field(prelude_string_t *fields,
-			   idmef_object_t *object, int flags,
-			   db_object_t *db_object,
-			   char *table_alias)
-{
-	idmef_object_t *alert = NULL, *heartbeat = NULL;
-	char *table = db_object_get_table(db_object);
-	char *field = db_object_get_field(db_object);
-	char *function = db_object_get_function(db_object);
-	int retval;
-
-	alert = idmef_object_new_fast("alert.messageid");
-	if ( ! alert ) {
-		log(LOG_ERR, "could not create alert.ident object!\n");
-		return -1;
-	}
-
-	heartbeat = idmef_object_new_fast("heartbeat.messageid");
-	if ( ! heartbeat ) {
-		log(LOG_ERR, "could not create heartbeat.ident object!\n");
-		idmef_object_destroy(alert);
-		return -2;
-	}
-
-	/*
-	 * Add field to SELECT list, with alias if we're dealing with
-	 * alert.ident or heartbeat.ident
-	 */
-	if ( ( idmef_object_compare(object, alert) == 0 ) ||
-	     ( idmef_object_compare(object, heartbeat) == 0 ) )
-		retval = add_field(fields, table, field, "ident", flags);
-	else
-		retval = add_field(fields,
-				   field ? table_alias : NULL,
-				   field ? field : function,
-				   NULL,
-				   flags);
-
-	idmef_object_destroy(alert);
-	idmef_object_destroy(heartbeat);
-
-	return (retval < 0) ? -3 : retval;
-}
-
-
-
 static int object_to_group(prelude_string_t *group, int flags, int index)
 {
 	int retval;
@@ -684,6 +639,62 @@ static int object_to_order(prelude_string_t *order_buf, int flags, int index)
 
 
 
+static int strisdigit(const char *str)
+{
+	while ( *str++ )
+		if ( ! isdigit(*str) )
+			return 0;
+
+	return 1;
+}
+
+
+
+static int object_to_field(prelude_string_t *fields,
+			   prelude_string_t *group,
+			   prelude_string_t *order,
+			   idmef_object_t *object, int flags,
+			   db_object_t *db_object, 
+			   table_list_t *tables,
+			   int *index)
+{
+	char *field = db_object_get_field(db_object);
+	char *usec_field = db_object_get_usec_field(db_object);
+	char *gmtoff_field = db_object_get_gmtoff_field(db_object);
+	char *function = db_object_get_function(db_object);
+	char *table_alias;
+
+	table_alias = object_to_table(tables, db_object);
+	if ( ! table_alias )
+		return -1;
+
+	if ( add_field(fields, field ? table_alias : NULL, field ? field : function, NULL, flags) < 0 )
+		return -1;
+
+	if ( object_to_group(group, flags, *index) < 0 )
+		return -1;
+
+	if ( object_to_order(order, flags, *index) < 0 )
+		return -1;
+
+	if ( ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+			 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) ) {
+
+		if ( gmtoff_field )
+			if ( add_field(fields, table_alias, gmtoff_field, NULL, 0) < 0 )
+				return -1;
+
+		if ( usec_field )
+			if ( add_field(fields,
+				       strisdigit(usec_field) ? NULL : table_alias,
+				       usec_field, NULL, 0) < 0 )
+				return -1;
+	}
+
+	return 0;
+}
+
+
 
 /*
  * This function does not modify WHERE clause as for now, but we pass it the
@@ -700,11 +711,10 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 	prelude_db_selected_object_t *selected;
 	db_object_t *db_object;
 	idmef_object_t *object;
-	char *table_alias;
 	int flags;
-	int cnt;
+	int index;
 
-	cnt = 0;
+	index = 1;
 	selected = NULL;
 	while ( (selected = prelude_db_object_selection_get_next(selection, selected)) ) {
 
@@ -722,20 +732,10 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 			return -1;
 		}
 
-		table_alias = object_to_table(tables, db_object);
-		if ( ! table_alias )
-			return -2;
-
-		if ( object_to_field(fields, object, flags, db_object, table_alias) < 0 )
+		if ( object_to_field(fields, group, order, object, flags, db_object, tables, &index) < 0 )
 			return -3;
 
-		if ( object_to_group(group, flags, cnt + 1) < 0 )
-			return -4;
-
-		if ( object_to_order(order, flags, cnt + 1) < 0 )
-			return -5;
-
-		cnt++;
+		index++;
 	}
 
 	return 0;

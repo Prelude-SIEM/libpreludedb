@@ -1,7 +1,7 @@
 object=heartbeat.messageid table=Prelude_Heartbeat field=messageid
 
-object=heartbeat.create_time table=Prelude_CreateTime field=time top_table=Prelude_Heartbeat top_field=_ident ident_field=_message_ident condition="Prelude_CreateTime._parent_type='H'"
-object=heartbeat.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Heartbeat top_field=_ident ident_field=_message_ident condition="Prelude_AnalyzerTime._parent_type='H'"
+object=heartbeat.create_time table=Prelude_CreateTime field=time top_table=Prelude_Heartbeat top_field=_ident ident_field=_message_ident condition="Prelude_CreateTime._parent_type='H'" gmtoff_field=gmtoff usec_field=usec
+object=heartbeat.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Heartbeat top_field=_ident ident_field=_message_ident condition="Prelude_AnalyzerTime._parent_type='H'" gmtoff_field=gmtoff usec_field=usec
 
 object=heartbeat.analyzer.analyzerid 	table=Prelude_Analyzer 		field=analyzerid 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident 
 object=heartbeat.analyzer.manufacturer 	table=Prelude_Analyzer 		field=manufacturer 	top_table=Prelude_Heartbeat 	top_field=_ident 	condition="Prelude_Analyzer._parent_type = 'H' AND Prelude_Analyzer._depth = 0"	ident_field=_message_ident
@@ -32,9 +32,9 @@ object=heartbeat.analyzer.process.env table=Prelude_ProcessEnv field=env top_tab
 
 object=alert.messageid  table=Prelude_Alert  field=messageid
 
-object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident
-object=alert.create_time table=Prelude_CreateTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_CreateTime._parent_type='A'"
-object=alert.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_AnalyzerTime._parent_type='A'"
+object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident gmtoff_field=gmtoff usec_field=usec
+object=alert.create_time table=Prelude_CreateTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_CreateTime._parent_type='A'" gmtoff_field=gmtoff usec_field=usec
+object=alert.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Alert top_field=_ident ident_field=_message_ident condition="Prelude_AnalyzerTime._parent_type='A'" gmtoff_field=gmtoff usec_field=usec
 
 
 object=alert.assessment.impact.description  table=Prelude_Impact  field=description  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
@@ -184,9 +184,9 @@ object=alert.target.file.fstype  table=Prelude_File  field=fstype  top_table=Pre
 object=alert.target.file.name  table=Prelude_File  field=name  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
 object=alert.target.file.path  table=Prelude_File  field=path  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
 object=alert.target.file.data_size  table=Prelude_File  field=data_size  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
-object=alert.target.file.create_time  table=Prelude_File  field=create_time  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
+object=alert.target.file.create_time  table=Prelude_File  field=create_time  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  gmtoff_field=create_time_gmtoff usec_field=0
 object=alert.target.file.disk_size  table=Prelude_File  field=disk_size  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident  
-object=alert.target.file.inode.change_time  table=Prelude_Inode  field=change_time  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident
+object=alert.target.file.inode.change_time  table=Prelude_Inode  field=change_time  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident gmtoff_field=change_time_gmtoff usec_field=0
 object=alert.target.file.inode.number  table=Prelude_Inode  field=number  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident
 object=alert.target.file.inode.major_device  table=Prelude_Inode  field=major_device  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident
 object=alert.target.file.inode.minor_device  table=Prelude_Inode  field=minor_device  top_table=Prelude_Alert  top_field=_ident  ident_field=_message_ident

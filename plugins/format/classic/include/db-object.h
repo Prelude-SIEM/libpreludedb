@@ -44,6 +44,10 @@ char *db_object_get_condition(db_object_t *object);
 
 char *db_object_get_ident_field(db_object_t *object);
 
+char *db_object_get_usec_field(db_object_t *object);
+
+char *db_object_get_gmtoff_field(db_object_t *object);
+
 void db_objects_destroy(void);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_DB_OBJECT_H */
