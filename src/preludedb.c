@@ -43,7 +43,6 @@
 
 
 struct preludedb {
-	char *type_name;
 	char *format_name;
 	preludedb_sql_t *sql;
 	preludedb_plugin_format_t *plugin;
@@ -89,7 +88,7 @@ static int load_format_plugins_if_needed(void)
 
 
 
-preludedb_t *preludedb_new(const char *type_name, preludedb_sql_settings_t *sql_settings, const char *format_name)
+preludedb_t *preludedb_new(preludedb_sql_t *sql, const char *format_name)
 {
 	preludedb_t *db;
 	int ret;
@@ -100,23 +99,10 @@ preludedb_t *preludedb_new(const char *type_name, preludedb_sql_settings_t *sql_
 	if ( ! db )
 		return NULL;
 
-	db->type_name = strdup(type_name);
-	if ( ! db->type_name ) {
-		free(db);
-		return NULL;
-	}
-
-	ret = preludedb_sql_new(&db->sql, type_name, sql_settings);
-	if ( ret < 0 ) {
-		free(db->type_name);
-		free(db);
-		return NULL;
-	}
+	db->sql = sql;
 
 	ret = preludedb_sql_connect(db->sql);
 	if ( ret < 0 ) {
-		free(db->type_name);
-		preludedb_sql_destroy(db->sql);
 		free(db);
 		return NULL;
 	}
@@ -127,10 +113,8 @@ preludedb_t *preludedb_new(const char *type_name, preludedb_sql_settings_t *sql_
 		ret = preludedb_format_autodetect(db);
 
 	if ( ret < 0 ) {
-		free(db->type_name);
 		if ( db->format_name )
 			free(db->format_name);
-		preludedb_sql_destroy(db->sql);
 		free(db);
 		return NULL;
 	}
@@ -143,16 +127,8 @@ preludedb_t *preludedb_new(const char *type_name, preludedb_sql_settings_t *sql_
 void preludedb_destroy(preludedb_t *db)
 {
 	preludedb_sql_destroy(db->sql);
-	free(db->type_name);
 	free(db->format_name);
 	free(db);
-}
-
-
-
-const char *preludedb_get_type_name(preludedb_t *db)
-{
-	return db->type_name;
 }
 
 

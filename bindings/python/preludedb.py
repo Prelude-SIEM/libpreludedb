@@ -61,18 +61,26 @@ class PreludeDB:
             _preludedb.preludedb_sql_settings_set_user(settings, user)
         if password:
             _preludedb.preludedb_sql_settings_set_pass(settings, password)
+
+        sql = _preludedb.preludedb_sql_new(type, settings)
+        if not sql:
+            _preludedb.preludedb_sql_settings_destroy(settings)
+            raise Error("cannot create sql object")
+
+        if log:
+            ret = _preludedb.preludedb_sql_enable_query_logging(sql, log)
+            if ret < 0:
+                _preludedb.preludedb_sql_destroy(sql)
+                raise Error("cannot enable query logging object")
         
-        self.res = _preludedb.preludedb_new(type, settings, None)
+        self.res = _preludedb.preludedb_new(sql, None)
         if not self.res:
             raise Error("cannot create preludedb object")
 
-        if log:
-            sql = _preludedb.preludedb_get_sql(self.res)
-            _preludedb.preludedb_sql_enable_query_logging(sql, log)
-
     def __del__(self):
         """PreludeDB destructor"""
-        _preludedb.preludedb_destroy(self.res)
+        if self.res:
+            _preludedb.preludedb_destroy(self.res)
 
     def connect(self):
         """Connect to the database."""

@@ -40,11 +40,10 @@ typedef enum {
 } preludedb_result_idents_order_t;
 
 
-preludedb_t *preludedb_new(const char *dbtype, preludedb_sql_settings_t *sql_settings, const char *format_name);
+preludedb_t *preludedb_new(preludedb_sql_t *sql, const char *format_name);
 
 void preludedb_destroy(preludedb_t *db);
 
-const char *preludedb_get_type_name(preludedb_t *db);
 const char *preludedb_get_format_name(preludedb_t *db);
 
 int preludedb_connect(preludedb_t *db);

@@ -132,6 +132,18 @@ typedef struct idmef_value idmef_value_t;
 };
 
 
+%typemap(python, in, numinputs=0) preludedb_sql_t **new (preludedb_sql_t *tmp) {
+	$1 = &tmp;
+};
+
+%typemap(python, argout) preludedb_sql_t **new {
+	if ( PyInt_AsLong($result) < 0 )
+		$result = Py_None;
+	else
+		$result = SWIG_NewPointerObj((void *) * $1, SWIGTYPE_p_preludedb_sql_t, 0);
+};
+
+
 %typemap(python, in, numinputs=0) uint64_t *ident (uint64_t tmp) {
 	$1 = &tmp;
 };
