@@ -41,10 +41,6 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db);
 
 int prelude_db_interface_connect(prelude_db_interface_t *interface);
 
-int prelude_db_interface_activate(prelude_db_interface_t *interface);
-
-int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
-
 prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
 									 idmef_criterion_t *criterion);
 

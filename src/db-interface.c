@@ -42,14 +42,13 @@
 #include "db-interface.h"
 #include "plugin-format.h"
 
+
 struct prelude_db_interface {
 	char *name;
 	prelude_db_connection_t *db_connection;
 	prelude_db_connection_data_t *connection_data;
-	char *format_name;
 	plugin_format_t *format;
 	struct list_head filter_list;
-	int active;
 };
 
 
@@ -71,7 +70,6 @@ struct prelude_db_heartbeat_uident_list {
 };
 
 
-
 prelude_db_interface_t *prelude_db_interface_new(const char *name,
 						 const char *format,
 						 prelude_db_connection_data_t *data) 
@@ -86,28 +84,23 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
                 log(LOG_ERR, "memory exhausted.\n");
                 return NULL;
         }
-        
-        interface->connection_data = data;
-        
-        if ( format ) {
-        	interface->format = (plugin_format_t *) plugin_search_by_name(format);
-        	if ( ! interface->format ) {
-                	log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
-                	free(interface);
-                	return NULL;
-        	}
-        	interface->format_name = strdup(format);
-        }
-        
-        if ( name ) 
-        	interface->name = strdup(name);
-        else
-        	interface->name = strdup("(unnamed)");
 
-	interface->active = 1;
-        
+        interface->connection_data = data;
 	INIT_LIST_HEAD(&interface->filter_list);
+
+        interface->name = (name) ? strdup(name) : strdup("(unnamed)");
         
+        if ( ! format )
+                return interface;
+        
+        interface->format = (plugin_format_t *) plugin_search_by_name(format);
+        if ( ! interface->format ) {
+                log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
+                free(interface->name);
+                free(interface);
+                return NULL;
+        }
+
         return interface;
 }
 
@@ -124,7 +117,7 @@ char *prelude_db_interface_get_name(prelude_db_interface_t *db)
 
 char *prelude_db_interface_get_format(prelude_db_interface_t *db) 
 {
-        return db ? db->format_name : NULL;
+        return db ? plugin_name(db->format) : NULL;
 }
 
 
@@ -132,65 +125,31 @@ char *prelude_db_interface_get_format(prelude_db_interface_t *db)
 
 int prelude_db_interface_connect(prelude_db_interface_t *db) 
 {
+        int type;
         prelude_sql_connection_t *cnx;
 
-	switch ( prelude_db_connection_data_get_type(db->connection_data) ) {
-
-		case prelude_db_type_sql:
-        		cnx = prelude_sql_connect(prelude_db_connection_data_get(db->connection_data));
-        		if ( ! cnx ) {
-                		log(LOG_ERR, "%s: SQL connection failed.\n", db->name);
-                		return -1;
-                	}
-                	
-                	db->db_connection = prelude_db_connection_new(
-                		prelude_db_type_sql, cnx);
-                	if ( ! db->db_connection ) {
-                		log(LOG_ERR, "%s: error creating db_connection_t object\n", 
-                			db->name);
-                		return -1;
-                	}
-                	
-                	break;
-                	
-                default:
-                	log(LOG_ERR, "%s: unknown database type %d\n", db->name, 
-                		prelude_db_connection_data_get_type(db->connection_data));
-                	return -1;
+        /*
+         * YV: if more type, divide the handling of theses in individual function.
+         */
+        type = prelude_db_connection_data_get_type(db->connection_data);
+        if ( type != prelude_db_type_sql ) {
+                log(LOG_ERR, "%s: unknown database type %d\n", db->name, type);
+                return -1;
         }
-
-        db->active = 1;
         
+        cnx = prelude_sql_connect(prelude_db_connection_data_get(db->connection_data));
+        if ( ! cnx ) {
+                log(LOG_ERR, "%s: SQL connection failed.\n", db->name);
+                return -1;
+        }
+                	
+        db->db_connection = prelude_db_connection_new(prelude_db_type_sql, cnx);
+        if ( ! db->db_connection ) {
+                log(LOG_ERR, "%s: error creating db_connection_t object\n", db->name);
+                return -1;
+        }
+                
         return 0;
-}
-
-
-
-int prelude_db_interface_activate(prelude_db_interface_t *interface)
-{
-	if ( ! interface )
-		return -1; 
-		
-	if ( interface->active )
-		return -2;
-		
-	interface->active = 1;
-	
-	return 0;
-}
-
-
-int prelude_db_interface_deactivate(prelude_db_interface_t *interface)
-{
-	if ( ! interface )
-		return -1; 
-		
-	if ( ! interface->active )
-		return -2;
-		
-	interface->active = 0;
-	
-	return 0;
 }
 
 
@@ -226,14 +185,11 @@ int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface,
 	if ( ! interface->db_connection )
 		return -3;
 
-	if ( ! interface->active )
+	if ( ! interface->format )
 		return -4;
 
-	if ( ! interface->format )
-		return -5;
-
 	if ( ! interface->format->format_insert_idmef_message )
-		return -6;
+		return -5;
 
 	return interface->format->format_insert_idmef_message(interface->db_connection, msg);
 }
@@ -241,21 +197,18 @@ int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface,
 
 
 prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
-									   idmef_criterion_t *criterion)
+                                                                           idmef_criterion_t *criterion)
 {
-	prelude_db_alert_uident_list_t *uident_list;
-	prelude_db_alert_uident_t *alert_uidents;
-	int size;
-	
+        int size;
+        prelude_db_alert_uident_t *alert_uidents;
+        prelude_db_alert_uident_list_t *uident_list;
+        
 	if ( ! interface )
 		return NULL;
 		
 	if ( ! interface->db_connection )
 		return NULL;
-	
-	if ( ! interface->active )
-		return NULL;
-	
+		
 	if ( ! interface->format )
 		return NULL;
 	
@@ -266,7 +219,12 @@ prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelu
 	if ( size <= 0 )
 		return NULL;
 
-	uident_list = malloc(sizeof (*uident_list));
+	uident_list = malloc(sizeof(*uident_list));
+        if ( ! uident_list ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+        }
+         
 	uident_list->interface = interface;
 	uident_list->uidents = alert_uidents;
 	uident_list->size = size;
@@ -280,30 +238,32 @@ prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelu
 prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
 										   idmef_criterion_t *criterion)
 {
+        int size;
 	prelude_db_heartbeat_uident_list_t *uident_list;
 	prelude_db_heartbeat_uident_t *heartbeat_uidents;
-	int size;
 	
 	if ( ! interface )
 		return NULL;
 		
 	if ( ! interface->db_connection )
 		return NULL;
-	
-	if ( ! interface->active )
-		return NULL;
-	
+		
 	if ( ! interface->format )
 		return NULL;
 	
 	if ( ! interface->format->format_get_heartbeat_uident_list )
 		return NULL;
-
+        
 	size = interface->format->format_get_heartbeat_uident_list(interface->db_connection, criterion, &heartbeat_uidents);
 	if ( size <= 0 )
 		return NULL;
 
 	uident_list = malloc(sizeof (*uident_list));
+        if ( ! uident_list ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+        }
+        
 	uident_list->interface = interface;
 	uident_list->uidents = heartbeat_uidents;
 	uident_list->size = size;
@@ -314,7 +274,7 @@ prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_li
 
 
 
-void	prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list)
+void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list)
 {
 	if ( ! uident_list )
 		return;
@@ -325,7 +285,7 @@ void	prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t 
 
 
 
-void	prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list)
+void prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list)
 {
 	if ( ! uident_list )
 		return;
@@ -392,7 +352,7 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 
 
 
-int	prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident)
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident)
 {
 	if ( ! interface )
 		return -1;
@@ -405,7 +365,7 @@ int	prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude
 
 
 
-int	prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident)
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident)
 {
 	if ( ! interface )
 		return -1;
@@ -434,6 +394,7 @@ prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_d
 
 int prelude_db_interface_errno(prelude_db_interface_t *interface)
 {
+        int type;
 	prelude_sql_connection_t * sql;
 	
 	if ( ! interface )
@@ -442,7 +403,8 @@ int prelude_db_interface_errno(prelude_db_interface_t *interface)
 	if ( ! interface->db_connection )
 		return -2;
 
-	if ( prelude_db_connection_get_type(interface->db_connection) != prelude_db_type_sql )
+        type = prelude_db_connection_get_type(interface->db_connection);
+	if ( type != prelude_db_type_sql )
 		return -3;
 
 	sql = prelude_db_connection_get(interface->db_connection);
@@ -452,7 +414,7 @@ int prelude_db_interface_errno(prelude_db_interface_t *interface)
 
 
 
-const char * prelude_db_interface_error(prelude_db_interface_t *interface)
+const char *prelude_db_interface_error(prelude_db_interface_t *interface)
 {
 	prelude_sql_connection_t * sql;
 	
@@ -471,33 +433,36 @@ const char * prelude_db_interface_error(prelude_db_interface_t *interface)
 }
 
 
+
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 {
+        int type;
+        
 	if ( ! interface )
 		return -1;
 	
 	if ( ! interface->db_connection )
 		return -2;
-
-	prelude_db_interface_deactivate(interface);
-	
-	switch ( prelude_db_connection_get_type(interface->db_connection) ) {
-            
-        	case prelude_db_type_sql:
-         		prelude_sql_close(prelude_db_connection_get(interface->db_connection));
-                	break;
-                
-        	default:
-                	log(LOG_ERR, "%s: not supported connection type %d\n", interface->name, 
-                		prelude_db_connection_get_type(interface->db_connection));
-                	return -4;
-	}
-
+        
+        /*
+         * YV: if more type, divide the handling of theses in individual function.
+         */
+        
+        type = prelude_db_connection_get_type(interface->db_connection);
+        if ( type == prelude_db_type_sql )
+                prelude_sql_close(prelude_db_connection_get(interface->db_connection));
+        else {
+                log(LOG_ERR, "%s: not supported connection type %d\n",
+                    interface->name, prelude_db_connection_get_type(interface->db_connection));
+                return -4;
+        }
+        
 	prelude_db_connection_destroy(interface->db_connection);
 	interface->db_connection = NULL;
 	
 	return 0;
 }
+
 
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
@@ -510,11 +475,11 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 	     ! interface->format->format_select_values)
 		return NULL;
 	
-	return interface->format->format_select_values(interface->db_connection,
-						       distinct,
-						       selection,
-						       criteria);
+	return interface->format->format_select_values
+                (interface->db_connection, distinct, selection, criteria);
 }
+
+
 
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
@@ -531,6 +496,8 @@ idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_
 }
 
 
+
+
 int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 {
 	if ( ! interface )
@@ -545,9 +512,6 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 	
 	if ( interface->name ) 
 		free(interface->name);
-		
-	if ( interface->format_name )
-		free(interface->format_name);
 		
 	free(interface);
 	
