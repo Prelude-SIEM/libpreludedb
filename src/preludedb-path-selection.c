@@ -104,24 +104,23 @@ static int parse_filters(const char *str)
 
 
 
-static int parse_function(const char *str, size_t len)
+static int parse_function(const char *str)
 {
 	struct { char *name; int flag; } function_table[] = {
-		{ "min",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN	 },
-		{ "max",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX	 },
-		{ "avg",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG	 },
-		{ "std",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD	 },
-		{ "count",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT }
+		{ "min(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN	 },
+		{ "max(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX	 },
+		{ "avg(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG	 },
+		{ "std(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD	 },
+		{ "count(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT }
 	};
 	int cnt;
 
 	for ( cnt = 0; cnt < sizeof (function_table) / sizeof (function_table[0]); cnt++ ) {
-		if ( len == strlen(function_table[cnt].name) &&
-		     strncmp(str, function_table[cnt].name, len) == 0 )
+		if ( strncmp(str, function_table[cnt].name, strlen(function_table[cnt].name)) == 0 )
 			return function_table[cnt].flag;
 	}
 
-	return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
+	return 0;
 }
 
 
@@ -163,17 +162,17 @@ int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path
 		flags |= ret;
 	}
 
-	start = strchr(str, '(');
-	if ( start ) {
-		end = strchr(start, ')');
-		if ( ! end )
-			return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
+	ret = parse_function(str);
+	if ( ret < 0 )
+		return ret;
 
-		ret = parse_function(str, start - str);
-		if ( ret < 0 )
-			return ret;
-
+	if ( ret ) {
 		flags |= ret;
+
+		start = strchr(str, '(');
+		end = strrchr(str, ')');
+		if ( ! start || ! end )
+			return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 
 		ret = parse_path(start + 1, end - start - 1, &path);
 
