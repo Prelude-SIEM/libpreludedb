@@ -1,4 +1,5 @@
 SUBDIRS=include
+EXTRA_DIST = mysql.sql pgsql.sql schema.txt
 
 AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
 
@@ -12,3 +13,6 @@ install-data-local:
 	$(INSTALL) -m 644 $(srcdir)/*.sql $(DESTDIR)/$(format_config_dir)/classic
 	$(INSTALL) -m 644 $(srcdir)/schema.txt $(DESTDIR)/$(format_config_dir)/classic
 
+uninstall-local:
+	rm -f $(DESTDIR)/$(format_config_dir)/classic/*.sql
+	rm -f $(DESTDIR)/$(format_config_dir)/classic/schema.txt
