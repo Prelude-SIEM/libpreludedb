@@ -1,3 +1,9 @@
+2004-01-07  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/classic.c:
+	(get_message)
+	fit idmef_message changes
+
 2004-01-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-get.c:

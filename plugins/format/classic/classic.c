@@ -226,6 +226,7 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 	idmef_criteria_t *criteria;
 	const char *char_val;
 	int cnt = 0;
+	int ret;
 
 	object = idmef_object_new_fast(object_name);
 	if ( ! object )
@@ -278,8 +279,6 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	idmef_message_enable_cache(message);
-
 	nfields = prelude_sql_fields_num(table);
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
@@ -295,7 +294,6 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 			/* FIXME: handle enumeration The Right Way(tm) */
 			object = idmef_object_list_get_next(object_list, object);
-			(void) idmef_object_ref(object); /* increment refcount */
 
 #ifdef DEBUG
 			log(LOG_INFO, " * object: %s\n", idmef_object_get_name(object));
@@ -326,14 +324,16 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 			if ( ! value )
 				log(LOG_ERR, "could not create container!\n");
 
-			if ( idmef_message_set(message, object, value) < 0 ) {
-				log(LOG_INFO, "idmef_message_set() failed\n");
+			ret = idmef_message_set(message, object, value);
 
+			idmef_value_destroy(value);
+
+			if ( ret < 0 ) {
+				log(LOG_INFO, "idmef_message_set() failed\n");
 				prelude_sql_table_free(table);
 				idmef_message_destroy(message);
 				return NULL;
 			}
-
 		}
 
 		cnt++;
