@@ -35,7 +35,6 @@
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
-#include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
 
 #include <libprelude/prelude-io.h>
@@ -83,7 +82,6 @@ static plugin_sql_t plugin;
 
 static void *db_query(void *s, const char *query);
 
-plugin_generic_t *plugin_init(int argc, char **argv);
 
 
 static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
@@ -655,15 +653,15 @@ static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int v
 
 
 
-plugin_generic_t *plugin_init(int argc, char **argv)
+prelude_plugin_generic_t *prelude_plugin_init(void)
 {
         
 	/*
          * system-wide options for the plugin should go in here
          */
 	
-        plugin_set_name(&plugin, "PgSQL");
-        plugin_set_desc(&plugin, "Will log all alert to a PostgreSQL database.");
+        prelude_plugin_set_name(&plugin, "PgSQL");
+        prelude_plugin_set_desc(&plugin, "Will log all alert to a PostgreSQL database.");
         plugin_set_setup_func(&plugin, db_setup);
         plugin_set_connect_func(&plugin, db_connect);
         plugin_set_escape_func(&plugin, db_escape);
@@ -688,6 +686,6 @@ plugin_generic_t *plugin_init(int argc, char **argv)
 	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
 	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
 
-	return (plugin_generic_t *) &plugin;
+	return (void *) &plugin;
 }
 
