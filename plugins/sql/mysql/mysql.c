@@ -618,7 +618,7 @@ static int db_build_time_constraint(prelude_strbuf_t *output, const char *field,
 	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
 		return -1;
 
-	if ( snprintf(buf, sizeof (buf), "DATE_ADD(%s, interval %d hour)", field, gmt_offset / 3600) < 0 )
+	if ( snprintf(buf, sizeof (buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600) < 0 )
 		return -1;
 
 	sql_relation = prelude_sql_idmef_relation_to_string(relation);

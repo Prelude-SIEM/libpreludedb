@@ -24,6 +24,7 @@
 	* src/include/sql.h:
 	* src/include/plugin-sql.h
 	* plugins/sql/mysql/mysql.c:
+	* plugins/sql/pgsql/pgsql.c:
 	add support for idmef-criterion-value
 
 2004-01-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
