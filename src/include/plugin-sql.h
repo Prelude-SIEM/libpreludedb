@@ -59,12 +59,6 @@ typedef struct {
         void (*db_close)(void *session);
 } plugin_sql_t;
 
-typedef struct {
-        void *session;
-	plugin_sql_t *plugin;
-	prelude_sql_connection_data_t *data;
-} sql_connection_t;
-
 
 
 #define plugin_setup_func(p) (p)->db_setup
@@ -106,29 +100,7 @@ typedef struct {
 
 
 
-int sql_plugins_available(void);
-
-sql_connection_t *sql_connect(prelude_sql_connection_data_t *data) ;
-
 int sql_plugins_init(const char *dirname);
-
-char *sql_escape(sql_connection_t *conn, const char *string);
-
-int sql_insert(sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...);
-
-sql_table_t *sql_query(sql_connection_t *conn, const char *fmt, ...);
-
-int sql_begin(sql_connection_t *conn);
-
-int sql_commit(sql_connection_t *conn);
-
-int sql_rollback(sql_connection_t *conn);
-
-void sql_close(sql_connection_t *conn);
-
-char *sql_escape(sql_connection_t *conn, const char *text);
-
-plugin_generic_t *plugin_init(int argc, char **argv);
 
 #endif /* _LIBPRELUDEDB_PLUGIN_DB_H */
 

@@ -1,3 +1,25 @@
+2002-12-09  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/include/sql.h:
+	* src/sql.c:
+	SQL connection handling code from sql-plugins.c. sql_connection_t
+	structure made opaque. sql.h is a public header, offering
+	application access to our SQL layer. 
+
+	* src/sql-plugins.c:
+	* src/include/plugin-sql.h:
+	remove code moved to sql.[ch].
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	modified accordingly
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-output.c:
+	* src/db-interface.c:
+	include "sql.h" instead of "plugin-sql.h"
+
+
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/db-interface-string.c:
