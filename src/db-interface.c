@@ -88,7 +88,12 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         interface->connection_data = data;
 	INIT_LIST_HEAD(&interface->filter_list);
 
-        interface->name = (name) ? strdup(name) : strdup("(unnamed)");
+        interface->name = strdup(name ? name : "(unnamed)");
+        if ( ! interface->name ) {
+                log(LOG_ERR, "memory exhausted.\n");
+                free(interface);
+                return NULL;
+        }
         
         if ( ! format )
                 return interface;

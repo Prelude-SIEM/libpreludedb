@@ -1,9 +1,12 @@
 2003-09-08  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
+	* src/db-interface.c (prelude_db_interface_new): 
+	check for NULL strdup return value.
+
 	* src/db-interface.c (prelude_db_interface_activate): 
 	(prelude_db_interface_deactivate): theses functions are
 	deprecated. Remove them.
-	
+
 	(prelude_db_interface_get_alert_uident_list): 
 	(prelude_db_interface_get_heartbeat_uident_list): 
 	check malloc() error return.
