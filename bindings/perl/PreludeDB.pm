@@ -26,12 +26,12 @@ package PreludeDB;
 
 sub	init
 {
-    return prelude_db_init();
+    return (prelude_db_init() < 0) ? 0 : 1;
 }
 
 sub	shutdown
 {
-    return prelude_db_shutdown();
+    return (prelude_db_shutdown() < 0) ? 0 : 1;
 }
 
 sub	new
@@ -68,7 +68,7 @@ sub	connect
 {
     my	$self = shift;
 
-    return prelude_db_interface_connect($$self);
+    return (prelude_db_interface_connect($$self) < 0) ? 0 : 1;
 }
 
 sub	get_sql_connection
@@ -179,22 +179,16 @@ sub	delete_alert
 {
     my	$self = shift;
     my	$ident = shift;
-    my	$retval;
 
-    $retval = PreludeDB::prelude_db_interface_delete_alert($$self, $ident);
-
-    return $retval;
+    return (PreludeDB::prelude_db_interface_delete_alert($$self, $ident) < 0) ? 0 : 1;
 }
 
 sub	delete_heartbeat
 {
     my	$self = shift;
     my	$ident = shift;
-    my	$retval;
 
-    $retval = PreludeDB::prelude_db_interface_delete_heartbeat($$self, $ident);
-
-    return $retval;
+    return (PreludeDB::prelude_db_interface_delete_heartbeat($$self, $ident) < 0) ? 0 : 1;
 }
 
 sub	DESTROY
@@ -237,21 +231,21 @@ sub	begin
 {
     my	$self = shift;
 
-    return PreludeDB::prelude_sql_begin($$self);
+    return (PreludeDB::prelude_sql_begin($$self) < 0) ? 0 : 1;
 }
 
 sub	commit
 {
     my	$self = shift;
 
-    return PreludeDB::prelude_sql_commit($$self);
+    return (PreludeDB::prelude_sql_commit($$self) < 0) ? 0 : 1;
 }
 
 sub	rollback
 {
     my	$self = shift;
 
-    return PreludeDB::prelude_sql_rollback($$self);
+    return (PreludeDB::prelude_sql_rollback($$self) < 0) ? 0 : 1;
 }
 
 
@@ -259,7 +253,7 @@ sub	close
 {
     my	$self = shift;
 
-    return PreludeDB::prelude_sql_close($$self);
+    return (PreludeDB::prelude_sql_close($$self) < 0) ? 0 : 1;
 }
 
 

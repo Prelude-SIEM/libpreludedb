@@ -1,6 +1,16 @@
 2003-07-09  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.pm:
+	return value of function like PreludeDB::init that returns an
+	integer to indicate if the function failed or not has changed:
+	before the changes, functions returned a value < 0 if the function failed
+	or a value >= 0 otherwise
+	now, the functions return 0 if the function failed or another value otherwise
+	this choice has been done to follow the perl's "conventions" in this domain
+
+2003-07-09  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
 	add a 1 (true value) at the end of the package's code
 
 	* plugins/format/classic/idmef-db-get.c:
