@@ -1,3 +1,13 @@
+2004-01-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-get.c:
+	(get_timestamp)
+	use idmef_time_set_db_timestamp
+	(*)
+	handle correctly NULL value: don't create empty object
+	for NULL value anymore
+	cleanup
+
 2004-01-01  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-insert.c:

@@ -45,22 +45,31 @@
 #define db_log(sql) log(LOG_ERR, "%s\n", prelude_sql_error(sql))
 #define log_memory_exhausted() log(LOG_ERR, "memory exhausted !\n")
 
-#define	get_(type, name)											\
-static int get_ ## name (prelude_sql_connection_t *sql, prelude_sql_row_t *row, int index, type *value)		\
-{														\
-	prelude_sql_field_t *field;										\
-														\
-	field = prelude_sql_field_fetch(row, index);								\
-	if ( ! field ) {											\
-		if ( prelude_sql_errno(sql) ) {									\
-			db_log(sql);										\
-			return -1;										\
-		}												\
-		*value = (type) 0;										\
-	} else													\
-		*value = prelude_sql_field_value_ ## name (field);						\
-														\
-	return 0;												\
+#define get_(type, name)								\
+static int _get_ ## name (prelude_sql_connection_t *sql, prelude_sql_row_t *row,	\
+			 int index,							\
+			 void *parent, type *(*parent_new_child)(void *parent))		\
+{											\
+	prelude_sql_field_t *field;							\
+	type *value;									\
+											\
+	field = prelude_sql_field_fetch(row, index);					\
+	if ( ! field ) {								\
+		if ( prelude_sql_errno(sql) ) {						\
+			db_log(sql);							\
+			return -1;							\
+		}									\
+											\
+		return 0;								\
+	}										\
+											\
+	value = parent_new_child(parent);						\
+	if ( ! value )									\
+		return -1;								\
+											\
+	*value = prelude_sql_field_value_ ## name (field);				\
+											\
+	return 1;									\
 }
 
 get_(uint16_t, uint16)
@@ -68,107 +77,32 @@ get_(uint32_t, uint32)
 get_(uint64_t, uint64)
 get_(float, float)
 
-static int get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
-				  int index, idmef_string_t **value)
-{
-	prelude_sql_field_t *field;
+#define get_uint16(sql, row, index, parent, parent_new_child) \
+	_get_uint16(sql, row, index, parent, (uint16_t *(*)(void *)) parent_new_child)
 
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
+#define get_uint32(sql, row, index, parent, parent_new_child) \
+	_get_uint32(sql, row, index, parent, (uint32_t *(*)(void *)) parent_new_child)
 
-		*value = idmef_string_new();
-	} else
-		*value = prelude_sql_field_value_string(field);
+#define get_uint64(sql, row, index, parent, parent_new_child) \
+	_get_uint64(sql, row, index, parent, (uint64_t *(*)(void *)) parent_new_child)
 
-	if ( ! *value ) {
-		log_memory_exhausted();
-		return -2;
-	}
+#define get_float(sql, row, index, parent, parent_new_child) \
+	_get_float(sql, row, index, parent, (float *(*)(void *)) parent_new_child)
 
-	return 0;
-}
 
-static int get_data(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
-		    int index, idmef_data_t **value)
+
+static int _get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+		       int index,
+		       void *parent, idmef_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_field_t *field;
 	const char *tmp;
+	idmef_string_t *string;
 
 	field = prelude_sql_field_fetch(row, index);
 	if ( ! field ) {
 		if ( prelude_sql_errno(sql) ) {
 			db_log(sql);
-			return -1;
-		}
-
-		*value = idmef_data_new();
-		if ( ! *value ) {
-			log_memory_exhausted();
-			return -2;
-		}
-
-		return 0;
-	}
-
-	tmp = prelude_sql_field_value(field);
-	if ( ! tmp )
-		return -3;
-
-	*value = idmef_data_new_dup(tmp, strlen(tmp) + 1);
-	if ( ! *value ) {
-		log_memory_exhausted();
-		return -4;
-	}
-
-	return 0;
-}
-
-static int get_enum(prelude_sql_connection_t *sql, prelude_sql_row_t *row, 
-		    int index, unsigned int *value, int (*convert_enum)(const char *))
-{
-	prelude_sql_field_t *field;
-	const char *tmp;
-
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
-
-		*value = 0;
-
-	} else {
-		tmp = prelude_sql_field_value(field);
-		if ( ! tmp )
-			return -2;
-
-		*value = convert_enum(tmp);
-	}
-
-	return 0;
-}
-
-static int get_ntp_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
-			     int index, idmef_time_t **time)
-{
-	prelude_sql_field_t *field;
-	const char *tmp;
-
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
-
-		*time = idmef_time_new();
-		if ( ! *time ) {
-			log_memory_exhausted();
 			return -1;
 		}
 
@@ -177,22 +111,25 @@ static int get_ntp_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *r
 
 	tmp = prelude_sql_field_value(field);
 	if ( ! tmp )
-		return -3;
+		return -1;
 
-	*time = idmef_time_new_ntp_timestamp(tmp);
-	if ( ! *time )
-		return -4;
+	string = parent_new_child(parent);
+	if ( ! string )
+		return -1;
 
-	return 0;
+	if ( idmef_string_set_dup(string, tmp) < 0 )
+		return -1;
+
+	return 1;
 }
 
-static int get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
-			 int index, idmef_time_t **time)
+static int _get_data(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+		     int index,
+		     void *parent, idmef_data_t *(parent_new_child)(void *parent))
 {
 	prelude_sql_field_t *field;
 	const char *tmp;
-	struct tm tm;
-	unsigned int sec;
+	idmef_data_t *data;
 
 	field = prelude_sql_field_fetch(row, index);
 	if ( ! field ) {
@@ -201,10 +138,36 @@ static int get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 			return -1;
 		}
 
-		*time = idmef_time_new();
-		if ( ! *time ) {
-			log_memory_exhausted();
-			return -2;
+		return 0;
+	}
+
+	tmp = prelude_sql_field_value(field);
+	if ( ! tmp )
+		return -1;
+
+	data = parent_new_child(parent);
+	if ( ! data )
+		return -1;
+
+	if ( idmef_data_set_dup(data, tmp, strlen(tmp) + 1) < 0 )
+		return -1;
+
+	return 1;
+}
+
+static int _get_enum(prelude_sql_connection_t *sql, prelude_sql_row_t *row, 
+		     int index,
+		     void *parent, int *(*parent_new_child)(void *parent), int (*convert_enum)(const char *))
+{
+	prelude_sql_field_t *field;
+	const char *tmp;
+	int *enum_val;
+
+	field = prelude_sql_field_fetch(row, index);
+	if ( ! field ) {
+		if ( prelude_sql_errno(sql) ) {
+			db_log(sql);
+			return -1;
 		}
 
 		return 0;
@@ -212,39 +175,106 @@ static int get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 
 	tmp = prelude_sql_field_value(field);
 	if ( ! tmp )
-		return -3;
+		return -1;
 
-	memset(&tm, 0, sizeof (tm));
+	enum_val = parent_new_child(parent);
+	if ( ! enum_val )
+		return -1;
 
-	if ( sscanf(tmp, "%d-%d-%d %d:%d:%d",
-		    &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) < 6 )
-		return -4;
+	*enum_val = convert_enum(tmp);
 
-	tm.tm_year -= 1900;
-	tm.tm_mon -= 1;
+	return 1;
+}
 
-	sec = mktime(&tm);
+static int _get_ntp_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+			      int index,
+			      void *parent, idmef_time_t *(*parent_new_child)(void *parent))
+{
+	prelude_sql_field_t *field;
+	const char *tmp;
+	idmef_time_t *time;
 
-	*time = idmef_time_new();
-	if ( ! *time ) {
-		log_memory_exhausted();
-		return -5;
+	field = prelude_sql_field_fetch(row, index);
+	if ( ! field ) {
+		if ( prelude_sql_errno(sql) ) {
+			db_log(sql);
+			return -1;
+		}
+
+		return 0;
 	}
 
-	idmef_time_set_sec(*time, sec);
+	tmp = prelude_sql_field_value(field);
+	if ( ! tmp )
+		return -1;
 
-	return 0;
+	time = parent_new_child(parent);
+	if ( ! time )
+		return -1;
+
+	if ( idmef_time_set_ntp_timestamp(time, tmp) < 0 )
+		return -1;
+
+	return 1;
 }
+
+static int _get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+			  int index,
+			  void *parent, idmef_time_t *(*parent_new_child)(void *parent))
+{
+	prelude_sql_field_t *field;
+	const char *tmp;
+	idmef_time_t *time;
+
+	field = prelude_sql_field_fetch(row, index);
+	if ( ! field ) {
+		if ( prelude_sql_errno(sql) ) {
+			db_log(sql);
+			return -1;
+		}
+
+		return 0;
+	}
+
+	tmp = prelude_sql_field_value(field);
+	if ( ! tmp )
+		return -1;
+
+	time = parent_new_child(parent);
+	if ( ! time )
+		return -1;
+
+	if ( idmef_time_set_db_timestamp(time, tmp) < 0 )
+		return -1;
+
+	return 1;
+}
+
+#define get_string(sql, row, index, parent, parent_new_child) \
+	_get_string(sql, row, index, parent, (idmef_string_t *(*)(void *)) parent_new_child)
+
+#define get_data(sql, row, index, parent, parent_new_child) \
+	_get_data(sql, row, index, parent, (idmef_data_t *(*)(void *)) parent_new_child)
+
+#define get_enum(sql, row, index, parent, parent_new_child, convert_enum) \
+	_get_enum(sql, row, index, parent, (int *(*)(void *)) parent_new_child, convert_enum)
+
+#define get_ntp_timestamp(sql, row, index, parent, parent_new_child) \
+	_get_ntp_timestamp(sql, row, index, parent, (idmef_time_t *(*)(void *)) parent_new_child)
+
+#define get_timestamp(sql, row, index, parent, parent_new_child) \
+	_get_timestamp(sql, row, index, parent, (idmef_time_t *(*)(void *)) parent_new_child)
+
+
 
 static int get_analyzer_time(prelude_sql_connection_t *sql,
 			     uint64_t parent_ident,
 			     char parent_type,
 			     void *parent,
-			     void (*parent_set_field)(void *, void *))
+			     idmef_time_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_time_t *analyzer_time = NULL;
 
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
@@ -266,20 +296,16 @@ static int get_analyzer_time(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_ntp_timestamp(sql, row, 0, &analyzer_time) < 0 )
+	if ( get_ntp_timestamp(sql, row, 0, parent, parent_new_child) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);
-	parent_set_field(parent, analyzer_time);
 
 	return 0;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( analyzer_time )
-		idmef_time_destroy(analyzer_time);
 
 	return -1;
 }
@@ -290,7 +316,6 @@ static int get_detect_time(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_time_t *detect_time = NULL;
 
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
@@ -312,20 +337,16 @@ static int get_detect_time(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_ntp_timestamp(sql, row, 0, &detect_time) < 0 )
+	if ( get_ntp_timestamp(sql, row, 0, alert, idmef_alert_new_detect_time) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);
-	idmef_alert_set_detect_time(alert, detect_time);
 
 	return 0;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( detect_time )
-		idmef_time_destroy(detect_time);
 
 	return -1;
 }
@@ -334,11 +355,10 @@ static int get_create_time(prelude_sql_connection_t *sql,
 			   uint64_t parent_ident,
 			   char parent_type,
 			   void *parent,
-			   void (*parent_set_field)(void *, void *))
+			   idmef_time_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_time_t *create_time = NULL;
 
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
@@ -360,20 +380,16 @@ static int get_create_time(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_ntp_timestamp(sql, row, 0, &create_time) < 0 )
+	if ( get_ntp_timestamp(sql, row, 0, parent, parent_new_child) < 0 )
 		goto error;
 
 	prelude_sql_table_free(table);
-	parent_set_field(parent, create_time);
 
 	return 0;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( create_time )
-		idmef_time_destroy(create_time);
 
 	return -1;
 }
@@ -383,14 +399,11 @@ static int get_userid(prelude_sql_connection_t *sql,
 		      uint64_t parent_ident,
 		      char parent_type,
 		      void *parent,
-		      void (*parent_set_field)(void *, void *))
+		      idmef_userid_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_userid_t *userid = NULL;
-	idmef_userid_type_t type;
-        idmef_string_t *name;
-        uint32_t number;
+	idmef_userid_t *userid;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -409,25 +422,18 @@ static int get_userid(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		userid = idmef_userid_new();
-		if ( ! userid ) {
-			log_memory_exhausted();
+		userid = parent_new_child(parent);
+		if ( ! userid )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &type, idmef_userid_type_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, userid, idmef_userid_new_type, idmef_userid_type_to_numeric) < 0 )
 			goto error;
-		idmef_userid_set_type(userid, type);
 
-		if ( get_string(sql, row, 1, &name) < 0 )
+		if ( get_string(sql, row, 1, userid, idmef_userid_new_name) < 0 )
 			goto error;
-		idmef_userid_set_name(userid, name);
 
-		if ( get_uint32(sql, row, 2, &number) )
+		if ( get_uint32(sql, row, 2, userid, idmef_userid_new_number) )
 			goto error;
-		idmef_userid_set_number(userid, number);
-
-		parent_set_field(parent, userid);
 
 		cnt++;
 	}
@@ -440,10 +446,7 @@ static int get_userid(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( userid )
-		idmef_userid_destroy(userid);
-
-	return -1;	
+	return -1;
 }
 
 static int get_user(prelude_sql_connection_t *sql,
@@ -451,12 +454,11 @@ static int get_user(prelude_sql_connection_t *sql,
 		    uint64_t parent_ident,
 		    char parent_type,
 		    void *parent,
-		    void (*parent_set_field)(void *, void *))
+		    idmef_user_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_user_t *user = NULL;
-	idmef_user_category_t category;
+	idmef_user_t *user;
 
 	table = prelude_sql_query(sql,
 				  "SELECT category "
@@ -479,31 +481,24 @@ static int get_user(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	user = idmef_user_new();
-	if ( ! user ) {
-		log_memory_exhausted();
+	user = parent_new_child(parent);
+	if ( ! user )
 		goto error;
-	}
 
-	if ( get_enum(sql, row, 0, &category, idmef_user_category_to_numeric) < 0 )
+	if ( get_enum(sql, row, 0, user, idmef_user_new_category, idmef_user_category_to_numeric) < 0 )
 		goto error;
-	idmef_user_set_category(user, category);
 
 	prelude_sql_table_free(table);
 
-	if ( get_userid(sql, alert_ident, parent_ident, parent_type, user, (void (*)(void *, void *)) idmef_user_set_userid) < 0 )
+	if ( get_userid(sql, alert_ident, parent_ident, parent_type, user,
+			(idmef_userid_t *(*)(void *)) idmef_user_new_userid) < 0 )
 		goto error;
-
-	parent_set_field(parent, user);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( user )
-		idmef_user_destroy(user);
 
 	return -1;	
 }
@@ -513,11 +508,10 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 			   uint64_t parent_ident,
 			   char parent_type,
 			   void *parent,
-			   void (*parent_set_field)(void *, void *))
+			   idmef_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_string_t *arg = NULL;
 	int cnt = 0;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
@@ -544,10 +538,8 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		if ( get_string(sql, row, 0, &arg) < 0 )
+		if ( get_string(sql, row, 0, parent, parent_new_child) < 0 )
 			goto error;
-
-		parent_set_field(parent, arg);
 
 		cnt++;
 	}
@@ -559,9 +551,6 @@ static int get_process_arg(prelude_sql_connection_t *sql,
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( arg )
-		idmef_string_destroy(arg);
 
 	return -1;
 }
@@ -571,11 +560,10 @@ static int get_process_env(prelude_sql_connection_t *sql,
 			   uint64_t parent_ident,
 			   char parent_type,
 			   void *parent,
-			   void (*parent_set_field)(void *, void *))
+			   idmef_string_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_string_t *env = NULL;
 	int cnt = 0;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
@@ -602,10 +590,8 @@ static int get_process_env(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		if ( get_string(sql, row, 0, &env) < 0 )
+		if ( get_string(sql, row, 0, parent, parent_new_child) < 0 )
 			goto error;
-
-		parent_set_field(parent, env);
 
 		cnt++;
 	}
@@ -618,9 +604,6 @@ static int get_process_env(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( env )
-		idmef_string_destroy(env);
-
 	return -1;
 }
 
@@ -629,14 +612,11 @@ static int get_process(prelude_sql_connection_t *sql,
 		       uint64_t parent_ident,
 		       char parent_type,
 		       void *parent,
-		       void (*parent_set_field)(void *, void *))
+		       idmef_process_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_process_t *process = NULL;
-	idmef_string_t *name;
-        uint32_t pid;
-        idmef_string_t *path;
+	idmef_process_t *process;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
 		table = prelude_sql_query(sql,
@@ -666,42 +646,34 @@ static int get_process(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	process = idmef_process_new();
-	if ( ! process ) {
-		log_memory_exhausted();
+	process = parent_new_child(parent);
+	if ( ! process )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &name) < 0 )
+	if ( get_string(sql, row, 0, process, idmef_process_new_name) < 0 )
 		goto error;
-	idmef_process_set_name(process, name);
 
-	if ( get_uint32(sql, row, 1, &pid) < 0 )
+	if ( get_uint32(sql, row, 1, process, idmef_process_new_pid) < 0 )
 		goto error;
-	idmef_process_set_pid(process, pid);
 
-	if ( get_string(sql, row, 2, &path) < 0 )
+	if ( get_string(sql, row, 2, process, idmef_process_new_path) < 0 )
 		goto error;
-	idmef_process_set_path(process, path);
 
 	prelude_sql_table_free(table);
 
-	if ( get_process_arg(sql, alert_ident, parent_ident, parent_type, process, (void (*)(void *, void *)) idmef_process_set_arg) < 0 )
+	if ( get_process_arg(sql, alert_ident, parent_ident, parent_type, process,
+			     (idmef_string_t *(*)(void *)) idmef_process_new_arg) < 0 )
 		goto error;
 	
-	if ( get_process_env(sql, alert_ident, parent_ident, parent_type, process, (void (*)(void *, void *)) idmef_process_set_env) < 0 )
+	if ( get_process_env(sql, alert_ident, parent_ident, parent_type, process,
+			     (idmef_string_t *(*)(void *)) idmef_process_new_env) < 0 )
 		goto error;
-	
-	parent_set_field(parent, process);
 
 	return 1;
 	
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( process )
-		idmef_process_destroy(process);
 
 	return -1;
 }
@@ -714,7 +686,6 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_string_t *arg = NULL;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -733,10 +704,8 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		if ( get_string(sql, row, 0, &arg) < 0 )
+		if ( get_string(sql, row, 0, webservice, idmef_webservice_new_arg) < 0 )
 			goto error;
-
-		idmef_webservice_set_arg(webservice, arg);
 
 		cnt++;
 	}
@@ -749,8 +718,6 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( arg )
-		idmef_string_destroy(arg);
 
 	return -1;
 }
@@ -763,10 +730,7 @@ static int get_webservice(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_webservice_t *webservice = NULL;
-	idmef_string_t *url;
-        idmef_string_t *cgi;
-        idmef_string_t *http_method;
+	idmef_webservice_t *webservice;
 
 	table = prelude_sql_query(sql,
 				  "SELECT url, cgi, http_method "
@@ -788,23 +752,18 @@ static int get_webservice(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	webservice = idmef_webservice_new();
-	if ( ! webservice ) {
-		log_memory_exhausted();
+	webservice = idmef_service_new_web(service);
+	if ( ! webservice )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &url) < 0 )
+	if ( get_string(sql, row, 0, webservice, idmef_webservice_new_url) < 0 )
 		goto error;
-	idmef_webservice_set_url(webservice, url);
 
-	if ( get_string(sql, row, 1, &cgi) < 0 )
+	if ( get_string(sql, row, 1, webservice, idmef_webservice_new_cgi) < 0 )
 		goto error;
-	idmef_webservice_set_cgi(webservice, cgi);
 
-	if ( get_string(sql, row, 2, &http_method) < 0 )
+	if ( get_string(sql, row, 2, webservice, idmef_webservice_new_http_method) < 0 )
 		goto error;
-	idmef_webservice_set_http_method(webservice, http_method);
 
 	prelude_sql_table_free(table);
 	table = NULL;
@@ -812,16 +771,11 @@ static int get_webservice(prelude_sql_connection_t *sql,
 	if ( get_webservice_arg(sql, alert_ident, parent_ident, parent_type, webservice) < 0 )
 		goto error;
 
-	idmef_service_set_web(service, webservice);
-
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( webservice )
-		idmef_webservice_destroy(webservice);
 
 	return -1;
 }
@@ -834,10 +788,7 @@ static int get_snmpservice(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_snmpservice_t *snmpservice = NULL;
-	idmef_string_t *oid;
-        idmef_string_t *community;
-        idmef_string_t *command;
+	idmef_snmpservice_t *snmpservice;
 
 	table = prelude_sql_query(sql,
 				  "SELECT oid, community, command "
@@ -859,35 +810,26 @@ static int get_snmpservice(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	snmpservice = idmef_snmpservice_new();
-	if ( ! snmpservice ) {
-		log_memory_exhausted();
+	snmpservice = idmef_service_new_snmp(service);
+	if ( ! snmpservice )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &oid) < 0 )
+	if ( get_string(sql, row, 0, snmpservice, idmef_snmpservice_new_oid) < 0 )
 		goto error;
-	idmef_snmpservice_set_oid(snmpservice, oid);
 
-	if ( get_string(sql, row, 1, &community) < 0 )
+	if ( get_string(sql, row, 1, snmpservice, idmef_snmpservice_new_community) < 0 )
 		goto error;
-	idmef_snmpservice_set_community(snmpservice, community);
 
-	if ( get_string(sql, row, 2, &command) < 0 )
+	if ( get_string(sql, row, 2, snmpservice, idmef_snmpservice_new_command) < 0 )
 		goto error;
-	idmef_snmpservice_set_command(snmpservice, command);
 
 	prelude_sql_table_free(table);
-	idmef_service_set_snmp(service, snmpservice);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( snmpservice )
-		idmef_snmpservice_destroy(snmpservice);
 
 	return -1;
 }
@@ -900,7 +842,6 @@ static int get_service_portlist(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_string_t *portlist = NULL;
 
 	table = prelude_sql_query(sql,
 				  "SELECT portlist "
@@ -922,9 +863,8 @@ static int get_service_portlist(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	if ( get_string(sql, row, 0, &portlist) < 0 )
+	if ( get_string(sql, row, 0, service, idmef_service_new_portlist) < 0 )
 		goto error;
-	idmef_service_set_portlist(service, portlist);
 
 	prelude_sql_table_free(table);
 
@@ -934,9 +874,6 @@ static int get_service_portlist(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( portlist )
-		idmef_string_destroy(portlist);
-
 	return -1;
 }
 
@@ -945,14 +882,11 @@ static int get_service(prelude_sql_connection_t *sql,
 		       uint64_t parent_ident,
 		       char parent_type,
 		       void *parent,
-		       void (*parent_set_field)(void *, void *))
+		       idmef_service_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_service_t *service = NULL;
-	idmef_string_t *name;
-        uint16_t port;
-        idmef_string_t *protocol;
+	idmef_service_t *service;
 
 	table = prelude_sql_query(sql,
 				  "SELECT name, port, protocol "
@@ -974,23 +908,18 @@ static int get_service(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	service = idmef_service_new();
-	if ( ! service ) {
-		log_memory_exhausted();
+	service = parent_new_child(parent);
+	if ( ! service )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &name) < 0 )
+	if ( get_string(sql, row, 0, service, idmef_service_new_name) < 0 )
 		goto error;
-	idmef_service_set_name(service, name);
 
-	if ( get_uint16(sql, row, 1, &port) < 0 )
+	if ( get_uint16(sql, row, 1, service, idmef_service_new_port) < 0 )
 		goto error;
-	idmef_service_set_port(service, port);
 
-	if ( get_string(sql, row, 2, &protocol) < 0 )
+	if ( get_string(sql, row, 2, service, idmef_service_new_protocol) < 0 )
 		goto error;
-	idmef_service_set_protocol(service, protocol);
 
 	prelude_sql_table_free(table);
 	table = NULL;
@@ -1004,16 +933,11 @@ static int get_service(prelude_sql_connection_t *sql,
 	if ( get_snmpservice(sql, alert_ident, parent_ident, parent_type, service) < 0 )
 		goto error;
 
-	parent_set_field(parent, service);
-
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( service )
-		idmef_service_destroy(service);
 
 	return -1;
 }
@@ -1023,16 +947,11 @@ static int get_address(prelude_sql_connection_t *sql,
 		       uint64_t parent_ident,
 		       char parent_type,
 		       void *parent,
-		       void (*parent_set_field)(void *, void *))
+		       idmef_address_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_address_t *idmef_address = NULL;
-	idmef_address_category_t category;
-        idmef_string_t *vlan_name;
-        uint32_t vlan_num;
-        idmef_string_t *address;
-        idmef_string_t *netmask;
+	idmef_address_t *idmef_address;
 	int cnt = 0;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
@@ -1059,33 +978,24 @@ static int get_address(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		idmef_address = idmef_address_new();
-		if ( ! idmef_address ) {
-			log_memory_exhausted();
+		idmef_address = parent_new_child(parent);
+		if ( ! idmef_address )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &category, idmef_address_category_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, idmef_address, idmef_address_new_category, idmef_address_category_to_numeric) < 0 )
 			goto error;
-		idmef_address_set_category(idmef_address, category);
 
-		if ( get_string(sql, row, 1, &vlan_name) < 0 )
+		if ( get_string(sql, row, 1, idmef_address, idmef_address_new_vlan_name) < 0 )
 			goto error;
-		idmef_address_set_vlan_name(idmef_address, vlan_name);
 
-		if ( get_uint32(sql, row, 2, &vlan_num) < 0 )
+		if ( get_uint32(sql, row, 2, idmef_address, idmef_address_new_vlan_num) < 0 )
 			goto error;
-		idmef_address_set_vlan_num(idmef_address, vlan_num);
 
-		if ( get_string(sql, row, 3, &address) < 0 )
+		if ( get_string(sql, row, 3, idmef_address, idmef_address_new_address) < 0 )
 			goto error;
-		idmef_address_set_address(idmef_address, address);
 
-		if ( get_string(sql, row, 4, &netmask) < 0 )
+		if ( get_string(sql, row, 4, idmef_address, idmef_address_new_netmask) < 0 )
 			goto error;
-		idmef_address_set_netmask(idmef_address, netmask);
-
-		parent_set_field(parent, idmef_address);
 
 		cnt++;
 	}
@@ -1098,9 +1008,6 @@ static int get_address(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( idmef_address )
-		idmef_address_destroy(idmef_address);
-
 	return -1;
 }
 
@@ -1109,14 +1016,11 @@ static int get_node(prelude_sql_connection_t *sql,
 		    uint64_t parent_ident,
 		    char parent_type,
 		    void *parent,
-		    void (*parent_set_field)(void *, void *))
+		    idmef_node_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_node_t *node = NULL;
-	idmef_node_category_t category;
-        idmef_string_t *location;
-        idmef_string_t *name;
+	idmef_node_t *node;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
 		table = prelude_sql_query(sql,
@@ -1146,40 +1050,31 @@ static int get_node(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	node = idmef_node_new();
-	if ( ! node ) {
-		log_memory_exhausted();
+	node = parent_new_child(parent);
+	if ( ! node )
 		goto error;
-	}
 
-	if ( get_enum(sql, row, 0, &category, idmef_node_category_to_numeric) < 0 )
+	if ( get_enum(sql, row, 0, node, idmef_node_new_category, idmef_node_category_to_numeric) < 0 )
 		goto error;
-	idmef_node_set_category(node, category);
 
-	if ( get_string(sql, row, 1, &location) < 0 )
+	if ( get_string(sql, row, 1, node, idmef_node_new_location) < 0 )
 		goto error;
-	idmef_node_set_location(node, location);
 
-	if ( get_string(sql, row, 2, &name) < 0 )
+	if ( get_string(sql, row, 2, node, idmef_node_new_name) < 0 )
 		goto error;
-	idmef_node_set_name(node, name);
 
 	prelude_sql_table_free(table);
 	table = NULL;
 
-	if ( get_address(sql, alert_ident, parent_ident, parent_type, node, (void (*)(void *, void *)) idmef_node_set_address) < 0 )
+	if ( get_address(sql, alert_ident, parent_ident, parent_type, node,
+			 (idmef_address_t *(*)(void *)) idmef_node_new_address) < 0 )
 		goto error;
-
-	parent_set_field(parent, node);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( node )
-		idmef_node_destroy(node);
 
 	return -1;
 }
@@ -1188,18 +1083,11 @@ static int get_analyzer(prelude_sql_connection_t *sql,
 			uint64_t ident,
 			char parent_type,
 			void *parent,
-			void (*parent_set_field)(void *, void *))
+			idmef_analyzer_t *(*parent_new_child)(void *parent))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_analyzer_t *analyzer = NULL;
-	uint64_t analyzerid;
-        idmef_string_t *manufacturer;
-        idmef_string_t *model;
-        idmef_string_t *version;
-        idmef_string_t *class;
-        idmef_string_t *ostype;
-        idmef_string_t *osversion;
+	idmef_analyzer_t *analyzer;
 
 	table = prelude_sql_query(sql,
 				  "SELECT analyzerid, manufacturer, model, version, class, ostype, osversion "
@@ -1221,59 +1109,47 @@ static int get_analyzer(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	analyzer = idmef_analyzer_new();
-	if ( ! analyzer ) {
-		log_memory_exhausted();
+	analyzer = parent_new_child(parent);
+	if ( ! analyzer )
 		goto error;
-	}
 
-	if ( get_uint64(sql, row, 0, &analyzerid) < 0 )
+	if ( get_uint64(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid) < 0 )
 		goto error;
-	idmef_analyzer_set_analyzerid(analyzer, analyzerid);
 
-	if ( get_string(sql, row, 1, &manufacturer) < 0 )
+	if ( get_string(sql, row, 1, analyzer, idmef_analyzer_new_manufacturer) < 0 )
 		goto error;
-	idmef_analyzer_set_manufacturer(analyzer, manufacturer);
 
-	if ( get_string(sql, row, 2, &model) < 0 )
+	if ( get_string(sql, row, 2, analyzer, idmef_analyzer_new_model) < 0 )
 		goto error;
-	idmef_analyzer_set_model(analyzer, model);
 
-	if ( get_string(sql, row, 3, &version) < 0 )
+	if ( get_string(sql, row, 3, analyzer, idmef_analyzer_new_version) < 0 )
 		goto error;
-	idmef_analyzer_set_version(analyzer, version);
 
-	if ( get_string(sql, row, 4, &class) < 0 )
+	if ( get_string(sql, row, 4, analyzer, idmef_analyzer_new_class) < 0 )
 		goto error;
-	idmef_analyzer_set_class(analyzer, class);
 
-	if ( get_string(sql, row, 5, &ostype) < 0 )
+	if ( get_string(sql, row, 5, analyzer, idmef_analyzer_new_ostype) < 0 )
 		goto error;
-	idmef_analyzer_set_ostype(analyzer, ostype);
 
-	if ( get_string(sql, row, 6, &osversion) < 0 )
+	if ( get_string(sql, row, 6, analyzer, idmef_analyzer_new_osversion) < 0 )
 		goto error;
-	idmef_analyzer_set_osversion(analyzer, osversion);
 
 	prelude_sql_table_free(table);
 	table = NULL;
 
-	if ( get_node(sql, ident, 0, parent_type, analyzer, (void (*)(void *, void *)) idmef_analyzer_set_node) < 0 )
+	if ( get_node(sql, ident, 0, parent_type, analyzer,
+		      (idmef_node_t *(*)(void *)) idmef_analyzer_new_node) < 0 )
 		goto error;
 
-	if ( get_process(sql, ident, 0, parent_type, analyzer, (void (*)(void *, void *)) idmef_analyzer_set_process) < 0 )
+	if ( get_process(sql, ident, 0, parent_type, analyzer,
+			 (idmef_process_t *(*)(void *)) idmef_analyzer_new_process) < 0 )
 		goto error;
-
-	parent_set_field(parent, analyzer);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( analyzer )
-		idmef_analyzer_destroy(analyzer);
 
 	return -1;
 }
@@ -1284,9 +1160,7 @@ static int get_action(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_action_t *action = NULL;
-	idmef_action_category_t category;
-	idmef_string_t *description;
+	idmef_action_t *action;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -1305,21 +1179,15 @@ static int get_action(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		action = idmef_action_new();
-		if ( ! action ) {
-			log_memory_exhausted();
+		action = idmef_assessment_new_action(assessment);
+		if ( ! action )
 			goto error;
-		}
-		
-		if ( get_enum(sql, row, 0, &category, idmef_action_category_to_numeric) < 0 )
-			goto error;
-		idmef_action_set_category(action, category);
 
-		if ( get_string(sql, row, 1, &description) < 0 )
+		if ( get_enum(sql, row, 0, action, idmef_action_new_category, idmef_action_category_to_numeric) < 0 )
 			goto error;
-		idmef_action_set_description(action, description);
 
-		idmef_assessment_set_action(assessment, action);
+		if ( get_string(sql, row, 1, action, idmef_action_new_description) < 0 )
+			goto error;
 
 		cnt++;
 	}
@@ -1332,9 +1200,6 @@ static int get_action(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( action )
-		idmef_action_destroy(action);
-
 	return -1;
 	
 }
@@ -1345,9 +1210,7 @@ static int get_confidence(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_confidence_t *idmef_confidence = NULL;
-	idmef_confidence_rating_t rating;
-        float confidence;
+	idmef_confidence_t *confidence;
 
 	table = prelude_sql_query(sql,
 				  "SELECT rating, confidence "
@@ -1369,31 +1232,23 @@ static int get_confidence(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	idmef_confidence = idmef_confidence_new();
-	if ( ! idmef_confidence ) {
-		log_memory_exhausted();
+	confidence = idmef_assessment_new_confidence(assessment);
+	if ( ! confidence )
 		goto error;
-	}
 
-	if ( get_enum(sql, row, 0, &rating, idmef_confidence_rating_to_numeric) < 0 )
+	if ( get_enum(sql, row, 0, confidence, idmef_confidence_new_rating, idmef_confidence_rating_to_numeric) < 0 )
 		goto error;
-	idmef_confidence_set_rating(idmef_confidence, rating);
 
-	if ( get_float(sql, row, 1, &confidence) < 0 )
+	if ( get_float(sql, row, 1, confidence, idmef_confidence_new_confidence) < 0 )
 		goto error;
-	idmef_confidence_set_confidence(idmef_confidence, confidence);
 
 	prelude_sql_table_free(table);
-	idmef_assessment_set_confidence(assessment, idmef_confidence);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( idmef_confidence )
-		idmef_confidence_destroy(idmef_confidence);
 
 	return -1;
 }
@@ -1404,11 +1259,7 @@ static int get_impact(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_impact_t *impact = NULL;
-	idmef_impact_severity_t severity;
-        idmef_impact_completion_t completion;
-        idmef_impact_type_t type;
-        idmef_string_t *description;
+	idmef_impact_t *impact;
 
 	table = prelude_sql_query(sql, 
 				  "SELECT severity, completion, type, description "
@@ -1430,41 +1281,29 @@ static int get_impact(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	impact = idmef_impact_new();
-	if ( ! impact ) {
-		log_memory_exhausted();
+	impact = idmef_assessment_new_impact(assessment);
+	if ( ! impact )
 		goto error;
-	}
 
-	if ( get_enum(sql, row, 0, &severity, idmef_impact_severity_to_numeric) < 0  )
+	if ( get_enum(sql, row, 0, impact, idmef_impact_new_severity, idmef_impact_severity_to_numeric) < 0  )
 		goto error;
-	idmef_impact_set_severity(impact, severity);
-	
 
-	if ( get_enum(sql, row, 1, &completion, idmef_impact_completion_to_numeric) < 0 )
+	if ( get_enum(sql, row, 1, impact, idmef_impact_new_completion, idmef_impact_completion_to_numeric) < 0 )
 		goto error;
-	idmef_impact_set_completion(impact, completion);
 
-
-	if ( get_enum(sql, row, 2, &type, idmef_impact_type_to_numeric) < 0 )
+	if ( get_enum(sql, row, 2, impact, idmef_impact_new_type, idmef_impact_type_to_numeric) < 0 )
 		goto error;
-	idmef_impact_set_type(impact, type);
 
-	if ( get_string(sql, row, 3, &description) < 0 )
+	if ( get_string(sql, row, 3, impact, idmef_impact_new_description) < 0 )
 		goto error;
-	idmef_impact_set_description(impact, description);
 
 	prelude_sql_table_free(table);
-	idmef_assessment_set_impact(assessment, impact);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( impact )
-		idmef_impact_destroy(impact);
 
 	return -1;
 }
@@ -1474,7 +1313,7 @@ static int get_assessment(prelude_sql_connection_t *sql,
 			  idmef_alert_t *alert)
 {
 	prelude_sql_table_t *table;
-	idmef_assessment_t *assessment = NULL;
+	idmef_assessment_t *assessment;
 
 	table = prelude_sql_query(sql,
 				  "SELECT alert_ident "
@@ -1492,11 +1331,9 @@ static int get_assessment(prelude_sql_connection_t *sql,
 
 	prelude_sql_table_free(table);
 
-	assessment = idmef_assessment_new();
-	if ( ! assessment ) {
-		log_memory_exhausted();
+	assessment = idmef_alert_new_assessment(alert);
+	if ( ! assessment )
 		goto error;
-	}
 
 	if ( get_impact(sql, ident, assessment) < 0 )
 		goto error;
@@ -1507,14 +1344,9 @@ static int get_assessment(prelude_sql_connection_t *sql,
 	if ( get_action(sql, ident, assessment) < 0 )
 		goto error;
 
-	idmef_alert_set_assessment(alert, assessment);
-
 	return 1;
 
  error:
-	if ( assessment )
-		idmef_assessment_destroy(assessment);
-
 	return -1;
 }
 
@@ -1527,7 +1359,7 @@ static int get_file_access(prelude_sql_connection_t *sql,
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
-	idmef_file_access_t *file_access = NULL;
+	idmef_file_access_t *file_access;
 	int file_access_num;
 	int cnt;
 
@@ -1564,11 +1396,9 @@ static int get_file_access(prelude_sql_connection_t *sql,
 
 	for ( cnt = 0; cnt < file_access_num; cnt++ ) {
 
-		file_access = idmef_file_access_new();
-		if ( ! file_access ) {
-			log_memory_exhausted();
+		file_access = idmef_file_new_file_access(file);
+		if ( ! file_access )
 			goto error;
-		}
 
 		/*
 		 * FIXME: that seems impossible to fetch userid the right way
@@ -1588,9 +1418,6 @@ static int get_file_access(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( file_access )
-		idmef_file_access_destroy(file_access);
-
 	return -1;
 }
 
@@ -1602,10 +1429,7 @@ static int get_linkage(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_linkage_t *linkage = NULL;
-	idmef_linkage_category_t category;
-        idmef_string_t *name;
-        idmef_string_t *path;
+	idmef_linkage_t *linkage;
 	int cnt;
 
 	table = prelude_sql_query(sql,
@@ -1624,25 +1448,18 @@ static int get_linkage(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		linkage = idmef_linkage_new();
-		if ( ! linkage ) {
-			log_memory_exhausted();
-			return -1;
-		}
-
-		if ( get_enum(sql, row, 0, &category, idmef_linkage_category_to_numeric) < 0 )
+		linkage = idmef_file_new_file_linkage(file);
+		if ( ! linkage )
 			goto error;
-		idmef_linkage_set_category(linkage, category);
 
-		if ( get_string(sql, row, 1, &name) < 0 )
+		if ( get_enum(sql, row, 0, linkage, idmef_linkage_new_category, idmef_linkage_category_to_numeric) < 0 )
 			goto error;
-		idmef_linkage_set_name(linkage, name);
 
-		if ( get_string(sql, row, 2, &path) < 0 )
+		if ( get_string(sql, row, 1, linkage, idmef_linkage_new_name) < 0 )
 			goto error;
-		idmef_linkage_set_path(linkage, path);
 
-		idmef_file_set_file_linkage(file, linkage);
+		if ( get_string(sql, row, 2, linkage, idmef_linkage_new_path) < 0 )
+			goto error;
 	}
 
 	prelude_sql_table_free(table);
@@ -1670,9 +1487,6 @@ static int get_linkage(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( linkage )
-		idmef_linkage_destroy(linkage);
-
 	return -1;
 }
 
@@ -1684,13 +1498,7 @@ static int get_inode(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_inode_t *inode = NULL;
-	idmef_time_t *change_time;
-        uint32_t number;
-        uint32_t major_device;
-        uint32_t minor_device;
-        uint32_t c_major_device;
-        uint32_t c_minor_device;
+	idmef_inode_t *inode;
 
 	table = prelude_sql_query(sql,
 				  "SELECT change_time, number, major_device, minor_device, c_major_device, c_minor_device "
@@ -1712,47 +1520,35 @@ static int get_inode(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	inode = idmef_inode_new();
-	if ( ! inode ) {
-		log_memory_exhausted();
+	inode = idmef_file_new_inode(file);
+	if ( ! inode )
 		goto error;
-	}
 
-	if ( get_timestamp(sql, row, 0, &change_time) < 0 )
+	if ( get_timestamp(sql, row, 0, inode, idmef_inode_new_change_time) < 0 )
 		goto error;
-	idmef_inode_set_change_time(inode, change_time);
 
-	if ( get_uint32(sql, row, 1, &number) < 0 )
+	if ( get_uint32(sql, row, 1, inode, idmef_inode_new_number) < 0 )
 		goto error;
-	idmef_inode_set_number(inode, number);
 
-	if ( get_uint32(sql, row, 2, &major_device) < 0 )
+	if ( get_uint32(sql, row, 2, inode, idmef_inode_new_major_device) < 0 )
 		goto error;
-	idmef_inode_set_major_device(inode, major_device);
 
-	if ( get_uint32(sql, row, 3, &minor_device) < 0 )
+	if ( get_uint32(sql, row, 3, inode, idmef_inode_new_minor_device) < 0 )
 		goto error;
-	idmef_inode_set_minor_device(inode, minor_device);
 
-	if ( get_uint32(sql, row, 4, &c_major_device) < 0 )
+	if ( get_uint32(sql, row, 4, inode, idmef_inode_new_c_major_device) < 0 )
 		goto error;
-	idmef_inode_set_c_major_device(inode, c_major_device);
 
-	if ( get_uint32(sql, row, 5, &c_minor_device) < 0 )
+	if ( get_uint32(sql, row, 5, inode, idmef_inode_new_c_minor_device) < 0 )
 		goto error;
-	idmef_inode_set_c_minor_device(inode, c_minor_device);
 
 	prelude_sql_table_free(table);
-	idmef_file_set_inode(file, inode);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( inode )
-		idmef_inode_destroy(inode);
 
 	return -1;
 }
@@ -1765,14 +1561,6 @@ static int get_file(prelude_sql_connection_t *sql,
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
 	idmef_file_t *file = NULL;
-	idmef_file_category_t category;
-        idmef_string_t *name;
-        idmef_string_t *path;
-        idmef_time_t *create_time;
-        idmef_time_t *modify_time;
-        idmef_time_t *access_time;
-        uint32_t data_size;
-        uint32_t disk_size;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -1791,45 +1579,33 @@ static int get_file(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		file = idmef_file_new();
-		if ( ! file ) {
-			log_memory_exhausted();
+		file = idmef_target_new_file(target);
+		if ( ! file )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &category, idmef_file_category_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, file, idmef_file_new_category, idmef_file_category_to_numeric) < 0 )
 			goto error;
-		idmef_file_set_category(file, category);
 
-		if ( get_string(sql, row, 1, &name) < 0 )
+		if ( get_string(sql, row, 1, file, idmef_file_new_name) < 0 )
 			goto error;
-		idmef_file_set_name(file, name);
 
-		if ( get_string(sql, row, 2, &path) < 0 )
+		if ( get_string(sql, row, 2, file, idmef_file_new_path) < 0 )
 			goto error;
-		idmef_file_set_path(file, path);
 
-		if ( get_timestamp(sql, row, 3, &create_time) < 0 )
+		if ( get_timestamp(sql, row, 3, file, idmef_file_new_create_time) < 0 )
 			goto error;
-		idmef_file_set_create_time(file, create_time);
 
-		if ( get_timestamp(sql, row, 4, &modify_time) < 0 )
+		if ( get_timestamp(sql, row, 4, file, idmef_file_new_modify_time) < 0 )
 			goto error;
-		idmef_file_set_modify_time(file, modify_time);
 
-		if ( get_timestamp(sql, row, 5, &access_time) < 0 )
+		if ( get_timestamp(sql, row, 5, file, idmef_file_new_access_time) < 0 )
 			goto error;
-		idmef_file_set_access_time(file, access_time);
 
-		if ( get_uint32(sql, row, 6, &data_size) < 0 )
+		if ( get_uint32(sql, row, 6, file, idmef_file_new_data_size) < 0 )
 			goto error;
-		idmef_file_set_data_size(file, data_size);
 
-		if ( get_uint32(sql, row, 7, &disk_size) < 0 )
+		if ( get_uint32(sql, row, 7, file, idmef_file_new_disk_size) < 0 )
 			goto error;
-		idmef_file_set_disk_size(file, disk_size);
-
-		idmef_target_set_file(target, file);
 
 		cnt++;
 	}
@@ -1860,9 +1636,6 @@ static int get_file(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( file )
-		idmef_file_destroy(file);
-
 	return -1;
 }
 
@@ -1872,9 +1645,7 @@ static int get_source(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_source_t *source = NULL;
-	idmef_spoofed_t spoofed;
-	idmef_string_t *interface;
+	idmef_source_t *source;
 	int cnt;
 
 	table = prelude_sql_query(sql,
@@ -1893,21 +1664,15 @@ static int get_source(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		source = idmef_source_new();
-		if ( ! source ) {
-			log_memory_exhausted();
+		source = idmef_alert_new_source(alert);
+		if ( ! source )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &spoofed, idmef_spoofed_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, source, idmef_source_new_spoofed, idmef_spoofed_to_numeric) < 0 )
 			goto error;
-		idmef_source_set_spoofed(source, spoofed);
 
-		if ( get_string(sql, row, 1, &interface) < 0 )
+		if ( get_string(sql, row, 1, source, idmef_source_new_interface) < 0 )
 			goto error;
-		idmef_source_set_interface(source, interface);
-
-		idmef_alert_set_source(alert, source);
 	}
 
 	prelude_sql_table_free(table);
@@ -1918,16 +1683,16 @@ static int get_source(prelude_sql_connection_t *sql,
 
 	while ( (source = idmef_alert_get_next_source(alert, source)) ) {
 
-		if ( get_node(sql, ident, cnt, 'S', source, (void (*)(void *, void *)) idmef_source_set_node) < 0 )
+		if ( get_node(sql, ident, cnt, 'S', source, (idmef_node_t *(*)(void *)) idmef_source_new_node) < 0 )
 			goto error;
 
-		if ( get_user(sql, ident, cnt, 'S', source, (void (*)(void *, void *)) idmef_source_set_user) < 0 )
+		if ( get_user(sql, ident, cnt, 'S', source, (idmef_user_t *(*)(void *)) idmef_source_new_user) < 0 )
 			goto error;
 
-		if ( get_process(sql, ident, cnt, 'S', source, (void (*)(void *, void *)) idmef_source_set_process) < 0 )
+		if ( get_process(sql, ident, cnt, 'S', source, (idmef_process_t *(*)(void *)) idmef_source_new_process) < 0 )
 			goto error;
 
-		if ( get_service(sql, ident, cnt, 'S', source, (void (*)(void *, void *)) idmef_source_set_service) < 0 )
+		if ( get_service(sql, ident, cnt, 'S', source, (idmef_service_t *(*)(void *)) idmef_source_new_service) < 0 )
 			goto error;
 
 		cnt++;
@@ -1939,9 +1704,6 @@ static int get_source(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( source )
-		idmef_source_destroy(source);
-
 	return -1;
 }
 
@@ -1951,9 +1713,7 @@ static int get_target(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_target_t *target = NULL;
-	idmef_spoofed_t decoy;
-	idmef_string_t *interface;
+	idmef_target_t *target;
 	int cnt;
 
 	table = prelude_sql_query(sql,
@@ -1972,21 +1732,15 @@ static int get_target(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		target = idmef_target_new();
-		if ( ! target ) {
-			log_memory_exhausted();
+		target = idmef_alert_new_target(alert);
+		if ( ! target )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &decoy, idmef_spoofed_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, target, idmef_target_new_decoy, idmef_spoofed_to_numeric) < 0 )
 			goto error;
-		idmef_target_set_decoy(target, decoy);
 
-		if ( get_string(sql, row, 1, &interface) < 0 )
+		if ( get_string(sql, row, 1, target, idmef_target_new_interface) < 0 )
 			goto error;
-		idmef_target_set_interface(target, interface);
-
-		idmef_alert_set_target(alert, target);
 	}
 
 	prelude_sql_table_free(table);
@@ -1997,16 +1751,16 @@ static int get_target(prelude_sql_connection_t *sql,
 
 	while ( (target = idmef_alert_get_next_target(alert, target)) ) {
 
-		if ( get_node(sql, ident, cnt, 'T', target, (void (*)(void *, void *)) idmef_target_set_node) < 0 )
+		if ( get_node(sql, ident, cnt, 'T', target, (idmef_node_t *(*)(void *)) idmef_target_new_node) < 0 )
 			goto error;
 
-		if ( get_user(sql, ident, cnt, 'T', target, (void (*)(void *, void *)) idmef_target_set_user) < 0 )
+		if ( get_user(sql, ident, cnt, 'T', target, (idmef_user_t *(*)(void *)) idmef_target_new_user) < 0 )
 			goto error;
 
-		if ( get_process(sql, ident, cnt, 'T', target, (void (*)(void *, void *)) idmef_target_set_process) < 0 )
+		if ( get_process(sql, ident, cnt, 'T', target, (idmef_process_t *(*)(void *)) idmef_target_new_process) < 0 )
 			goto error;
 
-		if ( get_service(sql, ident, cnt, 'T', target, (void (*)(void *, void *)) idmef_target_set_service) < 0 )
+		if ( get_service(sql, ident, cnt, 'T', target, (idmef_service_t *(*)(void *)) idmef_target_new_service) < 0 )
 			goto error;
 
 		if ( get_file(sql, ident, cnt, target) < 0 )
@@ -2021,9 +1775,6 @@ static int get_target(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( target )
-		idmef_target_destroy(target);
-
 	return -1;
 }
 
@@ -2031,14 +1782,11 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 			       uint64_t parent_ident,
 			       char parent_type,
 			       void *parent,
-			       void (*parent_set_field)(void *, void *))
+			       idmef_additional_data_t *(*parent_new_child)(void *))
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_additional_data_t *additional_data = NULL;
-	idmef_additional_data_type_t type;
-        idmef_string_t *meaning;
-	idmef_data_t *data;
+	idmef_additional_data_t *additional_data;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -2057,25 +1805,19 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		additional_data = idmef_additional_data_new();
-		if ( ! additional_data ) {
-			log_memory_exhausted();
+		additional_data = parent_new_child(parent);
+		if ( ! additional_data )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &type, idmef_additional_data_type_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
+			      idmef_additional_data_type_to_numeric) < 0 )
 			goto error;
-		idmef_additional_data_set_type(additional_data, type);
 
-		if ( get_string(sql, row, 1, &meaning) < 0 )
+		if ( get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning) < 0 )
 			goto error;
-		idmef_additional_data_set_meaning(additional_data, meaning);
 
-		if ( get_data(sql, row, 2, &data) < 0 )
+		if ( get_data(sql, row, 2, additional_data, idmef_additional_data_new_data) < 0 )
 			goto error;
-		idmef_additional_data_set_data(additional_data, data);
-
-		parent_set_field(parent, additional_data);
 
 		cnt++;
 	}
@@ -2088,9 +1830,6 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( additional_data )
-		idmef_additional_data_destroy(additional_data);
-
 	return -1;
 }
 
@@ -2100,10 +1839,7 @@ static int get_classification(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_classification_t *classification = NULL;
-	idmef_classification_origin_t origin;
-        idmef_string_t *name;
-        idmef_string_t *url;
+	idmef_classification_t *classification;
 	int cnt = 0;
 	
 	table = prelude_sql_query(sql,
@@ -2122,25 +1858,19 @@ static int get_classification(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		classification = idmef_classification_new();
-		if ( ! classification ) {
-			log_memory_exhausted();
+		classification = idmef_alert_new_classification(alert);
+		if ( ! classification )
 			goto error;
-		}
 
-		if ( get_enum(sql, row, 0, &origin, idmef_classification_origin_to_numeric) < 0 )
+		if ( get_enum(sql, row, 0, classification, idmef_classification_new_origin,
+			      idmef_classification_origin_to_numeric) < 0 )
 			goto error;
-		idmef_classification_set_origin(classification, origin);
 
-		if ( get_string(sql, row, 1, &name) < 0 )
+		if ( get_string(sql, row, 1, classification, idmef_classification_new_name) < 0 )
 			goto error;
-		idmef_classification_set_name(classification, name);
 
-		if ( get_string(sql, row, 2, &url) < 0 )
+		if ( get_string(sql, row, 2, classification, idmef_classification_new_url) < 0 )
 			goto error;
-		idmef_classification_set_url(classification, url);
-
-		idmef_alert_set_classification(alert, classification);
 
 		cnt++;
 	}
@@ -2153,9 +1883,6 @@ static int get_classification(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( classification )
-		idmef_classification_destroy(classification);
-
 	return -1;
 }
 
@@ -2165,9 +1892,7 @@ static int get_tool_alert(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_tool_alert_t *tool_alert = NULL;
-	idmef_string_t *name;
-        idmef_string_t *command;
+	idmef_tool_alert_t *tool_alert;
 
 	table = prelude_sql_query(sql,
 				  "SELECT name, command "
@@ -2189,31 +1914,23 @@ static int get_tool_alert(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	tool_alert = idmef_tool_alert_new();
-	if ( ! tool_alert ) {
-		log_memory_exhausted();
+	tool_alert = idmef_alert_new_tool_alert(alert);
+	if ( ! tool_alert )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &name) < 0 )
+	if ( get_string(sql, row, 0, tool_alert, idmef_tool_alert_new_name) < 0 )
 		goto error;
-	idmef_tool_alert_set_name(tool_alert, name);
 
-	if ( get_string(sql, row, 1, &command) < 0 )
+	if ( get_string(sql, row, 1, tool_alert, idmef_tool_alert_new_command) < 0 )
 		goto error;
-	idmef_tool_alert_set_command(tool_alert, command);
 
 	prelude_sql_table_free(table);
-	idmef_alert_set_tool_alert(alert, tool_alert);
 
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( tool_alert )
-		idmef_tool_alert_destroy(tool_alert);
 
 	return -1;	
 }
@@ -2224,8 +1941,7 @@ static int get_correlation_alert_ident(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_alertident_t *idmef_alertident = NULL;
-	uint64_t alert_ident;
+	idmef_alertident_t *alertident = NULL;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -2244,17 +1960,12 @@ static int get_correlation_alert_ident(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		idmef_alertident = idmef_alertident_new();
-		if ( ! idmef_alertident ) {
-			log_memory_exhausted();
+		alertident = idmef_correlation_alert_new_alertident(correlation_alert);
+		if ( ! alertident )
 			goto error;
-		}
 
-		if ( get_uint64(sql, row, 0, &alert_ident) < 0 )
+		if ( get_uint64(sql, row, 0, alertident, idmef_alertident_new_alertident) < 0 )
 			goto error;
-		idmef_alertident_set_alertident(idmef_alertident, alert_ident);
-
-		idmef_correlation_alert_set_alertident(correlation_alert, idmef_alertident);
 
 		cnt++;
 	}
@@ -2267,9 +1978,6 @@ static int get_correlation_alert_ident(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( idmef_alertident )
-		idmef_alertident_destroy(idmef_alertident);
-
 	return -1;	
 }
 
@@ -2279,8 +1987,7 @@ static int get_correlation_alert(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_correlation_alert_t *correlation_alert = NULL;
-	idmef_string_t *name;
+	idmef_correlation_alert_t *correlation_alert;
 
 	table = prelude_sql_query(sql,
 				  "SELECT name "
@@ -2302,15 +2009,12 @@ static int get_correlation_alert(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	correlation_alert = idmef_correlation_alert_new();
-	if ( ! correlation_alert ) {
-		log_memory_exhausted();
+	correlation_alert = idmef_alert_new_correlation_alert(alert);
+	if ( ! correlation_alert )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &name) < 0 )
+	if ( get_string(sql, row, 0, correlation_alert, idmef_correlation_alert_new_name) < 0 )
 		goto error;
-	idmef_correlation_alert_set_name(correlation_alert, name);
 
 	prelude_sql_table_free(table);
 	table = NULL;
@@ -2318,16 +2022,11 @@ static int get_correlation_alert(prelude_sql_connection_t *sql,
 	if ( get_correlation_alert_ident(sql, ident, correlation_alert) < 0 )
 		goto error;
 
-	idmef_alert_set_correlation_alert(alert, correlation_alert);
-
 	return 1;
 
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( correlation_alert )
-		idmef_correlation_alert_destroy(correlation_alert);
 
 	return -1;
 }
@@ -2338,10 +2037,7 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_overflow_alert_t *overflow_alert = NULL;
-	idmef_string_t *program;
-        uint32_t size;
-        idmef_data_t *buffer;
+	idmef_overflow_alert_t *overflow_alert;
 
 	table = prelude_sql_query(sql,
 				  "SELECT program, size, buffer "
@@ -2352,7 +2048,7 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 		if ( prelude_sql_errno(sql) ) {
 			db_log(sql);
 			goto error;
-		} 
+		}
 
 		return 0;
 	}
@@ -2363,35 +2059,26 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 		goto error;
 	}
 
-	overflow_alert = idmef_overflow_alert_new();
-	if ( ! overflow_alert ) {
-		log_memory_exhausted();
+	overflow_alert = idmef_alert_new_overflow_alert(alert);
+	if ( ! overflow_alert )
 		goto error;
-	}
 
-	if ( get_string(sql, row, 0, &program) < 0 )
+	if ( get_string(sql, row, 0, overflow_alert, idmef_overflow_alert_new_program) < 0 )
 		goto error;
-	idmef_overflow_alert_set_program(overflow_alert, program);
 
-	if ( get_uint32(sql, row, 1, &size) < 0 )
+	if ( get_uint32(sql, row, 1, overflow_alert, idmef_overflow_alert_new_size) < 0 )
 		goto error;
-	idmef_overflow_alert_set_size(overflow_alert, size);
 
-	if ( get_data(sql, row, 2, &buffer) < 0 )
+	if ( get_data(sql, row, 2, overflow_alert, idmef_overflow_alert_new_buffer) < 0 )
 		goto error;
-	idmef_overflow_alert_set_buffer(overflow_alert, buffer);
 
 	prelude_sql_table_free(table);
-	idmef_alert_set_overflow_alert(alert, overflow_alert);
 
 	return 1;
 	
  error:
 	if ( table )
 		prelude_sql_table_free(table);
-
-	if ( overflow_alert )
-		idmef_overflow_alert_destroy(overflow_alert);
 
 	return -1;
 }
@@ -2415,28 +2102,25 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	alert = idmef_alert_new();
-	if ( ! alert ) {
-		log_memory_exhausted();
+	alert = idmef_message_new_alert(message);
+	if ( ! alert )
 		goto error;
-	}
-	
-	idmef_message_set_alert(message, alert);
+
 	idmef_alert_set_ident(alert, ident);
 
 	if ( get_assessment(sql, ident, alert) < 0 )
 		goto error;
 
-	if ( get_analyzer(sql, ident, 'A', alert, (void (*)(void *, void *)) idmef_alert_set_analyzer) < 0 )
+	if ( get_analyzer(sql, ident, 'A', alert, (idmef_analyzer_t *(*)(void *)) idmef_alert_new_analyzer) < 0 )
 		goto error;
 
-	if ( get_create_time(sql, ident, 'A', alert, (void (*)(void *, void *)) idmef_alert_set_create_time) < 0 )
+	if ( get_create_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_create_time) < 0 )
 		goto error;
 
 	if ( get_detect_time(sql, ident, alert) < 0 )
 		goto error;
 
-	if ( get_analyzer_time(sql, ident, 'A', alert, (void (*)(void *, void *)) idmef_alert_set_analyzer_time) < 0 )
+	if ( get_analyzer_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_analyzer_time) < 0 )
 		goto error;
 
 	if ( get_source(sql, ident, alert) < 0 )
@@ -2448,7 +2132,8 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 	if ( get_classification(sql, ident, alert) < 0 )
 		goto error;
 
-	if ( get_additional_data(sql, ident, 'A', alert, (void (*)(void *, void *)) idmef_alert_set_additional_data) < 0 )
+	if ( get_additional_data(sql, ident, 'A', alert, 
+				 (idmef_additional_data_t *(*)(void *)) idmef_alert_new_additional_data) < 0 )
 		goto error;
 
 	if ( get_tool_alert(sql, ident, alert) < 0 )
@@ -2488,25 +2173,23 @@ idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	heartbeat = idmef_heartbeat_new();
-	if ( ! heartbeat ) {
-		log_memory_exhausted();
+	heartbeat = idmef_message_new_heartbeat(message);
+	if ( ! heartbeat )
 		goto error;
-	}
 	
-	idmef_message_set_heartbeat(message, heartbeat);
 	idmef_heartbeat_set_ident(heartbeat, ident);
 
-	if ( get_analyzer(sql, ident, 'H', heartbeat, (void (*)(void *, void *)) idmef_heartbeat_set_analyzer) < 0 )
+	if ( get_analyzer(sql, ident, 'H', heartbeat, (idmef_analyzer_t *(*)(void *)) idmef_heartbeat_new_analyzer) < 0 )
 		goto error;
 
-	if ( get_create_time(sql, ident, 'H', heartbeat, (void (*)(void *, void *)) idmef_heartbeat_set_create_time) < 0 )
+	if ( get_create_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_create_time) < 0 )
 		goto error;
 
-	if ( get_analyzer_time(sql, ident, 'H', heartbeat, (void (*)(void *, void *)) idmef_heartbeat_set_analyzer_time) < 0 )
+	if ( get_analyzer_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_analyzer_time) < 0 )
 		goto error;
 
-	if ( get_additional_data(sql, ident, 'H', heartbeat, (void (*)(void *, void *)) idmef_heartbeat_set_additional_data) < 0 )
+	if ( get_additional_data(sql, ident, 'H', heartbeat,
+				 (idmef_additional_data_t *(*)(void *)) idmef_heartbeat_new_additional_data) < 0 )
 		goto error;
 
 	return message;
