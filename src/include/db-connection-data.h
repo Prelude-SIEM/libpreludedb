@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -21,53 +22,18 @@
 *
 *****/
 
-#include <stdlib.h>
 
-#include <libprelude/prelude-log.h>
+#ifndef _LIBPRELUDEDB_DB_CONNECTION_DATA_H
+#define _LIBPRELUDEDB_DB_CONNECTION_DATA_H
 
-#include "db-connection.h"
+typedef struct prelude_db_connection_data prelude_db_connection_data_t;
 
+prelude_db_connection_data_t *prelude_db_connection_data_new(prelude_db_type_t type, void *data);
 
-struct prelude_db_connection {
-	prelude_db_type_t type;
-	void *connection;
-};
+prelude_db_type_t prelude_db_connection_data_get_type(prelude_db_connection_data_t *data);
 
+void *prelude_db_connection_data_get(prelude_db_connection_data_t *data);
 
+void prelude_db_connection_data_destroy(prelude_db_connection_data_t *data);
 
-
-prelude_db_connection_t *prelude_db_connection_new(prelude_db_type_t type, void *cnx)
-{
-        prelude_db_connection_t *conn;
-
-        conn = calloc(1, sizeof(*conn));
-        if ( ! conn ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
-        }
-        
-        conn->type = type;
-        conn->connection = cnx;
-        
-        return conn;
-}
-
-
-
-
-
-prelude_db_type_t prelude_db_connection_get_type(prelude_db_connection_t *conn)
-{
-	return conn ? conn->type : -1 ;
-}
-
-
-
-
-void *prelude_db_connection_get(prelude_db_connection_t *conn)
-{
-	return conn ? conn->connection : NULL;
-}
-
-
-
+#endif /* _LIBPRELUDEDB_DB_CONNECTION_DATA_H */

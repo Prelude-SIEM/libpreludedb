@@ -1,3 +1,35 @@
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/db-connection-data.c
+	* src/include/db-connection-data.c
+	* src/db-interface.c
+	* src/include/db-interface.h
+	* src/sql-connection-data.c
+	* src/include/sql-connection-data.h
+	new files. Object model for connection management has been totally
+	reworked using opaque datatypes and should finally be correct. 
+
+	* src/db-connection.c:
+	* src/include/db-connection.h:
+	remove code regaring interface object (moved to db-interface.[ch]).
+	Change structure of prelude_db_connection_t and make opaque.  
+
+	* src/db.c:
+	* src/include/db.h:
+	don't include anything in .h
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-output.c:
+	modify code as necessary	
+
+	* plugins/sql/mysql/mysql.c:
+	* plugins/sql/pgsql/pgsql.c:
+	fix includes accordingly	
+
+	* src/Makefile.am:
+	* src/include/Makefile.am:
+	modify accordingly
+
 2002-09-24  Yoann Vandoorselaere  <yoann@mandrakesoft.com>
 
 	* src/db-connection.c (prelude_db_interface_new): 

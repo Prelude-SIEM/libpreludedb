@@ -26,11 +26,22 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
+#include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
+#include <libprelude/idmef-tree.h>
+#include <libprelude/plugin-common.h>
+#include <libprelude/config-engine.h>
 
-#include "db.h"
+#include <libprelude/prelude-io.h>
+#include <libprelude/prelude-message.h>
+#include <libprelude/prelude-getopt.h>
+
+#include "sql-table.h"
+#include "sql-connection-data.h"
+#include "plugin-sql.h"
+#include "db-connection.h"
 #include "plugin-format.h"
-
+#include "db.h"
 
 static int initialized = 0;
 

@@ -31,12 +31,25 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#include <libpq-fe.h>
 #include <libprelude/list.h>
+#include <libprelude/prelude-log.h>
+#include <libprelude/idmef-tree.h>
+#include <libprelude/plugin-common.h>
+#include <libprelude/config-engine.h>
+
+#include <libprelude/prelude-io.h>
+#include <libprelude/prelude-message.h>
+#include <libprelude/prelude-getopt.h>
+
+#include <libpq-fe.h>
+
+#include "config.h"
 
 #include "sql-table.h"
-#include "config.h"
-#include "db.h"
+
+#include "sql-connection-data.h"
+#include "plugin-sql.h"
+
 
 
 typedef enum {

@@ -35,6 +35,7 @@
 #include <libprelude/plugin-common-prv.h>
 
 #include "sql-table.h"
+#include "sql-connection-data.h"
 #include "plugin-sql.h"
 #include "db-connection.h"
 #include "idmef-db-output.h"
@@ -50,7 +51,7 @@ static int format_write(prelude_db_connection_t *connection, idmef_message_t *me
 	if (is_enabled == 0)
 		return -1;
 		
-	if ( connection->type != sql)
+	if ( prelude_db_connection_get_type(connection) != prelude_db_type_sql )
 		return -2;
 		
 	return idmef_db_output(connection, message);

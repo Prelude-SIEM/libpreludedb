@@ -62,6 +62,7 @@ typedef struct {
 typedef struct {
         void *session;
 	plugin_sql_t *plugin;
+	prelude_sql_connection_data_t *data;
 } sql_connection_t;
 
 
@@ -107,8 +108,7 @@ typedef struct {
 
 int sql_plugins_available(void);
 
-sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 
-                              const char *dbname, const char *dbuser, const char *dbpass);
+sql_connection_t *sql_connect(prelude_sql_connection_data_t *data) ;
 
 int sql_plugins_init(const char *dirname);
 

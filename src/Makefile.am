@@ -8,7 +8,10 @@ libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 libpreludedb_la_SOURCES =		\
 	gdb.c				\
 	db.c				\
+	db-interface.c			\
 	db-connection.c			\
+	db-connection-data.c		\
+	sql-connection-data.c		\
 	param-string.c			\
 	format-plugins.c		\
 	sql-plugins.c			\

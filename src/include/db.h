@@ -24,24 +24,6 @@
 #ifndef _LIBPRELUDEDB_DB_H
 #define _LIBPRELUDEDB_DB_H
 
-#include <inttypes.h>
-#include <sys/types.h>
-
-#include <libprelude/list.h>
-#include <libprelude/prelude-log.h>
-#include <libprelude/idmef-tree.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/config-engine.h>
-
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
-
-#include "sql-table.h"
-#include "plugin-sql.h"
-#include "db-connection.h"
-
-
 int prelude_db_init(void);
 int prelude_db_shutdown(void);
 

@@ -41,6 +41,7 @@
 #include <libprelude/plugin-common-prv.h>
 
 #include "sql-table.h"
+#include "sql-connection-data.h"
 #include "plugin-sql.h"
 #include "db-connection.h"
 
@@ -257,15 +258,22 @@ void sql_close(sql_connection_t *conn)
 
 
 
-sql_connection_t *sql_connect(const char *dbtype, const char *dbhost, const char *dbport, 
-                              const char *dbname, const char *dbuser, const char *dbpass) 
+sql_connection_t *sql_connect(prelude_sql_connection_data_t *data) 
 {
 	int ret;
         void *session;
 	plugin_sql_t *plugin;
 	sql_connection_t *conn;
+	char *dbtype, *dbhost, *dbport, *dbname, *dbuser, *dbpass;
+		
+	dbtype = prelude_sql_connection_data_get_type(data);
+	dbhost = prelude_sql_connection_data_get_host(data);
+	dbport = prelude_sql_connection_data_get_port(data);
+	dbname = prelude_sql_connection_data_get_name(data);
+	dbuser = prelude_sql_connection_data_get_user(data);
+	dbpass = prelude_sql_connection_data_get_pass(data);
 
-	if ( !dbtype ) {
+	if ( ! dbtype ) {
 		log(LOG_ERR, "dbtype not specified\n");
 		return NULL;
 	}

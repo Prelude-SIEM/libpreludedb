@@ -34,6 +34,7 @@
 
 
 #include "sql-table.h"
+#include "sql-connection-data.h"
 #include "plugin-sql.h"
 #include "db-connection.h"
 #include "idmef-db-output.h"
@@ -1226,23 +1227,26 @@ static int insert_heartbeat(sql_connection_t *conn, idmef_heartbeat_t *heartbeat
 
 int idmef_db_output(prelude_db_connection_t *conn, idmef_message_t *msg) 
 {
+	sql_connection_t *sql;
         int ret;
 
         ret = -1;
 
-	if ( conn->type != sql) {
+	if ( prelude_db_connection_get_type(conn) != prelude_db_type_sql ) {
 		log(LOG_ERR, "SQL database required for classic format!\n");
 		return -1;
 	}
+
+	sql = prelude_db_connection_get(conn);
         
         switch (msg->type) {
 
         case idmef_alert_message:
-                ret = insert_alert(conn->connection.sql, msg->message.alert);
+                ret = insert_alert(sql, msg->message.alert);
                 break;
 
         case idmef_heartbeat_message:
-                ret = insert_heartbeat(conn->connection.sql, msg->message.heartbeat);
+                ret = insert_heartbeat(sql, msg->message.heartbeat);
                 break;
 
         default:

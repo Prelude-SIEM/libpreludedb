@@ -26,48 +26,21 @@
 #define _LIBPRELUDEDB_DB_CONNECTION_H
 
 typedef enum {
-	sql = 1
+	prelude_db_type_sql = 1
 } prelude_db_type_t;
 
-typedef struct {
-	prelude_db_type_t type;
-	union {
-		sql_connection_t *sql;
-	} connection;
-} prelude_db_connection_t;
 
-#include "plugin-format.h" /* for plugin_format_t */
+typedef struct prelude_db_connection prelude_db_connection_t;
 
-typedef struct {
-	prelude_db_connection_t db_connection;
-	plugin_format_t *format;
-	struct list_head filter_list;
-	int active;
-	int connected;
-	char *name;
-        char *type;
-        char *user;
-        char *pass;
-        char *host;
-        char *port;
-} prelude_db_interface_t;
 
-/* Interface-specific functions */
+prelude_db_connection_t *prelude_db_connection_new(prelude_db_type_t type, void *cnx);
 
-prelude_db_interface_t *prelude_db_interface_new(void);
-int prelude_db_interface_set_name(prelude_db_interface_t *db, const char *name);
-int prelude_db_interface_set_type(prelude_db_interface_t *db, const char *type);
-int prelude_db_interface_set_format(prelude_db_interface_t *db, const char *format);
-int prelude_db_interfave_set_host(prelude_db_interface_t *db, const char *host);
-int prelude_db_interface_set_port(prelude_db_interface_t *db, const char *port);
-int prelude_db_interface_set_user(prelude_db_interface_t *db, const char *user);
-int prelude_db_interface_set_pass(prelude_db_interface_t *db, const char *pass);
-int prelude_db_interface_connect(prelude_db_interface_t *interface);
-int prelude_db_interface_activate(prelude_db_interface_t *interface);
-int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
-int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
-int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
-int prelude_db_interface_destroy(prelude_db_interface_t *interface);
+prelude_db_type_t prelude_db_connection_get_type(prelude_db_connection_t *conn);
+
+void *prelude_db_connection_get(prelude_db_connection_t *conn);
+
+
+
 
 #endif /* _LIBPRELUDEDB_DB_CONNECTION_H */
 
