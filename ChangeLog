@@ -1,4 +1,22 @@
-2003-12-30  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+2004-01-01  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-insert.c:
+	(insert_inode)
+	(insert_file)
+	bug fix: insertion failed if there was no *time fields
+	fit idmef_time_get_db_timestamp changes
+	(insert_additional_data)
+	bug fix: insertion failed if the len of the data embedded in 
+	additional_data was superior to 1024 bytes
+	fit idmef_additionaldata_data_to_string changes
+	(insert_createtime)
+	(insert_detecttime)
+	(insert_analyzertime)
+	fit idmef_time_get_db_timestamp changes
+
+	Happy new year to our ChangeLog readers ! ;)
+
+2003-12-31  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* plugins/sql/pgsql/pgsql.c (db_escape): 
 	fix uninitialized...

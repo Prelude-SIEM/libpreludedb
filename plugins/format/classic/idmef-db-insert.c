@@ -455,17 +455,14 @@ static int insert_service(prelude_sql_connection_t *conn, uint64_t alert_ident, 
 static int insert_inode(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
                         int file_ident, idmef_inode_t *inode) 
 {
-        char ctime[MAX_UTC_DATETIME_SIZE] = { '\0' };
-	idmef_time_t *time;
+        char ctime[MAX_UTC_DATETIME_SIZE];
 	int ret;
 
         if ( ! inode )
                 return 0;
 
-	time = idmef_inode_get_change_time(inode);
-        if ( time )
-                if ( idmef_time_get_db_timestamp(time, ctime, sizeof(ctime)) < 0 )
-			return -1;
+	if ( idmef_time_get_db_timestamp(idmef_inode_get_change_time(inode), ctime, sizeof (ctime)) < 0 )
+		return -1;
 
 	ret = prelude_sql_insert(conn, "Prelude_Inode", "alert_ident, target_ident, file_ident, "
 				 "change_time, major_device, minor_device, c_major_device, "
@@ -554,10 +551,9 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
         int ret;
         idmef_linkage_t *linkage;
         idmef_file_access_t *file_access;
-	idmef_time_t *time;
         char *name, *path, *category;
-        char ctime[MAX_UTC_DATETIME_SIZE] = { '\0' };
-        char mtime[MAX_UTC_DATETIME_SIZE]= { '\0' }, atime[MAX_UTC_DATETIME_SIZE] = { '\0' };
+        char ctime[MAX_UTC_DATETIME_SIZE];
+        char mtime[MAX_UTC_DATETIME_SIZE], atime[MAX_UTC_DATETIME_SIZE];
 
         if ( ! file )
                 return 0;
@@ -565,81 +561,63 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
         /*
          * why no parent_ident ???
          */
+	if ( idmef_time_get_db_timestamp(idmef_file_get_create_time(file), ctime, sizeof (ctime)) < 0 )
+		return -1;
+
+	if ( idmef_time_get_db_timestamp(idmef_file_get_modify_time(file), mtime, sizeof (mtime)) < 0 )
+		return -2;
+
+	if ( idmef_time_get_db_timestamp(idmef_file_get_access_time(file), atime, sizeof (atime)) < 0 )
+		return -3;
+
         category = prelude_sql_escape(conn, idmef_file_category_to_string(idmef_file_get_category(file)));
         if ( ! category )
-                return -1;
+                return -4;
 
         name = prelude_sql_escape(conn, get_string(idmef_file_get_name(file)));
         if ( ! name ) {
                 free(category);
-                return -2;
+                return -5;
         }
 
         path = prelude_sql_escape(conn, get_string(idmef_file_get_path(file)));
         if ( ! path ) {
-                free(name);
                 free(category);
-                return -3;
+                free(name);
+                return -6;
         }
 
-	time = idmef_file_get_create_time(file);
-	if ( time ) {
-		if ( idmef_time_get_db_timestamp(time, ctime, sizeof (ctime)) < 0 ) {
-                        free(name);
-                        free(category);
-			return -4;
-                }
-        }
-        
-	time = idmef_file_get_modify_time(file);
-	if ( time ) {
- 		if ( idmef_time_get_db_timestamp(time, mtime, sizeof (mtime)) < 0 ) {
-                        free(name);
-                        free(category);
-			return -5;
-                }
-        }
-        
-	time = idmef_file_get_access_time(file);
-	if ( time ) {
-		if ( idmef_time_get_db_timestamp(time, atime, sizeof (atime)) < 0 ) {
-                        free(name);
-                        free(category);
-			return -6;
-                }
-        }
-        
         ret = prelude_sql_insert(conn, "Prelude_File", "alert_ident, target_ident, ident, category, name, path, "
 				 "create_time, modify_time, access_time, data_size, disk_size", "%llu, %llu, %d, %s, "
-				 "%s, %s, %s, %s, %s, '%d', %d", 
+				 "%s, %s, %s, %s, %s, %d, %d", 
 				 alert_ident, target_ident, file_ident, category, name, path, ctime, mtime, atime,
 				 idmef_file_get_data_size(file), idmef_file_get_disk_size(file));
 
         free(name);
         free(path);
         free(category);
-        
+
         if ( ret < 0 )
-        	return -4;
+        	return -7;
 
 	file_access = NULL;
 	while ( (file_access = idmef_file_get_next_file_access(file, file_access)) ) {
 
 		if ( insert_file_access(conn, alert_ident, target_ident, file_ident, file_access) < 0 )
-			return -7;
+			return -8;
 	}
 
 	linkage = NULL;
 	while ( (linkage = idmef_file_get_next_file_linkage(file, linkage)) ) {
 
                 if ( insert_linkage(conn, alert_ident, target_ident, file_ident, linkage) < 0 )
-			return -8;
+			return -9;
 	}
 
         if ( insert_inode(conn, alert_ident, target_ident, file_ident, idmef_file_get_inode(file)) < 0 )
-		return -9;
-        
-        return 0;
+		return -10;
+
+        return 1;
 }
 
 
@@ -871,28 +849,30 @@ static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_
 static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_additional_data_t *additional_data) 
 {
         int ret;
-        char buf[1024], *meaning, *data, *type;
+        const char *tmp;
+	char *meaning, *data, *type;
 
 	if ( ! additional_data )
 		return 0;
-        
-        if ( idmef_additionaldata_data_to_string(additional_data, buf, sizeof (buf)) < 0 ) 
-                return -1;
-        
+
+	tmp = idmef_additionaldata_data_to_string(additional_data);
+	if ( ! tmp )
+		return -1;
+
+        data = prelude_sql_escape(conn, tmp);
+	if ( ! data )
+		return -2;
+
         type = prelude_sql_escape(conn, idmef_additional_data_type_to_string(idmef_additional_data_get_type(additional_data)));
-        if ( ! type )
-                return -2;
+        if ( ! type ) {
+		free(data);
+                return -3;
+	}
 
         meaning = prelude_sql_escape(conn, get_string(idmef_additional_data_get_meaning(additional_data)));
         if ( ! meaning ) {
+		free(data);
                 free(type);
-                return -3;
-        }
-
-        data = prelude_sql_escape(conn, buf);
-        if ( ! data ) {
-                free(type);
-                free(meaning);
                 return -4;
         }
 
@@ -910,41 +890,28 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t paren
 
 static int insert_createtime(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_time_t *time) 
 {
-        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE], *u, *n;
+        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE];
         int ret;
-        
+
         if ( idmef_time_get_db_timestamp(time, utc_time, sizeof(utc_time)) < 0 )
 		return -1;
 
         if ( idmef_time_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp)) < 0 )
 		return -2;
 
-        u = prelude_sql_escape(conn, utc_time);
-        if ( ! u )
-                return -3;
-
-        n = prelude_sql_escape(conn, ntpstamp);
-        if ( ! n ) {
-                free(u);
-                return -4;
-        }
-
         ret = prelude_sql_insert(conn, "Prelude_CreateTime", "parent_ident, parent_type, time, ntpstamp", 
-				 "%llu, '%c', %s, %s", parent_ident, parent_type, u, n);
+				 "%llu, '%c', %s, '%s'", parent_ident, parent_type, utc_time, ntpstamp);
 
-        free(u);
-        free(n);
-
-        return (ret < 0) ? -5 : 1;
+        return (ret < 0) ? -3 : 1;
 }
 
 
 
 static int insert_detecttime(prelude_sql_connection_t *conn, uint64_t alert_ident, idmef_time_t *time) 
 {        
-        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE], *u, *n;
+        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE];
         int ret;
-        
+
         if ( ! time )
                 return 0;
 
@@ -954,30 +921,17 @@ static int insert_detecttime(prelude_sql_connection_t *conn, uint64_t alert_iden
         if ( idmef_time_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp)) < 0 )
 		return -2;
 
-        u = prelude_sql_escape(conn, utc_time);
-        if ( ! u )
-                return -3;
-
-        n = prelude_sql_escape(conn, ntpstamp);
-        if ( ! n ) {
-                free(u);
-                return -4;
-        }
-
         ret = prelude_sql_insert(conn, "Prelude_DetectTime", "alert_ident, time, ntpstamp",
-				 "%llu, %s, %s", alert_ident, u, n);
+				 "%llu, %s, '%s'", alert_ident, utc_time, ntpstamp);
 
-        free(u);
-        free(n);
-
-        return (ret < 0) ? -5 : 1;
+        return (ret < 0) ? -3 : 1;
 }
 
 
 
 static int insert_analyzertime(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_time_t *time) 
 {
-        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE], *u, *n;
+        char utc_time[MAX_UTC_DATETIME_SIZE], ntpstamp[MAX_NTP_TIMESTAMP_SIZE];
         int ret;
 
         if ( ! time )
@@ -989,23 +943,10 @@ static int insert_analyzertime(prelude_sql_connection_t *conn, uint64_t parent_i
         if ( idmef_time_get_ntp_timestamp(time, ntpstamp, sizeof(ntpstamp)) < 0 )
 		return -2;
 
-        u = prelude_sql_escape(conn, utc_time);
-        if ( ! u )
-                return -3;
-
-        n = prelude_sql_escape(conn, ntpstamp);
-        if ( ! n ) {
-                free(u);
-                return -4;
-        }
-        
         ret = prelude_sql_insert(conn, "Prelude_AnalyzerTime", "parent_ident, parent_type, time, ntpstamp",
-				 "%llu, '%c', %s, %s", parent_ident, parent_type, u, n);
+				 "%llu, '%c', %s, '%s'", parent_ident, parent_type, utc_time, ntpstamp);
 
-        free(u);
-        free(n);
-
-        return (ret < 0) ? -5 : 1;
+        return (ret < 0) ? -3 : 1;
 }
 
 
@@ -1429,4 +1370,3 @@ int idmef_db_insert(prelude_db_connection_t *conn, const idmef_message_t *messag
 
         return ret;
 }
-
