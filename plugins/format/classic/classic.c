@@ -161,7 +161,7 @@ static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 	prelude_db_object_selection_add(selection, selected);
 
 	table = idmef_db_select(connection, selection, criteria, 
-	                        NO_DISTINCT, limit, offset, AS_MESSAGES);
+	                        DISTINCT, limit, offset, AS_MESSAGES);
 
 	prelude_db_object_selection_destroy(selection);
 
