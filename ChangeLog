@@ -1,3 +1,32 @@
+2003-08-12  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(aggregate_function_to_sql): implemented.
+	(add_field): 
+	(relation_to_sql): handle aggregate functions
+	(build_request): 
+	(idmef_db_select): handle 'distinct' parameter
+
+	*  plugins/format/classic/classic.c:
+	handle aggregate functions. 
+	(classic_select_values):
+	(classic_get_values): implemented. 
+	(classic_get_alert):
+	(classic_get_heartbeat):
+	force full alert extraction under conditions where partial extraction
+	can produce incorrect results
+
+	* src/include/db-interface.h:
+	* src/db-interface.c:
+	style fixes
+	(prelude_db_interface_select_values):
+	(prelude_db_interface_get_values):
+	implemented
+
+	* src/include/plugin-format.h:
+	added format_select_values and format_get_values callbacks
+	
+
 2003-08-02  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-select.c:

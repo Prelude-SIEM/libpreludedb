@@ -131,14 +131,14 @@ static void * classic_get_ident_list(prelude_db_connection_t * connection,
 		return NULL;
 	}
 
-	if ( idmef_selection_add_object(selection, object) < 0 ) {
+	if ( idmef_selection_add_object(selection, object, function_none) < 0 ) {
 		log(LOG_ERR, "could not add object '%s' in selection !\n");
 		idmef_object_destroy(object);
 		idmef_selection_destroy(selection);
 		return NULL;
 	}
 
-	table = idmef_db_select(connection, selection, criterion);
+	table = idmef_db_select(connection, 0, selection, criterion);
 	if ( ! table ) {
 		idmef_selection_destroy(selection);
 		return NULL;
@@ -177,7 +177,7 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
 	int nfields, field_cnt;
- 	idmef_object_t *object;
+	idmef_object_t *object;
 	idmef_value_t *value;
 	idmef_criterion_t *criterion;
 	const char *char_val;
@@ -187,7 +187,7 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	value = idmef_value_new_uint64(ident);
 	criterion = idmef_criterion_new(object, relation_equal, value);
 
-	table = idmef_db_select(connection, selection, criterion);
+	table = idmef_db_select(connection, 0, selection, criterion);
 
 	idmef_criterion_destroy(criterion);
 
@@ -242,19 +242,12 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 			log(LOG_INFO, " * read value: %s\n", char_val);
 #endif
 
-
 			value = idmef_value_new_for_object(object, char_val);
-
-#ifdef DEBUG
 			if ( ! value )
 				log(LOG_ERR, "could not create container!\n");
-#endif
 
 			if ( idmef_message_set(message, object, value) < 0 ) {
-
-#ifdef DEBUG
 				log(LOG_INFO, "idmef_message_set() failed\n");
-#endif
 
 				prelude_sql_table_free(table);
 				idmef_message_destroy(message);
@@ -278,9 +271,25 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 					  uint64_t ident,
 					  idmef_selection_t *selection)
 {
-	return (selection ?
-		get_message(connection, ident, "alert.ident", selection) :
-		get_alert(connection, ident));
+	idmef_object_t *obj;
+	int lists, n;
+
+	if ( ! selection )
+		get_alert(connection, ident);
+
+	n = 0;
+
+	idmef_selection_set_object_iterator(selection);
+	while ( (obj = idmef_selection_get_next_object(selection)) ) {
+		lists = idmef_object_has_lists(obj);
+		if ( lists > 1 )
+			return get_alert(connection, ident);
+
+		if ( ( lists == 1 ) && ( ++n == 2 ) )
+			return get_alert(connection, ident);
+	}
+
+	return get_message(connection, ident, "alert.ident", selection);
 }
 
 
@@ -289,10 +298,27 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 					      uint64_t ident,
 					      idmef_selection_t *selection)
 {
-	return (selection ?
-		get_message(connection, ident, "heartbeat.ident", selection) :
-		get_heartbeat(connection, ident));
+	idmef_object_t *obj;
+	int lists, n;
+
+	if ( ! selection )
+		get_heartbeat(connection, ident);
+
+	n = 0;
+
+	idmef_selection_set_object_iterator(selection);
+	while ( (obj = idmef_selection_get_next_object(selection)) ) {
+		lists = idmef_object_has_lists(obj);
+		if ( lists > 1 )
+			return get_heartbeat(connection, ident);
+
+		if ( ( lists == 1 ) && ( ++n == 2 ) )
+			return get_heartbeat(connection, ident);
+	}
+
+	return get_message(connection, ident, "heartbeat.ident", selection);
 }
+
 
 
 
@@ -313,6 +339,86 @@ void classic_free_ident_list(prelude_db_connection_t * connection,
 }
 
 
+static void *classic_select_values(prelude_db_connection_t *connection,
+				   int distinct,
+			           idmef_selection_t *selection, 
+				   idmef_criterion_t *criteria)
+{
+	return idmef_db_select(connection, distinct, selection, criteria);
+}
+
+
+static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *connection,
+						     void *data,
+						     idmef_selection_t *selection)
+{
+	prelude_sql_table_t *table = data;
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
+	int field_cnt, nfields;
+	char *char_val;
+	idmef_object_value_list_t *vallist;
+	idmef_object_value_t *objval;
+	idmef_object_t *object;
+	idmef_value_t *value;
+
+	if ( ! table )
+		return NULL;
+
+	row = prelude_sql_row_fetch(table);
+	if ( ! row ) {
+		prelude_sql_table_free(table);
+		return NULL;
+	}
+
+	vallist = idmef_object_value_list_new();
+	if ( ! vallist )
+		return NULL;
+	
+	nfields = prelude_sql_fields_num(table);	
+
+	idmef_selection_set_object_iterator(selection);
+
+	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
+
+		object = idmef_selection_get_next_object(selection);
+			
+		field = prelude_sql_field_fetch(row, field_cnt);
+		if ( ! field )
+			continue;
+
+		char_val = prelude_sql_field_value(field);
+
+#ifdef DEBUG
+		log(LOG_INFO, " * read value: %s\n", char_val);
+#endif
+
+		value = idmef_value_new_for_object(object, char_val);
+		if ( ! value ) {
+			log(LOG_ERR, "could not create container!\n");
+			goto error;
+		}
+
+		objval = idmef_object_value_new(object, value);
+
+		if ( idmef_object_value_list_add(vallist, objval) < 0 ) {
+			log(LOG_ERR, "could not add to value list\n");
+			idmef_value_destroy(value);
+			goto error;
+		}
+		
+		idmef_value_destroy(value);
+	}
+
+	return vallist;
+
+error:
+	idmef_object_value_list_destroy(vallist);
+	prelude_sql_table_free(table);
+	
+	return NULL;
+
+}
 
 plugin_generic_t * plugin_init(int argc, char **argv)
 {
@@ -329,6 +435,8 @@ plugin_generic_t * plugin_init(int argc, char **argv)
 	plugin_set_delete_alert_func(&plugin, classic_delete_alert);
 	plugin_set_delete_heartbeat_func(&plugin, classic_delete_heartbeat);
 	plugin_set_insert_idmef_message_func(&plugin, classic_insert_idmef_message);
+	plugin_set_select_values_func(&plugin, classic_select_values);
+	plugin_set_get_values_func(&plugin, classic_get_values);
 
 	db_objects_init(CONFIG_FILE);
 

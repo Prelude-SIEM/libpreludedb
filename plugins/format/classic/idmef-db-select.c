@@ -365,22 +365,60 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 
 
-static int add_field(strbuf_t *fields, char *table, char *field, char *alias)
+static int aggregate_function_to_sql(strbuf_t *buf, 
+				     idmef_aggregate_function_t func, 
+				     char *field)
 {
-	strbuf_t *tmp;
+	switch (func) {
+	case function_none:
+			return strbuf_sprintf(buf, "%s", field);
+
+	case function_min:
+			return strbuf_sprintf(buf, "MIN(%s)", field);
+
+	case function_max:
+			return strbuf_sprintf(buf, "MAX(%s)", field);
+
+	case function_avg:
+			return strbuf_sprintf(buf, "AVG(%s)", field);
+
+	case function_std:
+			return strbuf_sprintf(buf, "STD(%s)", field);
+
+	case function_count:
+			return strbuf_sprintf(buf, "COUNT(%s)", field);
+
+
+	default:
+			return -1;
+	}
+}
+
+
+
+
+static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
+		     idmef_aggregate_function_t func)
+{
+	strbuf_t *tmp, *tmp2;
 	int ret;
 
 	tmp = strbuf_new();
 	if ( ! tmp )
 		return -1;
+	
+	tmp2 = strbuf_new();
+	if ( ! tmp )
+		return -1;
+	
 
 	if ( table ) {
-		ret = strbuf_sprintf(tmp, "%s.", table);
+		ret = strbuf_sprintf(tmp2, "%s.%s", table, field);
 		if ( ret < 0 )
 			goto error;
 	}
 
-	ret = strbuf_sprintf(tmp, "%s", field);
+	ret = aggregate_function_to_sql(tmp, func, strbuf_string(tmp2));
 	if ( ret < 0 )
 		goto error;
 
@@ -407,6 +445,7 @@ static int add_field(strbuf_t *fields, char *table, char *field, char *alias)
 
 error:
 	strbuf_destroy(tmp);
+	strbuf_destroy(tmp2);
 
 	return ret;
 }
@@ -414,7 +453,7 @@ error:
 
 
 
-/* NOTE: This function assumes thet val is already escaped! */
+/* NOTE: This function assumes that val is already escaped! */
 static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
 {
 	switch (rel) {
@@ -669,12 +708,14 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		 */
 		if ( ( idmef_object_compare(obj, alert) == 0 ) ||
 		     ( idmef_object_compare(obj, heartbeat) == 0 ) )
-		     	ret = add_field(fields, table, field, "ident");
+		     	ret = add_field(fields, table, field, "ident", 
+		     			idmef_selection_get_function(selection));
 		else
 			ret = add_field(fields,
 					field ? table_alias : NULL,
 					field ? field : function,
-					NULL);
+					NULL, 
+					idmef_selection_get_function(selection));
 
 		if ( ret < 0 )
 			goto error;
@@ -694,6 +735,7 @@ error:
 
 
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
+			       int distinct,
 			       idmef_selection_t *selection,
 			       idmef_criterion_t *criterion)
 {
@@ -737,7 +779,8 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! str_tables )
 		goto error;
 
-	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s ;",
+	ret = strbuf_sprintf(request, "SELECT %s%s FROM %s %s %s %s %s ;",
+			     distinct ? "DISTINCT " : "",
 		             strbuf_string(fields),
 		             strbuf_string(str_tables),
 			     ( strbuf_empty(where1) && strbuf_empty(where2) ) ? "" : "WHERE",
@@ -777,6 +820,7 @@ error:
 
 
 prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
+				      int distinct,
 				      idmef_selection_t *selection,
 				      idmef_criterion_t *criterion)
 {
@@ -791,7 +835,7 @@ prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	request = build_request(sql, selection, criterion);
+	request = build_request(sql, distinct, selection, criterion);
 	if ( ! request )
 		return NULL;
 
@@ -812,3 +856,4 @@ prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
 
 	return table;
 }
+

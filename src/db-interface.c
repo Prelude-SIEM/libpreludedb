@@ -328,7 +328,7 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 
 
 
-int	prelude_db_interface_delete_alert(prelude_db_interface_t *interface, uint64_t ident)
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, uint64_t ident)
 {
 	if ( ! interface )
 		return -1;
@@ -341,7 +341,7 @@ int	prelude_db_interface_delete_alert(prelude_db_interface_t *interface, uint64_
 
 
 
-int	prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, uint64_t ident)
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, uint64_t ident)
 {
 	if ( ! interface )
 		return -1;
@@ -436,6 +436,35 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 }
 
 
+void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
+					 int distinct,
+					 idmef_selection_t *selection, 
+					 idmef_criterion_t *criteria)
+{
+	if ( ! interface || 
+	     ! interface->format || 
+	     ! interface->format->format_select_values)
+		return NULL;
+	
+	return interface->format->format_select_values(interface->db_connection,
+						       distinct,
+						       selection,
+						       criteria);
+}
+
+
+idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
+							   void *data,
+							   idmef_selection_t *selection)
+{
+	if ( ! interface || 
+	     ! interface->format || 
+	     ! interface->format->format_get_values)
+		return NULL;
+	
+	return interface->format->format_get_values(interface->db_connection,
+						    data, selection);
+}
 
 
 int prelude_db_interface_destroy(prelude_db_interface_t *interface)
