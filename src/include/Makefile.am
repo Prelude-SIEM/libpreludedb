@@ -10,6 +10,7 @@ include_HEADERS = 		\
 	db-type.h		\
 	db-connection.h		\
 	db-connection-data.h	\
+	db-object-selection.h	\
 	sql-connection-data.h	\
 	sql.h			\
 	param-string.h		\

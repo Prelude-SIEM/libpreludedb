@@ -13,6 +13,7 @@ libpreludedb_la_SOURCES =		\
 	db-interface-string.c		\
 	db-connection.c			\
 	db-connection-data.c		\
+	db-object-selection.c		\
 	sql-connection-data.c		\
 	sql.c				\
 	param-string.c			\

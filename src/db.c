@@ -42,6 +42,7 @@
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-uident.h"
+#include "db-object-selection.h"
 #include "plugin-format.h"
 
 

@@ -39,11 +39,11 @@ typedef struct {
 
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
 					     prelude_db_alert_uident_t *uident,
-					     idmef_selection_t *selection);
+					     idmef_object_list_t *object_list);
 
 	idmef_message_t *(*format_get_heartbeat)(prelude_db_connection_t *connection,
 						 prelude_db_heartbeat_uident_t *uident,
-						 idmef_selection_t *selection);
+						 idmef_object_list_t *object_list);
 
 	int (*format_delete_alert)(prelude_db_connection_t *connection,
 				   prelude_db_alert_uident_t *uident);
@@ -55,14 +55,14 @@ typedef struct {
 					   const idmef_message_t *message);
 	
 	void *(*format_select_values)(prelude_db_connection_t *connection,
-			              idmef_selection_t *selection,
+			              prelude_db_object_selection_t *object_selection,
 				      idmef_criteria_t *criteria,
 				      int distinct,
 				      int limit);
 
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,
 							void *data,
-						        idmef_selection_t *selection);
+						        prelude_db_object_selection_t *object_selection);
 } plugin_format_t;
 
 #define	plugin_get_alert_uident_list_func(p) (p)->format_get_alert_uident_list

@@ -57,11 +57,11 @@ prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(pr
 
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface, 
 						prelude_db_alert_uident_t *uident,
-						idmef_selection_t *selection);
+						idmef_object_list_t *object_list);
 
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
 						    prelude_db_heartbeat_uident_t *uident,
-						    idmef_selection_t *selection);
+						    idmef_object_list_t *object_list);
 
 int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident);
 
@@ -70,14 +70,14 @@ int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, pre
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
-					 idmef_selection_t *selection,
+					 prelude_db_object_selection_t *object_selection,
 					 idmef_criteria_t *criteria,
 					 int distinct,
 					 int limit);
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
 							   void *data,
-							   idmef_selection_t *selection);
+							   prelude_db_object_selection_t *object_selection);
 
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
 

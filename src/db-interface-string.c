@@ -35,10 +35,12 @@
 #include "db-type.h"
 #include "db-uident.h"
 #include "sql-connection-data.h"
+#include "db-object-selection.h"
 #include "db-connection.h" 
 #include "db-connection-data.h"
 #include "db-interface.h"
 #include "param-string.h"
+
 #include "db-interface-string.h"
 
 

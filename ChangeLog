@@ -1,3 +1,26 @@
+2003-11-17  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/db-object-selection.c:
+	* src/include/db-object-selection.h:
+	new files
+	replace idmef-selection
+
+	* bindings/perl/PreludeDB.i:
+	* bindings/perl/PreludeDB.pm:
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/format/classic/include/idmef-db-select.h:
+	* src/db-interface-string.c:
+	* src/db-interface-string.c:
+	* src/db-interface.c:
+	* src/db.c:
+	* src/format-plugins.c:
+	* src/include/plugin-format.h:
+	fit new selection stuff changes
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
 2003-11-05  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-get.c:

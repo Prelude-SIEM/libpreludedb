@@ -39,9 +39,10 @@
 #include "db-uident.h"
 #include "db-connection.h" 
 #include "db-connection-data.h"
-#include "db-interface.h"
+#include "db-object-selection.h"
 #include "plugin-format.h"
 
+#include "db-interface.h"
 
 struct prelude_db_interface {
 	char *name;
@@ -329,7 +330,7 @@ prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(pr
 
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface,
 						prelude_db_alert_uident_t *uident,
-						idmef_selection_t *selection)
+						idmef_object_list_t *object_list)
 {
 	if ( ! interface )
 		return NULL;
@@ -337,14 +338,14 @@ idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interfac
 	if ( ! interface->format->format_get_alert )
 		return NULL;
 
-	return interface->format->format_get_alert(interface->db_connection, uident, selection);
+	return interface->format->format_get_alert(interface->db_connection, uident, object_list);
 }
 
 
 
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
 						    prelude_db_heartbeat_uident_t *uident,
-						    idmef_selection_t *selection)
+						    idmef_object_list_t *object_list)
 {
 	if ( ! interface )
 		return NULL;
@@ -352,7 +353,7 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 	if ( ! interface->format->format_get_heartbeat )
 		return NULL;
 
-	return interface->format->format_get_heartbeat(interface->db_connection, uident, selection);
+	return interface->format->format_get_heartbeat(interface->db_connection, uident, object_list);
 }
 
 
@@ -471,7 +472,7 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
 
 
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
-					 idmef_selection_t *selection,
+					 prelude_db_object_selection_t *object_selection,
 					 idmef_criteria_t *criteria,
 					 int distinct,
 					 int limit)
@@ -482,7 +483,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 		return NULL;
 	
 	return interface->format->format_select_values
-                (interface->db_connection, selection, criteria, distinct, limit);
+                (interface->db_connection, object_selection, criteria, distinct, limit);
 }
 
 
@@ -490,7 +491,7 @@ void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
 
 idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_t *interface,
 							   void *data,
-							   idmef_selection_t *selection)
+							   prelude_db_object_selection_t *object_selection)
 {
 	if ( ! interface || 
 	     ! interface->format || 
@@ -498,7 +499,7 @@ idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_
 		return NULL;
 	
 	return interface->format->format_get_values(interface->db_connection,
-						    data, selection);
+						    data, object_selection);
 }
 
 

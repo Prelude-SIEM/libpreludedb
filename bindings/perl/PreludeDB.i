@@ -33,6 +33,7 @@
 #include "db-uident.h"
 #include "db-connection.h"
 #include "db-connection-data.h"
+#include "db-object-selection.h"
 #include "db-interface.h"
 #include "db-interface-string.h"
 
@@ -283,6 +284,7 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 
 %include "../../src/include/db-type.h"
 %include "../../src/include/db.h"
+%include "../../src/include/db-object-selection.h"
 %include "../../src/include/db-interface.h"
 %include "../../src/include/db-interface-string.h"
 %include "../../src/include/db-connection.h"

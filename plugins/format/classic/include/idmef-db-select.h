@@ -34,7 +34,7 @@
 #define AS_VALUES 1
 
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
-				     idmef_selection_t *selection, 
+				     prelude_db_object_selection_t *selection, 
 				     idmef_criteria_t *criteria,
 				     int distinct,
 				     int limit,

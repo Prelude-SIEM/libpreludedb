@@ -37,6 +37,7 @@
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
+#include "db-object-selection.h"
 #include "strbuf.h"
 
 #include "idmef-db-select.h"
@@ -421,40 +422,31 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 
 
-static int aggregate_function_to_sql(strbuf_t *buf, 
-				     idmef_aggregate_function_t func, 
-				     char *field)
+static int aggregate_function_to_sql(strbuf_t *buf, int flags, char *field)
 {
-	switch (func) {
-	case function_none:
-			return strbuf_sprintf(buf, "%s", field);
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN )
+		return strbuf_sprintf(buf, "MIN(%s)", field);
 
-	case function_min:
-			return strbuf_sprintf(buf, "MIN(%s)", field);
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX )
+		return strbuf_sprintf(buf, "MAX(%s)", field);
 
-	case function_max:
-			return strbuf_sprintf(buf, "MAX(%s)", field);
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG )
+		return strbuf_sprintf(buf, "AVG(%s)", field);
 
-	case function_avg:
-			return strbuf_sprintf(buf, "AVG(%s)", field);
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD )
+		return strbuf_sprintf(buf, "STD(%s)", field);
 
-	case function_std:
-			return strbuf_sprintf(buf, "STD(%s)", field);
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT)
+		return strbuf_sprintf(buf, "COUNT(%s)", field);
 
-	case function_count:
-			return strbuf_sprintf(buf, "COUNT(%s)", field);
-
-
-	default:
-			return -1;
-	}
+	return strbuf_sprintf(buf, "%s", field);
 }
 
 
 
 
 static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
-		     idmef_aggregate_function_t func)
+		     int flags)
 {
 	strbuf_t *tmp, *tmp2;
 	int ret;
@@ -466,7 +458,6 @@ static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
 	tmp2 = strbuf_new();
 	if ( ! tmp )
 		return -1;
-	
 
 	if ( table ) {
 		ret = strbuf_sprintf(tmp2, "%s.%s", table, field);
@@ -474,7 +465,7 @@ static int add_field(strbuf_t *fields, char *table, char *field, char *alias,
 			goto error;
 	}
 
-	ret = aggregate_function_to_sql(tmp, func, strbuf_string(tmp2));
+	ret = aggregate_function_to_sql(tmp, flags, strbuf_string(tmp2));
 	if ( ret < 0 )
 		goto error;
 
@@ -725,12 +716,11 @@ static char *object_to_table(table_list_t *tables, db_object_t *db_object)
 
 
 static int object_to_field(strbuf_t *fields,
-			   idmef_selected_object_t *selected,
+			   idmef_object_t *object, int flags,
 			   db_object_t *db_object,
 			   char *table_alias)
 {
 	idmef_object_t *alert = NULL, *heartbeat = NULL;
-	idmef_object_t *object = idmef_selected_object_get_object(selected);
 	char *table = db_object_get_table(db_object);
 	char *field = db_object_get_field(db_object);
 	char *function = db_object_get_function(db_object);
@@ -755,14 +745,13 @@ static int object_to_field(strbuf_t *fields,
 	 */
 	if ( ( idmef_object_compare(object, alert) == 0 ) ||
 	     ( idmef_object_compare(object, heartbeat) == 0 ) )
-		retval = add_field(fields, table, field, "ident",
-				   idmef_selected_object_get_function(selected));
+		retval = add_field(fields, table, field, "ident", flags);
 	else
 		retval = add_field(fields,
 				   field ? table_alias : NULL,
 				   field ? field : function,
-				   NULL, 
-				   idmef_selected_object_get_function(selected));
+				   NULL,
+				   flags);
 
 	idmef_object_destroy(alert);
 	idmef_object_destroy(heartbeat);
@@ -772,11 +761,11 @@ static int object_to_field(strbuf_t *fields,
 
 
 
-static int object_to_group(strbuf_t *group, idmef_selected_object_t *selected, int index)
+static int object_to_group(strbuf_t *group, int flags, int index)
 {
 	int retval;
 
-	if ( idmef_selected_object_get_group_by(selected) != group_by )
+	if ( !(flags & PRELUDEDB_SELECTED_OBJECT_GROUP_BY) )
 		return 0;
 
 	retval = strbuf_sprintf(group, "%s%d", strbuf_empty(group) ? "" : ",",	index);
@@ -786,18 +775,21 @@ static int object_to_group(strbuf_t *group, idmef_selected_object_t *selected, i
 
 
 
-static int object_to_order(strbuf_t *order_buf, idmef_selected_object_t *selected, int index)
+static int object_to_order(strbuf_t *order_buf, int flags, int index)
 {
 	int retval;
-	idmef_order_t order = idmef_selected_object_get_order(selected);
+	char *order;
 
-	if ( order == order_none )
+	if ( flags & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC )
+		order = "ASC";
+	else if ( flags & PRELUDEDB_SELECTED_OBJECT_ORDER_DESC )
+		order = "DESC";
+	else
 		return 0;
-	
+
 	retval = strbuf_sprintf(order_buf, "%s%d %s",
 				strbuf_empty(order_buf) ? "" : ",",
-				index,
-				(order == order_asc) ? "ASC" : "DESC");
+				index, order);
 
 	return (retval < 0) ? -1 : 1;
 }
@@ -815,19 +807,21 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 			  strbuf_t *group,
 			  strbuf_t *order,
 			  table_list_t *tables,
-			  idmef_selection_t *selection)
+			  prelude_db_object_selection_t *selection)
 {
-	idmef_selected_object_t *selected;
+	prelude_db_selected_object_t *selected;
 	db_object_t *db_object;
 	idmef_object_t *object;
 	char *table_alias;
+	int flags;
 	int cnt;
 
 	cnt = 0;
-	idmef_selection_set_iterator(selection);
-	while ( (selected = idmef_selection_get_next_selected_object(selection)) ) {
+	selected = NULL;
+	while ( (selected = prelude_db_object_selection_get_next(selection, selected)) ) {
 
-		object = idmef_selected_object_get_object(selected);
+		object = prelude_db_selected_object_get_object(selected);
+		flags = prelude_db_selected_object_get_flags(selected);
 
 		db_object = db_object_find(object);
 		if ( ! db_object ) {
@@ -844,13 +838,13 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		if ( ! table_alias )
 			return -2;
 
-		if ( object_to_field(fields, selected, db_object, table_alias) < 0 )
+		if ( object_to_field(fields, object, flags, db_object, table_alias) < 0 )
 			return -3;
 
-		if ( object_to_group(group, selected, cnt + 1) < 0 )
+		if ( object_to_group(group, flags, cnt + 1) < 0 )
 			return -4;
 
-		if ( object_to_order(order, selected, cnt + 1) < 0 )
+		if ( object_to_order(order, flags, cnt + 1) < 0 )
 			return -5;
 
 		cnt++;
@@ -879,7 +873,7 @@ static int join_wheres(strbuf_t *out, strbuf_t *in)
 
 
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
-			       idmef_selection_t *selection,
+			       prelude_db_object_selection_t *selection,
 			       idmef_criteria_t *criteria,
 			       int distinct,
 			       int limit,
@@ -1036,7 +1030,7 @@ error:
 
 
 prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
-				     idmef_selection_t *selection,
+				     prelude_db_object_selection_t *selection,
 				     idmef_criteria_t *criteria,
 				     int distinct,
 				     int limit, 

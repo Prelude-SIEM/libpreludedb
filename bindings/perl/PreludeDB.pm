@@ -22,6 +22,105 @@ XSLoader::load('PreludeDB');
 
 use strict;
 
+package PreludeDBSelection;
+
+sub	_get_selected_object
+{
+    my	$string = shift || return undef;
+    my	$object;
+    my	$selected;
+    my	$object_str;
+    my	$flags = 0;
+    my	$part1;
+    my	$part2;
+    my	%funcs =
+	( 'min' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN,
+	  'max' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX,
+	  'avg' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG,
+	  'std' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD,
+	  'count' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT);
+    my	%opts =
+	( 'group_by' =>		$PreludeDB::PRELUDEDB_SELECTED_OBJECT_GROUP_BY,
+	  'order_desc' =>	$PreludeDB::PRELUDEDB_SELECTED_OBJECT_ORDER_DESC,
+	  'order_asc' =>	$PreludeDB::PRELUDEDB_SELECTED_OBJECT_ORDER_ASC);
+
+    ($part1, $part2) = split /\//, $string;
+
+    if ( $part1 =~ /^(.+)\((.+)\)$/ ) {
+	unless ( defined $funcs{$1} ) {
+	    warn "function $1 not recognized";
+	    return undef;
+	}
+	$flags |= $funcs{$1};
+	$object_str = $2;
+
+    } else {
+	$object_str = $part1;
+    }
+
+    if ( $part2 ) {
+	foreach ( split /,/, $part2 ) {
+	    if ( not defined $opts{$_} ) {
+		warn "option $_ not recognized";
+		return undef;
+	    }
+
+	    $flags |= $opts{$_};
+	}
+    }
+
+    $object = Prelude::idmef_object_new_fast($object_str) or return undef;
+
+    $selected = PreludeDB::prelude_db_selected_object_new($object, $flags);
+    unless ( $selected ) {
+	Prelude::idmef_object_destroy($object);
+	return undef;
+    }
+
+    return $selected;
+}
+
+sub	add
+{
+    my	$self = shift;
+    my	@selected_object_list = @_;
+    my	$selected;
+
+    foreach ( @selected_object_list ) {
+
+	$selected = _get_selected_object($_) or return 0;
+
+	PreludeDB::prelude_db_object_selection_add($$self, $selected);
+    }
+
+    return 1;
+}
+
+sub	new
+{
+    my	$class = shift;
+    my	@selected_object_list = @_;
+    my	$selection;
+    my	$self;
+
+    $selection = PreludeDB::prelude_db_object_selection_new() or return undef;
+
+    $self = bless(\$selection, $class);
+
+    $self->add(@selected_object_list) or return undef;
+
+    return $self;
+}
+
+sub	DESTROY
+{
+    my	$self = shift;
+
+    $$self and PreludeDB::prelude_db_object_selection_destroy($$self);
+}
+
+
+
 package PreludeDB;
 
 sub	init
@@ -219,8 +318,8 @@ sub	get_values
     my	$value;
     my	@result_list;
 
-    (defined $opt{-object_list} && @{ $opt{-object_list} } > 0) or return ();
-    $selection = new IDMEFSelection(@{ $opt{-object_list} }) or return ();
+    (defined $opt{-selection} && @{ $opt{-selection} } > 0) or return ();
+    $selection = new PreludeDBSelection(@{ $opt{-selection} }) or return ();
 
     if ( defined $opt{-criteria} ) {
 	$criteria = _get_criteria($opt{-criteria}) or return ();

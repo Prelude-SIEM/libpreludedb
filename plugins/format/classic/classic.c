@@ -42,6 +42,7 @@
 #include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
+#include "db-object-selection.h"
 #include "plugin-format.h"
 
 #include "idmef-db-insert.h"
@@ -117,51 +118,54 @@ static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
 					    idmef_criteria_t *criteria,
 					    const char *object_prefix)
 {
-	idmef_selection_t *selection;
-	idmef_object_t *alert_ident; /* in fact, alert or heartbeat ident */
+	prelude_db_object_selection_t *selection;
+	prelude_db_selected_object_t *selected;
+	idmef_object_t *alert_ident; /* alert or heartbeat ident actually */
 	idmef_object_t *analyzerid;
 	prelude_sql_table_t *table;
 
-	alert_ident = idmef_object_new("%s.ident", object_prefix);
-	if ( ! alert_ident ) {
-		log(LOG_ERR, "could not create %s.ident object\n", object_prefix);
+	selection = prelude_db_object_selection_new();
+	if ( ! selection ) {
+		log(LOG_ERR, "could not create object selection.\n");
 		return NULL;
 	}
+
+	alert_ident = idmef_object_new("%s.ident", object_prefix);
+	if ( ! alert_ident ) {
+		log(LOG_ERR, "could not create %s.ident object.\n", object_prefix);
+		prelude_db_object_selection_destroy(selection);
+		return NULL;
+	}
+
+	selected = prelude_db_selected_object_new(alert_ident, 0);
+	if ( ! selected ) {
+		prelude_db_object_selection_destroy(selection);
+		idmef_object_destroy(alert_ident);
+		return NULL;
+	}
+
+	prelude_db_object_selection_add(selection, selected);
 
 	analyzerid = idmef_object_new("%s.analyzer.analyzerid", object_prefix);
 	if ( ! analyzerid ) {
 		log(LOG_ERR, "could not create %s.analyzer.analyzerid object\n", object_prefix);
-		idmef_object_destroy(alert_ident);
+		prelude_db_object_selection_destroy(selection);
 		return NULL;
 	}
 
-	selection = idmef_selection_new();
-	if ( ! selection ) {
-		log(LOG_ERR, "could not create IDMEF cache!\n");
-		idmef_object_destroy(alert_ident);
+	selected = prelude_db_selected_object_new(analyzerid, 0);
+	if ( ! selected ) {
+		prelude_db_object_selection_destroy(selection);
 		idmef_object_destroy(analyzerid);
 		return NULL;
 	}
 
-	if ( idmef_selection_add_object(selection, alert_ident) < 0 ) {
-		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(alert_ident));
-		idmef_object_destroy(alert_ident);
-		idmef_object_destroy(analyzerid);
-		idmef_selection_destroy(selection);
-		return NULL;
-	}
-
-	if ( idmef_selection_add_object(selection, analyzerid) < 0 ) {
-		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(analyzerid));
-		idmef_object_destroy(analyzerid);
-		idmef_selection_destroy(selection);
-		return NULL;
-	}
+	prelude_db_object_selection_add(selection, selected);
 
 	table = idmef_db_select(connection, selection, criteria, 
 	                        NO_DISTINCT, NO_LIMIT, AS_MESSAGES);
 
-	idmef_selection_destroy(selection);
+	prelude_db_object_selection_destroy(selection);
 
 	return table;
 }
@@ -207,12 +211,45 @@ static int classic_get_heartbeat_uident_list(prelude_db_connection_t *connection
 
 
 
+static prelude_db_object_selection_t *object_list_to_selection(idmef_object_list_t *object_list)
+{
+	prelude_db_object_selection_t *selection;
+	prelude_db_selected_object_t *selected;
+	idmef_object_t *object;
+
+	selection = prelude_db_object_selection_new();
+	if ( ! selection )
+		return NULL;
+
+	object = NULL;
+	while ( (object = idmef_object_list_get_next(object_list, object)) ) {
+
+		selected = prelude_db_selected_object_new(idmef_object_ref(object), 0);
+		if ( ! selected ) {
+			idmef_object_destroy(object); /* destroy the new reference to the object */
+			prelude_db_object_selection_destroy(selection);
+			return NULL;
+		}
+
+		prelude_db_object_selection_add(selection, selected);
+	}
+
+	return selection;
+}
+
+
+/*
+ * FIXME: cleanup
+ */
+
+
 static idmef_message_t *get_message(prelude_db_connection_t *connection,
 				    uint64_t ident,
 				    const char *object_name,
-				    idmef_selection_t *selection)
+				    idmef_object_list_t *object_list)
 {
 	idmef_message_t *message;
+	prelude_db_object_selection_t *selection;
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
@@ -253,8 +290,16 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
+	selection = object_list_to_selection(object_list);
+	if ( ! selection ) {
+		idmef_criteria_destroy(criteria);
+		return NULL;
+	}
+
 	table = idmef_db_select(connection, selection, criteria, 
 	                        NO_DISTINCT, NO_LIMIT, AS_MESSAGES);
+
+	prelude_db_object_selection_destroy(selection);
 
 	idmef_criteria_destroy(criteria);
 
@@ -273,16 +318,18 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		idmef_selection_set_iterator(selection);
-
 #ifdef DEBUG
 		log(LOG_INFO, "+ row %d\n", cnt);
+
 #endif
+
+		object = NULL;
 
 		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
 			/* FIXME: handle enumeration The Right Way(tm) */
-			object = idmef_object_ref(idmef_selection_get_next_object(selection));
+			object = idmef_object_list_get_next(object_list, object);
+			(void) idmef_object_ref(object); /* increment refcount */
 
 #ifdef DEBUG
 			log(LOG_INFO, " * object: %s\n", idmef_object_get_name(object));
@@ -336,56 +383,56 @@ static idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 					  prelude_db_alert_uident_t *uident,
-					  idmef_selection_t *selection)
+					  idmef_object_list_t *object_list)
 {
 	idmef_object_t *object;
 	int lists, n;
 	uint64_t ident = uident->alert_ident;
 
-	if ( ! selection )
+	if ( ! object_list )
 		return get_alert(connection, ident);
 
 	n = 0;
 
-	idmef_selection_set_iterator(selection);
-	while ( (object = idmef_selection_get_next_object(selection)) ) {
+	object = NULL;
+	while ( (object = idmef_object_list_get_next(object_list, object)) ) {
 		lists = idmef_object_has_lists(object);
 		if ( lists > 1 )
 			return get_alert(connection, ident);
 
-		if ( ( lists == 1 ) && ( ++n == 2 ) )
+		if ( lists == 1 && ++n == 2 )
 			return get_alert(connection, ident);
 	}
 
-	return get_message(connection, ident, "alert.ident", selection);
+	return get_message(connection, ident, "alert.ident", object_list);
 }
 
 
 
 static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connection,
 					      prelude_db_heartbeat_uident_t *uident,
-					      idmef_selection_t *selection)
+					      idmef_object_list_t *object_list)
 {
 	idmef_object_t *object;
 	int lists, n;
 	uint64_t ident = uident->heartbeat_ident;
 
-	if ( ! selection )
+	if ( ! object_list )
 		get_heartbeat(connection, ident);
 
 	n = 0;
 
-	idmef_selection_set_iterator(selection);
-	while ( (object = idmef_selection_get_next_object(selection)) ) {
+	object = NULL;
+	while ( (object = idmef_object_list_get_next(object_list, object)) ) {
 		lists = idmef_object_has_lists(object);
 		if ( lists > 1 )
 			return get_heartbeat(connection, ident);
 
-		if ( ( lists == 1 ) && ( ++n == 2 ) )
+		if ( lists == 1 && ++n == 2 )
 			return get_heartbeat(connection, ident);
 	}
 
-	return get_message(connection, ident, "heartbeat.ident", selection);
+	return get_message(connection, ident, "heartbeat.ident", object_list);
 }
 
 
@@ -399,7 +446,7 @@ static int classic_insert_idmef_message(prelude_db_connection_t *connection, con
 
 
 static void *classic_select_values(prelude_db_connection_t *connection,
-			           idmef_selection_t *selection, 
+			           prelude_db_object_selection_t *selection, 
 				   idmef_criteria_t *criteria,
 				   int distinct,
 				   int limit)
@@ -409,9 +456,14 @@ static void *classic_select_values(prelude_db_connection_t *connection,
 }
 
 
+/*
+ * FIXME: cleanup
+ */
+
+
 static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *connection,
 						     void *data,
-						     idmef_selection_t *selection)
+						     prelude_db_object_selection_t *selection)
 {
 	prelude_sql_table_t *table = data;
 	prelude_sql_row_t *row;
@@ -419,9 +471,10 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	int field_cnt, nfields;
 	idmef_object_value_list_t *objval_list = NULL;
 	idmef_object_value_t *objval;
-	idmef_selected_object_t *selected_object;
+	prelude_db_selected_object_t *selected;
 	idmef_object_t *object;
 	idmef_value_t *value;
+	int flags;
 	int cnt;
 
 	if ( ! table )
@@ -435,13 +488,14 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 
 	nfields = prelude_sql_fields_num(table);	
 
-	idmef_selection_set_iterator(selection);
+	selected = NULL;
 
 	cnt = 0;
 	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
-		selected_object = idmef_selection_get_next_selected_object(selection);
-		object = idmef_selected_object_get_object(selected_object);
+		selected = prelude_db_object_selection_get_next(selection, selected);
+		object = prelude_db_selected_object_get_object(selected);
+		flags = prelude_db_selected_object_get_flags(selected);
 
 		field = prelude_sql_field_fetch(row, field_cnt);
 		if ( ! field )
@@ -453,7 +507,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 				return NULL;
 		}
 
-		if ( idmef_selected_object_get_function(selected_object) == function_count ) {
+		if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
 			value = prelude_sql_field_value_idmef(field);
 			if ( ! value ) {
 				log(LOG_ERR, "could not get idmef value from sql field\n");
