@@ -30,6 +30,7 @@
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-list.h>
+#include <libprelude/prelude-hash.h>
 
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
@@ -69,254 +70,135 @@ db_path_t **db_path_index = NULL;
 
 static void db_path_destroy(db_path_t *obj);
 
-/* 
- * Find char 'c' in first 'n' bytes of string 's'
- */
 
-static const char *strnchr(const char *s, char c, int n)
+#define skip_whitespaces(str)				\
+	while ( *(str) == ' ' || *(str) == '\t' )	\
+		(str)++;
+
+
+
+static int get_next_key_value_pair(const char **string, char **key, char **value)
 {
-	int i;
-	
-	for ( i = 0; i < n; i++ )
-		if ( s[i] == c )
-			return s + i;
-		
-	return NULL;
-}
+	const char *ptr;
 
-/*
- * Find the first occurence of any of separator characters from string 
- * 'sep' in string 's'.
- *
- * If a `'' or `"' is found, the search is resumed at the next occurence
- * or `'' or `"' respectively. 
- * If a `\' is found, the following character is skipped. 
- */
+	skip_whitespaces(*string);
 
-static const char *find_separator(const char *s, char *sep)
-{
-	if ( !s || ! sep )
-		return NULL;
-	
-	while ( s && *s ) {
-		
-		if ( ( *s == '\'' ) && ( *(s-1) != '\\' ) ) {
-			/* allow sigle quote to be escaped with a backslash */
-			do {
-				s = strchr(s+1, '\'');
-			} while ( s && ( *(s-1) == '\\' ) ); 
-			s++;
-			continue;
-		}
-		
-		if ( ( *s == '"' ) && ( *(s-1) != '\\' ) ) {
-			/* allow double quote to be escaped with a backslash */
-			do {
-				s = strchr(s+1, '"');
-			} while ( s && ( *(s-1) == '\\') ); 
-			s++;
-			continue;
-			
-		}
-		
-		if ( *s == '\\' ) {
-			/* don't step over trailing \0 */
-			if (*++s)
-				s++;
-				
-			continue;
-		}
-		
-		if ( strchr(sep, *s) )
-			return s;
-			
-		s++;
-	}
-	
-	return NULL;
-}
+	ptr = strchr(*string, '=');
+	if ( ! ptr )
+		return 0;
 
-/* strcpy(3) says that strings may not overlap, so we reimplement */
-static void my_strcpy(char *dst, char *src)
-{
-	if ( !dst || !src )
-		return ;
-	
-	while (*src) 
-		*dst++ = *src++;
-		
-	*dst = '\0';
-}
+	*key = strndup(*string, ptr - *string);
+	if ( ! *key )
+		return prelude_error_from_errno(errno);
 
-/* unescape backslash-espaced sequences */
-static void unescape(char *s)
-{
-	if ( !s ) 
-		return ;
-	
-	while ( *s ) {
-		if ( *s == '\\' ) 
-			my_strcpy(s, s+1);
-		
-		s++;
-	}
-}
+	*string = ptr + 1;
 
-/* remove quotes surrounding data */
-static void unquote(char *s)
-{
-	int len;
-	
-	len = strlen(s);
+	if ( **string == '"' ) {
+		(*string)++;
 
-	if ( ( s[0] == '"' ) && ( s[len-1] == '"' ) ) {
-		s[len-1] = '\0';
-		my_strcpy(s, s+1);
+		ptr = strchr(*string, '"');
+		if ( ! ptr )
+			return prelude_error(PRELUDE_ERROR_GENERIC);
+
+		*value = strndup(*string, ptr - *string);
+		if ( ! *value )
+			return prelude_error_from_errno(errno);
+
+		*string = ptr + 1;		
+
+	} else {
+		size_t size;
+
+		size = strcspn(*string, " \t");
+
+		*value = strndup(*string, size);
+		if ( ! *value )
+			return prelude_error_from_errno(errno);
+
+		*string += size;
 	}
 
-
-	if ( ( s[0] == '\'' ) && ( s[len-1] == '\'' ) ) {
-		s[len-1] = '\0';
-		my_strcpy(s, s+1);
-	}
-			
+	return 1;
 }
 
-/* 
- * Get value of the parameter 'field' from the configuration string 'string'. 
- *
- * The string must have structure similar to the example below:
- * field1=value1 field2="par11=val11 par12=val12" field3='par22=val22 par23' field4\' 
- *
- * Field name is case insensitive. 
- * If the field is not found, NULL is returned. 
- * If the field value is empty, a pointer to empty string is returned. 
- */
-static int parameter_value(const char *string, const char *field, char **value)
+
+static int parse_path_descr(const char *string, prelude_hash_t **hash)
 {
-	char buf[BUFLEN+1]; /* +1 for trailing '\0' */
-	const char *s;
-	const char *sep;
-	const char *data;
-	int len;
-	int name_len;
-	int data_len;
-	
-	s = string;
-	
-	do {
-		/*sep = strpbrk(s, " ");*/
-		sep = find_separator(s, " \t");
-		if ( sep ) {
-			if ( sep == s ) {
-				s++;
-				continue;
-			}
-			
-			len = sep - s;
-		} else
-			len = strlen(s);
-		
-		data = strnchr(s, '=', len);
-		if ( data ) 
-			data++;
-		else
-			data = s + len;
+	int ret;
+	char *name, *value;
 
-		data_len = s + len - data;
-		name_len = len - data_len - 1;
-				
-		if ( name_len > BUFLEN )
-			name_len = BUFLEN;
+	ret = prelude_hash_new(hash, NULL, NULL, free, NULL);
+	if ( ret < 0 )
+		return ret;
 
-		strncpy(buf, s, name_len);
-		buf[name_len] = '\0';
-			
-		if ( strncasecmp(buf, field, name_len) == 0 ) {
-			
-			*value = malloc(data_len + 1);
-			if ( ! *value )
-				return preludedb_error_from_errno(errno);
-			
-			strncpy(*value, data, data_len);
-			(*value)[data_len] = '\0';
-			
-			unescape(*value);
-			unquote(*value);
-			
-			return 1;
-		}
-		
-		s = sep + 1;
-	} while (sep && *s);
-	
+	while ( (ret = get_next_key_value_pair(&string, &name, &value)) > 0 ) {
+		ret = prelude_hash_set(*hash, name, value);
+		if ( ret < 0 )
+			goto error;
+	}
+
+	if ( ret < 0 )
+		goto error;
+
 	return 0;
-}
 
+ error:
+	prelude_hash_destroy(*hash);
+	return ret;
+}
 
 
 
 static int db_path_new(char *descr)
 {
+	prelude_hash_t *hash;
 	db_path_t *obj;
-	char *val;
+	char *value;
 	prelude_list_t *tmp;
 	db_path_t *entry, *prev;
 	int ret;
-	
+
 	obj = calloc(1, sizeof(*obj));
 	if ( ! obj )
 		return preludedb_error_from_errno(errno);
-	
-	ret = parameter_value(descr, "object", &val);
-	if ( ret <= 0 )
-		goto parse_error;
-	
-	ret = idmef_path_new_fast(&obj->path, val);
-	free(val);
+
+	ret = parse_path_descr(descr, &hash);
+	if ( ret < 0 ) {
+		free(obj);
+		return ret;
+	}
+
+	value = prelude_hash_get(hash, "object");
+	if ( ! value ) {
+		ret = prelude_error(PRELUDE_ERROR_GENERIC);
+		goto error;
+	}
+
+	ret = idmef_path_new_fast(&obj->path, value);
+	free(value);
 	if ( ret < 0 )
 		goto error;
 
-	ret = parameter_value(descr, "table", &obj->table);
-	if ( ret <= 0 )
-		goto parse_error;
-
-	ret = parameter_value(descr, "field", &obj->field);
-	if ( ret < 0 )
+	obj->table = prelude_hash_get(hash, "table");
+	if ( ! obj->table ) {
+		ret = prelude_error(PRELUDE_ERROR_GENERIC);
 		goto error;
+	}
 
-	ret = parameter_value(descr, "function", &obj->function);
-	if ( ret < 0 )
+	obj->field = prelude_hash_get(hash, "field");
+	obj->function = prelude_hash_get(hash, "function");
+	if ( ! obj->field && ! obj->function ) {
+		ret = prelude_error(PRELUDE_ERROR_GENERIC);
 		goto error;
-	
-	if ( ! obj->field && ! obj->function )
-		goto parse_error;
+	}
 
 	/* Following fields are optional */
-	ret = parameter_value(descr, "top_table", &obj->top_table);
-	if ( ret < 0 )
-		goto error;
-
-	ret = parameter_value(descr, "top_field", &obj->top_field);
-	if ( ret < 0 )
-		return ret;
-
-	ret = parameter_value(descr, "condition", &obj->condition);
-	if ( ret < 0 )
-		return ret;
-
-	ret = parameter_value(descr, "ident_field", &obj->ident_field);
-	if ( ret < 0 )
-		return ret;
-
-	ret = parameter_value(descr, "usec_field", &obj->usec_field);
-	if ( ret < 0 )
-		return ret;
-
-	ret = parameter_value(descr, "gmtoff_field", &obj->gmtoff_field);
-	if ( ret < 0 )
-		return ret;
-	
+	obj->top_table = prelude_hash_get(hash, "top_table");
+	obj->top_field = prelude_hash_get(hash, "top_field");
+	obj->condition = prelude_hash_get(hash, "condition");
+	obj->ident_field = prelude_hash_get(hash, "ident_field");
+	obj->usec_field = prelude_hash_get(hash, "usec_field");
+	obj->gmtoff_field = prelude_hash_get(hash, "gmtoff_field");
 
 	/* From idmef-cache.c -- adapted (shamelessly copying my own code :) */
 	
@@ -328,11 +210,13 @@ static int db_path_new(char *descr)
 	prev = NULL;
 	prelude_list_for_each(&db_paths, tmp) {
 		entry = prelude_list_entry(tmp, db_path_t, list);
+
 		ret = idmef_path_compare(entry->path, obj->path);
-		
-		if (ret == 0)
-			goto error_duplicated; /* path found */
-			
+		if ( ret == 0 ) {
+			ret = prelude_error(PRELUDE_ERROR_GENERIC);
+			goto error;
+		}
+
 		if (ret > 0) {
 			entry = prev;
 			break;        /* add after previous path */
@@ -353,26 +237,16 @@ static int db_path_new(char *descr)
 	 	
 	obj->listed = 1;
 
-	return 0;  /* Success */
+	prelude_hash_destroy(hash);
 
-error_duplicated:
+	return 0;
+
+ error:
+	prelude_hash_destroy(hash);
 	db_path_destroy(obj);
 
-	return -OBJECT_DUPLICATED_ERROR;
-			
-parse_error:
-	db_path_destroy(obj);
-		
-	return -PARSE_ERROR;
-	
-error:
-	db_path_destroy(obj);
-	
-	return -OTHER_ERROR;
+	return ret;
 }
-
-
-
 
 
 
