@@ -275,7 +275,7 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 	int lists, n;
 
 	if ( ! selection )
-		get_alert(connection, ident);
+		return get_alert(connection, ident);
 
 	n = 0;
 

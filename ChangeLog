@@ -1,3 +1,15 @@
+2003-08-14  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB::new): pass connection string directly to 
+	prelude_db_interface_new_string(), instead of parsing
+	(since parser does not seem to work anyhow). 
+	(_convert_object_list): adapted to changed idmef-selection API
+	(get_alert): treat empty @object_list as undefined
+	
+	* plugins/format/classic/classic.c:
+	(classic_get_alert): fixed an idiotic bug in handling NULL selection.
+
 2003-08-13  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
         * bindings/perl/PreludeDB.i:

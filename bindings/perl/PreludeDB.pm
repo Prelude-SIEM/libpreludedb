@@ -37,28 +37,8 @@ sub	shutdown
 sub	new
 {
     my	$class = shift;
-    my	%opt = @_;
-    my	$conn_string;
+    my	$conn_string = shift;
     my	$db;
-
-    $opt{-iface}  ||= "iface1";
-    $opt{-class}  ||= "sql";
-    $opt{-type}   ||= "mysql";
-    $opt{-format} ||= "classic";
-    $opt{-host}   ||= "localhost";
-    $opt{-name}   ||= "prelude";
-    $opt{-user}   ||= "prelude";
-    $opt{-pass}   ||= "prelude";
-
-    $conn_string = 
-	"iface=$opt{-iface} " .
-	"class=$opt{-class} ".
-	"type=$opt{-type} " .
-	"host=$opt{-host} " .
-	"name=$opt{-name} " .
-	"user=$opt{-user} " .
-	"pass=$opt{-pass} " .
-	"format=$opt{-format}";
 
     $db = prelude_db_interface_new_string($conn_string);
     return $db ? bless(\$db, $class) : undef;
@@ -127,7 +107,7 @@ sub	_convert_object_list
 	    return undef;
 	}
 
-	if ( Prelude::idmef_selection_add_object($object_list_handle, $object) < 0 ) {
+	if ( Prelude::idmef_selection_add_object($object_list_handle, $object, $Prelude::function_none) < 0 ) {
 	    Prelude::idmef_object_destroy($object);
 	    Prelude::idmef_selection_destroy($object_list_handle);
 	    return undef;
@@ -146,9 +126,14 @@ sub	get_alert
     my	$message;
 
     if ( @object_list ) {
-	$object_list_handle = _convert_object_list(@object_list);
-	unless ( $object_list_handle ) {
-	    return undef;
+    
+	if ( defined $object_list[0] ) { #list is not empty
+	    $object_list_handle = _convert_object_list(@object_list);
+	    unless ( $object_list_handle ) {
+		return undef;
+	    }
+	} else {
+	    $object_list_handle = undef;
 	}
 
     } else {
