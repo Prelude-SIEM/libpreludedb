@@ -30,7 +30,6 @@
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-tree-wrap.h>
-#include <libprelude/idmef-util.h>
 #include <libprelude/prelude-plugin.h>
 
 #include "preludedb-sql-settings.h"

@@ -32,7 +32,6 @@
 
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
-#include <libprelude/idmef-util.h>
 
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
