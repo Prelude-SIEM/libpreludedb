@@ -49,7 +49,7 @@
 
 #endif
 
-static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident, char parent_type, idmef_file_t *file);
+static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident, int file_ident, char parent_type, idmef_file_t *file);
 
 static int insert_address(sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
                           char parent_type, uint64_t node_ident, idmef_address_t *addr) 
@@ -404,7 +404,7 @@ static int insert_service(sql_connection_t *conn, uint64_t alert_ident, uint64_t
 
 
 static int insert_inode(sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
-                        uint64_t file_ident, idmef_inode_t *inode) 
+                        int file_ident, idmef_inode_t *inode) 
 {
         char ctime[MAX_UTC_DATETIME_SIZE] = { '\0' };
 
@@ -416,7 +416,7 @@ static int insert_inode(sql_connection_t *conn, uint64_t alert_ident, uint64_t t
         
         sql_insert(conn, "Prelude_Inode", "alert_ident, target_ident, file_ident, "
                          "change_time, major_device, minor_device, c_major_device, "
-                         "c_minor_device", "%llu, %llu, %llu, '%s', %d, %d, %d, %d",
+                         "c_minor_device", "%llu, %llu, %d, '%s', %d, %d, %d, %d",
                          alert_ident, target_ident, file_ident, ctime, inode->major_device,
                          inode->minor_device, inode->c_major_device, inode->c_minor_device);
 
@@ -426,7 +426,7 @@ static int insert_inode(sql_connection_t *conn, uint64_t alert_ident, uint64_t t
 
 
 static int insert_linkage(sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
-                          uint64_t file_ident, idmef_linkage_t *linkage) 
+                          int file_ident, idmef_linkage_t *linkage) 
 {
         char *name, *path;
         const char *category;
@@ -446,19 +446,19 @@ static int insert_linkage(sql_connection_t *conn, uint64_t alert_ident, uint64_t
         }
                 
         sql_insert(conn, "Prelude_Linkage", "alert_ident, target_ident, file_ident, category, name, path",
-                         "'%s', '%s', '%s'", category, name, path);
+                         "%llu, %llu, %d, '%s', '%s', '%s'", alert_ident, target_ident, file_ident, category, name, path);
         
         free(name);
         free(path);
         
-        return insert_file(conn, alert_ident, target_ident, 'L', linkage->file);
+        return insert_file(conn, alert_ident, target_ident, file_ident, 'L', linkage->file);
 }
 
 
 
 
 static int insert_file_access(sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
-                              uint64_t file_ident, idmef_file_access_t *access)
+                              int file_ident, idmef_file_access_t *access)
 {
         sql_insert(conn, "Prelude_FileAccess", "alert_ident, target_ident, file_ident",
                          "%llu, %llu, %llu", alert_ident, target_ident, file_ident);
@@ -474,7 +474,7 @@ static int insert_file_access(sql_connection_t *conn, uint64_t alert_ident, uint
 
 
 static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident,
-                       char parent_type, idmef_file_t *file) 
+                       int file_ident, char parent_type, idmef_file_t *file) 
 {
         int ret;
         char *name, *path;
@@ -515,9 +515,9 @@ static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t ta
                 idmef_get_db_timestamp(file->access_time, atime, sizeof(atime));
                 
         sql_insert(conn, "Prelude_File", "alert_ident, target_ident, ident, category, name, path, "
-                         "create_time, modify_time, access_time, data_size, disk_size", "%llu, %llu, %llu, '%s', "
+                         "create_time, modify_time, access_time, data_size, disk_size", "%llu, %llu, %d, '%s', "
                          "'%s', '%s', '%s', '%s', '%s', '%d', %d", alert_ident, target_ident,
-                         file->ident, category, name, path, ctime, mtime, atime, file->data_size, file->disk_size);
+                         file_ident, category, name, path, ctime, mtime, atime, file->data_size, file->disk_size);
 
         free(name);
         free(path);
@@ -525,7 +525,7 @@ static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t ta
         list_for_each(tmp, &file->file_access_list) {
                 access = list_entry(tmp, idmef_file_access_t, list);
 
-                ret = insert_file_access(conn, alert_ident, target_ident, file->ident, access);
+                ret = insert_file_access(conn, alert_ident, target_ident, file_ident, access);
                 if ( ret < 0 )
                         return -1;
         }
@@ -533,12 +533,12 @@ static int insert_file(sql_connection_t *conn, uint64_t alert_ident, uint64_t ta
         list_for_each(tmp, &file->file_linkage_list) {
                 linkage = list_entry(tmp, idmef_linkage_t, list);
                 
-                ret = insert_linkage(conn, alert_ident, target_ident, file->ident, linkage);
+                ret = insert_linkage(conn, alert_ident, target_ident, file_ident, linkage);
                 if ( ret < 0 )
                         return -1;
         }
 
-        ret = insert_inode(conn, alert_ident, target_ident, file->ident, file->inode);
+        ret = insert_inode(conn, alert_ident, target_ident, file_ident, file->inode);
         if ( ret < 0 )
                 return -1;
         
@@ -596,6 +596,7 @@ static int insert_source(sql_connection_t *conn, uint64_t alert_ident, idmef_sou
 static int insert_file_list(sql_connection_t *conn, uint64_t alert_ident, uint64_t target_ident, struct list_head *file_list) 
 {
         int ret;
+        uint64_t tmpid = 0;
         idmef_file_t *file;
         struct list_head *tmp;
 
@@ -608,7 +609,9 @@ static int insert_file_list(sql_connection_t *conn, uint64_t alert_ident, uint64
         list_for_each(tmp, file_list) {
                 file = list_entry(tmp, idmef_file_t, list);
 
-                ret = insert_file(conn, alert_ident, target_ident, 'T', file);
+                file->ident = tmpid++;
+
+                ret = insert_file(conn, alert_ident, target_ident, file->ident, 'T', file);
                 if ( ret < 0 )
                         return -1;
         }
@@ -726,11 +729,11 @@ static int insert_analyzer(sql_connection_t *conn, uint64_t parent_ident, char p
         free(ostype);
         free(osversion);
         
-        ret = insert_node(conn, parent_ident, analyzer->analyzerid, 'A', analyzer->node);
+        ret = insert_node(conn, parent_ident, analyzer->analyzerid, parent_type, analyzer->node);
         if ( ret < 0 )
                 return -1;
         
-        ret = insert_process(conn, parent_ident, analyzer->analyzerid, 'A', analyzer->process);
+        ret = insert_process(conn, parent_ident, analyzer->analyzerid, parent_type, analyzer->process);
         if ( ret < 0 )
                 return -1;
 
