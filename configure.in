@@ -57,11 +57,11 @@ dnl ***************************************************
 
 # Check for mysql_config. If it is not found, look for mysql libraries
 # and headers in standard places
-AC_CHECK_PROG(MYSQL_CONFIG, mysql_config, true, false)
+AC_PATH_PROG(MYSQL_CONFIG, mysql_config, false)
 
-if test x$MYSQL_CONFIG = xtrue; then
-	MYSQL_LIBS=`mysql_config --libs`
-	MYSQL_CFLAGS=`mysql_config --cflags`
+if test x$MYSQL_CONFIG != xfalse; then
+	MYSQL_LIBS=`$MYSQL_CONFIG --libs`
+	MYSQL_CFLAGS=`$MYSQL_CONFIG --cflags`
 	
 	mysql_use=true
 else
@@ -87,7 +87,7 @@ else
 	fi
 fi
 
-if test x$mysql_use = xtrue; then
+if test x$mysql_use != xno; then
 	# mysql_config --libs outputs -L'directory' instead of -Ldirectory
 	# and escaped version fools gcc in AC_CHECK_LIB so we must remove
 	# apostrophes
@@ -129,11 +129,11 @@ dnl ********************************************************
 dnl * Check for the PostgreSQL library (PostgreSQL plugin) *
 dnl ********************************************************
 
-AC_CHECK_PROG(PGSQL_CONFIG, pg_config, true, false)
+AC_PATH_PROG(PG_CONFIG, pg_config, false)
 
-if test x$PGSQL_CONFIG = xtrue; then
-	PGSQL_LIBDIR=`pg_config --libdir`
-	PGSQL_INCLUDEDIR=`pg_config --includedir`
+if test x$PG_CONFIG != xfalse; then
+	PGSQL_LIBDIR=`$PG_CONFIG --libdir`
+	PGSQL_INCLUDEDIR=`$PG_CONFIG --includedir`
 
 	AC_CHECK_HEADER($PGSQL_INCLUDEDIR/libpq-fe.h, pgsql_hdr=true)
 fi
@@ -141,7 +141,7 @@ fi
 AC_ARG_ENABLE(pgsql, [  --enable-pgsql  Enable PostgreSQL plugin [default=auto]], enable_pgsql="$enableval", enable_pgsql=auto)
 
 if test x$enable_pgsql = xauto; then
-        if test x$PGSQL_CONFIG = xtrue && test x$pgsql_hdr = xtrue; then
+        if test x$PG_CONFIG != xfalse && test x$pgsql_hdr = xtrue; then
                 enable_pgsql=yes;
         else
                 enable_pgsql=no;
