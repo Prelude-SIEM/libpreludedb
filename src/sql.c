@@ -660,14 +660,12 @@ double prelude_sql_field_value_double(prelude_sql_field_t *field)
 
 
 
-char *prelude_sql_field_value_string(prelude_sql_field_t *field)
+idmef_string_t *prelude_sql_field_value_string(prelude_sql_field_t *field)
 {
 	const char *s;
-	char *ret;
 
 	s = prelude_sql_field_value(field);
-	ret = strdup(s);
-	return ret;
+	return idmef_string_new_dup(s);
 }
 
 idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
@@ -676,7 +674,7 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 	prelude_sql_field_type_t type;
 
 	type = prelude_sql_field_type(field->row->table, field->num);
-	
+
 	switch ( type ) {
 		
 	case dbtype_int32:
@@ -703,16 +701,9 @@ idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
 		value = idmef_value_new_double(prelude_sql_field_value_double(field));
 		break;
 
-	case dbtype_string: {
-		char *str;
-		idmef_string_t *string;
-		
-		str = prelude_sql_field_value_string(field);
-		string = idmef_string_new_dup(str);
-		value = idmef_value_new_string(string);
-		idmef_value_have_own_data(value);
+	case dbtype_string:
+		value = idmef_value_new_string(prelude_sql_field_value_string(field));
 		break;
-	}
 
 	default:
 		break;

@@ -1,3 +1,17 @@
+2003-05-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/format/classic/include/idmef-db-select.h:
+	* src/sql.c:
+	* src/include/sql.h:
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	libpreludedb API changes, idmef_cache is not used anymore,
+	idmef_selection is now used for object selection and
+	idmef_message is used to store the fetched fields
+
 2003-05-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/schema.txt:

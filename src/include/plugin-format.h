@@ -29,44 +29,39 @@
 typedef struct {
 	PLUGIN_GENERIC;
 
-	void * (*format_get_message_list)(prelude_db_connection_t * connection,
-					  idmef_cache_t * cache,
-					  idmef_criterion_t * criterion);
+	void *(*format_get_ident_list)(prelude_db_connection_t *connection,
+				       idmef_criterion_t *criterion);
 
-	void (*format_free_message_list)(prelude_db_connection_t * connection,
-					 idmef_cache_t * cache,
-					 void * message_list);
+	void (*format_free_ident_list)(prelude_db_connection_t *connection,
+				       void *message_list);
 
-	void * (*format_get_message)(prelude_db_connection_t * connection,
-				     idmef_cache_t * cache,
-				     void * message_list);
+	uint64_t (*format_get_next_ident)(prelude_db_connection_t *connection,
+					  void *message_list);
 
-	void (*format_free_message)(prelude_db_connection_t * connection,
-				    idmef_cache_t * cache,
-				    void * message_list,
-				    void * message);
+	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
+					     uint64_t ident,
+					     idmef_selection_t *selection);
 
-	idmef_value_t * (*format_get_message_field_value)(prelude_db_connection_t * connection,
-							  idmef_cache_t * cache,
-							  void * message_list,
-							  void * message);
+	idmef_message_t *(*format_get_heartbeat)(prelude_db_connection_t *connection,
+						 uint64_t ident,
+						 idmef_selection_t *selection);
 
 	int (*format_insert_idmef_message)(prelude_db_connection_t * connection,
 					   const idmef_message_t * message);
 } plugin_format_t;
 
-#define	plugin_get_message_list_func(p) (p)->format_get_message_list
-#define plugin_free_message_list_func(p) (p)->format_free_message_list
-#define plugin_get_message_func(p) (p)->format_get_message
-#define plugin_free_message_func(p) (p)->format_free_message
-#define plugin_get_message_field_value_func(p) (p)->format_get_message_field_value
+#define	plugin_get_ident_list_func(p) (p)->format_get_ident_list
+#define plugin_free_ident_list_func(p) (p)->format_free_ident_list
+#define plugin_get_next_ident_func(p) (p)->format_get_next_ident
+#define plugin_get_alert_func(p) (p)->format_get_alert
+#define plugin_get_heartbeat_func(p) (p)->format_get_heartbeat
 #define	plugin_insert_idmef_message_func(p) (p)->format_insert_idmef_message
 
-#define	plugin_set_get_message_list_func(p, f) plugin_get_message_list_func(p) = (f)
-#define plugin_set_free_message_list_func(p, f) plugin_free_message_list_func(p) = (f)
-#define	plugin_set_get_message_func(p, f) plugin_get_message_func(p) = (f)
-#define plugin_set_free_message_func(p, f) plugin_free_message_func(p) = (f)
-#define plugin_set_get_message_field_value_func(p, f) plugin_get_message_field_value_func(p) = (f)
+#define	plugin_set_get_ident_list_func(p, f) plugin_get_ident_list_func(p) = (f)
+#define plugin_set_free_ident_list_func(p, f) plugin_free_ident_list_func(p) = (f)
+#define	plugin_set_get_next_ident_func(p, f) plugin_get_next_ident_func(p) = (f)
+#define plugin_set_get_alert_func(p, f) plugin_get_alert_func(p) = (f)
+#define plugin_set_get_heartbeat_func(p, f) plugin_get_heartbeat_func(p) = (f)
 #define	plugin_set_insert_idmef_message_func(p, f) plugin_insert_idmef_message_func(p) = (f)
 
 int format_plugins_init(const char *dirname);

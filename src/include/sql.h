@@ -81,7 +81,7 @@ int64_t prelude_sql_field_value_int64(prelude_sql_field_t *field);
 uint64_t prelude_sql_field_value_uint64(prelude_sql_field_t *field);
 float prelude_sql_field_value_float(prelude_sql_field_t *field);
 double prelude_sql_field_value_double(prelude_sql_field_t *field);
-char *prelude_sql_field_value_string(prelude_sql_field_t *field);
+idmef_string_t *prelude_sql_field_value_string(prelude_sql_field_t *field);
 idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field);
 
 /*

@@ -28,8 +28,7 @@
 
 typedef struct prelude_db_interface prelude_db_interface_t;
 
-typedef struct prelude_db_message_list prelude_db_message_list_t;
-typedef struct prelude_db_message prelude_db_message_t;
+typedef struct prelude_db_ident_list prelude_db_ident_list_t;
 
 prelude_db_interface_t *prelude_db_interface_new(const char *name,
 						 const char *format,
@@ -45,17 +44,20 @@ int prelude_db_interface_activate(prelude_db_interface_t *interface);
 
 int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
 
-prelude_db_message_list_t * prelude_db_interface_get_message_list(prelude_db_interface_t * interface,
-								  idmef_cache_t * cache,
-								  idmef_criterion_t * criterion);
+prelude_db_ident_list_t * prelude_db_interface_get_ident_list(prelude_db_interface_t *interface,
+							      idmef_criterion_t *criterion);
 
-void prelude_db_interface_free_message_list(prelude_db_message_list_t * message_list);
+void prelude_db_interface_free_ident_list(prelude_db_ident_list_t *message_list);
 
-prelude_db_message_t * prelude_db_interface_get_message(prelude_db_message_list_t * message_list);
+uint64_t prelude_db_interface_get_next_ident(prelude_db_ident_list_t *ident_list);
 
-void prelude_db_interface_free_message(prelude_db_message_t * message);
+idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface, 
+						uint64_t ident,
+						idmef_selection_t *selection);
 
-idmef_value_t * prelude_db_interface_get_message_field_value(prelude_db_message_t * message);
+idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
+						    uint64_t ident,
+						    idmef_selection_t *selection);
 
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
 

@@ -42,6 +42,13 @@
 /* maximum length of text representation of object value */
 #define VALLEN 262144
 
+int add_table(strbuf_t *, char *);
+int add_field(strbuf_t *, char *, char *, char *);
+int relation_to_sql(strbuf_t *, char *, char *, idmef_relation_t, char *);
+int criterion_to_sql(prelude_sql_connection_t *, strbuf_t *, strbuf_t *, idmef_criterion_t *);
+int objects_to_sql(prelude_sql_connection_t *, strbuf_t *, strbuf_t *, strbuf_t *, idmef_selection_t *);
+strbuf_t *build_request(prelude_sql_connection_t *, idmef_selection_t *, idmef_criterion_t *);
+
 
 int add_table(strbuf_t *tables, char *table)
 {
@@ -320,12 +327,11 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 int objects_to_sql(prelude_sql_connection_t *conn, 
 		   strbuf_t *fields,
 		   strbuf_t *where, strbuf_t *tables, 
-		   idmef_cache_t *cache)
+		   idmef_selection_t *selection)
 {
 	idmef_cached_object_t *cached_obj;
 	idmef_object_t *obj;
 	db_object_t *db;
-	char *objname, *objnum;
 	char *table;
 	char *field;
 	char *function;
@@ -335,11 +341,11 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 	char *top_field;
 	char *condition;
 	char *ident_field;
-	int written, ret;
+	int written, ret = -1;
 	strbuf_t *tmp;
-	idmef_object_t *alert, *heartbeat;
-	int nobjects;
-	int cnt;
+	idmef_object_t
+		*alert = NULL,
+		*heartbeat = NULL;
 
 	tmp = strbuf_new();
 	if ( ! tmp ) {
@@ -366,18 +372,15 @@ int objects_to_sql(prelude_sql_connection_t *conn,
 
 	written = 0;
 
-	nobjects = idmef_cache_get_object_count(cache);
-	for ( cnt = 0; cnt < nobjects; cnt++ ) {
-
-		cached_obj = idmef_cache_get_object(cache, cnt);
-		obj = idmef_cached_object_get_object(cached_obj);
+	idmef_selection_set_object_iterator(selection);
+	while ( (obj = idmef_selection_get_next_object(selection)) ) {
 
 		db = db_object_find(obj);
 		if ( ! db ) {
-			objname = idmef_object_get_name(obj);
-			objnum = idmef_object_get_numeric(obj);
+			const char *objname = idmef_object_get_name(obj);
+			char *objnum = idmef_object_get_num(obj);
+			
 			log(LOG_ERR, "object %s [%s] not handled by database specification!\n", objname, objnum);
-			free(objname);
 			free(objnum);
 			ret = -1;
 			goto error;
@@ -526,12 +529,12 @@ error:
 
 
 strbuf_t *build_request(prelude_sql_connection_t *conn, 
-   		        idmef_cache_t *cache, 
+   		        idmef_selection_t *selection, 
        		        idmef_criterion_t *criterion)
 {
 	strbuf_t *request = NULL;
 	strbuf_t *tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
-	int ret;
+	int ret = -1;
 	
 	request = strbuf_new();
 	if ( ! request )
@@ -553,7 +556,7 @@ strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! where2 )
 		goto error;
 		
-	ret = objects_to_sql(conn, fields, where1, tables, cache);
+	ret = objects_to_sql(conn, fields, where1, tables, selection);
 	if ( ret < 0 )
 		goto error;
 
@@ -600,13 +603,12 @@ error:
 
 
 prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
-				      idmef_cache_t *cache,
+				      idmef_selection_t *selection,
 				      idmef_criterion_t *criterion)
 {
 	prelude_sql_connection_t *sql;
 	strbuf_t *request;
 	prelude_sql_table_t *table;
-	int ret;
 
 	if ( prelude_db_connection_get_type(conn) != prelude_db_type_sql ) {
 		log(LOG_ERR, "SQL database required for classic format!\n");
@@ -615,21 +617,15 @@ prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
 
 	sql = prelude_db_connection_get(conn);
 
-	ret = idmef_cache_index(cache);
-	if ( ret < 0 ) {
-		log(LOG_ERR, "cache indexing error!\n");
-		return NULL;
-	}
-
-	request = build_request(sql, cache, criterion);
+	request = build_request(sql, selection, criterion);
 	if ( ! request )
 		return NULL;
 
 	table = prelude_sql_query(sql, strbuf_string(request));
 	if ( ! table && prelude_sql_errno(sql) ) {
-		log(LOG_ERR, "Query %s failed: %s\n", strbuf_string(request), 
-				prelude_sql_errno(sql) ? 
-				prelude_sql_error(sql) : "unknown error");
+		log(LOG_ERR, "Query %s failed: %s\n", 
+		    strbuf_string(request), 
+		    prelude_sql_errno(sql) ? prelude_sql_error(sql) : "unknown error");
 		strbuf_destroy(request);
 		return NULL;
 	}
