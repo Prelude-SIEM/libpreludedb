@@ -32,22 +32,18 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <sys/types.h>
+#include <mysql.h>
 
-#include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
-#include <libprelude/config-engine.h>
-
-#include <libprelude/prelude-io.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-getopt.h>
-
-#include <mysql/mysql.h>
+#include <libprelude/prelude-log.h>
+#include <libprelude/prelude-strbuf.h>
 
 #include "config.h"
 
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
+
 
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
  #define mysql_field_count mysql_num_fields
