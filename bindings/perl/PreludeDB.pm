@@ -206,39 +206,11 @@ sub	get_heartbeat_ident_list
 				    @_);
 }
 
-sub	_build_object_list
-{
-    my	@object_list = @_;
-    my	$object_list_handle;
-    my	$object;
-    
-    $object_list_handle = Prelude::idmef_object_list_new() or return undef;
-
-    foreach ( @object_list ) {
-	unless ( $_ ) {
-	    Prelude::idmef_object_list_destroy($object_list_handle);
-	    return undef;
-	}
-
-	$object = Prelude::idmef_object_new_fast($_);
-	unless ( $object ) {
-	    Prelude::idmef_object_list_destroy($object_list_handle);
-	    return undef;
-	}
-
-	Prelude::idmef_object_list_add($object_list_handle, $object);
-    }
-
-    return $object_list_handle;
-}
-
 sub	get_message
 {
     my	$self = shift;
     my	$get_message_func = shift;
     my	$ident_hash = shift || return undef;
-    my	@object_list = @_;
-    my	$object_list_handle;
     my	$ident_handle;
     my	$message;
     my	$ident;
@@ -247,20 +219,11 @@ sub	get_message
 	return undef;
     }
 
-    if ( @object_list ) {
-	$object_list_handle = _build_object_list(@object_list) or return undef;
-    }
+    $ident = PreludeDB::prelude_db_message_ident_new($ident_hash->{analyzerid}, $ident_hash->{ident}) or return undef;
 
-    $ident = PreludeDB::prelude_db_message_ident_new($ident_hash->{analyzerid}, $ident_hash->{ident});
-    unless ( $ident ) {
-	Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
-	return undef;
-    }
-
-    $message = &$get_message_func($$self, $ident, $object_list_handle);
+    $message = &$get_message_func($$self, $ident);
 
     PreludeDB::prelude_db_message_ident_destroy($ident);
-    Prelude::idmef_object_list_destroy($object_list_handle) if ( $object_list_handle );
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
 }
