@@ -24,6 +24,23 @@ AC_SUBST(LDFLAGS)
 AC_SUBST(libprelude_db_libs)
 AC_SUBST(libprelude_db_cflags)
 
+if test "x$prefix" = "xNONE"; then
+	prefix="/usr/local"
+fi
+
+if test "x$localstatedir" = "x\${prefix}/var"; then
+	localstatedir="$prefix/var"
+fi
+
+if test "x$sysconfdir" = "x\${prefix}/etc"; then
+    sysconfdir="$prefix/etc"
+fi
+
+if test "x$datadir" = "x\${prefix}/share"; then
+    datadir="$prefix/share"
+fi
+
+
 dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
