@@ -74,6 +74,7 @@ static prelude_io_t *pio_open(const char *filename, const char *mode)
         fd = fopen(filename, mode);
         if ( ! fd ) {
                 log(LOG_ERR, "couldn't open %s (%s).\n", filename, mode);
+                prelude_io_close(pfd);
                 prelude_io_destroy(pfd);
                 return NULL;
         }
@@ -233,8 +234,15 @@ static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd)
 static int init_cache_directory(const char *directory)
 {
         int ret, i;
+        struct stat st;
         char dname[256];
 
+        ret = stat(directory, &st);
+        if ( ret < 0 && errno != ENOENT ) {
+                log(LOG_ERR, "error stating %s.\n", directory);
+                return -1;
+        }
+        
         ret = mkdir(directory, S_IRWXU);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't create directory %s.\n", directory);
@@ -244,6 +252,12 @@ static int init_cache_directory(const char *directory)
         for ( i = 0; i < 10; i++ ) {
                 snprintf(dname, sizeof(dname), "%s/%d", directory, i);
 
+                ret = stat(dname, &st);
+                if ( ret < 0 && errno != ENOENT ) {
+                        log(LOG_ERR, "error stating %s.\n", dname);
+                        return -1;
+                }
+                
                 ret = mkdir(dname, S_IRWXU);
                 if ( ret < 0 ) {
                         log(LOG_ERR, "couldn't create directory %s.\n", directory);
@@ -298,6 +312,8 @@ int db_cache_write(db_cache_t *cache, idmef_message_t *message)
                 return -1;
         
         ret = write_message_to_cache(message, fd);
+
+        prelude_io_close(fd);
         prelude_io_destroy(fd);
 
         return ret;
@@ -328,6 +344,8 @@ idmef_message_t *db_cache_read(db_cache_t *cache, const char *type, uint64_t ide
                 return NULL;
         
         idmef = read_message_from_cache(fd);
+
+        prelude_io_close(fd);
         prelude_io_destroy(fd);
 
         return idmef;
@@ -338,25 +356,10 @@ idmef_message_t *db_cache_read(db_cache_t *cache, const char *type, uint64_t ide
 db_cache_t *db_cache_new(const char *directory)
 {
         int ret;
-        struct stat st;
         
-        ret = access(directory, R_OK|W_OK);
-        if ( ret < 0 ) {
-                log(LOG_ERR, "write access to %s denied.\n", directory);
+        ret = init_cache_directory(directory);
+        if ( ret < 0 )
                 return NULL;
-        }
-
-        ret = stat(directory, &st);
-        if ( ret < 0 && errno != ENOENT ) {
-                log(LOG_ERR, "couldn't stat %s.\n", directory);
-                return NULL;
-        }
-
-        if ( ret < 0 && errno == ENOENT ) {
-                ret = init_cache_directory(directory);
-                if ( ret < 0 )
-                        return NULL;
-        }
         
         return create_cache_object(directory);
 }
