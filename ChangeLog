@@ -1,3 +1,8 @@
+2003-12-27  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/python/preludedb.py:
+	fixes
+
 2003-12-27  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* src/include/Makefile.am (noinst_HEADERS): 

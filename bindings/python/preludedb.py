@@ -68,6 +68,11 @@ class DBMessageDeletionFailed(Error):
 
 
 
+# class DBNoResult(Exception):
+#     pass
+
+
+
 class PreludeDBMessageIdentList:
     def __init__(self, res, destroy_list_func, get_next_ident_func):
         self.res = res
@@ -155,13 +160,29 @@ class PreludeDB:
         return PreludeDBSQL(sqlconn)
 
     def get_alert_ident_list(self, criteria=None, limit=-1, offset=-1):
-        ident_list_handle = prelude_db_interface_get_alert_ident_list(self.res, criteria, limit, offset)
+        if criteria:
+            criteria_res = criteria.res
+        else:
+            criteria_res = None
+        
+        ident_list_handle = prelude_db_interface_get_alert_ident_list(self.res, criteria_res, limit, offset)
+        if not ident_list_handle:
+            return None
+        
         return PreludeDBMessageIdentList(ident_list_handle,
                                          prelude_db_interface_alert_ident_list_destroy,
                                          prelude_db_interface_get_next_alert_ident)
 
     def get_heartbeat_ident_list(self, criteria=None, limit=-1, offset=-1):
-        ident_list_handle = prelude_db_interface_get_heartbeat_ident_list(self.res, criteria, limit, offset)
+        if criteria:
+            criteria_res = criteria.res
+        else:
+            criteria_res = None
+        
+        ident_list_handle = prelude_db_interface_get_heartbeat_ident_list(self.res, criteria_res, limit, offset)
+        if not ident_list_handle:
+            return None
+        
         return PreludeDBMessageIdentList(ident_list_handle,
                                          prelude_db_interface_heartbeat_ident_list_destroy,
                                          prelude_db_interface_get_next_heartbeat_ident)
