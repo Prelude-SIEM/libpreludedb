@@ -173,7 +173,8 @@ class PreludeDB:
             rows.append(row)
             for value in values:
                 row.append(idmef_value_c_to_python(value))
-                _prelude.idmef_value_destroy(value)
+                if value != None:
+                    _prelude.idmef_value_destroy(value)
 
         _preludedb.preludedb_result_values_destroy(result)
         _preludedb.preludedb_object_selection_destroy(selection_handle)
