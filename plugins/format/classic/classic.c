@@ -54,6 +54,58 @@
 static plugin_format_t plugin;
 
 
+static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident,
+		     const char *table_name, const char *field_name, uint64_t *result)
+{
+	prelude_sql_connection_t *sql;
+	prelude_sql_table_t *table;
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
+
+	sql = prelude_db_connection_get_sql(connection);
+	if ( ! sql )
+		return -1;
+
+	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE analyzerid = %llu AND %s = %llu;",
+				  table_name,
+				  prelude_db_message_ident_get_analyzerid(ident),
+				  field_name,
+				  prelude_db_message_ident_get_ident(ident));
+	if ( ! table )
+		return prelude_sql_errno(sql) ? -1 : 0;
+
+	row = prelude_sql_row_fetch(table);
+	if ( ! row )
+		goto error;
+
+	field = prelude_sql_field_fetch(row, 0);
+	if ( ! field )
+		goto error;
+
+	*result = prelude_sql_field_value_uint64(field);
+
+	return 1;
+	
+ error:
+	prelude_sql_table_free(table);
+	return -1;
+}
+
+
+
+static int get_alert_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
+{
+	return get_ident(connection, ident, "Prelude_Alert", "alert_ident", result);
+}
+
+
+
+static int get_heartbeat_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
+{
+	return get_ident(connection, ident, "Prelude_Heartbeat", "heartbeat_ident", result);
+}
+
+
 
 static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 					   idmef_criteria_t *criteria,
@@ -198,17 +250,57 @@ static void classic_message_ident_list_destroy(prelude_db_connection_t *connecti
 
 
 static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
-					  prelude_db_message_ident_t *ident)
+					  prelude_db_message_ident_t *message_ident)
 {
-	return get_alert(connection, prelude_db_message_ident_get_ident(ident));
+	uint64_t ident;
+
+	if ( get_alert_ident(connection, message_ident, &ident) <= 0 )
+		return NULL;
+
+	return get_alert(connection, message_ident, ident);
 }
 
 
 
 static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connection,
-					      prelude_db_message_ident_t *ident)
+					      prelude_db_message_ident_t *message_ident)
 {
-	return get_heartbeat(connection, prelude_db_message_ident_get_ident(ident));
+	uint64_t ident;
+
+	if ( get_heartbeat_ident(connection, message_ident, &ident) <= 0 )
+		return NULL;
+
+	return get_heartbeat(connection, message_ident, ident);
+}
+
+
+
+static int classic_delete_alert(prelude_db_connection_t *connection,
+				prelude_db_message_ident_t *message_ident)
+{
+	uint64_t ident;
+	int ret;
+
+	ret = get_alert_ident(connection, message_ident, &ident);
+	if ( ret <= 0 )
+		return ret;
+
+	return delete_alert(connection, ident);
+}
+
+
+
+static int classic_delete_heartbeat(prelude_db_connection_t *connection,
+				    prelude_db_message_ident_t *message_ident)
+{
+	uint64_t ident;
+	int ret;
+
+	ret = get_heartbeat_ident(connection, message_ident, &ident);
+	if ( ret <= 0 )
+		return ret;
+
+	return delete_heartbeat(connection, ident);
 }
 
 

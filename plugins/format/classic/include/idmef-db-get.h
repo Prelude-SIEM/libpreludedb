@@ -25,9 +25,11 @@
 #define _LIBPRELUDEDB_CLASSIC_DB_GET_H
 
 idmef_message_t	*get_alert(prelude_db_connection_t *connection,
+			   prelude_db_message_ident_t *message_ident,
 			   uint64_t ident);
 
 idmef_message_t	*get_heartbeat(prelude_db_connection_t *connection,
+			       prelude_db_message_ident_t *message_ident,
 			       uint64_t ident);
 
 #endif /* ! _LIBPRELUDEDB_CLASSIC_DB_GET_H  */

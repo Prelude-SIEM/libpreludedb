@@ -1,8 +1,10 @@
 # 5.2.2
 DROP TABLE IF EXISTS Prelude_Alert;
 CREATE TABLE Prelude_Alert (
- ident BIGINT UNSIGNED NOT NULL,	# initialized by prelude-manager (but optional in the draft)
- PRIMARY KEY (ident)
+ ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+ alert_ident BIGINT UNSIGNED NOT NULL,
+ analyzerid BIGINT UNSIGNED NOT NULL,
+ PRIMARY KEY (ident, alert_ident, analyzerid)
 );
 
 
@@ -47,8 +49,10 @@ CREATE TABLE Prelude_OverflowAlert (
 # 5.2.3
 DROP TABLE IF EXISTS Prelude_Heartbeat;
 CREATE TABLE Prelude_Heartbeat (
- ident BIGINT UNSIGNED NOT NULL,
-PRIMARY KEY (ident)
+ ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+ heartbeat_ident BIGINT UNSIGNED NOT NULL,
+ analyzerid BIGINT UNSIGNED NOT NULL,
+ PRIMARY KEY (ident, heartbeat_ident, analyzerid)
 );
 
 # 5.2.4.1 

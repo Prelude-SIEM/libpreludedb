@@ -56,31 +56,15 @@
 	} while ( 0 )
 
 
-int	classic_delete_alert(prelude_db_connection_t *connection,
-			     prelude_db_message_ident_t *alert_ident)
+int	delete_alert(prelude_db_connection_t *connection, uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
-	prelude_sql_table_t *table;
-	uint64_t ident;
-
-	ident = prelude_db_message_ident_get_ident(alert_ident);
 
 	sql = prelude_db_connection_get(connection);
 	if ( ! sql ) {
 		log(LOG_ERR, "not a SQL connection\n");
 		return -1;
 	}
-
-	table = prelude_sql_query(sql, "SELECT * FROM Prelude_Alert WHERE ident = %llu", ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -2;
-		}
-		return 0;
-	}
-
-	prelude_sql_table_free(table);
 
 	if ( prelude_sql_begin(sql) < 0 ) {
 		db_log(sql);
@@ -141,35 +125,14 @@ int	classic_delete_alert(prelude_db_connection_t *connection,
 }
 
 
-int	classic_delete_heartbeat(prelude_db_connection_t *connection,
-				 prelude_db_message_ident_t *heartbeat_ident)
+int	delete_heartbeat(prelude_db_connection_t *connection, uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
-	prelude_sql_table_t *table;
-	uint64_t ident;
-
-	ident = prelude_db_message_ident_get_ident(heartbeat_ident);
 
 	sql = prelude_db_connection_get(connection);
 	if ( ! sql ) {
 		log(LOG_ERR, "not a SQL connection\n");
 		return -1;
-	}
-
-	table = prelude_sql_query(sql, "SELECT * FROM Prelude_Heartbeat WHERE ident = %llu", ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -2;
-		}
-		return 0;
-	}
-
-	prelude_sql_table_free(table);
-
-	if ( prelude_sql_begin(sql) < 0 ) {
-		db_log(sql);
-		return -3;
 	}
 
 	db_query(sql, "DELETE FROM Prelude_AdditionalData WHERE parent_type = 'H' AND parent_ident = %llu", ident);
@@ -188,7 +151,7 @@ int	classic_delete_heartbeat(prelude_db_connection_t *connection,
 		return -4;
 	}
 
-	return 1;
+	return 0;
 
  error:
 	if ( prelude_sql_rollback(sql) < 0 ) {

@@ -38,7 +38,7 @@
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
-
+#include "db-message-ident.h"
 
 #include "idmef-db-get.h"
 
@@ -2085,51 +2085,10 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	return -1;
 }
 
-static int message_exists(prelude_sql_connection_t *sql,
-			  const char *table_name, uint64_t ident)
-{
-	prelude_sql_table_t *table;
-	int ret;
-
-	table = prelude_sql_query(sql, "SELECT ident FROM %s WHERE ident = %llu",
-				  table_name, ident);
-
-	if ( table ) {
-		ret = 1;
-		prelude_sql_table_free(table);
-
-	} else {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			ret = -1;
-
-		} else {
-			ret = 0;
-		}
-	}
-
-	return ret;
-}
-
-
-
-static int alert_exists(prelude_sql_connection_t *sql,
-			uint64_t ident)
-{
-	return message_exists(sql, "Prelude_Alert", ident);
-}
-
-
-
-static int heartbeat_exists(prelude_sql_connection_t *sql,
-			    uint64_t ident)
-{
-	return message_exists(sql, "Prelude_Heartbeat", ident);
-}
-
 
 
 idmef_message_t	*get_alert(prelude_db_connection_t *connection,
+			   prelude_db_message_ident_t *message_ident,
 			   uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
@@ -2142,9 +2101,6 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	if ( alert_exists(sql, ident) <= 0 )
-		return NULL;
-
 	message = idmef_message_new();
 	if ( ! message ) {
 		log_memory_exhausted();
@@ -2155,7 +2111,7 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 	if ( ! alert )
 		goto error;
 
-	idmef_alert_set_ident(alert, ident);
+	idmef_alert_set_ident(alert, prelude_db_message_ident_get_ident(message_ident));
 
 	if ( get_assessment(sql, ident, alert) < 0 )
 		goto error;
@@ -2203,7 +2159,10 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection,
 	return NULL;
 }
 
+
+
 idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
+			       prelude_db_message_ident_t *message_ident,
 			       uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
@@ -2216,9 +2175,6 @@ idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
 		return NULL;
 	}
 
-	if ( heartbeat_exists(sql, ident) <= 0 )
-		return NULL;
-
 	message = idmef_message_new();
 	if ( ! message ) {
 		log_memory_exhausted();
@@ -2229,7 +2185,7 @@ idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
 	if ( ! heartbeat )
 		goto error;
 	
-	idmef_heartbeat_set_ident(heartbeat, ident);
+	idmef_heartbeat_set_ident(heartbeat, prelude_db_message_ident_get_ident(message_ident));
 
 	if ( get_analyzer(sql, ident, 'H', heartbeat, (idmef_analyzer_t *(*)(void *)) idmef_heartbeat_new_analyzer) < 0 )
 		goto error;

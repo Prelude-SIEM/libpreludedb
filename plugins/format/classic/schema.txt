@@ -1,4 +1,4 @@
-object=heartbeat.ident table=Prelude_Heartbeat field=ident
+object=heartbeat.ident table=Prelude_Heartbeat field=heartbeat_ident
 
 object=heartbeat.create_time table=Prelude_CreateTime field=time top_table=Prelude_Heartbeat top_field=ident ident_field=parent_ident condition="Prelude_CreateTime.parent_type='H'"
 object=heartbeat.analyzer_time table=Prelude_AnalyzerTime field=time top_table=Prelude_Heartbeat top_field=ident ident_field=parent_ident condition="Prelude_AnalyzerTime.parent_type='H'"
@@ -30,7 +30,7 @@ object=heartbeat.analyzer.process.path  table=Prelude_Process  field=path  top_t
 object=heartbeat.analyzer.process.arg table=Prelude_ProcessArg field=arg top_table=Prelude_Heartbeat top_field=ident ident_field=alert_ident condition="Prelude_ProcessArg.parent_type='H'"
 object=heartbeat.analyzer.process.env table=Prelude_ProcessEnv field=env top_table=Prelude_Heartbeat top_field=ident ident_field=alert_ident condition="Prelude_ProcessEnv.parent_type='H'"
 
-object=alert.ident  table=Prelude_Alert  field=ident  
+object=alert.ident  table=Prelude_Alert  field=alert_ident
 
 object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=ident ident_field=alert_ident
 object=alert.create_time table=Prelude_CreateTime field=time top_table=Prelude_Alert top_field=ident ident_field=parent_ident condition="Prelude_CreateTime.parent_type='A'"

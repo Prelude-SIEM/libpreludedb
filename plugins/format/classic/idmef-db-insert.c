@@ -1181,6 +1181,75 @@ static int insert_correlation_alert(prelude_sql_connection_t *conn, uint64_t ale
 
 
 
+static int get_last_insert_id(prelude_sql_connection_t *conn, const char *table_name, uint64_t *result)
+{
+	prelude_sql_table_t *table;
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
+
+	table = prelude_sql_query(conn, "SELECT max(ident) FROM %s;", table_name);
+	if ( ! table )
+		return -1;
+
+	row = prelude_sql_row_fetch(table);
+	if ( ! row )
+		goto error;
+
+	field = prelude_sql_field_fetch(row, 0);
+	if ( ! field )
+		goto error;
+
+	*result = prelude_sql_field_value_uint64(field);
+
+	prelude_sql_table_free(table);
+
+	return 0;	
+
+ error:
+	prelude_sql_table_free(table);
+	return -1;
+}
+
+
+
+static int insert_heartbeat_ident(prelude_sql_connection_t *conn, idmef_heartbeat_t *heartbeat, uint64_t *result)
+{
+	uint64_t heartbeat_ident;
+	uint64_t analyzerid;
+	idmef_analyzer_t *analyzer;
+
+	heartbeat_ident = idmef_heartbeat_get_ident(heartbeat);
+	analyzer = idmef_heartbeat_get_analyzer(heartbeat);
+	analyzerid = idmef_analyzer_get_analyzerid(analyzer);
+
+	if ( prelude_sql_insert(conn, "Prelude_Heartbeat", "analyzerid, heartbeat_ident", "%llu, %llu",
+				analyzerid, heartbeat_ident) < 0 )
+		return -1;
+
+	return get_last_insert_id(conn, "Prelude_Heartbeat", result);
+}
+
+
+
+static int insert_alert_ident(prelude_sql_connection_t *conn, idmef_alert_t *alert, uint64_t *result)
+{
+	uint64_t alert_ident;
+	uint64_t analyzerid;
+	idmef_analyzer_t *analyzer;
+
+	alert_ident = idmef_alert_get_ident(alert);
+	analyzer = idmef_alert_get_analyzer(alert);
+	analyzerid = idmef_analyzer_get_analyzerid(analyzer);
+
+	if ( prelude_sql_insert(conn, "Prelude_Alert", "analyzerid, alert_ident", "%llu, %llu",
+				analyzerid, alert_ident) < 0 )
+		return -1;
+
+	return get_last_insert_id(conn, "Prelude_Alert", result);
+}
+
+
+
 static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert) 
 {
 	uint64_t ident;
@@ -1193,11 +1262,9 @@ static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert)
 	if ( ! alert )
 		return 0;
 
-	ident = idmef_alert_get_ident(alert);
-        
-        if ( prelude_sql_insert(conn, "Prelude_Alert", "ident", "%llu", ident) < 0 )
+	if ( insert_alert_ident(conn, alert, &ident) < 0 )
 		return -1;
-
+        
         if ( insert_assessment(conn, ident, idmef_alert_get_assessment(alert)) < 0 )
 	     return -2;
 	     
@@ -1275,7 +1342,6 @@ static int insert_alert(prelude_sql_connection_t *conn, idmef_alert_t *alert)
 
 
 
-
 static int insert_heartbeat(prelude_sql_connection_t *conn, idmef_heartbeat_t *heartbeat) 
 {
 	uint64_t ident;
@@ -1284,9 +1350,7 @@ static int insert_heartbeat(prelude_sql_connection_t *conn, idmef_heartbeat_t *h
 	if ( ! heartbeat )
 		return 0;
 
-	ident = idmef_heartbeat_get_ident(heartbeat);
-
-        if ( prelude_sql_insert(conn, "Prelude_Heartbeat", "ident", "%llu", ident) < 0 )
+	if ( insert_heartbeat_ident(conn, heartbeat, &ident) < 0 )
 		return -1;
         
         if ( insert_analyzer(conn, ident, 'H', idmef_heartbeat_get_analyzer(heartbeat)) < 0 )
