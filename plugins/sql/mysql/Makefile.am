@@ -4,7 +4,7 @@ mysql_la_LDFLAGS = -module -avoid-version
 if HAVE_MYSQL
 
 mysql_la_SOURCES = mysql.c
-mysql_la_LIBADD = @MYSQL_LIBS@
+mysql_la_LIBADD = $(top_builddir)/src/libpreludedb.la @MYSQL_LIBS@
 mysqldir = $(sql_plugin_dir)
 mysql_LTLIBRARIES = mysql.la
 
