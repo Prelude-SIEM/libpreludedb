@@ -37,8 +37,10 @@
 #include "preludedb-path-selection.h"
 
 #include "preludedb.h"
-
 #include "preludedb-plugin-format.h"
+
+
+#define PRELUDEDB_PLUGIN_SYMBOL "preludedb_plugin_init"
 
 
 struct preludedb {
@@ -73,7 +75,7 @@ static int load_format_plugins_if_needed(void)
 		if ( ret < 0 )
 			goto error;
 
-		prelude_plugin_load_from_dir(FORMAT_PLUGIN_DIR, NULL, NULL);
+		prelude_plugin_load_from_dir(FORMAT_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 		if ( ret < 0 )
 			goto error;
 

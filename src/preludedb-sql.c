@@ -52,6 +52,8 @@
 #include "preludedb.h"
 
 
+#define PRELUDEDB_PLUGIN_SYMBOL "preludedb_plugin_init"
+
 
 struct preludedb_sql {
 	char *type;
@@ -116,7 +118,7 @@ static int load_sql_plugins_if_needed(void)
 		if ( ret < 0 )
 			goto error;
 
-		prelude_plugin_load_from_dir(SQL_PLUGIN_DIR, NULL, NULL);
+		prelude_plugin_load_from_dir(SQL_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 		if ( ret < 0 )
 			goto error;
 

@@ -45,7 +45,7 @@
 #include "db-path.h"
 
 
-prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void);
+int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data);
 
 
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
@@ -301,30 +301,30 @@ static void classic_destroy_values_resource(void *res)
 
 
 
-prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void)
+int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data)
 {
-	static preludedb_plugin_format_t plugin;
+	static preludedb_plugin_format_t classic_plugin;
 
-	memset(&plugin, 0, sizeof (plugin));
+        *plugin = (void *) &classic_plugin;
+	memset(&classic_plugin, 0, sizeof(classic_plugin));
         
-        prelude_plugin_set_name(&plugin, "Classic");
-        prelude_plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
+        prelude_plugin_set_name(&classic_plugin, "Classic");
+        prelude_plugin_set_desc(&classic_plugin, "Prelude 0.8.0 database format");
 
-	preludedb_plugin_format_set_get_alert_idents_func(&plugin, classic_get_alert_idents);
-	preludedb_plugin_format_set_get_heartbeat_idents_func(&plugin, classic_get_heartbeat_idents);
-	preludedb_plugin_format_set_get_message_ident_count_func(&plugin, classic_get_message_ident_count);
-	preludedb_plugin_format_set_get_next_message_ident_func(&plugin, classic_get_next_message_ident);
-	preludedb_plugin_format_set_destroy_message_idents_resource_func(&plugin, classic_destroy_message_idents_resource);
-	preludedb_plugin_format_set_get_alert_func(&plugin, classic_get_alert);
-	preludedb_plugin_format_set_get_heartbeat_func(&plugin, classic_get_heartbeat);
-	preludedb_plugin_format_set_delete_alert_func(&plugin, classic_delete_alert);
-	preludedb_plugin_format_set_delete_heartbeat_func(&plugin, classic_delete_heartbeat);
-	preludedb_plugin_format_set_insert_message_func(&plugin, classic_insert_idmef_message);
-	preludedb_plugin_format_set_get_values_func(&plugin, classic_get_values);
-	preludedb_plugin_format_set_get_next_values_func(&plugin, classic_get_next_values);
-	preludedb_plugin_format_set_destroy_values_resource_func(&plugin, classic_destroy_values_resource);
+	preludedb_plugin_format_set_get_alert_idents_func(&classic_plugin, classic_get_alert_idents);
+	preludedb_plugin_format_set_get_heartbeat_idents_func(&classic_plugin, classic_get_heartbeat_idents);
+	preludedb_plugin_format_set_get_message_ident_count_func(&classic_plugin, classic_get_message_ident_count);
+	preludedb_plugin_format_set_get_next_message_ident_func(&classic_plugin, classic_get_next_message_ident);
+	preludedb_plugin_format_set_destroy_message_idents_resource_func(&classic_plugin,
+                                                                         classic_destroy_message_idents_resource);
+	preludedb_plugin_format_set_get_alert_func(&classic_plugin, classic_get_alert);
+	preludedb_plugin_format_set_get_heartbeat_func(&classic_plugin, classic_get_heartbeat);
+	preludedb_plugin_format_set_delete_alert_func(&classic_plugin, classic_delete_alert);
+	preludedb_plugin_format_set_delete_heartbeat_func(&classic_plugin, classic_delete_heartbeat);
+	preludedb_plugin_format_set_insert_message_func(&classic_plugin, classic_insert_idmef_message);
+	preludedb_plugin_format_set_get_values_func(&classic_plugin, classic_get_values);
+	preludedb_plugin_format_set_get_next_values_func(&classic_plugin, classic_get_next_values);
+	preludedb_plugin_format_set_destroy_values_resource_func(&classic_plugin, classic_destroy_values_resource);
 
-	db_paths_init(CONFIG_FILE);
-
-	return (void *) &plugin;
+	return db_paths_init(CONFIG_FILE);
 }
