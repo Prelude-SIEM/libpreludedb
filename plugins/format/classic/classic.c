@@ -178,7 +178,6 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
  	idmef_object_t *object;
 	idmef_value_t *value;
 	idmef_criterion_t *criterion;
-	idmef_value_type_t type;
 	const char *char_val;
 	int cnt = 0;
 
@@ -207,19 +206,17 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 	nfields = prelude_sql_fields_num(table);
 
-	idmef_selection_set_object_iterator(selection);
-
 	while ( (row = prelude_sql_row_fetch(table)) ) {
+	
+		idmef_selection_set_object_iterator(selection);
+	
 		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
 			field = prelude_sql_field_fetch(row, field_cnt);
 			char_val = prelude_sql_field_value(field);
 
 			object = idmef_object_ref(idmef_selection_get_next_object(selection));
-	    		type = idmef_object_get_type(object);
-			
-			value = idmef_value_new_generic(type, char_val);
-			
+			value = idmef_value_new_for_object(object, char_val);
 			if ( idmef_message_set(message, object, value) < 0 ) {
 				prelude_sql_table_free(table);
 				idmef_message_destroy(message);
