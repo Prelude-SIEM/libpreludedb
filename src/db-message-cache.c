@@ -85,7 +85,7 @@ static void get_message_cache_filename(db_message_cache_t *cache,
 	 */
         key = ident % 10;
 
-        snprintf(out, size, "%s/%d/%s.%llu", cache->directory, key, type, ident);
+        snprintf(out, size, "%s/%d/%s.%" PRIu64, cache->directory, key, type, ident);
 }
 
 

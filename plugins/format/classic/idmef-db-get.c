@@ -279,7 +279,7 @@ static int get_analyzer_time(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
 				  "FROM Prelude_AnalyzerTime "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 "",
 				  parent_type, parent_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -320,7 +320,7 @@ static int get_detect_time(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
 				  "FROM Prelude_DetectTime "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -363,7 +363,7 @@ static int get_create_time(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT ntpstamp "
 				  "FROM Prelude_CreateTime "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 "",
 				  parent_type, parent_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -409,7 +409,7 @@ static int get_userid(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT type, name, number "
 				  "FROM Prelude_UserId "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -463,7 +463,7 @@ static int get_user(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT category "
 				  "FROM Prelude_User "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -519,13 +519,13 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 		table = prelude_sql_query(sql,
 					  "SELECT arg "
 					  "FROM Prelude_ProcessArg "
-					  "WHERE parent_type = '%c' AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND alert_ident = %" PRIu64 "",
 					  parent_type, alert_ident);
 	else
 		table = prelude_sql_query(sql,
 					  "SELECT arg "
 					  "FROM Prelude_ProcessArg "
-					  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 					  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -571,13 +571,13 @@ static int get_process_env(prelude_sql_connection_t *sql,
 		table = prelude_sql_query(sql,
 					  "SELECT env "
 					  "FROM Prelude_ProcessEnv "
-					  "WHERE parent_type = '%c' AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND alert_ident = %" PRIu64 "",
 					  parent_type, alert_ident);
 	else
 		table = prelude_sql_query(sql,
 					  "SELECT env "
 					  "FROM Prelude_ProcessEnv "
-					  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 					  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -623,13 +623,13 @@ static int get_process(prelude_sql_connection_t *sql,
 		table = prelude_sql_query(sql,
 					  "SELECT name, pid, path "
 					  "FROM Prelude_Process "
-					  "WHERE parent_type = '%c' AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND alert_ident = %" PRIu64 "",
 					  parent_type, alert_ident);
 	else
 		table = prelude_sql_query(sql,
 					  "SELECT name, pid, path "
 					  "FROM Prelude_Process "
-					  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 					  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -693,7 +693,7 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT arg "
 				  "FROM Prelude_WebServiceArg "
-				  "WHERE parent_type = '%c' and parent_ident = %llu and alert_ident = %llu",
+				  "WHERE parent_type = '%c' and parent_ident = %" PRIu64 " and alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -737,7 +737,7 @@ static int get_webservice(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT url, cgi, http_method "
 				  "FROM Prelude_WebService "
-				  "WHERE parent_type = '%c' and parent_ident = %llu and alert_ident = %llu",
+				  "WHERE parent_type = '%c' and parent_ident = %" PRIu64 " and alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -795,7 +795,7 @@ static int get_snmpservice(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT oid, community, command "
 				  "FROM Prelude_SNMPService "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -848,7 +848,7 @@ static int get_service_portlist(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT portlist "
 				  "FROM Prelude_ServicePortlist "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -893,7 +893,7 @@ static int get_service(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT name, port, protocol "
 				  "FROM Prelude_Service "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -960,13 +960,13 @@ static int get_address(prelude_sql_connection_t *sql,
 		table = prelude_sql_query(sql,
 					  "SELECT category, vlan_name, vlan_num, address, netmask "
 					  "FROM Prelude_Address "
-					  "WHERE parent_type = '%c' AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND alert_ident = %" PRIu64 "",
 					  parent_type, alert_ident);
 	else
 		table = prelude_sql_query(sql,
 					  "SELECT category, vlan_name, vlan_num, address, netmask "
 					  "FROM Prelude_Address "
-					  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 					  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -1028,13 +1028,13 @@ static int get_node(prelude_sql_connection_t *sql,
 		table = prelude_sql_query(sql,
 					  "SELECT category, location, name "
 					  "FROM Prelude_Node "
-					  "WHERE parent_type = '%c' AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND alert_ident = %" PRIu64 "",
 					  parent_type, alert_ident);
 	else
 		table = prelude_sql_query(sql,
 					  "SELECT category, location, name "
 					  "FROM Prelude_Node "
-					  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
+					  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 					  parent_type, parent_ident, alert_ident);
 
 	if ( ! table ) {
@@ -1094,7 +1094,7 @@ static int get_analyzer(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT analyzerid, manufacturer, model, version, class, ostype, osversion "
 				  "FROM Prelude_Analyzer "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 "",
 				  parent_type, ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1168,7 +1168,7 @@ static int get_action(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT category, description "
 				  "FROM Prelude_Action "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1217,7 +1217,7 @@ static int get_confidence(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT rating, confidence "
 				  "FROM Prelude_Confidence "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1266,7 +1266,7 @@ static int get_impact(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql, 
 				  "SELECT severity, completion, type, description "
 				  "FROM Prelude_Impact "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1320,7 +1320,7 @@ static int get_assessment(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT alert_ident "
 				  "FROM Prelude_Assessment "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1368,7 +1368,7 @@ static int get_file_access(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT COUNT(*) "
 				  "FROM Prelude_FileAccess "
-				  "WHERE file_ident = %llu AND target_ident = %llu AND alert_ident = %llu",
+				  "WHERE file_ident = %" PRIu64 " AND target_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  file_ident, target_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1437,7 +1437,7 @@ static int get_linkage(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT category, name, path "
 				  "FROM Prelude_Linkage "
-				  "WHERE file_ident = %llu AND target_ident = %llu AND alert_ident = %llu",
+				  "WHERE file_ident = %" PRIu64 " AND target_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  file_ident, target_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1505,7 +1505,7 @@ static int get_inode(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT change_time, number, major_device, minor_device, c_major_device, c_minor_device "
 				  "FROM Prelude_Inode "
-				  "WHERE file_ident = %llu AND target_ident = %llu AND alert_ident = %llu",
+				  "WHERE file_ident = %" PRIu64 " AND target_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  file_ident, target_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1568,7 +1568,7 @@ static int get_file(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT category, name, path, create_time, modify_time, access_time, data_size, disk_size "
 				  "FROM Prelude_File "
-				  "WHERE target_ident = %llu AND alert_ident = %llu",
+				  "WHERE target_ident = %" PRIu64 " AND alert_ident = %" PRIu64 "",
 				  target_ident, alert_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1653,7 +1653,7 @@ static int get_source(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT spoofed, interface "
 				  "FROM Prelude_Source "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1721,7 +1721,7 @@ static int get_target(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT decoy, interface "
 				  "FROM Prelude_Target "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1794,7 +1794,7 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT type, meaning, data "
 				  "FROM Prelude_AdditionalData "
-				  "WHERE parent_type = '%c' AND parent_ident = %llu",
+				  "WHERE parent_type = '%c' AND parent_ident = %" PRIu64 "",
 				  parent_type, parent_ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1847,7 +1847,7 @@ static int get_classification(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT origin, name, url "
 				  "FROM Prelude_Classification "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1899,7 +1899,7 @@ static int get_tool_alert(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT name, command "
 				  "FROM Prelude_ToolAlert "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1949,7 +1949,7 @@ static int get_correlation_alert_ident(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT alert_ident "
 				  "FROM Prelude_CorrelationAlert_Alerts "
-				  "WHERE ident = %llu",
+				  "WHERE ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -1994,7 +1994,7 @@ static int get_correlation_alert(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT name "
 				  "FROM Prelude_CorrelationAlert "
-				  "WHERE ident = %llu",
+				  "WHERE ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {
@@ -2044,7 +2044,7 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	table = prelude_sql_query(sql,
 				  "SELECT program, size, buffer "
 				  "FROM Prelude_OverflowAlert "
-				  "WHERE alert_ident = %llu",
+				  "WHERE alert_ident = %" PRIu64 "",
 				  ident);
 	if ( ! table ) {
 		if ( prelude_sql_errno(sql) ) {

@@ -679,7 +679,7 @@ int64_t prelude_sql_field_value_int64(prelude_sql_field_t *field)
 	int64_t i;
 
 	s = prelude_sql_field_value(field);
-	sscanf(s, "%lld", &i);
+	sscanf(s, "%" PRId64, &i);
 	return i;
 }
 
@@ -691,7 +691,7 @@ uint64_t prelude_sql_field_value_uint64(prelude_sql_field_t *field)
 	uint64_t i;
 
 	s = prelude_sql_field_value(field);
-	sscanf(s, "%llu", &i);
+	sscanf(s, "%" PRIu64, &i);
 	return i;
 }
 
