@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002, 2003 Yoann Vandoorselaere <yoann@prelude-ids.org>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@prelude-ids.org>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
@@ -846,20 +846,19 @@ static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_
 
 
 
-static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_additional_data_t *additional_data) 
+static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t parent_ident,
+                                  char parent_type, idmef_additional_data_t *additional_data) 
 {
         int ret;
-        const char *tmp;
+        idmef_data_t *idata;
 	char *meaning, *data, *type;
 
 	if ( ! additional_data )
 		return 0;
 
-	tmp = idmef_additionaldata_data_to_string(additional_data);
-	if ( ! tmp )
-		return -1;
-
-        data = prelude_sql_escape(conn, tmp);
+        idata = idmef_additional_data_get_data(additional_data);
+        
+        data = prelude_sql_escape_fast(conn, idmef_data_get_data(idata), idmef_data_get_len(idata));
 	if ( ! data )
 		return -2;
 
