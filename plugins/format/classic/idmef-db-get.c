@@ -532,8 +532,7 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_process_arg_t *arg = NULL;
-	idmef_string_t *string;
+	idmef_string_t *arg = NULL;
 	int cnt = 0;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
@@ -560,16 +559,8 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		arg = idmef_process_arg_new();
-		if ( ! arg ) {
-			log_memory_exhausted();
+		if ( get_string(sql, row, 0, &arg) < 0 )
 			goto error;
-		}
-
-		if ( get_string(sql, row, 0, &string) < 0 )
-			goto error;
-
-		idmef_process_arg_set_string(arg, string);
 
 		parent_set_field(parent, arg);
 
@@ -585,7 +576,7 @@ static int get_process_arg(prelude_sql_connection_t *sql,
 		prelude_sql_table_free(table);
 
 	if ( arg )
-		idmef_process_arg_destroy(arg);
+		idmef_string_destroy(arg);
 
 	return -1;
 }
@@ -599,8 +590,7 @@ static int get_process_env(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_process_env_t *env = NULL;
-	idmef_string_t *string;
+	idmef_string_t *env = NULL;
 	int cnt = 0;
 
 	if ( parent_type == 'A' || parent_type == 'H' )
@@ -627,15 +617,8 @@ static int get_process_env(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		env = idmef_process_env_new();
-		if ( ! env ) {
-			log_memory_exhausted();
+		if ( get_string(sql, row, 0, &env) < 0 )
 			goto error;
-		}
-
-		if ( get_string(sql, row, 0, &string) < 0 )
-			goto error;
-		idmef_process_env_set_string(env, string);
 
 		parent_set_field(parent, env);
 
@@ -651,7 +634,7 @@ static int get_process_env(prelude_sql_connection_t *sql,
 		prelude_sql_table_free(table);
 
 	if ( env )
-		idmef_process_env_destroy(env);
+		idmef_string_destroy(env);
 
 	return -1;
 }
@@ -746,8 +729,7 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
-	idmef_webservice_arg_t *arg_list = NULL;
-	idmef_string_t *arg;
+	idmef_string_t *arg = NULL;
 	int cnt = 0;
 
 	table = prelude_sql_query(sql,
@@ -766,17 +748,10 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 
 	while ( (row = prelude_sql_row_fetch(table)) ) {
 
-		arg_list = idmef_webservice_arg_new();
-		if ( ! arg_list ) {
-			log_memory_exhausted();
-			goto error;
-		}
-
 		if ( get_string(sql, row, 0, &arg) < 0 )
 			goto error;
-		idmef_webservice_arg_set_arg(arg_list, arg);
 
-		idmef_webservice_set_arg(webservice, arg_list);
+		idmef_webservice_set_arg(webservice, arg);
 
 		cnt++;
 	}
@@ -789,8 +764,8 @@ static int get_webservice_arg(prelude_sql_connection_t *sql,
 	if ( table )
 		prelude_sql_table_free(table);
 
-	if ( arg_list )
-		idmef_webservice_arg_destroy(arg_list);
+	if ( arg )
+		idmef_string_destroy(arg);
 
 	return -1;
 }
