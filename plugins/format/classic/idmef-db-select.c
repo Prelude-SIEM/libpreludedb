@@ -509,8 +509,8 @@ static int relation_substring_to_sql(prelude_strbuf_t *where, char *table, char 
 
 	len = strlen(val);
 
-	if ( val[len-2] == '*' )
-		val[len-2] = '%';
+	if ( len >= 2 && val[len - 2] == '*' )
+		val[len - 2] = '%';
 
 	return (table ?
 		prelude_strbuf_sprintf(where, "%s.%s LIKE %s", table, field, val) :
