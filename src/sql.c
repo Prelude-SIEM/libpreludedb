@@ -1106,9 +1106,9 @@ static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf,
 
 static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf, size_t size)
 {
-        char *input;
         size_t i = 0;
-	prelude_string_t *string;
+        const char *input;
+        prelude_string_t *string;
 
 	string = idmef_value_get_string(value);
 	if ( ! string )

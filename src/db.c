@@ -28,8 +28,6 @@
 #include <sys/types.h>
 
 #include <libprelude/prelude-log.h>
-
-#include <libprelude/config-engine.h>
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-io.h>
 

@@ -33,9 +33,6 @@
 #include <libprelude/idmef-util.h>
 #include <libprelude/prelude-plugin.h>
 
-#include <netinet/in.h>
-#include <libprelude/extract.h>
-
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
@@ -54,9 +51,9 @@
 #endif
 
 
-static inline char *get_string(prelude_string_t *string)
+static inline const char *get_string(prelude_string_t *string)
 {
-        char *s;
+        const char *s;
 
         if ( ! string )
                 return NULL;

@@ -64,9 +64,9 @@ typedef struct table_list {
 } table_list_t;
 
 
-static inline char *get_string(prelude_string_t *string)
+static inline const char *get_string(prelude_string_t *string)
 {
-        char *s;
+        const char *s;
 
         if ( ! string )
                 return NULL;
@@ -424,7 +424,7 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 
 
-static int aggregate_function_to_sql(prelude_string_t *buf, int flags, char *field)
+static int aggregate_function_to_sql(prelude_string_t *buf, int flags, const char *field)
 {
         if ( ! field )
                 return 0;
