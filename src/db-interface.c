@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -48,6 +49,21 @@ struct prelude_db_interface {
 	plugin_format_t *format;
 	struct list_head filter_list;
 	int active;
+};
+
+
+
+struct prelude_db_message_list {
+	prelude_db_interface_t * interface;
+	idmef_cache_t * cache;
+	void * res;
+};
+
+
+
+struct prelude_db_message {
+	prelude_db_message_list_t * message_list;
+	void * res;
 };
 
 
@@ -195,35 +211,38 @@ static int db_connection_delete_filter(prelude_db_interface_t *conn, const char 
 
 
 
-int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg)
+int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg)
 {
 	if ( ! interface )
 		return -1;
-		
+
 	if ( ! msg )
 		return -2;
-	
+
 	if ( ! interface->db_connection )
 		return -3;
-	
+
 	if ( ! interface->active )
 		return -4;
-	
+
 	if ( ! interface->format )
 		return -5;
-	
-	if ( ! interface->format->format_write )
+
+	if ( ! interface->format->format_insert_idmef_message )
 		return -6;
-		
-	return interface->format->format_write(interface->db_connection, msg);
+
+	return interface->format->format_insert_idmef_message(interface->db_connection, msg);
 }
 
 
 
-void *prelude_db_interface_prepare(prelude_db_interface_t *interface,
-     		   		   idmef_cache_t *cache,
-        		           idmef_criterion_t *criterion)
+prelude_db_message_list_t * prelude_db_interface_get_message_list(prelude_db_interface_t * interface,
+								  idmef_cache_t * cache,
+								  idmef_criterion_t * criterion)
 {
+	prelude_db_message_list_t * message_list;
+	void * res;
+	
 	if ( ! interface )
 		return NULL;
 		
@@ -239,32 +258,102 @@ void *prelude_db_interface_prepare(prelude_db_interface_t *interface,
 	if ( ! interface->format )
 		return NULL;
 	
-	if ( ! interface->format->format_prepare )
+	if ( ! interface->format->format_get_message_list )
 		return NULL;
 		
-	return interface->format->format_prepare(interface->db_connection, cache, criterion);
+	res = interface->format->format_get_message_list(interface->db_connection, cache, criterion);
+	if ( ! res ) {
+		return NULL;
+	}
+
+	message_list = malloc(sizeof (*message_list));
+	message_list->interface = interface;
+	message_list->cache = cache;
+	message_list->res = res;
+
+	return message_list;
 }
 
 
-int prelude_db_interface_read(prelude_db_interface_t *interface, 
-			      void *handle)
+
+void prelude_db_interface_free_message_list(prelude_db_message_list_t * message_list)
 {
-	if ( ! interface )
-		return -1;
+	prelude_db_interface_t * interface;
 	
-	if ( ! interface->db_connection )
-		return -1;
-	
-	if ( ! interface->active )
-		return -1;
-	
-	if ( ! interface->format )
-		return -1;
-	
-	if ( ! interface->format->format_read )
-		return -1;
-		
-	return interface->format->format_read(handle);
+	if ( ! message_list )
+		return;
+
+	interface = message_list->interface;
+
+	interface->format->format_free_message_list(interface->db_connection, message_list->cache, message_list->res);
+
+	free(message_list);
+}
+
+
+
+prelude_db_message_t * prelude_db_interface_get_message(prelude_db_message_list_t * message_list)
+{
+	prelude_db_interface_t * interface;
+	prelude_db_message_t * message;
+	void * res;
+
+	if ( ! message_list )
+		return NULL;
+
+	interface = message_list->interface;
+
+	if ( ! interface->format->format_get_message )
+		return NULL;
+
+	res = interface->format->format_get_message(interface->db_connection, message_list->cache, message_list->res);
+	if ( ! res )
+		return NULL;
+
+	message = malloc(sizeof (*message));
+	message->message_list = message_list;
+	message->res = res;
+
+	return message;
+}
+
+
+
+void prelude_db_interface_free_message(prelude_db_message_t * message)
+{
+	prelude_db_message_list_t * message_list;
+	prelude_db_interface_t * interface;
+
+	if ( ! message )
+		return;
+
+	message_list = message->message_list;
+	interface = message_list->interface;
+
+	interface->format->format_free_message(interface->db_connection, message_list->cache,
+					       message_list->res, message->res);
+
+	free(message);
+}
+
+
+
+idmef_value_t * prelude_db_interface_get_message_field_value(prelude_db_message_t * message)
+{
+	prelude_db_message_list_t * message_list;
+	prelude_db_interface_t * interface;
+	idmef_value_t * value;
+
+	if ( ! message )
+		return NULL;
+
+	message_list = message->message_list;
+	interface = message_list->interface;
+
+	value = interface->format->format_get_message_field_value(interface->db_connection, message_list->cache,
+								  message_list->res, message->res);
+
+	return value;
 }
 
 
@@ -283,6 +372,44 @@ prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_d
 }
 
 
+
+int prelude_db_interface_errno(prelude_db_interface_t * interface)
+{
+	prelude_sql_connection_t * sql;
+	
+	if ( ! interface )
+		return -1;
+
+	if ( ! interface->db_connection )
+		return -2;
+
+	if ( prelude_db_connection_get_type(interface->db_connection) != prelude_db_type_sql )
+		return -3;
+
+	sql = prelude_db_connection_get(interface->db_connection);
+
+	return prelude_sql_errno(sql);
+}
+
+
+
+const char * prelude_db_interface_error(prelude_db_interface_t * interface)
+{
+	prelude_sql_connection_t * sql;
+	
+	if ( ! interface )
+		return NULL;
+
+	if ( ! interface->db_connection )
+		return NULL;
+
+	if ( prelude_db_connection_get_type(interface->db_connection) != prelude_db_type_sql )
+		return NULL;
+
+	sql = prelude_db_connection_get(interface->db_connection);
+
+	return prelude_sql_error(sql);
+}
 
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface)
@@ -337,8 +464,3 @@ int prelude_db_interface_destroy(prelude_db_interface_t *interface)
 	
 	return 0;
 }
-
-
-
-
-

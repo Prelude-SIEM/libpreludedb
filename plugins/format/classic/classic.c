@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -42,52 +43,61 @@
 #include "db-connection.h"
 #include "plugin-format.h"
 
-#include "idmef-db-output.h"
-#include "idmef-db-read.h"
+#include "idmef-db-insert.h"
+#include "idmef-db-select.h"
 #include "db-object.h"
 
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
 
 static plugin_format_t plugin;
 
-
-
-static int format_write(prelude_db_connection_t *connection, idmef_message_t *message)
+struct	db_message_list
 {
-	return idmef_db_output(connection, message);
-}
-
-
-struct my_data {
-	idmef_criterion_t *crit;
-	idmef_object_t *obj;
+	char *		type_name;
+	int		size;
+	uint64_t *      idents;
+	int		next;
 };
 
-
-static int add_criterion(idmef_value_t *val, void *extra)
+struct db_message_list * build_message_list(prelude_sql_table_t * table,
+					    char * type_name)
 {
-	struct my_data *data = extra;
-	
-	return idmef_criterion_add(data->crit, 
-				   idmef_criterion_new(data->obj, relation_equal, 
-				   		       idmef_value_ref(val)));
+	struct db_message_list * message_list;
+	prelude_sql_row_t * row;
+	prelude_sql_field_t * field;
+	int cnt;
+	int nrows;
+
+	nrows = prelude_sql_rows_num(table);
+
+	message_list = malloc(sizeof (*message_list));
+	message_list->type_name = type_name;
+	message_list->size = nrows;
+	message_list->idents = calloc(nrows, sizeof (*message_list->idents));
+	message_list->next = 0;
+
+	for ( cnt = 0; cnt < nrows; cnt++ ) {
+		row = prelude_sql_row_fetch(table);
+		field = prelude_sql_field_fetch(row, 0);
+		message_list->idents[cnt] = prelude_sql_field_value_int64(field);
+	}
+
+	return message_list;
 }
 
 
-static void* format_prepare(prelude_db_connection_t *connection, idmef_cache_t *cache,
-        	            idmef_criterion_t *criterion)
+static void * format_get_message_list(prelude_db_connection_t * connection,
+				      idmef_cache_t * cache,
+				      idmef_criterion_t * criterion)
 {
-	/*return idmef_db_prepare(connection, cache, criterion);*/
-	
 	idmef_cache_t *ident_cache;
 	idmef_cached_object_t *ident_cached;	
-	idmef_object_t *first;
+	idmef_object_t *first, *object;
+	prelude_sql_table_t * table;
 	char *first_name, *end;
-	struct my_data ident;
 	char buf[128];
-	void *handle;
+	struct db_message_list * message_list;
 	int ret;
-
 	
 	/* 
 	 * STAGE 1: find alert.ident or heartbeat.ident of all objects
@@ -98,8 +108,6 @@ static void* format_prepare(prelude_db_connection_t *connection, idmef_cache_t *
 	ret = idmef_cache_index(cache);
 	if ( ret < 0 ) {
 		log(LOG_ERR, "could not index cache!\n");
-		idmef_object_destroy(ident.obj);
-		idmef_cache_destroy(ident_cache);
 		return NULL;		
 	}
 	
@@ -118,29 +126,30 @@ static void* format_prepare(prelude_db_connection_t *connection, idmef_cache_t *
 	if ( end )
 		*end = '\0';
 	
-	buf[sizeof(buf)-1]='\0'; /* ensure that result will be null-terminated */
+	buf[sizeof(buf)-1] = '\0'; /* ensure that result will be null-terminated */
 	strncpy(buf, first_name, sizeof(buf)-1);
 	strncat(buf, ".ident", sizeof(buf)-1);
 		
-	free(first_name);
-	
-	ident.obj = idmef_object_new(buf);
-	if ( ! ident.obj ) {
+	object = idmef_object_new(buf);
+	if ( ! object ) {
 		log(LOG_ERR, "could not create %s object!\n");
+		free(first_name);
 		return NULL;
 	}
 
 	ident_cache = idmef_cache_new();
 	if ( ! ident_cache ) {
 		log(LOG_ERR, "could not create IDMEF cache!\n");
-		idmef_object_destroy(ident.obj);
+		free(first_name);
+		idmef_object_destroy(object);
 		return NULL;
 	}
-	
-	ident_cached = idmef_cache_register_object(ident_cache, ident.obj);
+
+	ident_cached = idmef_cache_register_object(ident_cache, object);
 	if ( ! ident_cached ) {
 		log(LOG_ERR, "could not register %s object!\n");
-		idmef_object_destroy(ident.obj);
+		free(first_name);
+		idmef_object_destroy(object);
 		idmef_cache_destroy(ident_cache);
 		return NULL;
 	}	
@@ -148,71 +157,169 @@ static void* format_prepare(prelude_db_connection_t *connection, idmef_cache_t *
 	ret = idmef_cache_reindex(cache);
 	if ( ret < 0 ) {
 		log(LOG_ERR, "could not reindex cache!\n");
-		idmef_object_destroy(ident.obj);
+		free(first_name);
+		idmef_object_destroy(object);
 		idmef_cache_destroy(ident_cache);
 		return NULL;		
 	}
 
-	handle = idmef_db_prepare(connection, ident_cache, criterion);	
-	if ( ! handle ) {
-		idmef_object_destroy(ident.obj);
-		idmef_cache_destroy(ident_cache);		
+	table = idmef_db_select(connection, ident_cache, criterion);
+	if ( ! table ) {
+		free(first_name);
+		idmef_object_destroy(object);
+		idmef_cache_destroy(ident_cache);
 		return NULL;
 	}
 
-	/* Build the new criteria set */
-	
-	ident.crit = idmef_criterion_new_chain(operator_or);
-	if ( ! ident.crit ) {
-		log(LOG_ERR, "could not create criteria chain\n");
-		idmef_object_destroy(ident.obj);
-		idmef_cache_destroy(ident_cache);		
-		return NULL;		
-	}
-	
-	while ( ( idmef_db_read(handle) > 0 ) ) {
-		idmef_value_iterate(idmef_cached_object_get(ident_cached), &ident, add_criterion);
-	}
-	
-	
-	/* STAGE 2: execute built query to get actual results */
-	
-	handle = idmef_db_prepare(connection, cache, ident.crit);	
-	
-	idmef_object_destroy(ident.obj);
-	idmef_criterion_destroy(ident.crit);
+	message_list = build_message_list(table, first_name);
+
+	idmef_object_destroy(object);
 	idmef_cache_destroy(ident_cache);
-	
-	return handle;
-	
+	prelude_sql_table_free(table);
+
+	return message_list;
 }
 
 
-
-
-static int format_read(void *handle)
+void *	format_get_message(prelude_db_connection_t * connection,
+			     idmef_cache_t * cache,
+			     void * res)
 {
-	return idmef_db_read(handle);
+	struct db_message_list * message_list = res;
+	prelude_sql_table_t * table;
+	prelude_sql_row_t * row;
+	prelude_sql_field_t * field;
+	int nfields, field_cnt;
+ 	idmef_object_t * object;
+	idmef_value_t * value;
+	idmef_criterion_t * criterion;
+	idmef_cached_object_t * cached_object;
+	uint64_t ident;
+	char buf[128];
+	int cnt = 0;
+	int * i;
+
+	/* FIXME: free previous stored values in cache ? */
+
+	if ( message_list->next >= message_list->size )
+		return NULL;
+
+	idmef_cache_purge(cache);
+
+	ident = message_list->idents[message_list->next++];
+
+	buf[sizeof(buf)-1] = '\0'; /* ensure that result will be null-terminated */
+	strncpy(buf, message_list->type_name, sizeof(buf)-1);
+	strncat(buf, ".ident", sizeof(buf)-1);
+
+	object = idmef_object_new(buf);
+	value = idmef_value_new_uint64(ident);
+	criterion = idmef_criterion_new(object, relation_equal, value);
+
+	table = idmef_db_select(connection, cache, criterion);
+
+	idmef_object_destroy(object);
+	idmef_value_destroy(value);
+	idmef_criterion_destroy(criterion);
+
+	if ( ! table )
+		return NULL;
+
+	nfields = prelude_sql_fields_num(table);
+		
+	while ( (row = prelude_sql_row_fetch(table)) ) {
+		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
+
+			field = prelude_sql_field_fetch(row, field_cnt);
+
+			value = prelude_sql_field_value_idmef(field);
+			cached_object = idmef_cache_get_object(cache, cnt);
+
+			if ( idmef_cached_object_set(cached_object, value) < 0 ) {
+				prelude_sql_table_free(table);
+				return NULL;
+			}
+
+			cnt++;
+		}
+	}
+
+	prelude_sql_table_free(table);
+
+	i = malloc(sizeof (*i));
+	*i = 0;
+
+	return i;
 }
 
 
 
+idmef_value_t * format_get_message_field_value(prelude_db_connection_t * connection,
+					       idmef_cache_t * cache,
+					       void * message_list,
+					       void * res)
+{
+	int * i = res;
+	idmef_cached_object_t * cached_object;
+	idmef_value_t * value;
 
-plugin_generic_t *plugin_init(int argc, char **argv)
+	if ( *i >= idmef_cache_get_object_count(cache) )
+		return NULL;
+
+	cached_object = idmef_cache_get_object(cache, (*i)++);
+
+	value = idmef_cached_object_get(cached_object);
+
+	return value;
+}
+
+
+
+int format_insert_idmef_message(prelude_db_connection_t * connection, const idmef_message_t * message)
+{
+	return idmef_db_insert(connection, message);
+}
+
+
+
+void format_free_message_list(prelude_db_connection_t * connection,
+			      idmef_cache_t * cache,
+			      void * res)
+{
+	struct db_message_list * message_list = res;
+
+	free(message_list->type_name);
+	free(message_list->idents);
+	free(message_list);
+}
+
+
+void format_free_message(prelude_db_connection_t * connection,
+			 idmef_cache_t * cache,
+			 void * message_list,
+			 void * res)
+{
+	int * i = res;
+
+	free(i);
+}
+
+
+plugin_generic_t * plugin_init(int argc, char **argv)
 {
 	/* System wide plugin options should go in here */
         
         plugin_set_name(&plugin, "Classic");
         plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
-        plugin_set_write_func(&plugin, format_write);
-        plugin_set_prepare_func(&plugin, format_prepare);
-        plugin_set_read_func(&plugin, format_read);
+
+	plugin_set_get_message_list_func(&plugin, format_get_message_list);
+	plugin_set_free_message_list_func(&plugin, format_free_message_list);
+	plugin_set_get_message_func(&plugin, format_get_message);
+	plugin_set_free_message_func(&plugin, format_free_message);
+	plugin_set_get_message_field_value_func(&plugin, format_get_message_field_value);
+	plugin_set_insert_idmef_message_func(&plugin, format_insert_idmef_message);
 
 	db_objects_init(CONFIG_FILE);
-       
+
 	return (plugin_generic_t *) &plugin;
 }
-
-
-
-

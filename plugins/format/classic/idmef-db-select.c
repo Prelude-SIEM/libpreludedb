@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -36,13 +37,13 @@
 #include "db-object.h"
 #include "strbuf.h"
 
-#include "idmef-db-read.h"
+#include "idmef-db-select.h"
 
 /* maximum length of text representation of object value */
 #define VALLEN 262144
 
 
-static int add_table(strbuf_t *tables, char *table)
+int add_table(strbuf_t *tables, char *table)
 {
 	int ret;
 	
@@ -69,7 +70,7 @@ static int add_table(strbuf_t *tables, char *table)
 
 
 
-static int add_field(strbuf_t *fields, char *table, char *field, char *alias)
+int add_field(strbuf_t *fields, char *table, char *field, char *alias)
 {
 	strbuf_t *tmp;
 	int ret;
@@ -118,7 +119,7 @@ error:
 
 
 /* NOTE: This function assumes thet val is already escaped! */
-static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
+int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_relation_t rel, char *val)
 {	
 	switch (rel) {
 	case relation_substring:
@@ -186,7 +187,7 @@ static int relation_to_sql(strbuf_t *where, char *table, char *field, idmef_rela
 
 
 
-static int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *tables, idmef_criterion_t *criterion)
+int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *tables, idmef_criterion_t *criterion)
 {
 	idmef_object_t *object;
 	db_object_t *db;
@@ -316,12 +317,13 @@ static int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, str
 }
 
 
-static int objects_to_sql(prelude_sql_connection_t *conn, 
+int objects_to_sql(prelude_sql_connection_t *conn, 
 		   strbuf_t *fields,
 		   strbuf_t *where, strbuf_t *tables, 
-		   idmef_object_t **objects)
+		   idmef_cache_t *cache)
 {
-	idmef_object_t *obj, **obj_list;
+	idmef_cached_object_t *cached_obj;
+	idmef_object_t *obj;
 	db_object_t *db;
 	char *table;
 	char *field;
@@ -334,8 +336,9 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 	char *ident_field;
 	int written, ret;
 	strbuf_t *tmp;
-	idmef_object_t *alert = NULL;
-	idmef_object_t *heartbeat = NULL;
+	idmef_object_t *alert, *heartbeat;
+	int nobjects;
+	int cnt;
 
 	tmp = strbuf_new();
 	if ( ! tmp ) {
@@ -360,9 +363,14 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 	
 	/* Start our part of WHERE statement */
 
-	obj_list = objects;
 	written = 0;
-	while ( ( obj = *obj_list++ ) ) {
+
+	nobjects = idmef_cache_get_object_count(cache);
+	for ( cnt = 0; cnt < nobjects; cnt++ ) {
+
+		cached_obj = idmef_cache_get_object(cache, cnt);
+		obj = idmef_cached_object_get_object(cached_obj);
+
 		db = db_object_find(obj);
 		table = db_object_get_table(db);
 		field = db_object_get_field(db);
@@ -411,14 +419,12 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 			
 			if ( ! first_object ) {
 				log(LOG_ERR, "could not get numeric address for object!\n");
-				ret = -1;
 				goto error;
 			}
 			
 			end = strchr(first_object, '.');
 			if ( ! end ) {
 				log(LOG_ERR, "top-level object requested!\n");
-				ret = -1;
 				goto error;
 			}
 			
@@ -499,11 +505,8 @@ error:
 	if ( first_object )
 		free(first_object);
 
-	if ( alert )
-		idmef_object_destroy(alert);
-		
-	if ( heartbeat )
-		idmef_object_destroy(heartbeat);
+	idmef_object_destroy(alert);
+	idmef_object_destroy(heartbeat);
 
 	return ret;
 }
@@ -511,13 +514,13 @@ error:
 
 
 
-static strbuf_t *build_request(prelude_sql_connection_t *conn, 
-   		               idmef_object_t **objects, 
-       		               idmef_criterion_t *criterion)
+strbuf_t *build_request(prelude_sql_connection_t *conn, 
+   		        idmef_cache_t *cache, 
+       		        idmef_criterion_t *criterion)
 {
 	strbuf_t *request = NULL;
 	strbuf_t *tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
-	int ret = -1;
+	int ret;
 	
 	request = strbuf_new();
 	if ( ! request )
@@ -539,7 +542,7 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! where2 )
 		goto error;
 		
-	ret = objects_to_sql(conn, fields, where1, tables, objects);
+	ret = objects_to_sql(conn, fields, where1, tables, cache);
 	if ( ret < 0 )
 		goto error;
 
@@ -550,7 +553,7 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 			goto error;
 	}
 	
-	ret = strbuf_sprintf(request, "SELECT DISTINCT %s FROM %s %s %s %s %s ", 
+	ret = strbuf_sprintf(request, "SELECT DISTINCT %s FROM %s %s %s %s %s ;", 
 		             strbuf_string(fields), 
 		             strbuf_string(tables),
 			     ( strbuf_empty(where1) && strbuf_empty(where2) ) ? "" : "WHERE",
@@ -585,97 +588,14 @@ error:
 
 
 
-
-struct db_handle {
-	prelude_sql_connection_t *conn;
-	prelude_sql_table_t *table;
-	idmef_cache_t *cache;
-	idmef_cached_object_t **cached;
-	idmef_object_t **objects;
-	int object_count;
-	int line;
-	prelude_sql_row_t *row;
-	uint64_t prev_ident;
-};
-
-
-int idmef_db_read(void *handle)
-{
-	struct db_handle *data = handle;
-	prelude_sql_field_t *field;
-	idmef_value_t *val;
-	uint64_t ident;
-	int i, ret;	
-
-	do {
-	
-		if ( ! data->row ) {
-			data->row = prelude_sql_row_fetch(data->table);
-			if ( ! data->row ) {
-				prelude_sql_table_free(data->table);
-				free(data->cached);
-				free(data->objects);
-				free(data);
-				/* cache will be freed by the caller */
-				return 0; /* no more data */
-			}
-		} else 		
-			idmef_cache_purge(data->cache);
-	
-		field = prelude_sql_field_fetch_by_name(data->row, "ident");
-		if ( ! field ) {
-			log(LOG_ERR, "could not find 'ident' field!\n");
-			return -1;
-		}
-	
-		ident = prelude_sql_field_value_uint64(field);
-
-		if ( ( data->line++ ) && ( data->prev_ident != ident ) ) {
-			data->prev_ident = ident;
-			return 1;
-		}
-
-		data->prev_ident = ident;
-
-		i = 0;		
-		for ( i = 0; i < data->object_count; i++ ) {
-			field = prelude_sql_field_fetch(data->row, i);
-			val = prelude_sql_field_value_idmef(field);
-			
-			ret = idmef_cached_object_set(data->cached[i], val);
-			if ( ret < 0 ) {
-				log(LOG_ERR, "error in IDMEF cache operation!\n");
-				return -i;
-			}
-		} 
-
-		prelude_sql_row_free(data->row);
-		data->row = NULL;
-	
-	} while(1);
-	
-	/* not reached */
-	
-	return 1;
-
-}
-
-
-
-void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache, 
-       		       idmef_criterion_t *criterion)
+prelude_sql_table_t * idmef_db_select(prelude_db_connection_t *conn,
+				      idmef_cache_t *cache,
+				      idmef_criterion_t *criterion)
 {
 	prelude_sql_connection_t *sql;
 	strbuf_t *request;
 	prelude_sql_table_t *table;
-	int ret, i, fields, object_count = 0;
-	idmef_cached_object_t **cached;
-	idmef_object_t **objects, *first, *ident_obj;
-	char *first_name, *end;
-	db_object_t *ident_db;
-	char *ident_table, *ident_field;
-	struct db_handle *handle;
-	char buf[128];
+	int ret;
 
 	if ( prelude_db_connection_get_type(conn) != prelude_db_type_sql ) {
 		log(LOG_ERR, "SQL database required for classic format!\n");
@@ -690,97 +610,12 @@ void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache,
 		return NULL;
 	}
 
-	object_count = idmef_cache_get_object_count(cache);
-	if ( object_count == 0 ) {
-		log(LOG_ERR, "no objects requested!\n");
-		return NULL;
-	}
-	
-	if ( object_count < 0 ) {
-		log(LOG_ERR, "idmef_cache_get_object_count() failed!\n");
-		return NULL;		
-	}
-	
-	/* 
-	 * check if the first object is a subclass of alert or heartbeat 
-	 * and add 'alert.ident' or 'heartbeat.ident' to cache if not already there
-	 */
-	first = idmef_cached_object_get_object(idmef_cache_get_object(cache, 0));
-	if ( ! first ) {
-		log(LOG_ERR, "could not get first object from cache!\n");
-		return NULL;
-	}
-	
-	first_name = idmef_object_get_name(first);
-	end = strchr(first_name, '.');
-	if ( end )
-		*end = '\0';
-	
-	buf[sizeof(buf)-1]='\0'; /* ensure that result will be null-terminated */
-	strncpy(buf, first_name, sizeof(buf)-1);
-	strncat(buf, ".ident", sizeof(buf)-1);
-		
-	free(first_name);
-	
-	ident_obj = idmef_object_new(buf);
-	if ( ! ident_obj ) {
-		log(LOG_ERR, "could not create %s object!\n");
-		return NULL;
-	}
-	
-	if ( ! idmef_cache_register_object(cache, ident_obj) ) {
-		log(LOG_ERR, "could not register %s object!\n");
-		idmef_object_destroy(ident_obj);
-		return NULL;
-	}
-	
-	idmef_cache_reindex(cache);
-	
-	ident_db = db_object_find(ident_obj);
-	ident_table = db_object_get_table(ident_db);
-	ident_field = db_object_get_field(ident_db);
-	
-	idmef_object_destroy(ident_obj);
-	
-	/* get updated object count */
-	object_count = idmef_cache_get_object_count(cache);
-	
-	/* allocate needed tables */
-	
-	cached = malloc((object_count+1)*sizeof(idmef_cached_object_t *));
-	if ( ! cached ) {
-		log(LOG_ERR, "out of memory!\n");
-		return NULL;
-	}
-	
-	objects = malloc((object_count+1)*sizeof(idmef_cached_object_t *));
-	if ( ! objects ) {
-		log(LOG_ERR, "out of memory!\n");
-		free(cached);
-		return NULL;
-	}
-	
-	cached[object_count] = NULL;
-	objects[object_count] = NULL;
-
-	for ( i = 0; i < object_count; i++ ) {
-		cached[i] = idmef_cache_get_object(cache, i);
-		objects[i] = idmef_cached_object_get_object(cached[i]);
-	}
-
-	request = build_request(sql, objects, criterion);
-	if ( ! request ) {
-		free(cached);
-		free(objects);
-		return NULL;
-	}
-
-	ret = strbuf_sprintf(request, " ORDER BY %s.%s ;", ident_table, ident_field);
-	if ( ret < 0 )
+	request = build_request(sql, cache, criterion);
+	if ( ! request )
 		return NULL;
 
-	table = prelude_sql_query(sql, strbuf_string(request));	
-	if ( ! table ) {
+	table = prelude_sql_query(sql, strbuf_string(request));
+	if ( ! table && prelude_sql_errno(sql) ) {
 		log(LOG_ERR, "Query %s failed: %s\n", strbuf_string(request), 
 				prelude_sql_errno(sql) ? 
 				prelude_sql_error(sql) : "unknown error");
@@ -790,30 +625,5 @@ void *idmef_db_prepare(prelude_db_connection_t *conn, idmef_cache_t *cache,
 
 	strbuf_destroy(request);
 
-	fields = prelude_sql_fields_num(table);
-
-	if ( fields != object_count ) {
-		log(LOG_ERR, "Requested %d objects, read %d fields: something is wrong\n", 
-		    object_count, fields);
-		return NULL;
-	}
-	
-	handle = malloc(sizeof(*handle));
-	if ( ! handle ) {
-		log(LOG_ERR, "out of memory\n");
-		return NULL;
-	}
-	
-	handle->conn = sql;
-	handle->table = table;
-	handle->cache = cache;
-	handle->cached = cached;
-	handle->objects = objects;	
-	handle->object_count = object_count;
-	handle->line = 0;
-	handle->row = NULL;
-
-	return handle;
+	return table;
 }
-
-

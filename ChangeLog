@@ -1,3 +1,30 @@
+2003-05-05  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/sql/mysql/mysql.c(db_query):
+	fix a bug that returned a non-null pointer for select that
+	returns no rows (this bug was introduced in the last mysql.c
+	modification by using mysql_store_result which has not the same
+	behaviour that mysql_use_result
+
+	* plugins/format/classic/Makefile.am:
+	the last fix did not work, this one works
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	a lot of modifications, now, we provide a higher level (easier to use,
+	more efficient)	of abstraction on top of the sql database
+
+	* plugins/format/classic/idmef-db-output.c:
+	has been renamed in idmef-db-insert.c
+
+	* plugins/format/classic/idmef-db-read.c:
+	has been renamed in idmef-db-select.c
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-insert.c:
+	* plugins/format/classic/idmef-db-select.c:
+	a lot of modifications to fit the new format plugin API
+
 2003-05-05  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/sql.c:
@@ -17,6 +44,7 @@
 	* src/gdb.c:
 	fix warnings. 
 
+>>>>>>> 1.46
 2003-04-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c(add_criterion):

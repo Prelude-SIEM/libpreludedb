@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -27,6 +28,9 @@
 
 typedef struct prelude_db_interface prelude_db_interface_t;
 
+typedef struct prelude_db_message_list prelude_db_message_list_t;
+typedef struct prelude_db_message prelude_db_message_t;
+
 prelude_db_interface_t *prelude_db_interface_new(const char *name,
 						 const char *format,
 						 prelude_db_connection_data_t *data);
@@ -41,18 +45,27 @@ int prelude_db_interface_activate(prelude_db_interface_t *interface);
 
 int prelude_db_interface_deactivate(prelude_db_interface_t *interface);
 
-int prelude_db_interface_write_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
+prelude_db_message_list_t * prelude_db_interface_get_message_list(prelude_db_interface_t * interface,
+								  idmef_cache_t * cache,
+								  idmef_criterion_t * criterion);
 
-void *prelude_db_interface_prepare(prelude_db_interface_t *interface,
-        		           idmef_cache_t *cache,
-        		           idmef_criterion_t *criterion);
+void prelude_db_interface_free_message_list(prelude_db_message_list_t * message_list);
 
-int prelude_db_interface_read(prelude_db_interface_t *interface, 
-			      void *handle);
+prelude_db_message_t * prelude_db_interface_get_message(prelude_db_message_list_t * message_list);
+
+void prelude_db_interface_free_message(prelude_db_message_t * message);
+
+idmef_value_t * prelude_db_interface_get_message_field_value(prelude_db_message_t * message);
+
+int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
 
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
 
 prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_db_interface_t *interface);
+
+int prelude_db_interface_errno(prelude_db_interface_t * interface);
+
+const char * prelude_db_interface_error(prelude_db_interface_t * interface);
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 

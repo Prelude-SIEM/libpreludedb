@@ -2,6 +2,7 @@
 *
 * Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -26,31 +27,48 @@
 #define _LIBPRELUDEDB_PLUGIN_FORMAT_H
 
 typedef struct {
-        PLUGIN_GENERIC;
-        int (*format_write)(prelude_db_connection_t *connection, idmef_message_t *message);
-        void *(*format_prepare)(prelude_db_connection_t *connection, idmef_cache_t *cache,
-        		        idmef_criterion_t *criterion);
-	int (*format_read)(void *handle);
+	PLUGIN_GENERIC;
+
+	void * (*format_get_message_list)(prelude_db_connection_t * connection,
+					  idmef_cache_t * cache,
+					  idmef_criterion_t * criterion);
+
+	void (*format_free_message_list)(prelude_db_connection_t * connection,
+					 idmef_cache_t * cache,
+					 void * message_list);
+
+	void * (*format_get_message)(prelude_db_connection_t * connection,
+				     idmef_cache_t * cache,
+				     void * message_list);
+
+	void (*format_free_message)(prelude_db_connection_t * connection,
+				    idmef_cache_t * cache,
+				    void * message_list,
+				    void * message);
+
+	idmef_value_t * (*format_get_message_field_value)(prelude_db_connection_t * connection,
+							  idmef_cache_t * cache,
+							  void * message_list,
+							  void * message);
+
+	int (*format_insert_idmef_message)(prelude_db_connection_t * connection,
+					   const idmef_message_t * message);
 } plugin_format_t;
 
-#define plugin_write_func(p) (p)->format_write
+#define	plugin_get_message_list_func(p) (p)->format_get_message_list
+#define plugin_free_message_list_func(p) (p)->format_free_message_list
+#define plugin_get_message_func(p) (p)->format_get_message
+#define plugin_free_message_func(p) (p)->format_free_message
+#define plugin_get_message_field_value_func(p) (p)->format_get_message_field_value
+#define	plugin_insert_idmef_message_func(p) (p)->format_insert_idmef_message
 
-#define plugin_prepare_func(p) (p)->format_prepare
-
-#define plugin_read_func(p) (p)->format_read
-
-#define plugin_set_write_func(p, f) plugin_write_func(p) = (f)
-
-#define plugin_set_prepare_func(p, f) plugin_prepare_func(p) = (f)
-
-#define plugin_set_read_func(p, f) plugin_read_func(p) = (f)
+#define	plugin_set_get_message_list_func(p, f) plugin_get_message_list_func(p) = (f)
+#define plugin_set_free_message_list_func(p, f) plugin_free_message_list_func(p) = (f)
+#define	plugin_set_get_message_func(p, f) plugin_get_message_func(p) = (f)
+#define plugin_set_free_message_func(p, f) plugin_free_message_func(p) = (f)
+#define plugin_set_get_message_field_value_func(p, f) plugin_get_message_field_value_func(p) = (f)
+#define	plugin_set_insert_idmef_message_func(p, f) plugin_insert_idmef_message_func(p) = (f)
 
 int format_plugins_init(const char *dirname);
 
-plugin_generic_t *plugin_init(int argc, char **argv);
-
 #endif /* _LIBPRELUDEDB_PLUGIN_FORMAT_H */
-
-
-
-

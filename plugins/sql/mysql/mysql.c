@@ -220,13 +220,18 @@ static void *db_query(void *s, const char *query)
 	}
 
 	res = mysql_store_result(session->mysql);
-	if ( res )
+	if ( res ) {
+		if ( mysql_num_rows(res) == 0 ) {
+			mysql_free_result(res);
+			return NULL;
+		}
 		session->status = st_query;
-	else 
+	} else {
 		if ( mysql_errno(session->mysql) ) {
 			log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->mysql));
 			session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
 		}
+	}
 
 	return res;
 }
