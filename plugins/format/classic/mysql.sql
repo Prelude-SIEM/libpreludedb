@@ -243,7 +243,7 @@ DROP TABLE IF EXISTS Prelude_Impact;
 CREATE TABLE Prelude_Impact (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  description VARCHAR(255) NULL,
- severity ENUM("low","medium","high") NULL,
+ severity ENUM("info", "low","medium","high") NULL,
  INDEX(severity),
  completion ENUM("failed", "succeeded") NULL,
  INDEX(completion),
