@@ -64,7 +64,9 @@ CREATE TABLE Prelude_Analyzer (
  class VARCHAR(255) NULL,	# Compliant with Draft v5 (new attribute in the v5)
  ostype VARCHAR(255) NULL,	# Compliant with Draft v6 (new attribute in the v6)
  osversion VARCHAR(255) NULL,	# Compliant with Draft v6 (new attribute in the v6)
-PRIMARY KEY (parent_ident,parent_type,ident)
+PRIMARY KEY (parent_ident,parent_type,ident),
+INDEX (model),
+INDEX (analyzerid)
 );
 
 # 5.2.4.2
@@ -74,7 +76,8 @@ CREATE TABLE Prelude_Classification (
  origin ENUM("unknown","bugtraqid","cve","vendor-specific") DEFAULT "unknown" NOT NULL,
  name VARCHAR(255) NOT NULL,
  url VARCHAR(255) NOT NULL,
-INDEX (alert_ident)
+INDEX (alert_ident),
+INDEX (name)
 );
 
 # 5.2.4.3
@@ -184,7 +187,9 @@ CREATE TABLE Prelude_Impact (
  severity ENUM("low","medium","high") NULL,
  completion ENUM("failed", "succeeded") NULL,
  type ENUM("admin", "dos", "file", "recon", "user", "other") DEFAULT "other" NULL,
-PRIMARY KEY(alert_ident)
+PRIMARY KEY(alert_ident),
+INDEX (severity),
+INDEX (completion)
 );
 
 # 5.2.6.2
@@ -215,7 +220,8 @@ CREATE TABLE Prelude_AdditionalData (
  type ENUM("boolean","byte","character","date-time","integer","ntpstamp","portlist","real","string","xml") DEFAULT "string" NOT NULL,
  meaning VARCHAR(255) NULL, # NULL ?
  data TEXT NULL,		# this is the content of the AdditionalData itself
-INDEX (parent_ident,parent_type)
+INDEX (parent_ident,parent_type),
+INDEX (meaning)
 );
 
 # 5.2.5.1
@@ -225,7 +231,8 @@ CREATE TABLE Prelude_CreateTime (
  parent_type VARCHAR(1) NOT NULL, # A=Alert H=Hearbeat
  time DATETIME NOT NULL,	# this is the content of the CreateTime itself
  ntpstamp VARCHAR(21) NOT NULL,
-PRIMARY KEY (parent_ident,parent_type)
+PRIMARY KEY (parent_ident,parent_type),
+INDEX (time)
 );
 
 # 5.2.5.2
@@ -234,7 +241,8 @@ CREATE TABLE Prelude_DetectTime (
  alert_ident INT(8) NOT NULL,	# Ident of an alert
  time DATETIME NOT NULL,	
  ntpstamp VARCHAR(21) NOT NULL,
-PRIMARY KEY (alert_ident)
+PRIMARY KEY (alert_ident),
+INDEX (time)
 );
 
 # 5.2.5.3
@@ -244,7 +252,8 @@ CREATE TABLE Prelude_AnalyzerTime (
  parent_type VARCHAR(1) NOT NULL, # A=Alert H=Hearbeat
  time DATETIME NOT NULL,
  ntpstamp VARCHAR(21) NOT NULL,
-PRIMARY KEY (parent_ident,parent_type)
+PRIMARY KEY (parent_ident,parent_type),
+INDEX (time)
 );
 
 # 5.2.7.1
@@ -338,7 +347,10 @@ CREATE TABLE Prelude_Service (
  name VARCHAR(255) NULL,
  port INTEGER NULL,
  protocol VARCHAR(255) NULL,
-PRIMARY KEY (alert_ident,parent_type,parent_ident)
+PRIMARY KEY (alert_ident,parent_type,parent_ident),
+INDEX (port),
+INDEX (protocol),
+INDEx (protocol,port)
 );
 
 # 5.2.7.4 
