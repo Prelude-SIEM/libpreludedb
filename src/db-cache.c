@@ -74,7 +74,6 @@ static prelude_io_t *pio_open(const char *filename, const char *mode)
         fd = fopen(filename, mode);
         if ( ! fd ) {
                 log(LOG_ERR, "couldn't open %s (%s).\n", filename, mode);
-                prelude_io_close(pfd);
                 prelude_io_destroy(pfd);
                 return NULL;
         }
