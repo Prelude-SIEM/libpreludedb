@@ -1,3 +1,9 @@
+2003-12-28  Nicolas Delon  <delon.nicolas@wanado.fr>
+
+	* plugins/format/classic/idmef-db-insert.c:
+	insert an empty string ("") if a MUST-BE-PRESENT string
+	does not contain anything
+
 2003-12-28  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-select.c:

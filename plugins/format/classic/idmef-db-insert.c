@@ -52,6 +52,22 @@
 
 static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident, int file_ident, char parent_type, idmef_file_t *file);
 
+
+
+static inline char *get_string(idmef_string_t *string)
+{
+	char *s;
+
+	if ( ! string )
+		return NULL;
+
+	s = idmef_string_get_string(string);
+
+	return s ? s : "";
+}
+
+
+
 static int insert_address(prelude_sql_connection_t *conn, uint64_t alert_ident, uint64_t parent_ident,
                           char parent_type, uint64_t node_ident, idmef_address_t *address) 
 {
@@ -65,20 +81,20 @@ static int insert_address(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         if ( ! category )
                 return -1;
 
-        addr = prelude_sql_escape(conn, idmef_string(idmef_address_get_address(address)));
+        addr = prelude_sql_escape(conn, get_string(idmef_address_get_address(address)));
         if ( ! addr ) {
                 free(category);
                 return -2;
         }
 
-        netmask = prelude_sql_escape(conn, idmef_string(idmef_address_get_netmask(address)));
+        netmask = prelude_sql_escape(conn, get_string(idmef_address_get_netmask(address)));
         if ( ! netmask ) {
                 free(addr);
                 free(category);
                 return -3;
         }
 
-        vlan_name = prelude_sql_escape(conn, idmef_string(idmef_address_get_vlan_name(address)));
+        vlan_name = prelude_sql_escape(conn, get_string(idmef_address_get_vlan_name(address)));
         if ( ! vlan_name ) {
                 free(addr);
                 free(netmask);
@@ -116,13 +132,13 @@ static int insert_node(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
         if ( ! category )
                 return -1;
         
-        name = prelude_sql_escape(conn, idmef_string(idmef_node_get_name(node)));
+        name = prelude_sql_escape(conn, get_string(idmef_node_get_name(node)));
         if ( ! name ) {
                 free(category);
                 return -2;
         }
         
-        location = prelude_sql_escape(conn, idmef_string(idmef_node_get_location(node)));
+        location = prelude_sql_escape(conn, get_string(idmef_node_get_location(node)));
         if ( ! location ) {
                 free(name);
                 free(category);
@@ -162,7 +178,7 @@ static int insert_userid(prelude_sql_connection_t *conn, uint64_t alert_ident, u
         if ( ! type )
                 return -1;
 
-        name = prelude_sql_escape(conn, idmef_string(idmef_userid_get_name(userid)));
+        name = prelude_sql_escape(conn, get_string(idmef_userid_get_name(userid)));
         if ( ! name ) {
                 free(type);
                 return -1;
@@ -230,11 +246,11 @@ static int insert_process(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         if ( ! process )
                 return 0;
         
-        name = prelude_sql_escape(conn, idmef_string(idmef_process_get_name(process)));
+        name = prelude_sql_escape(conn, get_string(idmef_process_get_name(process)));
         if ( ! name )
                 return -1;
 
-        path = prelude_sql_escape(conn, idmef_string(idmef_process_get_path(process)));
+        path = prelude_sql_escape(conn, get_string(idmef_process_get_path(process)));
         if ( ! path ) {
                 free(name);
                 return -2;
@@ -296,17 +312,17 @@ static int insert_snmp_service(prelude_sql_connection_t *conn, uint64_t alert_id
 	if ( ! snmpservice )
 		return 0;
 
-        oid = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_oid(snmpservice)));
+        oid = prelude_sql_escape(conn, get_string(idmef_snmpservice_get_oid(snmpservice)));
         if ( ! oid )
                 return -1;
         
-        command = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_command(snmpservice)));
+        command = prelude_sql_escape(conn, get_string(idmef_snmpservice_get_command(snmpservice)));
         if ( ! command ) {
                 free(oid);
                 return -2;
         }
 
-        community = prelude_sql_escape(conn, idmef_string(idmef_snmpservice_get_community(snmpservice)));
+        community = prelude_sql_escape(conn, get_string(idmef_snmpservice_get_community(snmpservice)));
         if ( ! community ) {
                 free(oid);
                 free(command);
@@ -335,17 +351,17 @@ static int insert_web_service(prelude_sql_connection_t *conn, uint64_t alert_ide
         if ( ! webservice )
                 return 0;
 
-        url = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_url(webservice)));
+        url = prelude_sql_escape(conn, get_string(idmef_webservice_get_url(webservice)));
         if ( ! url )
                 return -1;
         
-        cgi = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_cgi(webservice)));
+        cgi = prelude_sql_escape(conn, get_string(idmef_webservice_get_cgi(webservice)));
         if ( ! cgi ) {
                 free(url);
                 return -2;
         }
         
-        method = prelude_sql_escape(conn, idmef_string(idmef_webservice_get_http_method(webservice)));
+        method = prelude_sql_escape(conn, get_string(idmef_webservice_get_http_method(webservice)));
         if ( ! method ) {
                 free(url);
                 free(cgi);
@@ -377,11 +393,11 @@ static int insert_service(prelude_sql_connection_t *conn, uint64_t alert_ident, 
 
 	ident = idmef_service_get_ident(service);
 
-        name = prelude_sql_escape(conn, idmef_string(idmef_service_get_name(service)));
+        name = prelude_sql_escape(conn, get_string(idmef_service_get_name(service)));
         if ( ! name )
                 return -1;
 
-        protocol = prelude_sql_escape(conn, idmef_string(idmef_service_get_protocol(service)));
+        protocol = prelude_sql_escape(conn, get_string(idmef_service_get_protocol(service)));
         if ( ! protocol ) {
                 free(name);
                 return -2;
@@ -397,8 +413,8 @@ static int insert_service(prelude_sql_connection_t *conn, uint64_t alert_ident, 
 	if ( ret < 0 )
 		return -3;
 
-	if ( idmef_string(idmef_service_get_portlist(service)) ) {
-		portlist = prelude_sql_escape(conn, idmef_string(idmef_service_get_portlist(service)));
+	if ( get_string(idmef_service_get_portlist(service)) ) {
+		portlist = prelude_sql_escape(conn, get_string(idmef_service_get_portlist(service)));
 		if ( ! portlist )
 			return -3;
 
@@ -478,13 +494,13 @@ static int insert_linkage(prelude_sql_connection_t *conn, uint64_t alert_ident, 
         if ( ! category )
                 return -1;
         
-        name = prelude_sql_escape(conn, idmef_string(idmef_linkage_get_name(linkage)));
+        name = prelude_sql_escape(conn, get_string(idmef_linkage_get_name(linkage)));
         if ( ! name ) {
                 free(category);
                 return -2;
         }
         
-        path = prelude_sql_escape(conn, idmef_string(idmef_linkage_get_path(linkage)));
+        path = prelude_sql_escape(conn, get_string(idmef_linkage_get_path(linkage)));
         if ( ! path ) {
                 free(name);
                 free(category);
@@ -553,13 +569,13 @@ static int insert_file(prelude_sql_connection_t *conn, uint64_t alert_ident, uin
         if ( ! category )
                 return -1;
 
-        name = prelude_sql_escape(conn, idmef_string(idmef_file_get_name(file)));
+        name = prelude_sql_escape(conn, get_string(idmef_file_get_name(file)));
         if ( ! name ) {
                 free(category);
                 return -2;
         }
 
-        path = prelude_sql_escape(conn, idmef_string(idmef_file_get_path(file)));
+        path = prelude_sql_escape(conn, get_string(idmef_file_get_path(file)));
         if ( ! path ) {
                 free(name);
                 free(category);
@@ -643,7 +659,7 @@ static int insert_source(prelude_sql_connection_t *conn, uint64_t alert_ident, i
         if ( ! spoofed )
                 return -1;
 
-        interface = prelude_sql_escape(conn, idmef_string(idmef_source_get_interface(source)));
+        interface = prelude_sql_escape(conn, get_string(idmef_source_get_interface(source)));
         if ( ! interface ) {
                 free(spoofed);
                 return -2;
@@ -691,7 +707,7 @@ static int insert_target(prelude_sql_connection_t *conn, uint64_t alert_ident, i
         if ( ! decoy )
                 return -1;
 
-        interface = prelude_sql_escape(conn, idmef_string(idmef_target_get_interface(target)));
+        interface = prelude_sql_escape(conn, get_string(idmef_target_get_interface(target)));
         if ( ! interface ) {
                 free(decoy);
                 return -2;
@@ -749,24 +765,24 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t parent_ident
 
 	analyzerid = idmef_analyzer_get_analyzerid(analyzer);
 
-        class = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_class(analyzer)));
+        class = prelude_sql_escape(conn, get_string(idmef_analyzer_get_class(analyzer)));
         if ( ! class )
                 return -1;
         
-        model = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_model(analyzer)));
+        model = prelude_sql_escape(conn, get_string(idmef_analyzer_get_model(analyzer)));
         if ( ! model ) {
                 free(class);
                 return -2;
         }
         
-        version = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_version(analyzer)));
+        version = prelude_sql_escape(conn, get_string(idmef_analyzer_get_version(analyzer)));
         if ( ! version ) {
                 free(class);
                 free(model);
                 return -3;
         }
         
-        manufacturer = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_manufacturer(analyzer)));
+        manufacturer = prelude_sql_escape(conn, get_string(idmef_analyzer_get_manufacturer(analyzer)));
         if ( ! manufacturer ) {
                 free(class);
                 free(model);
@@ -774,7 +790,7 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t parent_ident
                 return -4;
         }
 
-        ostype = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_ostype(analyzer)));
+        ostype = prelude_sql_escape(conn, get_string(idmef_analyzer_get_ostype(analyzer)));
         if ( ! ostype ) {
                 free(class);
                 free(model);
@@ -783,7 +799,7 @@ static int insert_analyzer(prelude_sql_connection_t *conn, uint64_t parent_ident
                 return -5;
         }
 
-        osversion = prelude_sql_escape(conn, idmef_string(idmef_analyzer_get_osversion(analyzer)));
+        osversion = prelude_sql_escape(conn, get_string(idmef_analyzer_get_osversion(analyzer)));
         if ( ! osversion ) {
                 free(class);
                 free(model);
@@ -827,13 +843,13 @@ static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_
         if ( ! origin )
                 return -1;
 
-        url = prelude_sql_escape(conn, idmef_string(idmef_classification_get_url(classification)));
+        url = prelude_sql_escape(conn, get_string(idmef_classification_get_url(classification)));
         if ( ! url ) {
                 free(origin);
                 return -2;
         }
         
-        name = prelude_sql_escape(conn, idmef_string(idmef_classification_get_name(classification)));
+        name = prelude_sql_escape(conn, get_string(idmef_classification_get_name(classification)));
         if ( ! name ) {
                 free(url);
                 free(origin);
@@ -867,7 +883,7 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t paren
         if ( ! type )
                 return -2;
 
-        meaning = prelude_sql_escape(conn, idmef_string(idmef_additional_data_get_meaning(additional_data)));
+        meaning = prelude_sql_escape(conn, get_string(idmef_additional_data_get_meaning(additional_data)));
         if ( ! meaning ) {
                 free(type);
                 return -3;
@@ -1019,7 +1035,7 @@ static int insert_impact(prelude_sql_connection_t *conn, uint64_t alert_ident, i
                 return -3;
         }
         
-        description = prelude_sql_escape(conn, idmef_string(idmef_impact_get_description(impact)));
+        description = prelude_sql_escape(conn, get_string(idmef_impact_get_description(impact)));
         if ( ! description ) {
                 free(type);
                 free(severity);
@@ -1050,7 +1066,7 @@ static int insert_action(prelude_sql_connection_t *conn, uint64_t alert_ident, i
         if ( ! category )
                 return -1;
 
-        description = prelude_sql_escape(conn, idmef_string(idmef_action_get_description(action)));
+        description = prelude_sql_escape(conn, get_string(idmef_action_get_description(action)));
         if ( ! description ) {
                 free(category);
                 return -2;
@@ -1122,7 +1138,7 @@ static int insert_overflow_alert(prelude_sql_connection_t *conn, uint64_t alert_
         char *program, *buffer;
         int ret;
 
-        program = prelude_sql_escape(conn, idmef_string(idmef_overflow_alert_get_program(overflow_alert)));
+        program = prelude_sql_escape(conn, get_string(idmef_overflow_alert_get_program(overflow_alert)));
         if ( ! program )
                 return -1;
 
@@ -1155,11 +1171,11 @@ static int insert_tool_alert(prelude_sql_connection_t *conn, uint64_t alert_iden
         /*
          * FIXME use alert_ident ?
          */
-        name = prelude_sql_escape(conn, idmef_string(idmef_tool_alert_get_name(tool_alert)));
+        name = prelude_sql_escape(conn, get_string(idmef_tool_alert_get_name(tool_alert)));
         if ( ! name )
                 return -1;
 
-        command = prelude_sql_escape(conn, idmef_string(idmef_tool_alert_get_command(tool_alert)));
+        command = prelude_sql_escape(conn, get_string(idmef_tool_alert_get_command(tool_alert)));
         if ( ! command ) {
                 free(name);
                 return -2;
@@ -1188,7 +1204,7 @@ static int insert_correlation_alert(prelude_sql_connection_t *conn, uint64_t ale
         /*
          * FIXME: use alert_ident ?
          */
-        name = prelude_sql_escape(conn, idmef_string(idmef_correlation_alert_get_name(correlation_alert)));
+        name = prelude_sql_escape(conn, get_string(idmef_correlation_alert_get_name(correlation_alert)));
         if ( ! name )
                 return -1;
 
