@@ -45,6 +45,9 @@
 #include "plugin-sql.h"
 
 
+prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void);
+
+
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
  #define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
@@ -694,7 +697,7 @@ static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int v
 }
 
 
-prelude_plugin_generic_t *prelude_plugin_init(void)
+prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void)
 {               
 	/* system-wide options for the plugin should go in here */
 	

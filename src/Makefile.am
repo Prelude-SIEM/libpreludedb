@@ -3,6 +3,17 @@ DEFS = -I$(top_srcdir) -I$(srcdir)/include @defined@ -DSQL_PLUGIN_DIR=\"@sql_plu
 
 lib_LTLIBRARIES = libpreludedb.la
 
+if HAVE_MYSQL
+ MYSQL_OBJS=-dlopen $(top_builddir)/plugins/sql/mysql/mysql.la
+endif
+
+if HAVE_PGSQL
+ PGSQL_OBJS=-dlopen $(top_builddir)/plugins/sql/pgsql/pgsql.la
+endif
+
+DLOPENED_OBJS=$(MYSQL_OBJS) $(PGSQL_OBJS) -dlopen $(top_builddir)/plugins/format/classic/classic.la
+
+libpreludedb_la_LDFLAGS = -no-undefined $(DLOPENED_OBJS)
 libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\

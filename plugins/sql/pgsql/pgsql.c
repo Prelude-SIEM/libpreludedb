@@ -48,6 +48,7 @@
 #include "sql.h"
 #include "plugin-sql.h"
 
+prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void);
 
 
 typedef enum {
@@ -652,7 +653,7 @@ static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int v
 
 
 
-prelude_plugin_generic_t *prelude_plugin_init(void)
+prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void)
 {
         
 	/*

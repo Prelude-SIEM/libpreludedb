@@ -49,6 +49,10 @@
 #include "idmef-db-delete.h"
 #include "db-object.h"
 
+
+prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void);
+
+
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
 
 static plugin_format_t plugin;
@@ -457,7 +461,7 @@ error:
 
 
 
-prelude_plugin_generic_t *prelude_plugin_init(void)
+prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void)
 {
 	/* System wide plugin options should go in here */
         
