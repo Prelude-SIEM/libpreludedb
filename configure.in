@@ -3,13 +3,13 @@ dnl AC_CONFIG_SRCDIR([src])
 
 AC_CANONICAL_SYSTEM
 AC_PREREQ(2.53)
-AM_INIT_AUTOMAKE(libpreludedb, 0.1)
+AM_INIT_AUTOMAKE(libpreludedb, 0.1.0-svn)
 AM_CONFIG_HEADER(config.h)
 AM_DISABLE_STATIC
 
 AM_MAINTAINER_MODE
 
-dnl AC_LIBTOOL_DLOPEN
+AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 
 dnl Checks for programs
@@ -21,8 +21,6 @@ AC_PROG_MAKE_SET
 
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
-AC_SUBST(libprelude_db_libs)
-AC_SUBST(libprelude_db_cflags)
 
 if test "x$prefix" = "xNONE"; then
 	prefix="/usr/local"
@@ -45,8 +43,7 @@ dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
 
-AC_PATH_GENERIC(libprelude, 0.8.0, ,
-   AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?) )
+AM_PATH_LIBPRELUDE(0.9.0, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?) )
 
 defined="$defined $LIBPRELUDE_CFLAGS"
 
@@ -232,16 +229,20 @@ AM_CONDITIONAL(HAVE_PYTHON, test x$enable_python = xyes)
 sql_plugin_dir=$libdir/libpreludedb/plugins/sql
 format_plugin_dir=$libdir/libpreludedb/plugins/formats
 format_config_dir=$sysconfdir/libpreludedb/plugins/formats
-filter_plugin_dir=$libdir/libpreludedb/plugins/filters
 
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
 AC_SUBST(format_config_dir)
-AC_SUBST(filter_plugin_dir)
 
-
-CFLAGS="$CFLAGS -Wall -Wno-strict-prototypes -Wmissing-prototypes -Wmissing-declarations \
--Wbad-function-cast -Wcast-qual -Wcast-align -Wnested-externs -Wunused"
+AX_CFLAGS_GCC_OPTION(-Wall)
+AX_CFLAGS_GCC_OPTION(-Wstrict-prototypes)
+AX_CFLAGS_GCC_OPTION(-Wmissing-prototypes)
+AX_CFLAGS_GCC_OPTION(-Wmissing-declarations)
+AX_CFLAGS_GCC_OPTION(-Wbad-function-cast)
+AX_CFLAGS_GCC_OPTION(-Wcast-qual)
+AX_CFLAGS_GCC_OPTION(-Wcast-align)
+AX_CFLAGS_GCC_OPTION(-Wnested-externs)
+AX_CFLAGS_GCC_OPTION(-Wunused)
 
 
 AC_SUBST(CFLAGS)
@@ -254,6 +255,8 @@ Makefile
 
 prelude-db-create.sh
 
+m4/Makefile
+
 src/Makefile
 src/include/Makefile
 
@@ -265,9 +268,7 @@ plugins/sql/pgsql/Makefile
 
 plugins/format/Makefile
 plugins/format/classic/Makefile
-
-plugins/filters/Makefile
-plugins/filters/skeleton/Makefile
+plugins/format/classic/include/Makefile
 
 bindings/Makefile
 bindings/perl/Makefile

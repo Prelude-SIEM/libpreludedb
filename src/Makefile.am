@@ -1,5 +1,5 @@
 SUBDIRS = include
-DEFS = -I$(top_srcdir) -I$(srcdir)/include @defined@ -DSQL_PLUGIN_DIR=\"@sql_plugin_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\"
+AM_CPPFLAGS = @defined@ -I$(srcdir)/include -DSQL_PLUGIN_DIR=\"@sql_plugin_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\"
 
 lib_LTLIBRARIES = libpreludedb.la
 
@@ -13,7 +13,7 @@ endif
 
 DLOPENED_OBJS=$(MYSQL_OBJS) $(PGSQL_OBJS) -dlopen $(top_builddir)/plugins/format/classic/classic.la
 
-libpreludedb_la_LDFLAGS = -no-undefined $(DLOPENED_OBJS)
+libpreludedb_la_LDFLAGS = @LIBPRELUDE_LDFLAGS@ -no-undefined $(DLOPENED_OBJS)
 libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\

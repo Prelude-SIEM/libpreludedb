@@ -1,1 +1,1 @@
-SUBDIRS = sql format filters
+SUBDIRS = sql format

@@ -21,6 +21,7 @@
 *
 *****/
 
+#include "config.h"
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -78,4 +79,33 @@ int prelude_db_init(void)
 void prelude_db_shutdown(void) 
 {
 	/* nop */
+}
+
+
+
+const char *prelude_db_check_version(const char *req_version)
+{
+        int ret;
+        int major, minor, micro;
+        int rq_major, rq_minor, rq_micro;
+
+        if ( ! req_version )
+                return VERSION;
+        
+        ret = sscanf(VERSION, "%d.%d.%d", &major, &minor, &micro);
+        if ( ret != 3 )
+                return NULL;
+        
+        ret = sscanf(req_version, "%d.%d.%d", &rq_major, &rq_minor, &rq_micro);
+        if ( ret != 3 )
+                return NULL;
+        
+        if ( major > rq_major
+             || (major == rq_major && minor > rq_minor)
+             || (major == rq_major && minor == rq_minor && micro > rq_micro)
+             || (major == rq_major && minor == rq_minor && micro == rq_micro) ) {
+                return VERSION;
+        }
+
+        return NULL;
 }

@@ -1,6 +1,3 @@
-libtoolize -c --force
-aclocal
-autoheader
-automake --gnu -a -c
-autoconf
-#./configure
+autoreconf --install --force
+echo
+echo "You can now run \"./configure --enable-developer-mode\" and \"make\""
