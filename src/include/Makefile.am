@@ -12,8 +12,7 @@ include_HEADERS = 		\
 	sql.h			\
 	param-string.h		\
 	plugin-sql.h		\
-	plugin-format.h		\
-	sql-table.h		
+	plugin-format.h
 
 noinst_HEADERS = 		\
 	gdb.h			\
@@ -22,5 +21,4 @@ noinst_HEADERS = 		\
 	sql-connection-data.h	\
 	param-string.h		\
 	plugin-format.h		\
-	plugin-sql.h		\
-	sql-table.h		
+	plugin-sql.h

@@ -1,3 +1,41 @@
+2003-01-04  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/sql/mysql/mysql.c:
+	* plugins/sql/pgsql/pgsql.c:
+	* src/include/plugin-sql.h:
+	* src/include/sql.h:
+	* src/sql.c:
+	updated copyright notices
+
+	* src/sql.c(prelude_sql_field_value_idmef):
+	call idmef_value_have_own_data() after bulding idmef_string_t 
+	object. 
+
+2003-01-03  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/include/plugin-sql.h:
+	sql plugin API re-designed
+	we no longer convert the database result in our own format
+	we no longer use the errno global variable, instead of this,
+	the sql plugin must maintain an internal errno-type variable
+
+	* src/{sql.c,include/sql.h}:
+	a lot of changes to fit the new sql plugin API
+
+	* src/{sql-table.c,include/sql-table.h}:
+	as we are not doing results conversion anymore, those files
+	have been deleted
+
+	* plugins/sql/mysql/mysql.c:
+	a lot of changes to fit the new sql plugin API
+	dbport argument in db_setup is supported
+	code cleanup, we no longer use mysql API deprecated functions
+	we no longer fetch the query result in one time, instead of this,
+	we fetch the result row by row
+
+	* plugins/sql/pgsql/pgsql.c
+	a lot of changes to fit the new sql plugin API
+ 
 2003-01-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* src/db-interface-string.c(get_sql_connection_data):

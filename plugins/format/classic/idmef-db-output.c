@@ -33,7 +33,6 @@
 #include <libprelude/idmef-util.h>
 
 
-#include "sql-table.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"

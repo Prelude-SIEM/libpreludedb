@@ -16,5 +16,4 @@ libpreludedb_la_SOURCES =		\
 	sql.c				\
 	param-string.c			\
 	format-plugins.c		\
-	sql-plugins.c			\
-	sql-table.c
+	sql-plugins.c

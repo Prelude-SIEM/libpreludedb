@@ -1,6 +1,7 @@
 /*****
 *
 * Copyright (C) 2001, 2002 Vandoorselaere Yoann <yoann@mandrakesoft.com>
+* Copyright (C) 2002 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -45,49 +46,58 @@
 
 #include "config.h"
 
-#include "sql-table.h"
-
 #include "sql-connection-data.h"
+#include "sql.h"
 #include "plugin-sql.h"
 
 
 
 typedef enum {
-	allocated = 1,
-	connected = 2,
-	connection_failed = 3,
-	transaction = 4
+	st_allocated = 1,
+	st_connected,
+	st_connection_failed,
+	st_transaction,
+	st_query
 } session_status_t;
 
 
 
 typedef struct {
 	session_status_t status;
+	int dberrno;
 	char *dbhost;
 	char *dbport;
 	char *dbname;
 	char *dbuser;
 	char *dbpass;
 	PGconn *pgsql;
+
+	/* query dependant variable */
+	int row;
 } session_t;
+
 
 
 static plugin_sql_t plugin;
 
 
 
+static void *db_query(void *, const char *);
+
+
 static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
                       const char *dbuser, const char *dbpass)
 {
         session_t *session;
-
+	
         session = malloc(sizeof(*session));
-        if ( ! session ) {
+	if ( ! session ) {
                 log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
+		return NULL;
         }
 	
-	session->status = allocated;
+	session->status = st_allocated;
+	session->dberrno = 0;
 	session->dbhost = (dbhost) ? strdup(dbhost) : NULL;
 	session->dbport = (dbport) ? strdup(dbport) : NULL;
 	session->dbname = (dbname) ? strdup(dbname) : NULL;
@@ -114,30 +124,56 @@ static void cleanup(void *s)
 
 
 
+/*
+ * start transaction
+ */
+static int db_begin(void *s) 
+{
+        session_t *session = s;
+        void *ret;
+
+	session->dberrno = 0;
+	
+	if ( session->status == st_transaction ) {
+		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
+		return -session->dberrno;
+	}
+       
+	ret = db_query(session, "BEGIN;");
+		
+	if ( ! session->dberrno ) {
+		session->status = st_transaction;
+		return 0;
+	}
+
+	return -session->dberrno;
+}
+
+
 
 /*
- * Execute SQL query, do not return table
+ * commit transaction
  */
-static int db_command(void *s, const char *query)
+static int db_commit(void *s)
 {
-	session_t *session = s;
-        PGresult *ret;
-        
-	if ( session->status != connected && session->status != transaction )
-		return -ERR_PLUGIN_DB_NOT_CONNECTED; 
-        
-#ifdef DEBUG
-	log(LOG_INFO, "pgsql[%p]: %s\n", session, query);
-#endif
-        
-        ret = PQexec(session->pgsql, query);
+        session_t *session = s;
+        void *ret;
 
-        if ( ! ret || (PQresultStatus(ret) != PGRES_COMMAND_OK && PQresultStatus(ret) != PGRES_TUPLES_OK) ) {
-                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
-                return -ERR_PLUGIN_DB_QUERY_ERROR;
-        }
-
-        return 0;
+	session->dberrno = 0;
+        
+	if ( session->status != st_transaction ) {
+		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
+		return -session->dberrno;
+	}
+	
+	ret = db_query(session, "COMMIT;");
+	
+	if ( ! session->dberrno ) {
+		session->status = st_connected;
+		return 0;
+	}
+		
+	return -session->dberrno;
 }
 
 
@@ -148,17 +184,23 @@ static int db_command(void *s, const char *query)
 static int db_rollback(void *s)
 {
         session_t *session = s;
-        int ret;
+        void *ret;
+
+	session->dberrno = 0;
         
-	if ( session->status != transaction )
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
+	if ( session->status != st_transaction ) {
+		session->dberrno = ERR_PLUGIN_DB_NO_TRANSACTION;
+		return -session->dberrno;
+	}
 		
-	ret = db_command(session, "ROLLBACK;");
+	ret = db_query(session, "ROLLBACK;");
 	
-	if (ret == 0)
-		session->status = connected;
+	if ( ! session->dberrno ) {
+		session->status = st_connected;
+		return 0;
+	}
 		
-	return ret;
+	return -session->dberrno;
 }
 
 
@@ -170,15 +212,13 @@ static void db_close(void *s)
 {
         session_t *session = s;
 		
-	if ( session->status == transaction )
+	if ( session->status == st_transaction )
 		db_rollback(s);
 
         PQfinish(session->pgsql);
-        
+
         cleanup(s);
 }
-
-
 
 
 
@@ -212,178 +252,61 @@ static char *db_escape(void *s, const char *str)
 
 
 
-
-static int get_query_result(const char *query, PGresult *res, prelude_sql_table_t *table) 
-{
-        int i, j;
-        prelude_sql_row_t *row;
-        const char *name;
-        prelude_sql_field_t *field;
-        int tuples, fields;
-        prelude_sql_field_type_t type;
-        
-        tuples = PQntuples(res);
-        fields = PQnfields(res);
-        	
-        for ( i = 0; i < tuples; i++ ) {
-                
-                row = prelude_sql_row_new(fields);
-                if ( ! row ) {
-                        log(LOG_ERR, "Query \"%s\": could not create table row\n", query);
-                        errno = -ERR_PLUGIN_DB_RESULT_ROW_ERROR;
-                        return -1;
-                }
-        		
-                prelude_sql_table_add_row(table, row);
-                
-                for ( j = 0; j < fields; j++ ) {
-
-                        /*
-                         * determine and convert column type.
-                         *
-                         * FIXME: values are taken from pgsql/server/catalog/pg_type.h
-                         * but maybe there is a more elegant way to do that
-                         */
-
-                        switch ( PQftype(res, j) ) {
-
-                        case 20:
-                                type = type_int64;
-                                break;
-
-                        case 23:
-                                type = type_int32;
-                                break;
-                                
-                        case 700:
-                                type = type_float;
-                                break;
-                                
-                        case 701:
-                                type = type_double;
-                                break;
-
-                        default:
-                                type = type_string;
-                                break;
-                        }
-
-                        name = PQfname(res, j);
-                        
-                        field = prelude_sql_field_new(name, type, PQgetvalue(res, i, j));
-                        if ( ! field ) {
-                                log(LOG_ERR, "Query \"%s\": couldn't create result field \"%s\"\n", query, name);
-                                errno = -ERR_PLUGIN_DB_RESULT_FIELD_ERROR;
-                                return -1;
-                        }
-                        
-                        prelude_sql_row_set_field(row, j, field);
-        	}
-        }
-
-        return 0;
-}
-
-
-
 /*
  * Execute SQL query, return table
  */
-static prelude_sql_table_t *db_query(void *s, const char *query)
+static void *db_query(void *s, const char *query)
 {
         int ret;
         PGresult *res;
-        prelude_sql_table_t *table;
         session_t *session = s;
-       
-	if ( session->status != connected && session->status != transaction ) {
-                errno = -ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;
-	}
 
-	table = prelude_sql_table_new("Results");
-	if ( ! table ) {
-		log(LOG_ERR, "Query: \"%s\": could not create result table\n", query);
-		errno = -ERR_PLUGIN_DB_RESULT_TABLE_ERROR;
+	session->dberrno = 0;
+
+	switch ( session->status ) {
+
+	case st_connected: case st_transaction:
+		break;
+		
+	case st_query:
+		session->dberrno = ERR_PLUGIN_DB_DOUBLE_QUERY;
+		return NULL;
+
+	default:
+		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
 		return NULL;
 	}
 
 #ifdef DEBUG
 	log(LOG_INFO, "pgsql: %s\n", query);
 #endif
-        
-        res = PQexec(session->pgsql, query);
-        if ( ! res || (PQresultStatus(res) != PGRES_COMMAND_OK && PQresultStatus(res) != PGRES_TUPLES_OK) ) {
-                log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
 
-                if (res)
-                	PQclear(res);
-                	
-                prelude_sql_table_destroy(table);
-                
-                errno = -ERR_PLUGIN_DB_QUERY_ERROR;
-                return NULL;
-        }
+	res = PQexec(session->pgsql, query);
+	if ( ! res ) {
+		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
+		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
+		return NULL;
+	}
 
-        if ( PQresultStatus(res) != PGRES_TUPLES_OK ) {
-                PQclear(res);
-                return table;
-        }
-        
-        ret = get_query_result(query, res, table);
-        if ( ret < 0 ) {
-                prelude_sql_table_destroy(table);
-                table = NULL;
-        }
-        
-	PQclear(res);
-
-        return table;
-}
-
-
-
-
-
-/*
- * start transaction
- */
-static int db_begin(void *s) 
-{
-        session_t *session = s;
-        int ret;
-        
-	if ( session->status == transaction )
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
-       
-	ret = db_command(session, "BEGIN;");
+	ret = PQresultStatus(res);
+	switch ( ret ) {
 		
-	if (ret == 0)
-		session->status = transaction;
-		
-	return ret;
-}
+	case PGRES_COMMAND_OK:
+		PQclear(res);
+		return NULL;
 
+	case PGRES_TUPLES_OK:
+		session->status = st_query;
+		session->row = 0;
+		return res;
 
+	default:
+		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
+		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
+		PQclear(res);
+	}
 
-
-/*
- * commit transaction
- */
-static int db_commit(void *s)
-{
-        session_t *session = s;
-        int ret;
-        
-	if ( session->status != transaction )
-		return -ERR_PLUGIN_DB_NO_TRANSACTION;
-	
-	ret = db_command(session, "COMMIT;");
-	
-	if (ret == 0)
-		session->status = connected;
-		
-	return ret;
+	return NULL;
 }
 
 
@@ -394,28 +317,232 @@ static int db_commit(void *s)
  */
 static int db_connect(void *s)
 {
-        int ret;
         session_t *session = s;
-        
-	if ( session->status != allocated &&
-             session->status != connection_failed )
-		return -ERR_PLUGIN_DB_ALREADY_CONNECTED;
+
+	session->dberrno = 0;
+	
+	if ( session->status != st_allocated &&
+             session->status != st_connection_failed ) {
+		session->dberrno = ERR_PLUGIN_DB_ALREADY_CONNECTED;
+		return -session->dberrno;
+	}
 	
         session->pgsql = PQsetdbLogin(session->dbhost, session->dbport, 
                                       NULL, NULL, session->dbname, session->dbuser, session->dbpass);
 
-        ret = PQstatus(session->pgsql);
-        
-        if ( ret == CONNECTION_BAD) {
+        if ( PQstatus(session->pgsql) == CONNECTION_BAD ) {
                 log(LOG_INFO, "PgSQL connection failed: %s", PQerrorMessage(session->pgsql));
                 PQfinish(session->pgsql);
-                session->status = connection_failed;
-                return -ERR_PLUGIN_DB_CONNECTION_FAILED;
+                session->status = st_connection_failed;
+		session->dberrno = ERR_PLUGIN_DB_CONNECTION_FAILED;
+		return -session->dberrno;
         }
 
-	session->status = connected;
+	session->status = st_connected;
         
         return 0;
+}
+
+
+
+static int db_errno(void *s)
+{
+	session_t *session = s;
+
+	return session->dberrno;
+}
+
+
+static void db_table_free(void *s, void *t)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+
+	session->status = st_connected;
+
+	PQclear(res);
+}
+
+
+
+static const char *db_field_name(void *s, void *t, unsigned int i)
+{
+	session_t *session = s;
+	PGresult *res = t;
+	const char *name;
+
+	session->dberrno = 0;
+
+	name = PQfname(res, i);
+	if ( ! name )
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
+
+	return name;
+}
+
+
+
+static int db_field_num(void *s, void *t, const char *name)
+{
+	session_t *session = s;
+	PGresult *res = t;
+	int num;
+
+	session->dberrno = 0;
+
+	num = PQfnumber(res, name);
+	if ( num == -1 )
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
+
+	return num;
+}
+
+
+
+/*
+ * FIXME: type values are taken from pgsql/server/catalog/pg_type.h
+ * but maybe there is a more elegant way to do that
+ * 
+ * Nicolas: the only "elegant way" to do it that seems to exist, is to query
+ * the postgres table named pg_type 
+ */
+static prelude_sql_field_type_t db_field_type(void *s, void *t, unsigned int i)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+
+	switch ( PQftype(res, i) ) {
+		
+	case InvalidOid:
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
+		return dbtype_unknown;
+		
+	case 20:
+		return dbtype_int64;
+
+	case 23:
+		return dbtype_int32;
+
+	case 700:
+		return dbtype_float;
+
+	case 701:
+		return dbtype_double;
+
+	default:
+		return dbtype_string;
+	}
+
+	return dbtype_unknown;	
+}
+
+
+
+static prelude_sql_field_type_t db_field_type_by_name(void *s, void *t, const char *name)
+{
+	session_t *session = s;
+	PGresult *res = t;
+	int i;
+
+	session->dberrno = 0;
+
+	i = PQfnumber(res, name);
+	if (i == -1) {
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
+		return dbtype_unknown;
+	}
+
+	return db_field_type(session, res, i);	
+}
+
+
+
+static unsigned int db_fields_num(void *s, void *t)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+
+	return PQnfields(res);
+}
+
+
+
+static unsigned int db_rows_num(void *s, void *t)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+
+	return PQntuples(res);
+}
+
+
+
+static void *db_row_fetch(void *s, void *t)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+
+	return ( session->row < PQntuples(res) ) ? ((void *) session->row++ + 1) : NULL;
+}
+
+
+
+static void *db_field_fetch(void *s, void *t, void *r, unsigned int i)
+{
+	session_t *session = s;
+	PGresult *res = t;
+
+	session->dberrno = 0;
+	
+	if ( i >= PQnfields(res) ) {
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
+		return NULL;
+	}
+
+	return ((void *) i + 1);
+}
+
+
+
+static void *db_field_fetch_by_name(void *s, void *t, void *r, const char *name)
+{
+	session_t *session = s;
+	PGresult *res = t;
+	int i;
+
+	session->dberrno = 0;
+
+	i = PQfnumber(res, name);
+	if ( i == -1 ) {
+		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
+		return NULL;
+	}
+
+	return db_field_fetch(session, res, r, i);
+}
+
+
+
+static const char *db_field_value(void *s, void *t, void *r, void *f)
+{
+	session_t *session = s;
+	PGresult *res = t;
+	unsigned int row = (unsigned int) r - 1;
+	unsigned int field = (unsigned int) f - 1;
+
+	session->dberrno = 0;
+
+	return PQgetvalue(res, row, field);
 }
 
 
@@ -432,16 +559,23 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_setup_func(&plugin, db_setup);
         plugin_set_connect_func(&plugin, db_connect);
         plugin_set_escape_func(&plugin, db_escape);
-        plugin_set_command_func(&plugin, db_command);
         plugin_set_query_func(&plugin, db_query);
         plugin_set_begin_func(&plugin, db_begin);
         plugin_set_commit_func(&plugin, db_commit);
         plugin_set_rollback_func(&plugin, db_rollback);
         plugin_set_closing_func(&plugin, db_close);
-        
+        plugin_set_errno_func(&plugin, db_errno);
+	plugin_set_table_free_func(&plugin, db_table_free);
+	plugin_set_field_name_func(&plugin, db_field_name);
+	plugin_set_field_num_func(&plugin, db_field_num);
+	plugin_set_field_type_func(&plugin, db_field_type);
+	plugin_set_field_type_by_name_func(&plugin, db_field_type_by_name);
+	plugin_set_fields_num_func(&plugin, db_fields_num);
+	plugin_set_rows_num_func(&plugin, db_rows_num);
+	plugin_set_row_fetch_func(&plugin, db_row_fetch);
+	plugin_set_field_fetch_func(&plugin, db_field_fetch);
+	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
+	plugin_set_field_value_func(&plugin, db_field_value);
+
 	return (plugin_generic_t *) &plugin;
 }
-
-
-
-

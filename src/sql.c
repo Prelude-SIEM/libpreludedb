@@ -1,6 +1,8 @@
 /*****
 *
 * Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2002, 2003 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -41,7 +43,6 @@
 #include <libprelude/plugin-common-prv.h>
 
 
-#include "sql-table.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
@@ -55,7 +56,25 @@ struct prelude_sql_connection {
 	prelude_sql_connection_data_t *data;
 };
 
+struct prelude_sql_table {
+	prelude_sql_connection_t *conn;
+	void *res;
+	struct list_head row_list;
+};
 
+struct prelude_sql_row {
+	struct list_head list;
+	prelude_sql_table_t *table;
+	void *res;
+	struct list_head field_list;
+};
+
+struct prelude_sql_field {
+	struct list_head list;
+	prelude_sql_row_t *row;
+	unsigned int num;
+	void *res;
+};
 
 /*
  * va_copy() was introduced in C99.
@@ -95,6 +114,65 @@ struct prelude_sql_connection {
 #define DB_MAX_INSERT_QUERY_LENGTH (1024 + 65536 * (3+21/16) + 1 + 1)
 
 
+
+static prelude_sql_table_t *prelude_sql_table_new(prelude_sql_connection_t *conn, void *res)
+{
+	prelude_sql_table_t *prelude_sql_table;
+
+	prelude_sql_table = malloc(sizeof (*prelude_sql_table));
+	if ( ! prelude_sql_table ) {
+		log(LOG_ERR, "memory exhausted.\n");
+                return NULL;
+	}
+	
+	prelude_sql_table->conn = conn;
+	prelude_sql_table->res = res;
+	INIT_LIST_HEAD(&prelude_sql_table->row_list);
+	
+	return prelude_sql_table;
+}
+
+
+
+static prelude_sql_row_t *prelude_sql_row_new(prelude_sql_table_t *table, void *res)
+{
+	prelude_sql_row_t *prelude_sql_row;
+
+	prelude_sql_row = malloc(sizeof (*prelude_sql_row));
+	if ( ! prelude_sql_row ) {
+		log(LOG_ERR, "memory exhausted.\n");
+		return NULL;
+	}
+	
+	prelude_sql_row->table = table;
+	prelude_sql_row->res = res;
+	INIT_LIST_HEAD(&prelude_sql_row->list);
+	INIT_LIST_HEAD(&prelude_sql_row->field_list);
+	list_add_tail(&prelude_sql_row->list, &table->row_list);
+	
+	return prelude_sql_row;
+}
+
+
+
+static prelude_sql_field_t *prelude_sql_field_new(prelude_sql_row_t *row, void *res, unsigned int num)
+{
+	prelude_sql_field_t *prelude_sql_field;
+
+	prelude_sql_field = malloc(sizeof (*prelude_sql_field));
+	if ( ! prelude_sql_field ) {
+		log(LOG_ERR, "memory exhausted.\n");
+		return NULL;
+	}
+	
+	prelude_sql_field->row = row;
+	prelude_sql_field->res = res;
+	prelude_sql_field->num = num;
+	INIT_LIST_HEAD(&prelude_sql_field->list);
+	list_add_tail(&prelude_sql_field->list, &row->field_list);
+	
+	return prelude_sql_field;
+}
 
 
 
@@ -169,8 +247,29 @@ static char *generate_query(char *buf, size_t size, int *len, const char *fmt, v
 }
 
 
+prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...)
+{
+        va_list ap;
+	void *res;
+        int query_length = 0;
+        char query_static[DB_REQUEST_LENGTH], *query;
+        
+        va_start(ap, fmt);
+        query = generate_query(query_static, sizeof(query_static), &query_length, fmt, ap);
+        va_end(ap);
 
-int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const char *fields, const char *fmt, ...)
+        res = conn->plugin->db_query(conn->session, query);
+	
+	if ( query != query_static )
+                free(query);
+
+        return res ? prelude_sql_table_new(conn, res) : NULL;
+}
+
+
+
+int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const char *fields,
+		       const char *fmt, ...)
 {
         va_list ap;
         int len, ret;
@@ -194,35 +293,13 @@ int prelude_sql_insert(prelude_sql_connection_t *conn, const char *table, const 
          */
         query[len] = ')';
         query[len + 1] = '\0';
-	
-        ret = conn->plugin->db_command(conn->session, query);
-	if (ret < 0)
-		log(LOG_ERR, "[%s]->db_command returned error code %d\n", conn->plugin->name, ret);
         
+        conn->plugin->db_query(conn->session, query);
+	ret = prelude_sql_errno(conn->session);
+
         if ( query != query_static )
                 free(query);
         
-        return ret;
-}
-
-
-
-prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const char *fmt, ...)
-{
-        va_list ap;
-        prelude_sql_table_t *ret;
-        int query_length = 0;
-        char query_static[DB_REQUEST_LENGTH], *query;
-        
-        va_start(ap, fmt);
-        query = generate_query(query_static, sizeof(query_static), &query_length, fmt, ap);
-        va_end(ap);
-	
-        ret = conn->plugin->db_query(conn->session, query);
-
-	if ( query != query_static )
-                free(query);
-
         return ret;
 }
 
@@ -264,7 +341,7 @@ void prelude_sql_close(prelude_sql_connection_t *conn)
 {
 	if (conn && conn->plugin)
     		conn->plugin->db_close(conn->session);
-		
+
 	free(conn);
 }
 
@@ -319,3 +396,317 @@ prelude_sql_connection_t *prelude_sql_connect(prelude_sql_connection_data_t *dat
 	return conn;
 }
 
+
+
+int prelude_sql_errno(prelude_sql_connection_t *conn)
+{
+	return conn->plugin->db_errno(conn->session);
+}
+
+
+
+const char *prelude_sql_error(prelude_sql_connection_t *conn)
+{
+	static char *error_strings[] = {
+		"Success",
+		"Plugin not enabled",
+		"Sessions exhausted",
+		"Not connected",
+		"Query error",
+		"No transaction",
+		"Connection failed",
+		"Result table error",
+		"Result row error",
+		"Result field error",
+		"Incorrect parameters",
+		"Already connected",
+		"Memory exhausted",
+		"Illegal field num",
+		"Illegal field name",
+		"Connection lost",
+		"Two queries in the same time"
+	};
+	int db_errno;
+
+	db_errno = prelude_sql_errno(conn);
+	if ( db_errno >= (sizeof (error_strings) / sizeof (error_strings[0])) )
+		return NULL;
+
+	return error_strings[db_errno];
+}
+
+
+void prelude_sql_table_free(prelude_sql_table_t *table)
+{
+	prelude_sql_connection_t *conn = table->conn;
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
+	struct list_head *tmp;
+	struct list_head *next_row, *next_field;
+
+	list_for_each_safe(tmp, next_row, &table->row_list) {
+		row = list_entry(tmp, prelude_sql_row_t, list);
+		list_for_each_safe(tmp, next_field, &row->field_list) {
+			field = list_entry(tmp, prelude_sql_field_t, list);
+			free(field);
+		}
+		free(row);
+	}
+	conn->plugin->db_table_free(conn->session, table->res);
+	free(table);
+}
+
+
+
+const char *prelude_sql_field_name(prelude_sql_table_t *table, unsigned int i)
+{
+	prelude_sql_connection_t *conn = table->conn;
+
+	return conn->plugin->db_field_name(conn->session, table->res, i);
+}
+
+
+
+int prelude_sql_field_num(prelude_sql_table_t *table, const char *name)
+{
+	prelude_sql_connection_t *conn = table->conn;
+
+	return conn->plugin->db_field_num(conn->session, table->res, name);
+}
+
+
+prelude_sql_field_type_t prelude_sql_field_type(prelude_sql_table_t *table, unsigned int i)
+{
+	prelude_sql_connection_t *conn = table->conn;
+	
+	return conn->plugin->db_field_type(conn->session, table->res, i);
+}
+
+
+
+prelude_sql_field_type_t prelude_sql_field_type_by_name(prelude_sql_table_t *table, const char *name)
+{
+	prelude_sql_connection_t *conn = table->conn;
+
+	return conn->plugin->db_field_type_by_name(conn->session, table->res, name);
+}
+
+
+
+unsigned int prelude_sql_fields_num(prelude_sql_table_t *table)
+{
+	prelude_sql_connection_t *conn = table->conn;
+
+	return conn->plugin->db_fields_num(conn->session, table->res);
+}
+
+
+
+unsigned int prelude_sql_rows_num(prelude_sql_table_t *table)
+{
+	prelude_sql_connection_t *conn = table->conn;	
+
+	return conn->plugin->db_rows_num(conn->session, table->res);
+}
+
+
+
+prelude_sql_row_t *prelude_sql_row_fetch(prelude_sql_table_t *table)
+{
+	prelude_sql_connection_t *conn = table->conn;
+	void *res;
+
+	res = conn->plugin->db_row_fetch(conn->session, table->res);
+	return res ? prelude_sql_row_new(table, res) : NULL;
+}
+
+
+void prelude_sql_row_free(prelude_sql_row_t *row)
+{
+	struct list_head *tmp;
+	struct list_head *next;
+	prelude_sql_field_t *field;
+
+	list_for_each_safe(tmp, next, &row->field_list) {
+		field = list_entry(tmp, prelude_sql_field_t, list);
+		free(field);
+	}
+
+	list_del(&row->list);
+	free(row);
+}
+
+
+prelude_sql_field_t *prelude_sql_field_fetch(prelude_sql_row_t *row, unsigned int i)
+{
+	prelude_sql_table_t *table = row->table;
+	prelude_sql_connection_t *conn = table->conn;
+	void *res;
+
+	res = conn->plugin->db_field_fetch(conn->session, table->res, row->res, i);
+	return res ? prelude_sql_field_new(row, res, i) : NULL;
+}
+
+
+
+prelude_sql_field_t *prelude_sql_field_fetch_by_name(prelude_sql_row_t *row, const char *name)
+{
+	prelude_sql_table_t *table = row->table;
+	prelude_sql_connection_t *conn = table->conn;
+	int num;
+	void *res;
+
+	num = prelude_sql_field_num(table, name);
+	if ( num == - 1)
+		return NULL;
+
+	res = conn->plugin->db_field_fetch_by_name(conn->session, table->res, row->res, name);
+	return res ? prelude_sql_field_new(row, res, num) : NULL;
+}
+
+
+
+const char *prelude_sql_field_value(prelude_sql_field_t *field)
+{
+	prelude_sql_row_t *row = field->row;
+	prelude_sql_table_t *table = row->table;
+	prelude_sql_connection_t *conn = table->conn;
+
+	return conn->plugin->db_field_value(conn->session, table->res, row->res, field->res);
+}
+
+
+
+int32_t prelude_sql_field_value_int32(prelude_sql_field_t *field)
+{
+	const char *s;
+	int32_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%d", &i);
+	return i;
+}
+
+
+
+uint32_t prelude_sql_field_value_uint32(prelude_sql_field_t *field)
+{
+	const char *s;
+	uint32_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%u", &i);
+	return i;
+}
+
+
+
+int64_t prelude_sql_field_value_int64(prelude_sql_field_t *field)
+{
+	const char *s;
+	int64_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%lld", &i);
+	return i;
+}
+
+
+
+uint64_t prelude_sql_field_value_uint64(prelude_sql_field_t *field)
+{
+	const char *s;
+	uint64_t i;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%llu", &i);
+	return i;
+}
+
+
+
+float prelude_sql_field_value_float(prelude_sql_field_t *field)
+{
+	const char *s;
+	float f;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%f", &f);
+	return f;
+}
+
+
+
+double prelude_sql_field_value_double(prelude_sql_field_t *field)
+{
+	const char *s;
+	double d;
+
+	s = prelude_sql_field_value(field);
+	sscanf(s, "%lf", &d);
+	return d;
+}
+
+
+
+char *prelude_sql_field_value_string(prelude_sql_field_t *field)
+{
+	const char *s;
+	char *ret;
+
+	s = prelude_sql_field_value(field);
+	ret = strdup(s);
+	return ret;
+}
+
+idmef_value_t *prelude_sql_field_value_idmef(prelude_sql_field_t *field)
+{
+	idmef_value_t *value = NULL;
+	prelude_sql_field_type_t type;
+
+	type = prelude_sql_field_type(field->row->table, field->num);
+	
+	switch ( type ) {
+		
+	case dbtype_int32:
+		value = idmef_value_new_int32(prelude_sql_field_value_int32(field));
+		break;
+
+	case dbtype_uint32:
+		value = idmef_value_new_uint32(prelude_sql_field_value_uint32(field));
+		break;
+
+	case dbtype_int64:
+		value = idmef_value_new_int64(prelude_sql_field_value_int64(field));
+		break;
+
+	case dbtype_uint64:
+		value = idmef_value_new_uint64(prelude_sql_field_value_uint64(field));
+		break;
+
+	case dbtype_float:
+		value = idmef_value_new_float(prelude_sql_field_value_float(field));
+		break;
+
+	case dbtype_double:
+		value = idmef_value_new_double(prelude_sql_field_value_double(field));
+		break;
+
+	case dbtype_string: {
+		char *str;
+		idmef_string_t *string;
+		
+		str = prelude_sql_field_value_string(field);
+		string = idmef_string_new();
+		idmef_string_set(string, str);
+		value = idmef_value_new_string(string);
+		idmef_value_have_own_data(value);
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	return value;
+}

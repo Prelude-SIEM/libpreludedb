@@ -33,7 +33,6 @@
 #include <libprelude/plugin-common.h>
 #include <libprelude/plugin-common-prv.h>
 
-#include "sql-table.h"
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
