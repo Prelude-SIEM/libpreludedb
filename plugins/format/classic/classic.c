@@ -39,6 +39,7 @@
 
 #include "sql-connection-data.h"
 #include "sql.h"
+#include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "plugin-format.h"
@@ -53,124 +54,162 @@
 
 static plugin_format_t plugin;
 
-struct	db_ident_list
-{
-	int		size;
-	uint64_t *      idents;
-	int		next;
-};
 
-struct db_ident_list * build_ident_list(prelude_sql_table_t *);
-idmef_message_t *get_message(prelude_db_connection_t *, uint64_t, const char *, idmef_selection_t *);
 
-struct db_ident_list * build_ident_list(prelude_sql_table_t *table)
+static int build_alert_uident_list(prelude_sql_table_t *table, prelude_db_alert_uident_t **uidents)
 {
-	struct db_ident_list * ident_list;
-	prelude_sql_row_t * row;
-	prelude_sql_field_t * field;
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
 	int cnt;
 	int nrows;
 
 	nrows = prelude_sql_rows_num(table);
 
-	ident_list = calloc(1, sizeof (*ident_list));
-	ident_list->size = nrows;
-	ident_list->idents = calloc(nrows, sizeof (*ident_list->idents));
-	ident_list->next = 0;
+	*uidents = calloc(nrows, sizeof (**uidents));
+	if ( ! *uidents ) {
+		log(LOG_ERR, "out of memory !\n");
+		return -1;
+	}
 
 	for ( cnt = 0; cnt < nrows; cnt++ ) {
 		row = prelude_sql_row_fetch(table);
+
 		field = prelude_sql_field_fetch(row, 0);
-		ident_list->idents[cnt] = prelude_sql_field_value_int64(field);
+		(*uidents)[cnt].alert_ident = prelude_sql_field_value_int64(field);
+
+		field = prelude_sql_field_fetch(row, 1);
+		(*uidents)[cnt].analyzerid = prelude_sql_field_value_int64(field);
 	}
 
-	return ident_list;
+	return cnt;
+}
+
+static int build_heartbeat_uident_list(prelude_sql_table_t *table, prelude_db_heartbeat_uident_t **uidents)
+{
+	prelude_sql_row_t *row;
+	prelude_sql_field_t *field;
+	int cnt;
+	int nrows;
+
+	nrows = prelude_sql_rows_num(table);
+
+	*uidents = calloc(nrows, sizeof (**uidents));
+	if ( ! *uidents ) {
+		log(LOG_ERR, "out of memory !\n");
+		return -1;
+	}
+
+	for ( cnt = 0; cnt < nrows; cnt++ ) {
+		row = prelude_sql_row_fetch(table);
+
+		field = prelude_sql_field_fetch(row, 0);
+		(*uidents)[cnt].heartbeat_ident = prelude_sql_field_value_int64(field);
+
+		field = prelude_sql_field_fetch(row, 1);
+		(*uidents)[cnt].analyzerid = prelude_sql_field_value_int64(field);
+	}
+
+	return cnt;
 }
 
 
-static void * classic_get_ident_list(prelude_db_connection_t * connection,
-				     idmef_criterion_t * criterion)
+static prelude_sql_table_t *get_uident_list(prelude_db_connection_t *connection,
+					    idmef_criterion_t *criterion,
+					    const char *object_prefix)
 {
 	idmef_selection_t *selection;
-	idmef_object_t *first, *object;
+	idmef_object_t *alert_ident; /* in fact, alert or heartbeat ident */
+	idmef_object_t *analyzerid;
 	prelude_sql_table_t *table;
-	const char *first_name;
-	struct db_ident_list *ident_list;
 
-	first = idmef_criterion_get_first_object(criterion);
-	if ( ! first ) {
-		log(LOG_ERR, "could not get first object from selection !\n");
-		return NULL;
-	}
-	
-	first_name = idmef_object_get_name(first);
-	if ( ! first_name ) {
-		log(LOG_ERR, "could not get object's name\n");
+	alert_ident = idmef_object_new("%s.ident", object_prefix);
+	if ( ! alert_ident ) {
+		log(LOG_ERR, "could not create %s.ident object\n", object_prefix);
 		return NULL;
 	}
 
-	if ( strncmp(first_name, "alert.", sizeof ("alert.") - 1) == 0 ) {
-		object = idmef_object_new("alert.ident");
-		if ( ! object ) {
-			log(LOG_ERR, "could not create alert.ident object\n");
-			return NULL;
-		}
-
-	} else {
-		object = idmef_object_new("heartbeat.ident");
-		if ( ! object ) {
-			log(LOG_ERR, "could not create heartbeat.ident object\n");
-			return NULL;
-		}
+	analyzerid = idmef_object_new("%s.analyzer.analyzerid", object_prefix);
+	if ( ! analyzerid ) {
+		log(LOG_ERR, "could not create %s.analyzer.analyzerid object\n", object_prefix);
+		idmef_object_destroy(alert_ident);
+		return NULL;
 	}
 
 	selection = idmef_selection_new();
 	if ( ! selection ) {
 		log(LOG_ERR, "could not create IDMEF cache!\n");
-		idmef_object_destroy(object);
+		idmef_object_destroy(alert_ident);
+		idmef_object_destroy(analyzerid);
 		return NULL;
 	}
 
-	if ( idmef_selection_add_object(selection, object, function_none) < 0 ) {
-		log(LOG_ERR, "could not add object '%s' in selection !\n");
-		idmef_object_destroy(object);
+	if ( idmef_selection_add_object(selection, alert_ident, function_none) < 0 ) {
+		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(alert_ident));
+		idmef_object_destroy(alert_ident);
+		idmef_object_destroy(analyzerid);
+		idmef_selection_destroy(selection);
+		return NULL;
+	}
+
+	if ( idmef_selection_add_object(selection, analyzerid, function_none) < 0 ) {
+		log(LOG_ERR, "could not add object '%s' in selection !\n", idmef_object_get_name(analyzerid));
+		idmef_object_destroy(analyzerid);
 		idmef_selection_destroy(selection);
 		return NULL;
 	}
 
 	table = idmef_db_select(connection, 0, selection, criterion);
-	if ( ! table ) {
-		idmef_selection_destroy(selection);
-		return NULL;
-	}
-
-	ident_list = build_ident_list(table);
 
 	idmef_selection_destroy(selection);
+
+	return table;
+}
+
+
+
+static int classic_get_alert_uident_list(prelude_db_connection_t *connection,
+					 idmef_criterion_t *criterion,
+					 prelude_db_alert_uident_t **uidents)
+{
+	prelude_sql_table_t *table;
+	int retval;
+
+	table = get_uident_list(connection, criterion, "alert");
+	if ( ! table )
+		return -1;
+
+	retval = build_alert_uident_list(table, uidents);
+
 	prelude_sql_table_free(table);
 
-	return ident_list;
+	return (retval < 0) ? -2 : retval;
 }
 
 
-static uint64_t classic_get_next_ident(prelude_db_connection_t *connection,
-				       void *res)
+static int classic_get_heartbeat_uident_list(prelude_db_connection_t *connection,
+					     idmef_criterion_t *criterion,
+					     prelude_db_heartbeat_uident_t **uidents)
 {
-	struct db_ident_list *ident_list = res;
+	prelude_sql_table_t *table;
+	int retval;
 
-	if ( ! ident_list )
-		return 0;
+	table = get_uident_list(connection, criterion, "heartbeat");
+	if ( ! table )
+		return -1;
 
-	return ((ident_list->next < ident_list->size) ?
-		ident_list->idents[ident_list->next++] :
-		0);
+	retval = build_heartbeat_uident_list(table, uidents);
+
+	prelude_sql_table_free(table);
+
+	return (retval < 0) ? -2 : retval;	
 }
 
 
-idmef_message_t *get_message(prelude_db_connection_t *connection,
-			     uint64_t ident,
-			     const char *object_name,
-			     idmef_selection_t *selection)
+
+static idmef_message_t *get_message(prelude_db_connection_t *connection,
+				    uint64_t ident,
+				    const char *object_name,
+				    idmef_selection_t *selection)
 {
 	idmef_message_t *message;
 	prelude_sql_table_t *table;
@@ -183,7 +222,7 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 	const char *char_val;
 	int cnt = 0;
 
-	object = idmef_object_new(object_name);
+	object = idmef_object_new_fast(object_name);
 	value = idmef_value_new_uint64(ident);
 	criterion = idmef_criterion_new(object, relation_equal, value);
 
@@ -268,11 +307,12 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 
 
 static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
-					  uint64_t ident,
+					  prelude_db_alert_uident_t *uident,
 					  idmef_selection_t *selection)
 {
 	idmef_object_t *obj;
 	int lists, n;
+	uint64_t ident = uident->alert_ident;
 
 	if ( ! selection )
 		return get_alert(connection, ident);
@@ -295,11 +335,12 @@ static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
 
 
 static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connection,
-					      uint64_t ident,
+					      prelude_db_heartbeat_uident_t *uident,
 					      idmef_selection_t *selection)
 {
 	idmef_object_t *obj;
 	int lists, n;
+	uint64_t ident = uident->heartbeat_ident;
 
 	if ( ! selection )
 		get_heartbeat(connection, ident);
@@ -322,21 +363,11 @@ static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connectio
 
 
 
-int classic_insert_idmef_message(prelude_db_connection_t *connection, const idmef_message_t *message)
+static int classic_insert_idmef_message(prelude_db_connection_t *connection, const idmef_message_t *message)
 {
 	return idmef_db_insert(connection, message);
 }
 
-
-
-void classic_free_ident_list(prelude_db_connection_t * connection,
-			    void * res)
-{
-	struct db_ident_list * ident_list = res;
-
-	free(ident_list->idents);
-	free(ident_list);
-}
 
 
 static void *classic_select_values(prelude_db_connection_t *connection,
@@ -356,7 +387,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	prelude_sql_row_t *row;
 	prelude_sql_field_t *field;
 	int field_cnt, nfields;
-	char *char_val;
+	const char *char_val;
 	idmef_object_value_list_t *vallist;
 	idmef_object_value_t *objval;
 	idmef_object_t *object;
@@ -382,7 +413,7 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 	for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
 		object = idmef_selection_get_next_object(selection);
-			
+
 		field = prelude_sql_field_fetch(row, field_cnt);
 		if ( ! field )
 			continue;
@@ -399,15 +430,13 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 			goto error;
 		}
 
-		objval = idmef_object_value_new(object, value);
+		objval = idmef_object_value_new(idmef_object_ref(object), value);
 
 		if ( idmef_object_value_list_add(vallist, objval) < 0 ) {
 			log(LOG_ERR, "could not add to value list\n");
-			idmef_value_destroy(value);
+
 			goto error;
 		}
-		
-		idmef_value_destroy(value);
 	}
 
 	return vallist;
@@ -420,16 +449,17 @@ error:
 
 }
 
-plugin_generic_t * plugin_init(int argc, char **argv)
+
+
+plugin_generic_t *plugin_init(int argc, char **argv)
 {
 	/* System wide plugin options should go in here */
         
         plugin_set_name(&plugin, "Classic");
         plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
 
-	plugin_set_get_ident_list_func(&plugin, classic_get_ident_list);
-	plugin_set_free_ident_list_func(&plugin, classic_free_ident_list);
-	plugin_set_get_next_ident_func(&plugin, classic_get_next_ident);
+	plugin_set_get_alert_uident_list_func(&plugin, classic_get_alert_uident_list);
+	plugin_set_get_heartbeat_uident_list_func(&plugin, classic_get_heartbeat_uident_list);
 	plugin_set_get_alert_func(&plugin, classic_get_alert);
 	plugin_set_get_heartbeat_func(&plugin, classic_get_heartbeat);
 	plugin_set_delete_alert_func(&plugin, classic_delete_alert);

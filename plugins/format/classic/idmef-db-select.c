@@ -219,6 +219,9 @@ static void table_list_destroy(table_list_t *tlist)
 		table_entry_destroy(entry);
 	}
 
+	if ( tlist->top_table )
+		free(tlist->top_table);
+
 	free(tlist);
 }
 
@@ -623,10 +626,11 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 				      field ? table_alias : NULL,
 				      field ? field : function,
 				      relation, value);
-		if ( ret < 0 )
-			return ret;
 
 		free(value);
+
+		if ( ret < 0 )
+			return ret;
 
 		return 0;
 	}
@@ -671,7 +675,6 @@ static int objects_to_sql(prelude_sql_connection_t *conn,
 		ret = -1;
 		goto error;
 	}
-
 
 	idmef_selection_set_object_iterator(selection);
 	while ( (obj = idmef_selection_get_next_object(selection)) ) {
@@ -741,7 +744,7 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 {
 	strbuf_t *request = NULL;
 	strbuf_t *str_tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
-	table_list_t *tables;
+	table_list_t *tables = NULL;
 	int ret = -1;
 
 	request = strbuf_new();

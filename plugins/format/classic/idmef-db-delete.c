@@ -35,6 +35,7 @@
 
 #include "sql-connection-data.h"
 #include "sql.h"
+#include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
@@ -55,10 +56,14 @@
 	} while ( 0 )
 
 
-int	classic_delete_alert(prelude_db_connection_t *connection, uint64_t ident)
+int	classic_delete_alert(prelude_db_connection_t *connection,
+			     prelude_db_alert_uident_t *uident)
 {
 	prelude_sql_connection_t *sql;
 	prelude_sql_table_t *table;
+	uint64_t ident;
+
+	ident = uident->alert_ident;
 
 	sql = prelude_db_connection_get(connection);
 	if ( ! sql ) {
@@ -136,10 +141,14 @@ int	classic_delete_alert(prelude_db_connection_t *connection, uint64_t ident)
 }
 
 
-int	classic_delete_heartbeat(prelude_db_connection_t *connection, uint64_t ident)
+int	classic_delete_heartbeat(prelude_db_connection_t *connection,
+				 prelude_db_heartbeat_uident_t *uident)
 {
 	prelude_sql_connection_t *sql;
 	prelude_sql_table_t *table;
+	uint64_t ident;
+
+	ident = uident->heartbeat_ident;
 
 	sql = prelude_db_connection_get(connection);
 	if ( ! sql ) {

@@ -35,6 +35,7 @@
 
 #include "sql-connection-data.h"
 #include "sql.h"
+#include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
@@ -2258,8 +2259,8 @@ static int get_tool_alert(prelude_sql_connection_t *sql,
 }
 
 static int get_correlation_alert_ident(prelude_sql_connection_t *sql,
-				uint64_t ident,
-				idmef_correlation_alert_t *correlation_alert)
+				       uint64_t ident,
+				       idmef_correlation_alert_t *correlation_alert)
 {
 	prelude_sql_table_t *table;
 	prelude_sql_row_t *row;
@@ -2435,7 +2436,8 @@ static int get_overflow_alert(prelude_sql_connection_t *sql,
 	return -1;
 }
 
-idmef_message_t	*get_alert(prelude_db_connection_t *connection, uint64_t ident)
+idmef_message_t	*get_alert(prelude_db_connection_t *connection,
+			   uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
 	idmef_message_t *message;
@@ -2507,7 +2509,8 @@ idmef_message_t	*get_alert(prelude_db_connection_t *connection, uint64_t ident)
 	return NULL;
 }
 
-idmef_message_t *get_heartbeat(prelude_db_connection_t *connection, uint64_t ident)
+idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
+			       uint64_t ident)
 {
 	prelude_sql_connection_t *sql;
 	idmef_message_t *message;

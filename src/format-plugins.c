@@ -42,6 +42,7 @@
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
+#include "db-uident.h"
 #include "db-type.h"
 #include "db-connection.h"
 #include "plugin-format.h"

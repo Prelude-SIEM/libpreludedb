@@ -1,3 +1,55 @@
+2003-08-30  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.i:
+	update the binding interface to the last API changes
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB::new)
+	restore the removed constructor code and also accept directly
+	connection string
+	update the binding interface to the last API changes
+	(PreludeDB::get_alert)
+	restore the old function's implementation which already
+	"treat empty @object_list as undefined"
+	(PreludeDB::get_heartbeat)
+	some fixes
+
+	* plugins/format/classic/idmef-db-select.c:
+	(table_list_destroy)
+	fix a memory leak (tlist->top_table was not freed)
+
+	* plugins/format/classic/classic.c:
+	(classic_select_values)
+	some modifications to fit the last idmef_object_value_new's changes
+
+	* plugins/format/classic/classic.c:
+	* plugins/format/classic/idmef-db-delete.c:
+	* plugins/format/classic/idmef-db-get.c:
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/format/classic/include/idmef-db-delete.h:
+	* src/db-interface-string.c:
+	* src/db-interface.c:
+	* src/db.c:
+	* src/format-plugins.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	* src/include/db-uident.h:
+	API changes, an alert/heartbeat was previously identified by its ident field
+	which is an uint64_t, however IDMEF tell:
+	"""
+	The "ident" attribute by itself provides a unique identifier only
+	among all the "ident" values sent by a particular analyzer.  But
+	when combined with the "analyzerid" value for the analyzer, a
+	value that is unique across the intrusion detection environment is
+	created.
+	"""
+	so now, an alert is identified by the couple analyzerid + alert_ident
+	which MUST be unique among the others in the db
+	the current db schema does not respect this, but the new one will
+
 2003-08-19  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* src/strbuf.c (strbuf_new): 

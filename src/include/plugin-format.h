@@ -29,29 +29,30 @@
 typedef struct {
 	PLUGIN_GENERIC;
 
-	void *(*format_get_ident_list)(prelude_db_connection_t *connection,
-				       idmef_criterion_t *criterion);
+	int (*format_get_alert_uident_list)(prelude_db_connection_t *connection,
+					    idmef_criterion_t *criterion,
+					    prelude_db_alert_uident_t **alert_idents);
 
-	void (*format_free_ident_list)(prelude_db_connection_t *connection,
-				       void *message_list);
-
-	uint64_t (*format_get_next_ident)(prelude_db_connection_t *connection,
-					  void *message_list);
+	int (*format_get_heartbeat_uident_list)(prelude_db_connection_t *connection,
+						idmef_criterion_t *criterion,
+						prelude_db_heartbeat_uident_t **heartbeat_idents);
 
 	idmef_message_t *(*format_get_alert)(prelude_db_connection_t *connection,
-					     uint64_t ident,
+					     prelude_db_alert_uident_t *uident,
 					     idmef_selection_t *selection);
 
 	idmef_message_t *(*format_get_heartbeat)(prelude_db_connection_t *connection,
-						 uint64_t ident,
+						 prelude_db_heartbeat_uident_t *uident,
 						 idmef_selection_t *selection);
 
-	int (*format_delete_alert)(prelude_db_connection_t *connection, uint64_t ident);
+	int (*format_delete_alert)(prelude_db_connection_t *connection,
+				   prelude_db_alert_uident_t *uident);
 
-	int (*format_delete_heartbeat)(prelude_db_connection_t *connection, uint64_t ident);
+	int (*format_delete_heartbeat)(prelude_db_connection_t *connection, 
+				       prelude_db_heartbeat_uident_t *uident);
 
-	int (*format_insert_idmef_message)(prelude_db_connection_t * connection,
-					   const idmef_message_t * message);
+	int (*format_insert_idmef_message)(prelude_db_connection_t *connection,
+					   const idmef_message_t *message);
 	
 	void *(*format_select_values)(prelude_db_connection_t *connection,
 				      int distinct,
@@ -61,12 +62,10 @@ typedef struct {
 	idmef_object_value_list_t *(*format_get_values)(prelude_db_connection_t *connection,
 							void *data,
 						        idmef_selection_t *selection);
-
 } plugin_format_t;
 
-#define plugin_get_ident_list_func(p) (p)->format_get_ident_list
-#define plugin_free_ident_list_func(p) (p)->format_free_ident_list
-#define plugin_get_next_ident_func(p) (p)->format_get_next_ident
+#define	plugin_get_alert_uident_list_func(p) (p)->format_get_alert_uident_list
+#define	plugin_get_heartbeat_uident_list_func(p) (p)->format_get_heartbeat_uident_list
 #define plugin_get_alert_func(p) (p)->format_get_alert
 #define plugin_get_heartbeat_func(p) (p)->format_get_heartbeat
 #define plugin_delete_alert_func(p) (p)->format_delete_alert
@@ -75,9 +74,8 @@ typedef struct {
 #define plugin_select_values_func(p) (p)->format_select_values
 #define plugin_get_values_func(p) (p)->format_get_values
 
-#define plugin_set_get_ident_list_func(p, f) plugin_get_ident_list_func(p) = (f)
-#define plugin_set_free_ident_list_func(p, f) plugin_free_ident_list_func(p) = (f)
-#define plugin_set_get_next_ident_func(p, f) plugin_get_next_ident_func(p) = (f)
+#define	plugin_set_get_alert_uident_list_func(p, f) plugin_get_alert_uident_list_func(p) = (f)
+#define	plugin_set_get_heartbeat_uident_list_func(p, f) plugin_get_heartbeat_uident_list_func(p) = (f)
 #define plugin_set_get_alert_func(p, f) plugin_get_alert_func(p) = (f)
 #define plugin_set_get_heartbeat_func(p, f) plugin_get_heartbeat_func(p) = (f)
 #define plugin_set_delete_alert_func(p, f) plugin_delete_alert_func(p) = (f)

@@ -23,12 +23,14 @@
 
 %module PreludeDB
 %{
+#include <pthread.h>
 #include <libprelude/list.h>
 #include <libprelude/idmef.h>
 #include "db-type.h"
 #include "db.h"
 #include "sql-connection-data.h"
 #include "sql.h"
+#include "db-uident.h"
 #include "db-connection.h"
 #include "db-connection-data.h"
 #include "db-interface.h"
@@ -118,6 +120,98 @@
 	argvi++;
 };
 
+/* this piece of code is not thread safe... */
+
+%typemap(in) prelude_db_alert_uident_t * {
+	static prelude_db_alert_uident_t uident;
+	HV *hv;
+	SV **alert_ident;
+	SV **analyzerid;
+
+	hv = (HV *) SvRV($input);
+
+	alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
+	sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+
+	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+
+	$1 = &uident;
+};
+
+%typemap(out) prelude_db_alert_uident_t * {
+	prelude_db_alert_uident_t *uident = $1;
+	HV *hv;
+	SV *sv;
+	char tmp[32];
+	int len;
+
+	if ( uident ) {
+
+		hv = newHV();
+
+		len = sprintf(tmp, "%llu", uident->alert_ident);
+		sv = newSVpv(tmp, len);
+		hv_store(hv, "alert_ident", sizeof ("alert_ident") - 1, sv, 0);
+
+		len = sprintf(tmp, "%llu", uident->analyzerid);
+		sv = newSVpv(tmp, len);
+		hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
+
+		$result = sv_2mortal(newRV_noinc((SV *) hv));
+
+	} else {
+		$result = &PL_sv_undef;
+	}
+
+	argvi++;
+};
+
+%typemap(in) prelude_db_heartbeat_uident_t * {
+	static prelude_db_heartbeat_uident_t uident;
+	HV *hv;
+	SV **heartbeat_ident;
+	SV **analyzerid;
+
+	hv = (HV *) SvRV($input);
+
+	heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
+	sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+
+	analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+	sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+
+	$1 = &uident;
+};
+
+%typemap(out) prelude_db_heartbeat_uident_t * {
+	prelude_db_heartbeat_uident_t *uident = $1;
+	HV *hv;
+	SV *sv;
+	char tmp[32];
+	int len;
+
+	if ( uident ) {
+
+		hv = newHV();
+
+		len = sprintf(tmp, "%llu", uident->heartbeat_ident);
+		sv = newSVpv(tmp, len);
+		hv_store(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, sv, 0);
+
+		len = sprintf(tmp, "%llu", uident->analyzerid);
+		sv = newSVpv(tmp, len);
+		hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
+
+		$result = sv_2mortal(newRV_noinc((SV *) hv));
+
+	} else {
+		$result = &PL_sv_undef;
+	}
+
+	argvi++;
+};
+
 typedef enum {
         prelude_db_type_invalid = 0,
         prelude_db_type_sql = 1
@@ -132,19 +226,26 @@ int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);
 void prelude_db_interface_destroy(prelude_db_interface_t *iface);
 
-prelude_db_ident_list_t * prelude_db_interface_get_ident_list(prelude_db_interface_t *interface,
-                                                              idmef_criterion_t *criterion);
-void prelude_db_interface_free_ident_list(prelude_db_ident_list_t *message_list);
-uint64_t prelude_db_interface_get_next_ident(prelude_db_ident_list_t *ident_list);
+prelude_db_alert_uident_list_t *prelude_db_interface_get_alert_uident_list(prelude_db_interface_t *interface,
+									     idmef_criterion_t *criterion);
+prelude_db_heartbeat_uident_list_t *prelude_db_interface_get_heartbeat_uident_list(prelude_db_interface_t *interface,
+										 idmef_criterion_t *criterion);
+
+void prelude_db_interface_free_alert_uident_list(prelude_db_alert_uident_list_t *uident_list);
+void prelude_db_interface_free_heartbeat_uident_list(prelude_db_heartbeat_uident_list_t *uident_list);
+
+prelude_db_alert_uident_t *prelude_db_interface_get_next_alert_uident(prelude_db_alert_uident_list_t *uident_list);
+prelude_db_heartbeat_uident_t *prelude_db_interface_get_next_heartbeat_uident(prelude_db_heartbeat_uident_list_t *uident_list);
+
 idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interface, 
-                                                uint64_t ident,
+                                                prelude_db_alert_uident_t *uident,
                                                 idmef_selection_t *selection);
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
-                                                    uint64_t ident,
+                                                    prelude_db_heartbeat_uident_t *uident,
                                                     idmef_selection_t *selection);
-int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, int ident);
-int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, int ident);
-int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, prelude_db_alert_uident_t *uident);
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, prelude_db_heartbeat_uident_t *uident);
+int prelude_db_interface_insert_idmef_message(prelude_db_interface_t *interface, const idmef_message_t *msg);
 void *prelude_db_interface_select_values(prelude_db_interface_t *interface,
                                          int distinct,
                                          idmef_selection_t *selection, 

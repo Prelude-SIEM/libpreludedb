@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.7 2003/08/13 22:03:42 kzaraska Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.8 2003/08/30 19:16:21 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -559,19 +559,21 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define  SWIGTYPE_p_prelude_db_interface_t swig_types[0] 
-#define  SWIGTYPE_p_idmef_criterion_t swig_types[1] 
-#define  SWIGTYPE_p_idmef_message_t swig_types[2] 
-#define  SWIGTYPE_p_prelude_sql_table_t swig_types[3] 
-#define  SWIGTYPE_p_uint64_t swig_types[4] 
+#define  SWIGTYPE_p_idmef_object_value_list_t swig_types[0] 
+#define  SWIGTYPE_p_prelude_db_heartbeat_uident_list_t swig_types[1] 
+#define  SWIGTYPE_p_prelude_db_alert_uident_list_t swig_types[2] 
+#define  SWIGTYPE_p_idmef_criterion_t swig_types[3] 
+#define  SWIGTYPE_p_prelude_sql_row_t swig_types[4] 
 #define  SWIGTYPE_p_void swig_types[5] 
-#define  SWIGTYPE_p_prelude_sql_row_t swig_types[6] 
-#define  SWIGTYPE_p_prelude_db_connection_t swig_types[7] 
-#define  SWIGTYPE_p_prelude_db_ident_list_t swig_types[8] 
-#define  SWIGTYPE_p_idmef_selection_t swig_types[9] 
-#define  SWIGTYPE_p_idmef_object_value_list_t swig_types[10] 
-#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[11] 
-static swig_type_info *swig_types[13];
+#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[6] 
+#define  SWIGTYPE_p_idmef_selection_t swig_types[7] 
+#define  SWIGTYPE_p_prelude_db_connection_t swig_types[8] 
+#define  SWIGTYPE_p_idmef_message_t swig_types[9] 
+#define  SWIGTYPE_p_prelude_db_interface_t swig_types[10] 
+#define  SWIGTYPE_p_prelude_sql_table_t swig_types[11] 
+#define  SWIGTYPE_p_prelude_db_heartbeat_uident_t swig_types[12] 
+#define  SWIGTYPE_p_prelude_db_alert_uident_t swig_types[13] 
+static swig_type_info *swig_types[15];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -594,12 +596,14 @@ SWIGEXPORT(void) SWIG_init (CV *cv, CPerlObj *);
 #endif
 
 
+#include <pthread.h>
 #include <libprelude/list.h>
 #include <libprelude/idmef.h>
 #include "db-type.h"
 #include "db.h"
 #include "sql-connection-data.h"
 #include "sql.h"
+#include "db-uident.h"
 #include "db-connection.h"
 #include "db-connection-data.h"
 #include "db-interface.h"
@@ -813,33 +817,33 @@ XS(_wrap_prelude_db_interface_destroy) {
 }
 
 
-XS(_wrap_prelude_db_interface_get_ident_list) {
+XS(_wrap_prelude_db_interface_get_alert_uident_list) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
         idmef_criterion_t *arg2 = (idmef_criterion_t *) 0 ;
-        prelude_db_ident_list_t *result;
+        prelude_db_alert_uident_list_t *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: prelude_db_interface_get_ident_list(interface,criterion);");
+            SWIG_croak("Usage: prelude_db_interface_get_alert_uident_list(interface,criterion);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
-                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_ident_list. Expected _p_prelude_db_interface_t");
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_alert_uident_list. Expected _p_prelude_db_interface_t");
             }
         }
         {
             if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_idmef_criterion_t,0) < 0) {
-                SWIG_croak("Type error in argument 2 of prelude_db_interface_get_ident_list. Expected _p_idmef_criterion_t");
+                SWIG_croak("Type error in argument 2 of prelude_db_interface_get_alert_uident_list. Expected _p_idmef_criterion_t");
             }
         }
-        result = (prelude_db_ident_list_t *)prelude_db_interface_get_ident_list(arg1,arg2);
+        result = (prelude_db_alert_uident_list_t *)prelude_db_interface_get_alert_uident_list(arg1,arg2);
         
         ST(argvi) = sv_newmortal();
-        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_ident_list_t,0);
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_alert_uident_list_t,0);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -848,23 +852,58 @@ XS(_wrap_prelude_db_interface_get_ident_list) {
 }
 
 
-XS(_wrap_prelude_db_interface_free_ident_list) {
+XS(_wrap_prelude_db_interface_get_heartbeat_uident_list) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        prelude_db_ident_list_t *arg1 = (prelude_db_ident_list_t *) 0 ;
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        idmef_criterion_t *arg2 = (idmef_criterion_t *) 0 ;
+        prelude_db_heartbeat_uident_list_t *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: prelude_db_interface_get_heartbeat_uident_list(interface,criterion);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_heartbeat_uident_list. Expected _p_prelude_db_interface_t");
+            }
+        }
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_idmef_criterion_t,0) < 0) {
+                SWIG_croak("Type error in argument 2 of prelude_db_interface_get_heartbeat_uident_list. Expected _p_idmef_criterion_t");
+            }
+        }
+        result = (prelude_db_heartbeat_uident_list_t *)prelude_db_interface_get_heartbeat_uident_list(arg1,arg2);
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_heartbeat_uident_list_t,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_free_alert_uident_list) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_alert_uident_list_t *arg1 = (prelude_db_alert_uident_list_t *) 0 ;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: prelude_db_interface_free_ident_list(message_list);");
+            SWIG_croak("Usage: prelude_db_interface_free_alert_uident_list(uident_list);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_ident_list_t,0) < 0) {
-                SWIG_croak("Type error in argument 1 of prelude_db_interface_free_ident_list. Expected _p_prelude_db_ident_list_t");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_alert_uident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_free_alert_uident_list. Expected _p_prelude_db_alert_uident_list_t");
             }
         }
-        prelude_db_interface_free_ident_list(arg1);
+        prelude_db_interface_free_alert_uident_list(arg1);
         
         
         XSRETURN(argvi);
@@ -875,32 +914,129 @@ XS(_wrap_prelude_db_interface_free_ident_list) {
 }
 
 
-XS(_wrap_prelude_db_interface_get_next_ident) {
+XS(_wrap_prelude_db_interface_free_heartbeat_uident_list) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        prelude_db_ident_list_t *arg1 = (prelude_db_ident_list_t *) 0 ;
-        uint64_t result;
+        prelude_db_heartbeat_uident_list_t *arg1 = (prelude_db_heartbeat_uident_list_t *) 0 ;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: prelude_db_interface_get_next_ident(ident_list);");
+            SWIG_croak("Usage: prelude_db_interface_free_heartbeat_uident_list(uident_list);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_ident_list_t,0) < 0) {
-                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_next_ident. Expected _p_prelude_db_ident_list_t");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_heartbeat_uident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_free_heartbeat_uident_list. Expected _p_prelude_db_heartbeat_uident_list_t");
             }
         }
-        result = prelude_db_interface_get_next_ident(arg1);
+        prelude_db_interface_free_heartbeat_uident_list(arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_get_next_alert_uident) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_alert_uident_list_t *arg1 = (prelude_db_alert_uident_list_t *) 0 ;
+        prelude_db_alert_uident_t *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_get_next_alert_uident(uident_list);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_alert_uident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_next_alert_uident. Expected _p_prelude_db_alert_uident_list_t");
+            }
+        }
+        result = (prelude_db_alert_uident_t *)prelude_db_interface_get_next_alert_uident(arg1);
         
         {
-            /* 	ST(argvi) = newSViv(result); */
+            prelude_db_alert_uident_t *uident = result;
+            HV *hv;
+            SV *sv;
             char tmp[32];
             int len;
             
-            len = sprintf(tmp, "%llu", result);
-            ST(argvi) = sv_2mortal(newSVpv(tmp, len));
+            if ( uident ) {
+                hv = newHV();
+                
+                len = sprintf(tmp, "%llu", uident->alert_ident);
+                sv = newSVpv(tmp, len);
+                hv_store(hv, "alert_ident", sizeof ("alert_ident") - 1, sv, 0);
+                
+                len = sprintf(tmp, "%llu", uident->analyzerid);
+                sv = newSVpv(tmp, len);
+                hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
+                
+                ST(argvi) = sv_2mortal(newRV_noinc((SV *) hv));
+                
+            }else {
+                ST(argvi) = &PL_sv_undef;
+            }
+            
+            argvi++;
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_get_next_heartbeat_uident) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_heartbeat_uident_list_t *arg1 = (prelude_db_heartbeat_uident_list_t *) 0 ;
+        prelude_db_heartbeat_uident_t *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_get_next_heartbeat_uident(uident_list);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_heartbeat_uident_list_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_get_next_heartbeat_uident. Expected _p_prelude_db_heartbeat_uident_list_t");
+            }
+        }
+        result = (prelude_db_heartbeat_uident_t *)prelude_db_interface_get_next_heartbeat_uident(arg1);
+        
+        {
+            prelude_db_heartbeat_uident_t *uident = result;
+            HV *hv;
+            SV *sv;
+            char tmp[32];
+            int len;
+            
+            if ( uident ) {
+                hv = newHV();
+                
+                len = sprintf(tmp, "%llu", uident->heartbeat_ident);
+                sv = newSVpv(tmp, len);
+                hv_store(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, sv, 0);
+                
+                len = sprintf(tmp, "%llu", uident->analyzerid);
+                sv = newSVpv(tmp, len);
+                hv_store(hv, "analyzerid", sizeof ("analyzerid") - 1, sv, 0);
+                
+                ST(argvi) = sv_2mortal(newRV_noinc((SV *) hv));
+                
+            }else {
+                ST(argvi) = &PL_sv_undef;
+            }
+            
             argvi++;
         }
         XSRETURN(argvi);
@@ -916,14 +1052,14 @@ XS(_wrap_prelude_db_interface_get_alert) {
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        uint64_t arg2 ;
+        prelude_db_alert_uident_t *arg2 = (prelude_db_alert_uident_t *) 0 ;
         idmef_selection_t *arg3 = (idmef_selection_t *) 0 ;
         idmef_message_t *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 3) || (items > 3)) {
-            SWIG_croak("Usage: prelude_db_interface_get_alert(interface,ident,selection);");
+            SWIG_croak("Usage: prelude_db_interface_get_alert(interface,uident,selection);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -931,15 +1067,20 @@ XS(_wrap_prelude_db_interface_get_alert) {
             }
         }
         {
-            /* 	arg2 = (uint64_t) SvUV(ST(1)); */
-            /* 	if ( SvIOK(ST(1)) ) { */
-            /* 		printf("debug1.1: %u\n", SvUV(ST(1))); */
-            /* 		arg2 = (uint64_t) SvUV(ST(1)); */
+            static prelude_db_alert_uident_t uident;
+            HV *hv;
+            SV **alert_ident;
+            SV **analyzerid;
             
-            /* 	} else { */
-            /* 		printf("debug1.2: %s\n", SvPV_nolen(ST(1))); */
-            sscanf(SvPV_nolen(ST(1)), "%llu", &(arg2));
-            /* 	} */
+            hv = (HV *) SvRV(ST(1));
+            
+            alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
+            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+            
+            analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            
+            arg2 = &uident;
         }
         {
             if (SWIG_ConvertPtr(ST(2), (void **) &arg3, SWIGTYPE_p_idmef_selection_t,0) < 0) {
@@ -963,14 +1104,14 @@ XS(_wrap_prelude_db_interface_get_heartbeat) {
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        uint64_t arg2 ;
+        prelude_db_heartbeat_uident_t *arg2 = (prelude_db_heartbeat_uident_t *) 0 ;
         idmef_selection_t *arg3 = (idmef_selection_t *) 0 ;
         idmef_message_t *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 3) || (items > 3)) {
-            SWIG_croak("Usage: prelude_db_interface_get_heartbeat(interface,ident,selection);");
+            SWIG_croak("Usage: prelude_db_interface_get_heartbeat(interface,uident,selection);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
@@ -978,15 +1119,20 @@ XS(_wrap_prelude_db_interface_get_heartbeat) {
             }
         }
         {
-            /* 	arg2 = (uint64_t) SvUV(ST(1)); */
-            /* 	if ( SvIOK(ST(1)) ) { */
-            /* 		printf("debug1.1: %u\n", SvUV(ST(1))); */
-            /* 		arg2 = (uint64_t) SvUV(ST(1)); */
+            static prelude_db_heartbeat_uident_t uident;
+            HV *hv;
+            SV **heartbeat_ident;
+            SV **analyzerid;
             
-            /* 	} else { */
-            /* 		printf("debug1.2: %s\n", SvPV_nolen(ST(1))); */
-            sscanf(SvPV_nolen(ST(1)), "%llu", &(arg2));
-            /* 	} */
+            hv = (HV *) SvRV(ST(1));
+            
+            heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
+            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+            
+            analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            
+            arg2 = &uident;
         }
         {
             if (SWIG_ConvertPtr(ST(2), (void **) &arg3, SWIGTYPE_p_idmef_selection_t,0) < 0) {
@@ -1010,20 +1156,35 @@ XS(_wrap_prelude_db_interface_delete_alert) {
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        int arg2 ;
+        prelude_db_alert_uident_t *arg2 = (prelude_db_alert_uident_t *) 0 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: prelude_db_interface_delete_alert(interface,ident);");
+            SWIG_croak("Usage: prelude_db_interface_delete_alert(interface,uident);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
                 SWIG_croak("Type error in argument 1 of prelude_db_interface_delete_alert. Expected _p_prelude_db_interface_t");
             }
         }
-        arg2 = (int) SvIV(ST(1));
+        {
+            static prelude_db_alert_uident_t uident;
+            HV *hv;
+            SV **alert_ident;
+            SV **analyzerid;
+            
+            hv = (HV *) SvRV(ST(1));
+            
+            alert_ident = hv_fetch(hv, "alert_ident", sizeof ("alert_ident") - 1, 0);
+            sscanf(SvPV_nolen(*alert_ident), "%llu", &uident.alert_ident);
+            
+            analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            
+            arg2 = &uident;
+        }
         result = (int)prelude_db_interface_delete_alert(arg1,arg2);
         
         ST(argvi) = sv_newmortal();
@@ -1041,20 +1202,35 @@ XS(_wrap_prelude_db_interface_delete_heartbeat) {
     const char *_swigerr = _swigmsg;
     {
         prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        int arg2 ;
+        prelude_db_heartbeat_uident_t *arg2 = (prelude_db_heartbeat_uident_t *) 0 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: prelude_db_interface_delete_heartbeat(interface,ident);");
+            SWIG_croak("Usage: prelude_db_interface_delete_heartbeat(interface,uident);");
         }
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
                 SWIG_croak("Type error in argument 1 of prelude_db_interface_delete_heartbeat. Expected _p_prelude_db_interface_t");
             }
         }
-        arg2 = (int) SvIV(ST(1));
+        {
+            static prelude_db_heartbeat_uident_t uident;
+            HV *hv;
+            SV **heartbeat_ident;
+            SV **analyzerid;
+            
+            hv = (HV *) SvRV(ST(1));
+            
+            heartbeat_ident = hv_fetch(hv, "heartbeat_ident", sizeof ("heartbeat_ident") - 1, 0);
+            sscanf(SvPV_nolen(*heartbeat_ident), "%llu", &uident.heartbeat_ident);
+            
+            analyzerid = hv_fetch(hv, "analyzerid", sizeof ("analyzerid") - 1, 0);
+            sscanf(SvPV_nolen(*analyzerid), "%llu", &uident.analyzerid);
+            
+            arg2 = &uident;
+        }
         result = (int)prelude_db_interface_delete_heartbeat(arg1,arg2);
         
         ST(argvi) = sv_newmortal();
@@ -1803,32 +1979,36 @@ XS(_wrap_prelude_sql_field_fetch_by_name) {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
-static swig_type_info _swigt__p_idmef_criterion_t[] = {{"_p_idmef_criterion_t", 0, "idmef_criterion_t *", 0},{"_p_idmef_criterion_t"},{0}};
-static swig_type_info _swigt__p_idmef_message_t[] = {{"_p_idmef_message_t", 0, "idmef_message_t *", 0},{"_p_idmef_message_t"},{0}};
-static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
-static swig_type_info _swigt__p_uint64_t[] = {{"_p_uint64_t", 0, "uint64_t *", 0},{"_p_uint64_t"},{0}};
-static swig_type_info _swigt__p_void[] = {{"_p_void", 0, "void *", 0},{"_p_void"},{0}};
-static swig_type_info _swigt__p_prelude_sql_row_t[] = {{"_p_prelude_sql_row_t", 0, "prelude_sql_row_t *", 0},{"_p_prelude_sql_row_t"},{0}};
-static swig_type_info _swigt__p_prelude_db_connection_t[] = {{"_p_prelude_db_connection_t", 0, "prelude_db_connection_t *", 0},{"_p_prelude_db_connection_t"},{0}};
-static swig_type_info _swigt__p_prelude_db_ident_list_t[] = {{"_p_prelude_db_ident_list_t", 0, "prelude_db_ident_list_t *", 0},{"_p_prelude_db_ident_list_t"},{0}};
-static swig_type_info _swigt__p_idmef_selection_t[] = {{"_p_idmef_selection_t", 0, "idmef_selection_t *", 0},{"_p_idmef_selection_t"},{0}};
 static swig_type_info _swigt__p_idmef_object_value_list_t[] = {{"_p_idmef_object_value_list_t", 0, "idmef_object_value_list_t *", 0},{"_p_idmef_object_value_list_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_heartbeat_uident_list_t[] = {{"_p_prelude_db_heartbeat_uident_list_t", 0, "prelude_db_heartbeat_uident_list_t *", 0},{"_p_prelude_db_heartbeat_uident_list_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_alert_uident_list_t[] = {{"_p_prelude_db_alert_uident_list_t", 0, "prelude_db_alert_uident_list_t *", 0},{"_p_prelude_db_alert_uident_list_t"},{0}};
+static swig_type_info _swigt__p_idmef_criterion_t[] = {{"_p_idmef_criterion_t", 0, "idmef_criterion_t *", 0},{"_p_idmef_criterion_t"},{0}};
+static swig_type_info _swigt__p_prelude_sql_row_t[] = {{"_p_prelude_sql_row_t", 0, "prelude_sql_row_t *", 0},{"_p_prelude_sql_row_t"},{0}};
+static swig_type_info _swigt__p_void[] = {{"_p_void", 0, "void *", 0},{"_p_void"},{0}};
 static swig_type_info _swigt__p_prelude_sql_connection_t[] = {{"_p_prelude_sql_connection_t", 0, "prelude_sql_connection_t *", 0},{"_p_prelude_sql_connection_t"},{0}};
+static swig_type_info _swigt__p_idmef_selection_t[] = {{"_p_idmef_selection_t", 0, "idmef_selection_t *", 0},{"_p_idmef_selection_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_connection_t[] = {{"_p_prelude_db_connection_t", 0, "prelude_db_connection_t *", 0},{"_p_prelude_db_connection_t"},{0}};
+static swig_type_info _swigt__p_idmef_message_t[] = {{"_p_idmef_message_t", 0, "idmef_message_t *", 0},{"_p_idmef_message_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
+static swig_type_info _swigt__p_prelude_sql_table_t[] = {{"_p_prelude_sql_table_t", 0, "prelude_sql_table_t *", 0},{"_p_prelude_sql_table_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_heartbeat_uident_t[] = {{"_p_prelude_db_heartbeat_uident_t", 0, "prelude_db_heartbeat_uident_t *", 0},{"_p_prelude_db_heartbeat_uident_t"},{0}};
+static swig_type_info _swigt__p_prelude_db_alert_uident_t[] = {{"_p_prelude_db_alert_uident_t", 0, "prelude_db_alert_uident_t *", 0},{"_p_prelude_db_alert_uident_t"},{0}};
 
 static swig_type_info *swig_types_initial[] = {
-_swigt__p_prelude_db_interface_t, 
-_swigt__p_idmef_criterion_t, 
-_swigt__p_idmef_message_t, 
-_swigt__p_prelude_sql_table_t, 
-_swigt__p_uint64_t, 
-_swigt__p_void, 
-_swigt__p_prelude_sql_row_t, 
-_swigt__p_prelude_db_connection_t, 
-_swigt__p_prelude_db_ident_list_t, 
-_swigt__p_idmef_selection_t, 
 _swigt__p_idmef_object_value_list_t, 
+_swigt__p_prelude_db_heartbeat_uident_list_t, 
+_swigt__p_prelude_db_alert_uident_list_t, 
+_swigt__p_idmef_criterion_t, 
+_swigt__p_prelude_sql_row_t, 
+_swigt__p_void, 
 _swigt__p_prelude_sql_connection_t, 
+_swigt__p_idmef_selection_t, 
+_swigt__p_prelude_db_connection_t, 
+_swigt__p_idmef_message_t, 
+_swigt__p_prelude_db_interface_t, 
+_swigt__p_prelude_sql_table_t, 
+_swigt__p_prelude_db_heartbeat_uident_t, 
+_swigt__p_prelude_db_alert_uident_t, 
 0
 };
 
@@ -1854,9 +2034,12 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_interface_disconnect", _wrap_prelude_db_interface_disconnect},
 {"PreludeDB::prelude_db_interface_get_connection", _wrap_prelude_db_interface_get_connection},
 {"PreludeDB::prelude_db_interface_destroy", _wrap_prelude_db_interface_destroy},
-{"PreludeDB::prelude_db_interface_get_ident_list", _wrap_prelude_db_interface_get_ident_list},
-{"PreludeDB::prelude_db_interface_free_ident_list", _wrap_prelude_db_interface_free_ident_list},
-{"PreludeDB::prelude_db_interface_get_next_ident", _wrap_prelude_db_interface_get_next_ident},
+{"PreludeDB::prelude_db_interface_get_alert_uident_list", _wrap_prelude_db_interface_get_alert_uident_list},
+{"PreludeDB::prelude_db_interface_get_heartbeat_uident_list", _wrap_prelude_db_interface_get_heartbeat_uident_list},
+{"PreludeDB::prelude_db_interface_free_alert_uident_list", _wrap_prelude_db_interface_free_alert_uident_list},
+{"PreludeDB::prelude_db_interface_free_heartbeat_uident_list", _wrap_prelude_db_interface_free_heartbeat_uident_list},
+{"PreludeDB::prelude_db_interface_get_next_alert_uident", _wrap_prelude_db_interface_get_next_alert_uident},
+{"PreludeDB::prelude_db_interface_get_next_heartbeat_uident", _wrap_prelude_db_interface_get_next_heartbeat_uident},
 {"PreludeDB::prelude_db_interface_get_alert", _wrap_prelude_db_interface_get_alert},
 {"PreludeDB::prelude_db_interface_get_heartbeat", _wrap_prelude_db_interface_get_heartbeat},
 {"PreludeDB::prelude_db_interface_delete_alert", _wrap_prelude_db_interface_delete_alert},

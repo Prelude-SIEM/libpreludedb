@@ -38,10 +38,11 @@
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "plugin-sql.h"
+#include "db.h"
 #include "db-type.h"
 #include "db-connection.h"
+#include "db-uident.h"
 #include "plugin-format.h"
-#include "db.h"
 
 static int initialized = 0;
 

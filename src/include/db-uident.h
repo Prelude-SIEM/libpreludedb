@@ -21,13 +21,17 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
-#define _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
+#ifndef _LIBPRELUDEDB_DB_UIDENT_H
+#define _LIBPRELUDEDB_DB_UIDENT_H
 
-int classic_delete_alert(prelude_db_connection_t *connection,
-			 prelude_db_alert_uident_t *uident);
+typedef struct {
+	uint64_t alert_ident;
+	uint64_t analyzerid;
+}	prelude_db_alert_uident_t;
 
-int classic_delete_heartbeat(prelude_db_connection_t *connection,
-			     prelude_db_heartbeat_uident_t *uident);
+typedef struct {
+	uint64_t heartbeat_ident;
+	uint64_t analyzerid;
+}	prelude_db_heartbeat_uident_t;
 
-#endif /* _LIBPRELUDEDB_CLASSIC_DB_DELETE_H */
+#endif /* _LIBPRELUDEDB_DB_UIDENT_H */
