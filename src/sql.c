@@ -317,6 +317,15 @@ char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string)
 
 
 
+const char *prelude_sql_limit_offset(prelude_sql_connection_t *conn, int limit, int offset)
+{
+	return (conn && conn->plugin) ?
+		conn->plugin->db_limit_offset(conn->session, limit, offset): 
+		NULL;
+}
+
+
+
 int prelude_sql_begin(prelude_sql_connection_t *conn)
 {
 	return (conn && conn->plugin) ? conn->plugin->db_begin(conn->session) : -1;

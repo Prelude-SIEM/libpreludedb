@@ -201,6 +201,24 @@ static char *db_escape(void *s, const char *string)
 }
 
 
+static const char *db_limit_offset(void *s, int limit, int offset)
+{
+	static char buffer[64];
+	int ret;
+
+	if ( limit >= 0 ) {
+		if ( offset >= 0 )
+			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d, %d", offset, limit);
+		else
+			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d", limit);
+
+		return (ret < 0) ? NULL : buffer;
+	}
+
+	return "";
+}
+
+
 
 /*
  * Execute SQL query, return table
@@ -597,6 +615,7 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_setup_func(&plugin, db_setup);
         plugin_set_connect_func(&plugin, db_connect);
         plugin_set_escape_func(&plugin, db_escape);
+        plugin_set_limit_offset_func(&plugin, db_limit_offset);
         plugin_set_query_func(&plugin, db_query);
         plugin_set_begin_func(&plugin, db_begin);
         plugin_set_commit_func(&plugin, db_commit);

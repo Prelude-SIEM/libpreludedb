@@ -1,5 +1,22 @@
 2003-12-29  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
+	* plugins/format/classic/idmef-db-get.c:
+	(get_ntp_timestamp)
+	bug fix: avoid (possibly buggy) code duplication, use
+	idmef_time_new_ntp_timestamp to convert ntp stamptime
+	to idmef_time
+
+	* plugins/format/classic/idmef-db-select.c:
+	* plugins/sql/mysql/mysql.c:
+	* plugins/sql/pgsql/pgsql.c:
+	* src/sql.c:
+	* src/include/plugin-sql.h:
+	* src/include/sql.h:
+	make sql limit and offset the sql plugin' job to have a better
+	portability (libpreludedb should re-work with MySQL 3.2x)
+
+2003-12-29  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
 	* bindings/perl/PreludeDB.pm:
 	(PreludeDBSQL)
 	remove the "close" method (it should not be directly accessed)

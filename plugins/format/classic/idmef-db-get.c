@@ -180,19 +180,9 @@ static int get_ntp_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *r
 	if ( ! tmp )
 		return -3;
 
-	if ( sscanf(tmp, "0x%x.0x%x", &sec, &usec) < 2 )
+	*time = idmef_time_new_ntp_timestamp(tmp);
+	if ( ! *time )
 		return -4;
-
-	sec -= JAN_1970;
-
-	*time = idmef_time_new();
-	if ( ! *time ) {
-		log_memory_exhausted();
-		return -5;
-	}
-
-	idmef_time_set_sec(*time, sec);
-	idmef_time_set_usec(*time, usec);
 
 	return 0;
 }

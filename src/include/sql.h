@@ -52,6 +52,7 @@ prelude_sql_table_t *prelude_sql_query(prelude_sql_connection_t *conn, const cha
 int prelude_sql_errno(prelude_sql_connection_t *conn);
 const char *prelude_sql_error(prelude_sql_connection_t *conn);
 char *prelude_sql_escape(prelude_sql_connection_t *conn, const char *string);
+const char *prelude_sql_limit_offset(prelude_sql_connection_t *conn, int limit, int offset);
 int prelude_sql_begin(prelude_sql_connection_t *conn);
 int prelude_sql_commit(prelude_sql_connection_t *conn);
 int prelude_sql_rollback(prelude_sql_connection_t *conn);

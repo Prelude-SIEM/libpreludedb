@@ -571,6 +571,9 @@ static int relation_to_sql(prelude_strbuf_t *where, char *table, char *field, id
 		return (table ?
 			prelude_strbuf_sprintf(where, "%s.%s IS NOT NULL", table, field) :
 			prelude_strbuf_sprintf(where, "%s IS NOT NULL", field));
+
+	default:
+		/* nop */;
 	}
 
 	return -1;
@@ -881,15 +884,30 @@ static int join_wheres(prelude_strbuf_t *out,prelude_strbuf_t *in)
 }
 
 
+static int limit_offset_to_sql(prelude_sql_connection_t *conn,
+			       prelude_strbuf_t *strbuf,
+			       int limit, int offset)
+{
+	const char *tmp;
+
+	tmp = prelude_sql_limit_offset(conn, limit, offset);
+	if ( ! tmp )
+		return -1;
+
+	prelude_strbuf_cat(strbuf, tmp);
+
+	return 0;
+}
+
 
 
 static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
-			       prelude_db_object_selection_t *selection,
-			       idmef_criteria_t *criteria,
-			       int distinct,
-			       int limit,
-			       int offset,
-			       int as_values)
+				       prelude_db_object_selection_t *selection,
+				       idmef_criteria_t *criteria,
+				       int distinct,
+				       int limit,
+				       int offset,
+				       int as_values)
 {
 	prelude_strbuf_t 
 		*request = NULL,
@@ -901,8 +919,7 @@ static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
 		*fields = NULL,
 		*group = NULL,
 		*order = NULL,
-		*lim = NULL,
-		*off = NULL;
+		*limit_offset = NULL;
 	table_list_t *tables = NULL;
 	int ret = -1;
 
@@ -942,23 +959,13 @@ static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ! order )
 		goto error;
 
-	if ( limit >= 0 ) {
-		lim = prelude_strbuf_new();
-		if ( ! lim )
-			goto error;
+	limit_offset = prelude_strbuf_new();
+	if ( ! limit_offset )
+		goto error;
 
-		if ( prelude_strbuf_sprintf(lim, "LIMIT %d", limit) < 0 )
-			goto error;
-	}
-
-	if ( offset >= 0 ) {
-		off = prelude_strbuf_new();
-		if ( ! off )
-			goto error;
-
-		if ( prelude_strbuf_sprintf(off, "OFFSET %d", offset) < 0 )
-			goto error;
-	}
+	ret = limit_offset_to_sql(conn, limit_offset, limit, offset);
+	if ( ret < 0 )
+		goto error;
 
 	ret = objects_to_sql(conn, fields, where1, group, order, tables, selection);
 	if ( ret < 0 )
@@ -993,16 +1000,16 @@ static prelude_strbuf_t *build_request(prelude_sql_connection_t *conn,
 		goto error;
 
 	/* build the query */
-	ret = prelude_strbuf_sprintf(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s %s;",
-			     distinct ? " DISTINCT" : "",
-		             prelude_strbuf_get_string(fields),
-		             prelude_strbuf_get_string(str_tables),
-			     prelude_strbuf_is_empty(where) ? "" : "WHERE",
-		             prelude_strbuf_get_string(where),
-			     prelude_strbuf_is_empty(group) ? "" : "GROUP BY", prelude_strbuf_get_string(group),
-			     prelude_strbuf_is_empty(order) ? "" : "ORDER BY", prelude_strbuf_get_string(order),
-			     lim ? prelude_strbuf_get_string(lim) : "",
-			     off ? prelude_strbuf_get_string(off) : "");
+	ret = prelude_strbuf_sprintf
+		(request, "SELECT%s %s FROM %s %s %s %s %s %s %s %s;",
+		 distinct ? " DISTINCT" : "",
+		 prelude_strbuf_get_string(fields),
+		 prelude_strbuf_get_string(str_tables),
+		 prelude_strbuf_is_empty(where) ? "" : "WHERE",
+		 prelude_strbuf_get_string(where),
+		 prelude_strbuf_is_empty(group) ? "" : "GROUP BY", prelude_strbuf_get_string(group),
+		 prelude_strbuf_is_empty(order) ? "" : "ORDER BY", prelude_strbuf_get_string(order),
+		 prelude_strbuf_get_string(limit_offset));
 	if ( ret < 0 )
 		goto error;
 
@@ -1037,11 +1044,8 @@ error:
 	if ( order )
 		prelude_strbuf_destroy(order);
 
-	if ( lim )
-		prelude_strbuf_destroy(lim);
-
-	if ( off )
-		prelude_strbuf_destroy(off);
+	if ( limit_offset )
+		prelude_strbuf_destroy(limit_offset);
 
 	if ( ret >= 0 )
 		return request;

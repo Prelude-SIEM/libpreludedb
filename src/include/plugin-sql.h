@@ -59,6 +59,7 @@ typedef struct {
                           const char *dbuser, const char *dbpass);
         int (*db_connect) (void *session);
         char *(*db_escape)(void *session, const char *input);
+	const char *(*db_limit_offset)(void *session, int limit, int offset);
         void *(*db_query)(void *session, const char *query);
         int (*db_begin)(void *session);
         int (*db_commit)(void *session);
@@ -97,6 +98,7 @@ typedef struct {
 #define plugin_setup_func(p) (p)->db_setup
 #define plugin_connect_func(p) (p)->db_connect
 #define plugin_escape_func(p) (p)->db_escape
+#define plugin_limit_offset_func(p) (p)->db_limit_offset
 #define plugin_query_func(p) (p)->db_query
 #define plugin_begin_func(p) (p)->db_begin
 #define plugin_commit_func(p) (p)->db_commit
@@ -118,6 +120,7 @@ typedef struct {
 #define plugin_set_setup_func(p, f) plugin_setup_func(p) = (f)
 #define plugin_set_connect_func(p, f) plugin_connect_func(p) = (f)
 #define plugin_set_escape_func(p, f) plugin_escape_func(p) = (f)
+#define plugin_set_limit_offset_func(p, f) plugin_limit_offset_func(p) = (f)
 #define plugin_set_query_func(p, f) plugin_query_func(p) = (f)
 #define plugin_set_begin_func(p, f) plugin_begin_func(p) = (f)
 #define plugin_set_commit_func(p, f) plugin_commit_func(p) = (f)
