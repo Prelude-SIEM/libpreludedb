@@ -1,3 +1,7 @@
+2004-02-12  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* configure.in: correct test for python/perl.
+
 2004-02-06  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* plugins/format/classic/idmef-db-insert.c (insert_additional_data): 
