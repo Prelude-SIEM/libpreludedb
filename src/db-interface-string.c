@@ -31,8 +31,6 @@
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef-tree.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
 
 #include "db-type.h"
 #include "sql-connection-data.h"
@@ -82,7 +80,7 @@ static void *get_sql_connection_data(const char *config)
 	}
 		
 	ret = prelude_sql_connection_data_set_pass(data, 
-		parameter_value(config, "pass"));	
+		parameter_value(config, "pass"));
 	if ( ret < 0 ) {
 		free(data);
 		return NULL;

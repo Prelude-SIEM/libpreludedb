@@ -1,5 +1,10 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/db-interface-string.c:
+	remove unneeded includes.
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-interface.c(prelude_db_interface_connect):
 	add missing "break" statement
 
