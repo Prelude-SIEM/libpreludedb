@@ -34,8 +34,9 @@
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-io.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/prelude-message.h>
-#include <libprelude/prelude-message-buffered.h>
+#include <libprelude/prelude-msg.h>
+#include <libprelude/prelude-msgbuf.h>
+#include <libprelude/prelude-error.h>
 
 #include <libprelude/idmef-message-id.h>
 #include <libprelude/idmef-message-write.h>
@@ -115,47 +116,9 @@ static int get_message_infos(idmef_message_t *message, const char **out, uint64_
 
 
 
-
-static int msg_to_alert(idmef_message_t *message, prelude_msg_t *pmsg)
-{
-        idmef_alert_t *alert;
-
-        alert = idmef_message_new_alert(message);
-        if ( ! alert )
-                return -1;
-        
-        if ( ! idmef_alert_read(alert, pmsg) )
-                return -1;
-
-        return 0;
-}
-
-
-
-
-static int msg_to_heartbeat(idmef_message_t *message, prelude_msg_t *pmsg)
-{
-        idmef_heartbeat_t *heartbeat;
-        
-        heartbeat = idmef_message_new_heartbeat(message);
-        if ( ! heartbeat )
-                return -1;
-
-        if ( ! idmef_heartbeat_read(heartbeat, pmsg) )
-                return -1;
-
-        return 0;
-}
-
-
-
-
 static idmef_message_t *read_message_from_cache(prelude_io_t *fd) 
 {
         int ret;
-        void *buf;
-        uint8_t tag;
-        uint32_t len;
         idmef_message_t *message;
         prelude_msg_t *pmsg = NULL;
         
@@ -168,30 +131,16 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
                 return NULL;
         }
 
-        ret = -1;
-        while ( (prelude_msg_get(pmsg, &tag, &len, &buf)) > 0 ) {
-
-                if ( tag == MSG_ALERT_TAG ) {
-                        ret = msg_to_alert(message, pmsg);
-                        break;
-                }
-                
-                else if ( tag == MSG_HEARTBEAT_TAG ) {
-                        ret = msg_to_heartbeat(message, pmsg);
-                        break;
-                }
+        ret = idmef_message_read(message, pmsg);
+        if ( ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_EOF ) {
+                prelude_msg_destroy(pmsg);
+                idmef_message_destroy(message);
+                return NULL;
         }
-
-        if ( ret == 0 ) {
-		idmef_message_set_pmsg(message, pmsg);
-
-                return message;
-	}
         
-        prelude_msg_destroy(pmsg);
-        idmef_message_destroy(message);
-                
-        return NULL;
+        idmef_message_set_pmsg(message, pmsg);
+
+        return message;
 }
 
 
