@@ -24,8 +24,8 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
 #define _LIBPRELUDEDB_CLASSIC_DB_DELETE_H
 
-int delete_alert(prelude_db_connection_t *connection, uint64_t ident);
+int delete_alert(preludedb_sql_t *sql, uint64_t ident);
 
-int delete_heartbeat(prelude_db_connection_t *connection, uint64_t ident);
+int delete_heartbeat(preludedb_sql_t *sql, uint64_t ident);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_DB_DELETE_H */

@@ -1,7 +1,5 @@
-BINDING_DEPENDS=libpreludedb.i $(top_srcdir)/src/include/db-type.h $(top_srcdir)/src/include/db.h \
-	$(top_srcdir)/src/include/db-object-selection.h $(top_srcdir)/src/include/db-message-ident.h \
-	$(top_srcdir)/src/include/db-interface.h $(top_srcdir)/src/include/db-interface-string.h \
-	$(top_srcdir)/src/include/db-connection.h $(top_srcdir)/src/include/sql.h
+BINDING_DEPENDS=libpreludedb.i $(top_srcdir)/src/include/preludedb-sql-settings.h $(top_srcdir)/src/include/preludedb-sql.h \
+	$(top_srcdir)/src/include/preludedb.h $(top_srcdir)/src/include/preludedb-object-selection.h
 
 EXTRA_DIST = libpreludedb.i perl/Makefile.PL.in perl/PreludeDB.pm perl/PreludeDB.c python/setup.py.in python/preludedb.py python/_preludedb.c
 

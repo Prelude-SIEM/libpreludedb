@@ -241,7 +241,7 @@ m4/Makefile
 
 src/Makefile
 src/include/Makefile
-src/include/db.h
+src/include/preludedb-version.h
 
 plugins/Makefile
 

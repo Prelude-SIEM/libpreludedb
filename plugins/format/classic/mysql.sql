@@ -1,10 +1,16 @@
+DROP TABLE IF EXISTS _format;
+
+CREATE TABLE _format (
+ name VARCHAR(255) NOT NULL
+);
+INSERT INTO _format (name) VALUES("classic");
+
 DROP TABLE IF EXISTS Prelude_Alert;
 
 CREATE TABLE Prelude_Alert (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
  messageid BIGINT UNSIGNED NOT NULL,
- analyzerid BIGINT UNSIGNED NOT NULL,
- UNIQUE INDEX (messageid, analyzerid)
+ UNIQUE INDEX(messageid)
 ) TYPE=InnoDB;
 
 
@@ -56,8 +62,7 @@ DROP TABLE IF EXISTS Prelude_Heartbeat;
 CREATE TABLE Prelude_Heartbeat (
  _ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
  messageid BIGINT UNSIGNED NOT NULL,
- analyzerid BIGINT UNSIGNED NOT NULL,
- UNIQUE INDEX(messageid, analyzerid)
+ UNIQUE INDEX(messageid)
 ) TYPE=InnoDB;
 
 
@@ -479,7 +484,7 @@ CREATE TABLE Prelude_SNMPService (
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent_index TINYINT UNSIGNED NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent_index),
- oid VARCHAR(255) NULL,
+ snmp_oid VARCHAR(255) NULL, # oid is a reserved word in PostgreSQL 
  community VARCHAR(255) NULL,
  security_name VARCHAR(255) NULL,
  context_name VARCHAR(255) NULL,

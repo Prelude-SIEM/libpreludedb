@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -26,18 +26,16 @@
 #include <pthread.h>
 #include <libprelude/prelude-list.h>
 #include <libprelude/idmef.h>
-#include "db-type.h"
-#include "db.h"
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "db-message-ident.h"
-#include "db-connection.h"
-#include "db-connection-data.h"
-#include "db-object-selection.h"
-#include "db-interface.h"
-#include "db-interface-string.h"
+
+#include "preludedb-error.h"
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-object-selection.h"
+#include "preludedb.h"
 
 %}
+
+typedef struct idmef_value idmef_value_t;
 
 %typemap(perl5, in) char ** {
 	AV *tempav;
@@ -63,49 +61,24 @@
 	$1[i] = NULL;
 };
 
+
+%typemap(python, in) const char * {
+        if ( $input == Py_None )
+                $1 = NULL;
+        else if ( PyString_Check($input) )
+                $1 = PyString_AsString($input);
+        else {
+                PyErr_Format(PyExc_TypeError,
+                             "expected None or string, %s found", $input->ob_type->tp_name);
+                return NULL;
+        }
+};
+
+
 %typemap(perl5, in) uint8_t {
 	$1 = (uint8_t) SvIV($input);
 };
 
-%typemap(perl5, out) prelude_sql_field_t * {
-
-	if ( $1 ) {
-		switch ( prelude_sql_field_info_type($1) ) {
-		case dbtype_int32:
-			$result = newSViv(prelude_sql_field_value_int32($1));
-			argvi++;
-			break;
-
-		case dbtype_uint32:
-			$result = newSVuv(prelude_sql_field_value_uint32($1));
-			argvi++;
-			break;
-
-		case dbtype_int64: case dbtype_uint64:
-			$result = newSVpv(prelude_sql_field_value($1), 0);
-			argvi++;
-			break;
-
-		case dbtype_float:
-			$result = newSVnv((double) prelude_sql_field_value_float($1));
-			argvi++;
-			break;
-
-		case dbtype_double:
-			$result = newSVnv(prelude_sql_field_value_double($1));
-			argvi++;
-			break;
-
-		case dbtype_string:
-			$result = newSVpv(prelude_sql_field_value($1), 0);
-			argvi++;
-			break;
-
-		default:
-			/* nop */;
-		}
-	}
-};
 
 %typemap(perl5, in) uint64_t {
 	if ( SvIOK($input) ) {
@@ -117,6 +90,7 @@
 		}
 	}
 };
+
 
 %typemap(perl5, out) uint64_t {
 	char tmp[32];
@@ -130,16 +104,52 @@
 	}
 };
 
+
+%typemap(python, in, numinputs=0) idmef_value_t ***values (idmef_value_t **tmp) {
+	$1 = &tmp;
+};
+
+%typemap(python, argout) idmef_value_t ***values {
+	long size;
+
+	size = PyInt_AsLong($result);
+	if ( size <= 0 ) {
+		$result = Py_None;
+
+	} else {
+		idmef_value_t **values = *($1);
+		int cnt;
+
+		$result = PyList_New(0);
+
+		for ( cnt = 0; cnt < size; cnt++ ) {
+			PyList_Append($result,
+				      SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0));
+		}
+
+		free(values);
+	}
+};
+
+
+%typemap(python, in, numinputs=0) uint64_t *ident (uint64_t tmp) {
+	$1 = &tmp;
+};
+
+%typemap(python, argout) uint64_t *ident {
+	if ( PyInt_AsLong($result) <= 0 )
+		$result = Py_None;
+	else
+		$result = PyLong_FromUnsignedLongLong(*($1));
+};
+
+
 typedef int int32_t;
 typedef unsigned int uint32_t;
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 
-%include "../../src/include/db-type.h"
-%include "../../src/include/db.h"
-%include "../../src/include/db-object-selection.h"
-%include "../../src/include/db-message-ident.h"
-%include "../../src/include/db-interface.h"
-%include "../../src/include/db-interface-string.h"
-%include "../../src/include/db-connection.h"
-%include "../../src/include/sql.h"
+%include "preludedb-sql-settings.h"
+%include "preludedb-sql.h"
+%include "preludedb.h"
+%include "preludedb-object-selection.h"

@@ -17,16 +17,9 @@ libpreludedb_la_LDFLAGS = @LIBPRELUDE_LDFLAGS@ -no-undefined #$(DLOPENED_OBJS)
 libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@
 
 libpreludedb_la_SOURCES =		\
-	db.c				\
-	db-message-ident.c		\
-	db-interface.c			\
-	db-interface-string.c		\
-	db-message-cache.c		\
-	db-connection.c			\
-	db-connection-data.c		\
-	db-object-selection.c		\
-	sql-connection-data.c		\
-	sql.c				\
-	param-string.c			\
-	format-plugins.c		\
-	sql-plugins.c
+	preludedb.c			\
+	preludedb-object-selection.c	\
+	preludedb-sql.c			\
+	preludedb-sql-settings.c	\
+	preludedb-version.c		\
+	preludedb-error.c

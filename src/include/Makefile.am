@@ -1,26 +1,14 @@
 includedir = $(prefix)/include/libpreludedb
 
-include_HEADERS = 		\
-	db-message-ident.h	\
-	db-interface.h		\
-	db-interface-string.h   \
-	db-type.h		\
-	db-connection.h		\
-	db-connection-data.h	\
-	db-object-selection.h	\
-	sql-connection-data.h	\
-	sql.h			\
-	param-string.h		\
-	plugin-sql.h		\
-	plugin-format.h
+include_HEADERS = 			\
+	preludedb-object-selection.h	\
+	preludedb-plugin-sql.h		\
+	preludedb-plugin-format.h	\
+	preludedb-sql-settings.h	\
+	preludedb-sql.h			\
+	preludedb-error.h		\
+	preludedb.h
 
-nodist_include_HEADERS = db.h
+nodist_include_HEADERS = preludedb-version.h
 
-noinst_HEADERS = 		\
-	db-message-cache.h	\
-	db-connection.h		\
-	db-connection-data.h	\
-	sql-connection-data.h	\
-	param-string.h		\
-	plugin-format.h		\
-	plugin-sql.h
+noinst_HEADERS =

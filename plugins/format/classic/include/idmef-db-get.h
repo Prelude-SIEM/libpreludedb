@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -24,12 +24,8 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_DB_GET_H
 #define _LIBPRELUDEDB_CLASSIC_DB_GET_H
 
-idmef_message_t	*get_alert(prelude_db_connection_t *connection,
-			   prelude_db_message_ident_t *message_ident,
-			   uint64_t ident);
+int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
 
-idmef_message_t	*get_heartbeat(prelude_db_connection_t *connection,
-			       prelude_db_message_ident_t *message_ident,
-			       uint64_t ident);
+int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
 
 #endif /* ! _LIBPRELUDEDB_CLASSIC_DB_GET_H  */

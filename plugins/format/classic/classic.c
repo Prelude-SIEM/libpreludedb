@@ -1,7 +1,7 @@
 /*****
 *
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -29,16 +29,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
 
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "db-message-ident.h"
-#include "db-type.h"
-#include "db-connection.h"
-#include "db-object-selection.h"
-#include "plugin-format.h"
+#include "preludedb-error.h"
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-object-selection.h"
+#include "preludedb.h"
+#include "preludedb-plugin-format.h"
 
 #include "idmef-db-insert.h"
 #include "idmef-db-select.h"
@@ -52,323 +50,174 @@ prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void);
 
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
 
-static plugin_format_t plugin;
+struct db_value_info {
+	idmef_value_type_id_t type;
+	preludedb_selected_object_flags_t flags;
+};
+
+struct db_result {
+	preludedb_sql_table_t *table;
+	struct db_value_info *values_info;
+	unsigned int value_count;
+};
 
 
-static int get_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident,
-		     const char *table_name, uint64_t *result)
+
+static int classic_get_alert_idents(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+				    int limit, int offset, preludedb_result_idents_order_t order,
+				    void **res)
 {
-	prelude_sql_connection_t *sql;
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	prelude_sql_field_t *field;
-
-	sql = prelude_db_connection_get_sql(connection);
-	if ( ! sql )
-		return -1;
-
-	table = prelude_sql_query(sql, "SELECT _ident FROM %s WHERE analyzerid = %" PRIu64 " AND messageid = %" PRIu64 ";",
-				  table_name,
-				  prelude_db_message_ident_get_analyzerid(ident),
-				  prelude_db_message_ident_get_ident(ident));
-	if ( ! table )
-		return prelude_sql_errno(sql) ? -1 : 0;
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row )
-		goto error;
-
-	field = prelude_sql_field_fetch(row, 0);
-	if ( ! field )
-		goto error;
-
-	*result = prelude_sql_field_value_uint64(field);
-
-	return 1;
-	
- error:
-	prelude_sql_table_free(table);
-	return -1;
+	return idmef_db_select_idents(sql, 'A', criteria, limit, offset, order,
+				      (preludedb_sql_table_t **) res);
 }
 
 
 
-static int get_alert_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
+static int classic_get_heartbeat_idents(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+					int limit, int offset, preludedb_result_idents_order_t order,
+					void **res)
 {
-	return get_ident(connection, ident, "Prelude_Alert", result);
+	return idmef_db_select_idents(sql, 'H', criteria, limit, offset, order,
+				      (preludedb_sql_table_t **) res);
 }
 
 
 
-static int get_heartbeat_ident(prelude_db_connection_t *connection, prelude_db_message_ident_t *ident, uint64_t *result)
+static size_t classic_get_message_ident_count(void *res)
 {
-	return get_ident(connection, ident, "Prelude_Heartbeat", result);
+	return preludedb_sql_table_get_row_count(res);
 }
 
 
 
-static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
-					   idmef_criteria_t *criteria,
-					   int limit, int offset,
-					   const char *object_prefix)
+static int classic_get_next_message_ident(void *res, uint64_t *ident)
 {
-	prelude_db_object_selection_t *selection;
-	prelude_db_selected_object_t *selected;
-	idmef_object_t *alert_ident; /* alert or heartbeat ident actually */
-	idmef_object_t *analyzerid;
-	prelude_sql_table_t *table;
-
-	selection = prelude_db_object_selection_new();
-	if ( ! selection ) {
-		log(LOG_ERR, "could not create object selection.\n");
-		return NULL;
-	}
-
-	alert_ident = idmef_object_new("%s.messageid", object_prefix);
-	if ( ! alert_ident ) {
-		log(LOG_ERR, "could not create %s.messageid object.\n", object_prefix);
-		prelude_db_object_selection_destroy(selection);
-		return NULL;
-	}
-
-	selected = prelude_db_selected_object_new(alert_ident, 0);
-	if ( ! selected ) {
-		prelude_db_object_selection_destroy(selection);
-		idmef_object_destroy(alert_ident);
-		return NULL;
-	}
-
-	prelude_db_object_selection_add(selection, selected);
-
-	analyzerid = idmef_object_new("%s.analyzer.analyzerid", object_prefix);
-	if ( ! analyzerid ) {
-		log(LOG_ERR, "could not create %s.analyzer.analyzerid object\n", object_prefix);
-		prelude_db_object_selection_destroy(selection);
-		return NULL;
-	}
-
-	selected = prelude_db_selected_object_new(analyzerid, 0);
-	if ( ! selected ) {
-		prelude_db_object_selection_destroy(selection);
-		idmef_object_destroy(analyzerid);
-		return NULL;
-	}
-
-	prelude_db_object_selection_add(selection, selected);
-
-	table = idmef_db_select(connection, selection, criteria, 
-	                        DISTINCT, limit, offset, AS_MESSAGES);
-
-	prelude_db_object_selection_destroy(selection);
-
-	return table;
-}
-
-
-
-static void *classic_get_alert_ident_list(prelude_db_connection_t *connection,
-					  idmef_criteria_t *criteria,
-					  int limit, int offset)
-{
-	return get_ident_list(connection, criteria, limit, offset, "alert");
-}
-
-
-
-static void *classic_get_heartbeat_ident_list(prelude_db_connection_t *connection,
-					      idmef_criteria_t *criteria,
-					      int limit, int offset)
-{
-	return get_ident_list(connection, criteria, limit, offset, "heartbeat");
-}
-
-
-
-static unsigned int get_message_ident_list_len(prelude_db_connection_t *connection,
-					       void *res)
-{
-	prelude_sql_table_t *table = res;
-
-	return prelude_sql_rows_num(table);
-}
-
-
-static unsigned int classic_get_alert_ident_list_len(prelude_db_connection_t *connection,
-						     void *res)
-{
-	return get_message_ident_list_len(connection, res);
-}
-
-
-
-static unsigned int classic_get_heartbeat_ident_list_len(prelude_db_connection_t *connection,
-							 void *res)
-{
-	return get_message_ident_list_len(connection, res);
-}
-
-
-
-static prelude_db_message_ident_t *classic_get_next_message_ident(prelude_db_connection_t *connection,
-								  void *res)
-{
-	prelude_sql_table_t *table = res;
-	prelude_sql_row_t *row;
-	prelude_sql_field_t *field;
-	uint64_t ident;
-	uint64_t analyzerid;
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row )
-		return NULL;
-
-	field = prelude_sql_field_fetch(row, 0);
-	if ( ! field ) {
-		log(LOG_ERR, "could not retrieve ident field from row.\n");
-		return NULL;
-	}
-
-	ident = prelude_sql_field_value_int64(field);
-
-	field = prelude_sql_field_fetch(row, 1);
-	if ( ! field ) {
-		log(LOG_ERR, "could not retrieve analyzerid field from row.\n");
-		return NULL;
-	}
-
-	analyzerid = prelude_sql_field_value_int64(field);
-
-	return prelude_db_message_ident_new(analyzerid, ident);
-}
-
-
-
-static void classic_message_ident_list_destroy(prelude_db_connection_t *connection, void *res)
-{
-	prelude_sql_table_free(res);
-}
-
-
-static idmef_message_t *classic_get_alert(prelude_db_connection_t *connection,
-					  prelude_db_message_ident_t *message_ident)
-{
-	uint64_t ident;
-
-	if ( get_alert_ident(connection, message_ident, &ident) <= 0 )
-		return NULL;
-
-	return get_alert(connection, message_ident, ident);
-}
-
-
-
-static idmef_message_t *classic_get_heartbeat(prelude_db_connection_t *connection,
-					      prelude_db_message_ident_t *message_ident)
-{
-	uint64_t ident;
-
-	if ( get_heartbeat_ident(connection, message_ident, &ident) <= 0 )
-		return NULL;
-
-	return get_heartbeat(connection, message_ident, ident);
-}
-
-
-
-static int classic_delete_alert(prelude_db_connection_t *connection,
-				prelude_db_message_ident_t *message_ident)
-{
-	uint64_t ident;
+	preludedb_sql_row_t *row;
+	preludedb_sql_field_t *field;
 	int ret;
 
-	ret = get_alert_ident(connection, message_ident, &ident);
+	ret = preludedb_sql_table_fetch_row(res, &row);
 	if ( ret <= 0 )
 		return ret;
 
-	return delete_alert(connection, ident);
-}
-
-
-
-static int classic_delete_heartbeat(prelude_db_connection_t *connection,
-				    prelude_db_message_ident_t *message_ident)
-{
-	uint64_t ident;
-	int ret;
-
-	ret = get_heartbeat_ident(connection, message_ident, &ident);
+	ret = preludedb_sql_row_fetch_field(row, 0, &field);
 	if ( ret <= 0 )
 		return ret;
 
-	return delete_heartbeat(connection, ident);
+	ret = preludedb_sql_field_to_uint64(field, ident);
+
+	return (ret < 0) ? ret : 1;
 }
 
 
 
-static int classic_insert_idmef_message(prelude_db_connection_t *connection, idmef_message_t *message)
+static void classic_destroy_message_idents_resource(void *res)
 {
-	return idmef_db_insert(connection, message);
+	preludedb_sql_table_destroy(res);
 }
 
 
 
-static void *classic_select_values(prelude_db_connection_t *connection,
-			           prelude_db_object_selection_t *selection, 
-				   idmef_criteria_t *criteria,
-				   int distinct,
-				   int limit, int offset)
+static int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
-	return idmef_db_select(connection, selection, criteria, 
-			       distinct, limit, offset, AS_VALUES);
+	return get_alert(sql, ident, message);
 }
 
 
 
-static int get_value(prelude_sql_row_t *row, int field_cnt,
-		     idmef_object_t *object, idmef_value_t **value, int flags)
+static int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
-	prelude_sql_field_t *field;
+	return get_heartbeat(sql, ident, message);
+}
+
+
+
+static int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
+{
+	return delete_alert(sql, ident);
+}
+
+
+
+static int classic_delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
+{
+	return delete_heartbeat(sql, ident);
+}
+
+
+
+static int classic_insert_idmef_message(preludedb_sql_t *sql, idmef_message_t *message)
+{
+	return idmef_db_insert(sql, message);
+}
+
+
+
+static int classic_get_values(preludedb_sql_t *sql, preludedb_object_selection_t *selection, 
+			      idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res)
+{
+
+	return idmef_db_select(sql, selection, criteria, distinct, limit, offset, AS_VALUES, (preludedb_sql_table_t **) res);
+}
+
+
+
+static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_object_t *selected, idmef_value_t **value)
+{
+	preludedb_selected_object_flags_t flags;
+	idmef_object_t *object;
+	idmef_value_type_id_t type;
+	preludedb_sql_field_t *field;
 	const char *char_val;
-	
-	field = prelude_sql_field_fetch(row, field_cnt);
-	if ( ! field )
-		return 0;
+	int ret;
 
-	char_val = prelude_sql_field_value(field);
+	flags = preludedb_selected_object_get_flags(selected);
+	object = preludedb_selected_object_get_object(selected);
+	type = idmef_object_get_value_type(object);
 
-#ifdef DEBUG
-	log(LOG_INFO, " * read value: %s\n", char_val);
-#endif
+	ret = preludedb_sql_row_fetch_field(row, cnt, &field);
+	if ( ret < 0 )
+		return ret;
+
+	char_val = preludedb_sql_field_get_value(field);
 
 	if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
-		*value = prelude_sql_field_value_idmef(field);
-		if ( ! *value ) {
-			log(LOG_ERR, "could not get idmef value from sql field\n");
-			return -1;
-		}
+               uint32_t count;
 
-		return 1;
-	}
+               ret = preludedb_sql_field_to_uint32(field, &count);
+               if ( ret < 0 )
+                       return ret;
 
-	switch ( idmef_object_get_value_type(object) ) {
+               *value = idmef_value_new_uint32(count);
+               if ( ! *value )
+                       return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+
+               return 1;
+       }
+
+
+	switch ( type ) {
 	case IDMEF_VALUE_TYPE_TIME: {
 		uint32_t gmtoff = 0, usec = 0;
 		int retrieved = 1;
 		idmef_time_t *time;
 
 		if ( ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-			 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) ) {
-			prelude_sql_field_t *gmtoff_field, *usec_field;
+				 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) ) {
+			preludedb_sql_field_t *gmtoff_field, *usec_field;
 
-			gmtoff_field = prelude_sql_field_fetch(row, field_cnt + 1);
-			if ( ! gmtoff_field )
-				return 0;
-			gmtoff = prelude_sql_field_value_uint32(gmtoff_field);
+			ret = preludedb_sql_row_fetch_field(row, cnt + 1, &gmtoff_field);
+			if ( ret < 0 )
+				return ret;
+			ret = preludedb_sql_field_to_uint32(gmtoff_field, &gmtoff);
+			if ( ret < 0 )
+				return ret;
 
-			usec_field = prelude_sql_field_fetch(row, field_cnt + 2);
-			if ( ! usec_field )
-				return 0;		
-			usec = prelude_sql_field_value_uint32(usec_field);
+			ret = preludedb_sql_row_fetch_field(row, cnt + 2, &usec_field);
+			if ( ret < 0 )
+				return ret;		
+			if ( preludedb_sql_field_to_uint32(usec_field, &usec) < 0 )
+				return ret;
 
 			retrieved += 2;
 		}
@@ -377,7 +226,7 @@ static int get_value(prelude_sql_row_t *row, int field_cnt,
 		if ( ! time )
 			return -1;
 
-		prelude_sql_time_from_timestamp(time, char_val, gmtoff, usec);
+		preludedb_sql_time_from_timestamp(time, char_val, gmtoff, usec);
 
 		*value = idmef_value_new_time(time);
 		if ( ! *value ) {
@@ -396,113 +245,77 @@ static int get_value(prelude_sql_row_t *row, int field_cnt,
 
 
 
-static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *connection,
-						     void *data,
-						     prelude_db_object_selection_t *selection)
+static int classic_get_next_values(void *res, preludedb_object_selection_t *selection, idmef_value_t ***values)
 {
-	prelude_sql_table_t *table = data;
-	prelude_sql_row_t *row;
-	int field_cnt, nfields;
-	idmef_object_value_list_t *objval_list = NULL;
-	idmef_object_value_t *objval;
-	prelude_db_selected_object_t *selected;
-	idmef_object_t *object;
-	idmef_value_t *value;
-	int flags;
-	int cnt;
+	preludedb_sql_row_t *row;
+	preludedb_selected_object_t *selected;
+	unsigned int sql_cnt, value_cnt;
+	unsigned int column_count;
 	int ret;
 
-	if ( ! table )
-		return NULL;
+	ret = preludedb_sql_table_fetch_row(res, &row);
+	if ( ret <= 0 )
+		return ret;
 
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		prelude_sql_table_free(table);
-		return NULL;
-	}
+	column_count = preludedb_object_selection_get_count(selection);
 
-	nfields = prelude_sql_fields_num(table);	
+	*values = malloc(column_count * sizeof (**values));
+	if ( ! *values )
+		return preludedb_error_from_errno(errno);
 
 	selected = NULL;
+	sql_cnt = 0;
+	for ( value_cnt = 0; value_cnt < column_count; value_cnt++ ) {
+		selected = preludedb_object_selection_get_next(selection, selected);
 
-	cnt = 0;
-	field_cnt = 0;
-	while ( field_cnt < nfields ) {
+		ret = get_value(row, value_cnt, selected, *values + value_cnt);
+		if ( ret < 0 )
+			break;
 
-		selected = prelude_db_object_selection_get_next(selection, selected);
-		object = prelude_db_selected_object_get_object(selected);
-		flags = prelude_db_selected_object_get_flags(selected);
-
-		if ( cnt == 0 ) {
-			objval_list = idmef_object_value_list_new();
-			if ( ! objval_list )
-				return NULL;
-		}
-
-		ret = get_value(row, field_cnt, object, &value, flags);
-		switch ( ret ) {
-		case -1:
-			goto error;
-		case 0:
-			field_cnt++;
-			continue;
-		default:
-			field_cnt += ret;
-		}
-
-		objval = idmef_object_value_new(idmef_object_ref(object), value);
-		if ( ! objval ) {
-			idmef_object_destroy(object); /* destroy the new created reference */
-			idmef_value_destroy(value);
-			goto error;
-		}
-
-		if ( idmef_object_value_list_add(objval_list, objval) < 0 ) {
-			idmef_object_value_destroy(objval);
-			log(LOG_ERR, "could not add to value list\n");
-			goto error;
-		}
-
-		cnt++;
+		sql_cnt += ret;
 	}
 
-	if ( cnt == 0 )
-		return classic_get_values(connection, table, selection);
+	if ( ret < 0 ) {
+		unsigned int cnt;
 
-	return objval_list;
+		for ( cnt = 0; cnt < value_cnt; cnt++ )
+			idmef_value_destroy((*values)[cnt]);
+	}
 
-error:
-	idmef_object_value_list_destroy(objval_list);
-	prelude_sql_table_free(table);
+	return value_cnt;
+}
 
-	return NULL;
 
+
+static void classic_destroy_values_resource(void *res)
+{
+	preludedb_sql_table_destroy(res);
 }
 
 
 
 prelude_plugin_generic_t *classic_LTX_prelude_plugin_init(void)
 {
-	/* System wide plugin options should go in here */
+	static preludedb_plugin_format_t plugin;
+
+	memset(&plugin, 0, sizeof (plugin));
         
         prelude_plugin_set_name(&plugin, "Classic");
         prelude_plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
 
-	plugin_set_get_alert_ident_list_func(&plugin, classic_get_alert_ident_list);
-	plugin_set_get_heartbeat_ident_list_func(&plugin, classic_get_heartbeat_ident_list);
-	plugin_set_get_alert_ident_list_len_func(&plugin, classic_get_alert_ident_list_len);
-	plugin_set_get_heartbeat_ident_list_len_func(&plugin, classic_get_heartbeat_ident_list_len);
-	plugin_set_get_next_alert_ident_func(&plugin, classic_get_next_message_ident);
-	plugin_set_get_next_heartbeat_ident_func(&plugin, classic_get_next_message_ident);
-	plugin_set_alert_ident_list_destroy_func(&plugin, classic_message_ident_list_destroy);
-	plugin_set_heartbeat_ident_list_destroy_func(&plugin, classic_message_ident_list_destroy);
-	plugin_set_get_alert_func(&plugin, classic_get_alert);
-	plugin_set_get_heartbeat_func(&plugin, classic_get_heartbeat);
-	plugin_set_delete_alert_func(&plugin, classic_delete_alert);
-	plugin_set_delete_heartbeat_func(&plugin, classic_delete_heartbeat);
-	plugin_set_insert_idmef_message_func(&plugin, classic_insert_idmef_message);
-	plugin_set_select_values_func(&plugin, classic_select_values);
-	plugin_set_get_values_func(&plugin, classic_get_values);
+	preludedb_plugin_format_set_get_alert_idents_func(&plugin, classic_get_alert_idents);
+	preludedb_plugin_format_set_get_heartbeat_idents_func(&plugin, classic_get_heartbeat_idents);
+	preludedb_plugin_format_set_get_message_ident_count_func(&plugin, classic_get_message_ident_count);
+	preludedb_plugin_format_set_get_next_message_ident_func(&plugin, classic_get_next_message_ident);
+	preludedb_plugin_format_set_destroy_message_idents_resource_func(&plugin, classic_destroy_message_idents_resource);
+	preludedb_plugin_format_set_get_alert_func(&plugin, classic_get_alert);
+	preludedb_plugin_format_set_get_heartbeat_func(&plugin, classic_get_heartbeat);
+	preludedb_plugin_format_set_delete_alert_func(&plugin, classic_delete_alert);
+	preludedb_plugin_format_set_delete_heartbeat_func(&plugin, classic_delete_heartbeat);
+	preludedb_plugin_format_set_insert_message_func(&plugin, classic_insert_idmef_message);
+	preludedb_plugin_format_set_get_values_func(&plugin, classic_get_values);
+	preludedb_plugin_format_set_get_next_values_func(&plugin, classic_get_next_values);
+	preludedb_plugin_format_set_destroy_values_resource_func(&plugin, classic_destroy_values_resource);
 
 	db_objects_init(CONFIG_FILE);
 

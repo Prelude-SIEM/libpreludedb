@@ -25,7 +25,7 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H
 #define _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H
 
-int idmef_db_insert(prelude_db_connection_t *conn, idmef_message_t *msg);
+int idmef_db_insert(preludedb_sql_t *sql, idmef_message_t *message);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_INSERT_H */
 

@@ -2,7 +2,7 @@
 *
 * Copyright (C) 2001-2004 Vandoorselaere Yoann <yoann@prelude-ids.org>
 * Copyright (C) 2001 Sylvain GIL <prelude@tootella.org>
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -32,17 +32,21 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <sys/types.h>
+
 #include <mysql.h>
+#include <mysqld_error.h>
+#include <errmsg.h>
 
 #include <libprelude/idmef.h>
-#include <libprelude/prelude-log.h>
+#include <libprelude/prelude-error.h>
 #include <libprelude/prelude-string.h>
 
 #include "config.h"
 
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "plugin-sql.h"
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-error.h"
+#include "preludedb-plugin-sql.h"
 
 
 prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void);
@@ -53,116 +57,48 @@ prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void);
 #endif /* ! MYSQL_VERSION_ID */
 
 
-/*
- * NOTE: We assume that:
- *        (1) backend is by default in auto-commit mode
- *        (2) if backend does not handle transactions, it will report
- *            no error on BEGIN; COMMIT; ROLLBACK; commands. 
- */
-
-typedef enum {
-	st_allocated,
-	st_connection_failed,
-	st_connected,
-	st_query
-} session_status_t;
-
-
-
-typedef struct {
-	session_status_t status;
-	int transaction;
-	int dberrno;
-	char *dbhost;
-	unsigned int dbport;
-	char *dbname;
-	char *dbuser;
-	char *dbpass;
-	MYSQL *mysql;
-} session_t;
-
-
-static plugin_sql_t plugin;
-
-
-MYSQL_FIELD *get_field(session_t *, MYSQL_RES *, unsigned int);
-MYSQL_FIELD *get_field_by_name(session_t *, MYSQL_RES *, const char *);
-prelude_sql_field_type_t get_field_type(MYSQL_FIELD *);
-
-static void *db_setup(const char *dbhost, const char *dbport, const char *dbname,
-		      const char *dbuser, const char *dbpass)
+static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
-        session_t *session;
+	unsigned int port = 0;
 
-        session = malloc(sizeof(*session));
-        if ( ! session ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
-        }
-        
-	session->status = st_allocated;
-	session->dberrno = 0;
-	session->dbhost = (dbhost) ? strdup(dbhost) : NULL;
-	session->dbport = (dbport) ? (unsigned int) atoi(dbport) : 0;
-	session->dbname = (dbname) ? strdup(dbname) : NULL;
-	session->dbuser = (dbuser) ? strdup(dbuser) : NULL;
-	session->dbpass = (dbpass) ? strdup(dbpass) : NULL;
+	if ( preludedb_sql_settings_get_port(settings) )
+		port = atoi(preludedb_sql_settings_get_port(settings));
+
+	*session = mysql_init(NULL);
+	if ( ! *session )
+		return preludedb_error_from_errno(errno);
+
+	if ( mysql_real_connect(*session,
+				preludedb_sql_settings_get_host(settings),
+				preludedb_sql_settings_get_user(settings),
+				preludedb_sql_settings_get_pass(settings),
+				preludedb_sql_settings_get_name(settings),
+				port, NULL, 0) )
+		return 0;
+
+	return preludedb_error(PRELUDEDB_ERROR_CANNOT_CONNECT);
+}
+
+
+
+static void sql_close(void *session)
+{
+        mysql_close((MYSQL *) session);
+}
+
+
+
+static const char *sql_get_error(void *session)
+{
+	return mysql_error(session);
+}
+
+
+
+static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
+{
+        size_t rsize;
 	
-	return session;
-}
-
-
-
-static void cleanup(void *s)
-{
-        session_t *session = s;
-
-        if ( session->dbhost )
-        	free(session->dbhost);
-
-        if ( session->dbname )
-                free(session->dbname);
-
-        if ( session->dbuser )
-                free(session->dbuser);
-
-        if ( session->dbpass )
-                free(session->dbpass);
-        
-	free(session);
-}
-
-
-
-/*
- * closes the DB connection.
- */
-static void db_close(void *s)
-{
-        session_t *session = s;
-        
-        mysql_close(session->mysql);
-        
-        cleanup(s);
-}
-
-
-
-/*
- * Takes a string and create a legal SQL string from it.
- * returns the escaped string.
- */
-static char *db_escape(void *s, const char *buf, size_t len)
-{
-        size_t rlen;
-        char *escaped;
-	session_t *session = s;
-
-	session->dberrno = 0;
-	
-        if ( ! buf )
-                return strdup("NULL");
-        
         /*
          * MySQL documentation say :
          * The string pointed to by from must be length bytes long. You must
@@ -170,575 +106,284 @@ static char *db_escape(void *s, const char *buf, size_t len)
          * worse case, each character may need to be encoded as using two bytes,
          * and you need room for the terminating null byte.)
          */
-        rlen = len * 2 + 3;
-        if ( rlen <= len )
-                return NULL;
+        rsize = input_size * 2 + 3;
+        if ( rsize <= input_size )
+                return -1;
         
-        escaped = malloc(rlen);
-        if ( ! escaped ) {
-                log(LOG_ERR, "memory exhausted.\n");
-		session->dberrno = ERR_PLUGIN_DB_MEMORY_EXHAUSTED;
-                return NULL;
-        }
+        *output = malloc(rsize);
+        if ( ! *output )
+		return preludedb_error_from_errno(errno);
 
-        escaped[0] = '\'';
+        (*output)[0] = '\'';
         
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
-        len = mysql_real_escape_string(session->mysql, escaped + 1, buf, len);
+        rsize = mysql_real_escape_string((MYSQL *) session, (*output) + 1, input, input_size);
 #else
-        len = mysql_escape_string(escaped + 1, buf, len);
+        rsize = mysql_escape_string((*output) + 1, input, input_size);
 #endif
 
-        escaped[len + 1] = '\'';
-        escaped[len + 2] = '\0';
-
-        return escaped;
-}
-
-
-static const char *db_limit_offset(void *s, int limit, int offset)
-{
-	static char buffer[64];
-	int ret;
-
-	if ( limit >= 0 ) {
-		if ( offset >= 0 )
-			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d, %d", offset, limit);
-		else
-			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d", limit);
-
-		return (ret < 0) ? NULL : buffer;
-	}
-
-	return "";
-}
-
-
-
-/*
- * Execute SQL query, return table
- */
-static void *db_query(void *s, const char *query)
-{
-	MYSQL_RES *res;
-	session_t *session = s;
-
-	session->dberrno = 0;
-	
-	if ( session->status < st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;
-	}
-
-#ifdef DEBUG
-	log(LOG_INFO, "mysql: %s\n", query);
-#endif
-
-	if ( mysql_query(session->mysql, query) != 0) {
-		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->mysql));
-		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
-		return NULL;
-	}
-
-	res = mysql_store_result(session->mysql);
-	if ( res ) {
-		if ( mysql_num_rows(res) == 0 ) {
-			mysql_free_result(res);
-			return NULL;
-		}
-		session->status = st_query;
-	} else {
-		if ( mysql_errno(session->mysql) ) {
-			log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, mysql_error(session->mysql));
-			session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
-		}
-	}
-
-	return res;
-}
-
-
-
-/*
- * start transaction
- */
-static int db_begin(void *s) 
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	if ( session->status < st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return -session->dberrno;
-	}
-
-	db_query(session, "BEGIN;");
-		
-	return -session->dberrno;
-}
-
-
-
-/*
- * commit transaction
- */
-static int db_commit(void *s)
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	session->status = st_connected;
-		
-	db_query(session, "COMMIT;");
-	
-	return -session->dberrno;
-}
-
-
-
-/*
- * end transaction
- */
-static int db_rollback(void *s)
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-	
-	session->status = st_connected;
-      
-	db_query(session, "ROLLBACK;");
-		
-	return -session->dberrno;
-}
-
-
-
-/*
- * Connect to the MySQL database
- */
-static int db_connect(void *s)
-{
-        session_t *session = s;
-	MYSQL *ret;
-
-	if ( session->status >= st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_ALREADY_CONNECTED;
-		return -session->dberrno;
-	}
-
-	session->mysql = mysql_init(NULL);
-	if ( ! session->mysql ) {
-		log(LOG_INFO, "MySQL error: out of memory\n");
-		session->status = st_connection_failed;
-		session->dberrno = ERR_PLUGIN_DB_MEMORY_EXHAUSTED;
-		return -session->dberrno;
-	}
-        
-        /*
-         * connect to the mySQL database
-         */
-	ret = mysql_real_connect(session->mysql, session->dbhost, session->dbuser, session->dbpass,
-				 session->dbname, session->dbport, NULL, 0);
-        if ( ! ret ) {
-                log(LOG_INFO, "MySQL error: %s\n", mysql_error(session->mysql));
-                session->status = st_connection_failed;
-		session->dberrno = ERR_PLUGIN_DB_CONNECTION_FAILED;
-                return -session->dberrno;
-        }
-
-	session->status = st_connected;
+        (*output)[rsize + 1] = '\'';
+        (*output)[rsize + 2] = '\0';
 
         return 0;
 }
 
 
 
-static int db_errno(void *s)
+static int sql_build_limit_offset_string(void *session, int limit, int offset, prelude_string_t *output)
 {
-	session_t *session = s;
+	if ( limit >= 0 ) {
+		if ( offset >= 0 )
+			return prelude_string_sprintf(output, "LIMIT %d, %d", offset, limit);
 
-	return session->dberrno;
-}
-
-
-
-static void db_table_free(void *s, void *t)
-{
-	session_t *session = s;
-	MYSQL_RES *res = t;
-
-	session->dberrno = 0;
-
-	session->status = st_connected;
-
-	if ( res )	
-		mysql_free_result(res);
-}
-
-MYSQL_FIELD *get_field(session_t *session, MYSQL_RES *res, unsigned int i)
-{
-	if ( i >= mysql_num_fields(res) ) {
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return NULL;
+		return prelude_string_sprintf(output, "LIMIT %d", limit);
 	}
 
-	return mysql_fetch_field_direct(res, i);
+	return 0;
 }
 
 
 
-MYSQL_FIELD *get_field_by_name(session_t *session, MYSQL_RES *res, const char *name)
+static int sql_query(void *session, const char *query, void **resource)
 {
-	MYSQL_FIELD *fields;
-	int fields_num;
-	int i;
+	if ( mysql_query(session, query) != 0 )
+		return preludedb_error(PRELUDEDB_ERROR_QUERY);
 
-	fields = mysql_fetch_fields(res);
-	if ( ! fields )
-		return NULL;
+	*resource = mysql_store_result(session);
+	if ( *resource ) {
+		if ( mysql_num_rows(*resource) == 0 ) {
+			mysql_free_result(*resource);
+			return 0;
+		}
 
-	fields_num = mysql_num_fields(res);
-	
-	for ( i = 0; i < fields_num; i++ ) {
-		if (strcmp(name, fields[i].name) == 0)
-			return &fields[i];
+		return 1;
 	}
 
-	session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-
-	return NULL;
+	return mysql_errno(session) ? preludedb_error(PRELUDEDB_ERROR_QUERY) : 0;
 }
 
 
 
-prelude_sql_field_type_t get_field_type(MYSQL_FIELD *field)
+static void sql_resource_destroy(void *session, void *resource)
 {
-	switch ( field->type ) {
-
-	case FIELD_TYPE_LONG:
-		return ( field->flags & UNSIGNED_FLAG ) ? dbtype_uint32 : dbtype_int32;
-
-	case FIELD_TYPE_LONGLONG:
-		return ( field->flags & UNSIGNED_FLAG ) ? dbtype_uint64 : dbtype_int64;
-
-	case FIELD_TYPE_FLOAT:
-		return dbtype_float;
-
-	case FIELD_TYPE_DOUBLE:
-		return dbtype_double;
-
-	default:
-		return dbtype_string;
-	}
-
-	return dbtype_unknown;
+	if ( resource )	
+		mysql_free_result(resource);
 }
 
 
 
-static const char *db_field_name(void *s, void *t, unsigned int i)
+static MYSQL_FIELD *get_field(MYSQL_RES *res, unsigned int column_num)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
+	return (column_num >= mysql_num_fields(res)) ? NULL : mysql_fetch_field_direct(res, column_num);
+}
+
+
+
+static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
+{
 	MYSQL_FIELD *field;
 
-	session->dberrno = 0;
-
-	field = get_field(session, res, i);
+	field = get_field(resource, column_num);
 
 	return field ? field->name : NULL;
 }
 
+ 
 
-
-static int db_field_num(void *s, void *t, const char *name)
+static int sql_get_column_num(void *session, void *resource, const char *column_name)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
 	MYSQL_FIELD *fields;
 	int fields_num;
 	int i;
 
-	session->dberrno = 0;
-
-	fields = mysql_fetch_fields(res);
+	fields = mysql_fetch_fields(resource);
 	if ( ! fields )
 		return -1;
 
-	fields_num = mysql_num_fields(res);
+	fields_num = mysql_num_fields(resource);
 
 	for ( i = 0; i < fields_num; i++ ) {
-		if (strcmp(name, fields[i].name) == 0)
+		if ( strcmp(column_name, fields[i].name) == 0 )
 			return i;
 	}
-
-	session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
 
 	return -1;
 }
 
 
-static prelude_sql_field_type_t db_field_type(void *s, void *t, unsigned int i)
+
+static unsigned int sql_get_column_count(void *session, void *resource)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
-	MYSQL_FIELD *field;
-
-	session->dberrno = 0;
-
-	field = get_field(session, res, i);
-
-	return field ? get_field_type(field) : dbtype_unknown;
+	return mysql_num_fields(resource);
 }
 
 
 
-static prelude_sql_field_type_t db_field_type_by_name(void *s, void *t, const char *name)
+static unsigned int sql_get_row_count(void *session, void *resource)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
-	MYSQL_FIELD *field;
-
-	session->dberrno = 0;
-
-	field = get_field_by_name(session, res, name);
-
-	return field ? get_field_type(field) : dbtype_unknown;;
+	return (unsigned int) mysql_num_rows(resource);
 }
 
 
 
-static unsigned int db_fields_num(void *s, void *t)
+static int sql_fetch_row(void *session, void *resource, void **row)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
-
-	session->dberrno = 0;
-
-	return mysql_num_fields(res);
-}
-
-
-
-static unsigned int db_rows_num(void *s, void *t)
-{
-	session_t *session = s;
-	MYSQL_RES *res = t;
-
-	session->dberrno = 0;
-
-	return (unsigned int) mysql_num_rows(res);
-}
-
-
-
-static void *db_row_fetch(void *s, void *t)
-{
-	session_t *session = s;
-	MYSQL_RES *res = t;
-	MYSQL_ROW row;
-
-	session->dberrno = 0;
-	
-	row = mysql_fetch_row(res);
-
-	return row;
-}
-
-
-
-static int db_field_fetch(void *s, void *t, void *r, unsigned int i, const char **value, size_t *len)
-{
-	session_t *session = s;
-	MYSQL_RES *res = t;
-	MYSQL_ROW row = r;
-	unsigned long *lengths;
-
-	session->dberrno = 0;
-
-	if ( i >= mysql_num_fields(res) ) {
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return -1;
-	}
-
-	if ( ! row[i] )
-		return 0;
-
-	lengths = mysql_fetch_lengths(res);
-	if ( ! lengths )
-		return -1;
-
-	*value = row[i];
-	*len = lengths[i];
+	*row = mysql_fetch_row(resource);
+	if ( ! *row )
+		return mysql_errno(session) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
 
 	return 1;
 }
 
 
 
-static int db_field_fetch_by_name(void *s, void *t, void *r, const char *name,
-				  const char **value, size_t *len)
+static int sql_fetch_field(void *session, void *resource, void *row,
+			   unsigned int column_num, const char **value, size_t *len)
 {
-	session_t *session = s;
-	MYSQL_RES *res = t;
-	MYSQL_ROW row = r;
-	MYSQL_FIELD *fields = mysql_fetch_fields(res);
-	int fields_num = mysql_num_fields(res);
-	int i;
-	unsigned long *lengths; 
+	unsigned long *lengths;
 
-	session->dberrno = 0;
+	if ( column_num >= mysql_num_fields(resource) )
+		return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
-	for ( i = 0; i < fields_num; i++ ) {
-		if ( strcmp(name, fields[i].name) == 0 ) {
-			if ( ! row[i] )
-				return 0;
+	lengths = mysql_fetch_lengths(resource);
+	if ( ! lengths )
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-			lengths = mysql_fetch_lengths(res);
-			if ( ! lengths )
-				return -1;
+	if ( ! ((MYSQL_ROW) row)[column_num] )
+		return 0;
 
-			*value = row[i];
-			*len = lengths[i];
+	*value = ((MYSQL_ROW) row)[column_num];
+	*len = lengths[column_num];
 
-			return 1;
-		}
-	}
-
-	session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-
-	return -1;
+	return 1;
 }
 
 
 
-static int db_build_time_constraint(prelude_string_t *output, const char *field,
-				    prelude_sql_time_constraint_type_t type,
-				    idmef_value_relation_t relation, int value, int gmt_offset)
+static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
+					    preludedb_sql_time_constraint_type_t type,
+					    idmef_value_relation_t relation, int value, int gmt_offset)
 {
 	char buf[128];
 	const char *sql_relation;
+	int ret;
  
-	if ( snprintf(buf, sizeof (buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600) < 0 )
-		return -1;
+	ret = snprintf(buf, sizeof (buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
+	if ( ret < 0 || ret >= sizeof (buf) )
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-	sql_relation = prelude_sql_idmef_relation_to_string(relation);
+	sql_relation = preludedb_sql_get_relation_string(relation);
 	if ( ! sql_relation )
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
 	switch ( type ) {
-	case dbconstraint_year:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
 		return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
 					      buf, sql_relation, value);
 
-	case dbconstraint_month:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
 		return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s) %s '%d'",
 					       buf, sql_relation, value);
 
-	case dbconstraint_yday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
 		return prelude_string_sprintf(output, "DAYOFYEAR(%s) %s '%d'",
 					      buf, sql_relation, value);
 
-	case dbconstraint_mday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
 		return prelude_string_sprintf(output, "DAYOFMONTH(%s) %s '%d'",
 					      buf, sql_relation, value);
 
-	case dbconstraint_wday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
 		return prelude_string_sprintf(output, "DAYOFWEEK(%s) %s '%d'",
 					      buf, sql_relation, value % 7 + 1);
 
-	case dbconstraint_hour:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
 		return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s) %s '%d'",
 					      buf, sql_relation, value);
 
-	case dbconstraint_min:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
 		return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s) %s '%d'",
 					      buf, sql_relation, value);
 
-	case dbconstraint_sec:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
 		return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s) %s '%d'",
 					      buf, sql_relation, value);
 	}
 
 	/* not reached */
 
-	return -1;
+	return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
 
 
 
-static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int value,
-				  char *buf, size_t size)
+static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
+					  char *buf, size_t size)
 {
 	char *type_str;
 	int ret;
 
 	switch ( type ) {
-	case dbconstraint_year:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
 		type_str = "YEAR";
 		break;
 
-	case dbconstraint_month:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
 		type_str = "MONTH";
 		break;
 
-	case dbconstraint_mday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
 		type_str = "DAY";
 		break;
 
-	case dbconstraint_hour:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
 		type_str = "HOUR";
 		break;
 
-	case dbconstraint_min:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
 		type_str = "MINUTE";
 		break;
 
-	case dbconstraint_sec:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
 		type_str = "SECOND";
 		break;
 
 	default:
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 	}
 
 	ret = snprintf(buf, size, "INTERVAL %d %s", value, type_str);
 
-	return (ret < 0 || ret >= size) ? -1 : 0;
+	return (ret < 0 || ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
 }
 
 
 prelude_plugin_generic_t *mysql_LTX_prelude_plugin_init(void)
 {               
-	/* system-wide options for the plugin should go in here */
-	
+	static preludedb_plugin_sql_t plugin;
+
+	memset(&plugin, 0, sizeof (plugin));
+
         prelude_plugin_set_name(&plugin, "MySQL");
-        prelude_plugin_set_desc(&plugin, "Will log all alert to a MySQL database.");
-        plugin_set_setup_func(&plugin, db_setup);
-        plugin_set_connect_func(&plugin, db_connect);
-        plugin_set_escape_func(&plugin, db_escape);
-        plugin_set_limit_offset_func(&plugin, db_limit_offset);
-        plugin_set_query_func(&plugin, db_query);
-        plugin_set_begin_func(&plugin, db_begin);
-        plugin_set_commit_func(&plugin, db_commit);
-        plugin_set_rollback_func(&plugin, db_rollback);
-        plugin_set_closing_func(&plugin, db_close);
-	plugin_set_errno_func(&plugin, db_errno);
-	plugin_set_table_free_func(&plugin, db_table_free);
-	plugin_set_field_name_func(&plugin, db_field_name);
-	plugin_set_field_num_func(&plugin, db_field_num);
-	plugin_set_field_type_func(&plugin, db_field_type);
-	plugin_set_field_type_by_name_func(&plugin, db_field_type_by_name);
-	plugin_set_fields_num_func(&plugin, db_fields_num);
-	plugin_set_rows_num_func(&plugin, db_rows_num);
-	plugin_set_row_fetch_func(&plugin, db_row_fetch);
-	plugin_set_field_fetch_func(&plugin, db_field_fetch);
-	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
-	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
-	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
+        prelude_plugin_set_desc(&plugin, "SQL plugin for MySQL database.");
+	prelude_plugin_set_author(&plugin, "Nicolas Delon");
+        prelude_plugin_set_contact(&plugin, "nicolas@prelude-ids.org");
+
+        preludedb_plugin_sql_set_open_func(&plugin, sql_open);
+        preludedb_plugin_sql_set_close_func(&plugin, sql_close);
+        preludedb_plugin_sql_set_get_error_func(&plugin, sql_get_error);
+        preludedb_plugin_sql_set_escape_binary_func(&plugin, sql_escape_binary);
+        preludedb_plugin_sql_set_query_func(&plugin, sql_query);
+	preludedb_plugin_sql_set_resource_destroy_func(&plugin, sql_resource_destroy);
+	preludedb_plugin_sql_set_get_column_count_func(&plugin, sql_get_column_count);
+	preludedb_plugin_sql_set_get_row_count_func(&plugin, sql_get_row_count);
+	preludedb_plugin_sql_set_get_column_name_func(&plugin, sql_get_column_name);
+	preludedb_plugin_sql_set_get_column_num_func(&plugin, sql_get_column_num);
+	preludedb_plugin_sql_set_fetch_row_func(&plugin, sql_fetch_row);
+	preludedb_plugin_sql_set_fetch_field_func(&plugin, sql_fetch_field);
+	preludedb_plugin_sql_set_build_time_constraint_string_func(&plugin, sql_build_time_constraint_string);
+	preludedb_plugin_sql_set_build_time_interval_string_func(&plugin, sql_build_time_interval_string);
+        preludedb_plugin_sql_set_build_limit_offset_string_func(&plugin, sql_build_limit_offset_string);
 
 	return (void *) &plugin;
 }

@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -28,16 +28,15 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include <libprelude/prelude-log.h>
+#include <libprelude/prelude-error.h>
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-tree-wrap.h>
 
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "db-type.h"
-#include "db-connection.h"
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-error.h"
+
 #include "db-object.h"
-#include "db-message-ident.h"
 
 #include "idmef-db-get.h"
 
@@ -45,30 +44,23 @@
 #define log_memory_exhausted() log(LOG_ERR, "memory exhausted !\n")
 
 #define get_(type, name)								\
-static int _get_ ## name (prelude_sql_connection_t *sql, prelude_sql_row_t *row,	\
+static int _get_ ## name (preludedb_sql_t *sql, preludedb_sql_row_t *row,		\
 			 int index,							\
 			 void *parent, type *(*parent_new_child)(void *parent))		\
 {											\
-	prelude_sql_field_t *field;							\
+	preludedb_sql_field_t *field;							\
 	type *value;									\
+	int ret;									\
 											\
-	field = prelude_sql_field_fetch(row, index);					\
-	if ( ! field ) {								\
-		if ( prelude_sql_errno(sql) ) {						\
-			db_log(sql);							\
-			return -1;							\
-		}									\
-											\
-		return 0;								\
-	}										\
+	ret = preludedb_sql_row_fetch_field(row, index, &field);			\
+	if ( ret <= 0 )									\
+		return ret;								\
 											\
 	value = parent_new_child(parent);						\
 	if ( ! value )									\
 		return -1;								\
 											\
-	*value = prelude_sql_field_value_ ## name (field);				\
-											\
-	return 1;									\
+	return preludedb_sql_field_to_ ## name (field, value);				\
 }
 
 get_(uint8_t, uint8)
@@ -94,153 +86,98 @@ get_(float, float)
 
 
 
-static int _get_string(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+static int _get_string(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 		       int index,
 		       void *parent, prelude_string_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_field_t *field;
-	const char *tmp;
+	preludedb_sql_field_t *field;
 	prelude_string_t *string;
+	int ret;
 
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
-
-		return 0;
-	}
-
-	tmp = prelude_sql_field_value(field);
-	if ( ! tmp )
-		return -1;
+	ret = preludedb_sql_row_fetch_field(row, index, &field);
+	if ( ret <= 0 )
+		return ret;
 
 	string = parent_new_child(parent);
 	if ( ! string )
 		return -1;
 
-	if ( prelude_string_set_dup(string, tmp) < 0 )
-		return -1;
-
-	return 1;
+	ret = prelude_string_set_dup_fast(string,
+					  preludedb_sql_field_get_value(field),
+					  preludedb_sql_field_get_len(field));
+	
+	return (ret < 0) ? ret : 1;
 }
 
-/* static int _get_data(prelude_sql_connection_t *sql, prelude_sql_row_t *row, */
-/* 		     int index, */
-/* 		     void *parent, idmef_data_t *(parent_new_child)(void *parent)) */
-/* { */
-/* 	prelude_sql_field_t *field; */
-/* 	const char *tmp; */
-/* 	idmef_data_t *data; */
 
-/* 	field = prelude_sql_field_fetch(row, index); */
-/* 	if ( ! field ) { */
-/* 		if ( prelude_sql_errno(sql) ) { */
-/* 			db_log(sql); */
-/* 			return -1; */
-/* 		} */
 
-/* 		return 0; */
-/* 	} */
-
-/* 	tmp = prelude_sql_field_value(field); */
-/* 	if ( ! tmp ) */
-/* 		return -1; */
-
-/* 	data = parent_new_child(parent); */
-/* 	if ( ! data ) */
-/* 		return -1; */
-
-/* 	if ( idmef_data_set_dup(data, tmp, strlen(tmp) + 1) < 0 ) */
-/* 		return -1; */
-
-/* 	return 1; */
-/* } */
-
-static int _get_enum(prelude_sql_connection_t *sql, prelude_sql_row_t *row, 
+static int _get_enum(preludedb_sql_t *sql, preludedb_sql_row_t *row, 
 		     int index,
 		     void *parent, int *(*parent_new_child)(void *parent), int (*convert_enum)(const char *))
 {
-	prelude_sql_field_t *field;
-	const char *tmp;
+	preludedb_sql_field_t *field;
 	int *enum_val;
+	int ret;
 
-	field = prelude_sql_field_fetch(row, index);
-	if ( ! field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
-
-		return 0;
-	}
-
-	tmp = prelude_sql_field_value(field);
-	if ( ! tmp )
-		return -1;
+	ret = preludedb_sql_row_fetch_field(row, index, &field);
+	if ( ret <= 0 )
+		return ret;
 
 	enum_val = parent_new_child(parent);
 	if ( ! enum_val )
 		return -1;
 
-	*enum_val = convert_enum(tmp);
+	*enum_val = convert_enum(preludedb_sql_field_get_value(field));
 
 	return 1;
 }
 
 
 
-static int _get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
+static int _get_timestamp(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 			  int time_index, int gmtoff_index, int usec_index,
 			  void *parent, idmef_time_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_field_t *time_field, *gmtoff_field, *usec_field = NULL;
+	preludedb_sql_field_t *time_field, *gmtoff_field, *usec_field = NULL;
 	const char *tmp;
 	uint32_t gmtoff;
 	uint32_t usec = 0;
 	idmef_time_t *time;
+	int ret;
 
-	time_field = prelude_sql_field_fetch(row, time_index);
-	gmtoff_field = prelude_sql_field_fetch(row, gmtoff_index);
-	if ( usec_index != -1 )
-		usec_field = prelude_sql_field_fetch(row, usec_index);
+	ret = preludedb_sql_row_fetch_field(row, time_index, &time_field);
+	if ( ret <= 0 )
+		return ret;
+
+	ret = preludedb_sql_row_fetch_field(row, gmtoff_index, &gmtoff_field);
+	if ( ret <= 0 )
+		return (ret < 0) ? ret : -1;
+
+	if ( usec_index != -1 ) {
+		ret = preludedb_sql_row_fetch_field(row, usec_index, &usec_field);
+		if ( ret <= 0 )
+			return (ret < 0) ? ret : -1;
+
+		ret = preludedb_sql_field_to_uint32(usec_field, &usec);
+		if ( ret < 0 )
+			return ret;
+	}
+
+	tmp = preludedb_sql_field_get_value(time_field);
+
+	ret = preludedb_sql_field_to_uint32(gmtoff_field, &gmtoff);
+	if ( ret < 0 )
+		return ret;
 	
-	if ( ! time_field ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
-
-		return 0;
-	} else {
-		if ( ! gmtoff_field )
-			return -1;
-		if ( usec_index != -1 && ! usec_field )
-			return -1;
-	}	
-
-	tmp = prelude_sql_field_value(time_field);
-	if ( ! tmp )
-		return -1;
-
-	gmtoff = prelude_sql_field_value_uint32(gmtoff_field);
-
-	if ( usec_index != -1 )
-		usec = prelude_sql_field_value_uint32(usec_field);
-
 	time = parent_new_child(parent);
 	if ( ! time )
 		return -1;
 
-	return prelude_sql_time_from_timestamp(time, tmp, gmtoff, usec_index != -1 ? usec : 0);
+	return preludedb_sql_time_from_timestamp(time, tmp, gmtoff, usec);
 }
 
 #define get_string(sql, row, index, parent, parent_new_child) \
 	_get_string(sql, row, index, parent, (prelude_string_t *(*)(void *)) parent_new_child)
-
-/* #define get_data(sql, row, index, parent, parent_new_child) \ */
-/* 	_get_data(sql, row, index, parent, (idmef_data_t *(*)(void *)) parent_new_child) */
 
 #define get_enum(sql, row, index, parent, parent_new_child, convert_enum) \
 	_get_enum(sql, row, index, parent, (int *(*)(void *)) parent_new_child, convert_enum)
@@ -250,134 +187,96 @@ static int _get_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *row,
 
 
 
-static int get_analyzer_time(prelude_sql_connection_t *sql,
+static int get_analyzer_time(preludedb_sql_t *sql,
 			     uint64_t message_ident,
 			     char parent_type,
 			     void *parent,
 			     idmef_time_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT time, gmtoff, usec "
-				  "FROM Prelude_AnalyzerTime "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
-				  parent_type, message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT time, gmtoff, usec "
+					  "FROM Prelude_AnalyzerTime "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
+					  parent_type, message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
-
-	if ( get_timestamp(sql, row, 0, 1, 2, parent, parent_new_child) < 0 )
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
 
-	prelude_sql_table_free(table);
-
-	return 0;
+	ret = get_timestamp(sql, row, 0, 1, 2, parent, parent_new_child);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_detect_time(prelude_sql_connection_t *sql,
+static int get_detect_time(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT time, gmtoff, usec "
-				  "FROM Prelude_DetectTime "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT time, gmtoff, usec "
+					  "FROM Prelude_DetectTime "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
 
-		return 0;
-	}
+	if ( ret <= 0 )
+		return ret;
 
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
-
-	if ( get_timestamp(sql, row, 0, 1, 2, alert, idmef_alert_new_detect_time) < 0 )
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
 
-	prelude_sql_table_free(table);
-
-	return 0;
+	ret = get_timestamp(sql, row, 0, 1, 2, alert, idmef_alert_new_detect_time);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_create_time(prelude_sql_connection_t *sql,
+static int get_create_time(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   char parent_type,
 			   void *parent,
 			   idmef_time_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT time, gmtoff, usec "
-				  "FROM Prelude_CreateTime "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
-				  parent_type, message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					 "SELECT time, gmtoff, usec "
+					 "FROM Prelude_CreateTime "
+					 "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
+					 parent_type, message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
-
-	if ( get_timestamp(sql, row, 0, 1, 2, parent, parent_new_child) < 0 )
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
 
-	prelude_sql_table_free(table);
-
-	return 0;
+	ret = get_timestamp(sql, row, 0, 1, 2, parent, parent_new_child);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_user_id(prelude_sql_connection_t *sql,
+static int get_user_id(preludedb_sql_t *sql,
 		       uint64_t message_ident,
 		       char parent_type,
 		       int parent_index,
@@ -386,27 +285,21 @@ static int get_user_id(prelude_sql_connection_t *sql,
 		       void *parent,
 		       idmef_user_id_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_user_id_t *user_id;
-	int cnt = 0;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, type, name, number "
-				  "FROM Prelude_UserId "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND "
-				  "_parent_index = %d AND _file_index = %d AND _file_access_index = %d",
-				  parent_type, message_ident, parent_index, file_index, file_access_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, type, name, number "
+					  "FROM Prelude_UserId "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND "
+					  "_parent_index = %d AND _file_index = %d AND _file_access_index = %d",
+					  parent_type, message_ident, parent_index, file_index, file_access_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
 		user_id = parent_new_child(parent);
 		if ( ! user_id )
@@ -423,52 +316,37 @@ static int get_user_id(prelude_sql_connection_t *sql,
 
 		if ( get_uint32(sql, row, 3, user_id, idmef_user_id_new_number) < 0 )
 			goto error;
-
-		cnt++;
 	}
 
-	prelude_sql_table_free(table);
-
-	return cnt;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_user(prelude_sql_connection_t *sql,
+static int get_user(preludedb_sql_t *sql,
 		    uint64_t message_ident,
 		    char parent_type,
 		    int parent_index,
 		    void *parent,
 		    idmef_user_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_user_t *user;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, category "
-				  "FROM Prelude_User "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, category "
+					  "FROM Prelude_User "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
-
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
-	}
 
 	user = parent_new_child(parent);
 	if ( ! user )
@@ -480,1402 +358,1233 @@ static int get_user(prelude_sql_connection_t *sql,
 	if ( get_enum(sql, row, 1, user, idmef_user_new_category, idmef_user_category_to_numeric) < 0 )
 		goto error;
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_user_id(sql, message_ident, parent_type, parent_index, 0, 0, user,
-			 (idmef_user_id_t *(*)(void *)) idmef_user_new_user_id) < 0 )
-		goto error;
-
-	return 1;
+	ret = get_user_id(sql, message_ident, parent_type, parent_index, 0, 0, user,
+			  (idmef_user_id_t *(*)(void *)) idmef_user_new_user_id);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;	
+	return ret;
 }
 
-static int get_process_arg(prelude_sql_connection_t *sql,
+static int get_process_arg(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   char parent_type,
 			   char parent_index,
 			   void *parent,
 			   prelude_string_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	int cnt = 0;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT arg "
-				  "FROM Prelude_ProcessArg "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT arg "
+					  "FROM Prelude_ProcessArg "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		ret = get_string(sql, row, 0, parent, parent_new_child);
+		if ( ret < 0 )
 			goto error;
-		}
-
-		return 0;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		if ( get_string(sql, row, 0, parent, parent_new_child) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_process_env(prelude_sql_connection_t *sql,
+static int get_process_env(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   char parent_type,
 			   int parent_index,
 			   void *parent,
 			   prelude_string_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	int cnt = 0;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT env "
-				  "FROM Prelude_ProcessEnv "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT env "
+					  "FROM Prelude_ProcessEnv "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		ret = get_string(sql, row, 0, parent, parent_new_child);
+		if ( ret < 0 )
 			goto error;
-		}
-
-		return 0;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		if ( get_string(sql, row, 0, parent, parent_new_child) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_process(prelude_sql_connection_t *sql,
+static int get_process(preludedb_sql_t *sql,
 		       uint64_t message_ident,
 		       char parent_type,
 		       int parent_index,
 		       void *parent,
 		       idmef_process_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_process_t *process;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, name, pid, path "
-				  "FROM Prelude_Process "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, name, pid, path "
+					  "FROM Prelude_Process "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
-
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	process = parent_new_child(parent);
-	if ( ! process )
+	if ( ! process ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_uint64(sql, row, 0, process, idmef_process_new_ident);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint64(sql, row, 0, process, idmef_process_new_ident) < 0 )
+	ret = get_string(sql, row, 1, process, idmef_process_new_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, process, idmef_process_new_name) < 0 )
+	ret = get_uint32(sql, row, 2, process, idmef_process_new_pid);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 2, process, idmef_process_new_pid) < 0 )
+	ret = get_string(sql, row, 3, process, idmef_process_new_path);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 3, process, idmef_process_new_path) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_process_arg(sql, message_ident, parent_type, parent_index, process,
-			     (prelude_string_t *(*)(void *)) idmef_process_new_arg) < 0 )
+	ret = get_process_arg(sql, message_ident, parent_type, parent_index, process,
+			      (prelude_string_t *(*)(void *)) idmef_process_new_arg);
+	if ( ret < 0 )
 		goto error;
 	
-	if ( get_process_env(sql, message_ident, parent_type, parent_index, process,
-			     (prelude_string_t *(*)(void *)) idmef_process_new_env) < 0 )
-		goto error;
+	ret = get_process_env(sql, message_ident, parent_type, parent_index, process,
+			      (prelude_string_t *(*)(void *)) idmef_process_new_env);
 
-	return 1;
-	
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_web_service_arg(prelude_sql_connection_t *sql,
+static int get_web_service_arg(preludedb_sql_t *sql,
 			       uint64_t message_ident,
 			       char parent_type,
 			       int parent_index,
 			       idmef_web_service_t *web_service)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	int cnt = 0;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT arg "
-				  "FROM Prelude_WebServiceArg "
-				  "WHERE _parent_type = '%c' and _message_ident = %" PRIu64 " and _parent_index = %d",
-				  parent_type, message_ident, parent_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT arg "
+					  "FROM Prelude_WebServiceArg "
+					  "WHERE _parent_type = '%c' and _message_ident = %" PRIu64 " and _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		ret = get_string(sql, row, 0, web_service, idmef_web_service_new_arg);
+		if ( ret < 0 )
 			goto error;
-		}
-
-		return 0;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		if ( get_string(sql, row, 0, web_service, idmef_web_service_new_arg) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-
-	return -1;
+	return ret;
 }
 
-static int get_web_service(prelude_sql_connection_t *sql,
+static int get_web_service(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   char parent_type,
 			   int parent_index,
 			   idmef_service_t *service)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_web_service_t *web_service;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT url, cgi, http_method "
-				  "FROM Prelude_WebService "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT url, cgi, http_method "
+					  "FROM Prelude_WebService "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	web_service = idmef_service_new_web_service(service);
-	if ( ! web_service )
+	if ( ! web_service ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_string(sql, row, 0, web_service, idmef_web_service_new_url);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 0, web_service, idmef_web_service_new_url) < 0 )
+	ret = get_string(sql, row, 1, web_service, idmef_web_service_new_cgi);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, web_service, idmef_web_service_new_cgi) < 0 )
+	ret = get_string(sql, row, 2, web_service, idmef_web_service_new_http_method);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 2, web_service, idmef_web_service_new_http_method) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_web_service_arg(sql, message_ident, parent_type, parent_index, web_service) < 0 )
-		goto error;
-
-	return 1;
+	ret = get_web_service_arg(sql, message_ident, parent_type, parent_index, web_service);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_snmp_service(prelude_sql_connection_t *sql,
+static int get_snmp_service(preludedb_sql_t *sql,
 			    uint64_t message_ident,
 			    char parent_type,
 			    int parent_index,
 			    idmef_service_t *service)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_snmp_service_t *snmp_service;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT oid, community, security_name, context_name, context_engine_id, command "
-				  "FROM Prelude_SNMPService "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT snmp_oid, community, security_name, context_name, context_engine_id, command "
+					  "FROM Prelude_SNMPService "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	snmp_service = idmef_service_new_snmp_service(service);
-	if ( ! snmp_service )
+	if ( ! snmp_service ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_string(sql, row, 0, snmp_service, idmef_snmp_service_new_oid);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 0, snmp_service, idmef_snmp_service_new_oid) < 0 )
+	ret = get_string(sql, row, 1, snmp_service, idmef_snmp_service_new_community);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, snmp_service, idmef_snmp_service_new_community) < 0 )
+	ret = get_string(sql, row, 2, snmp_service, idmef_snmp_service_new_security_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 2, snmp_service, idmef_snmp_service_new_security_name) < 0 )
+	ret =get_string(sql, row, 3, snmp_service, idmef_snmp_service_new_context_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 3, snmp_service, idmef_snmp_service_new_context_name) < 0 )
+	ret = get_string(sql, row, 4, snmp_service, idmef_snmp_service_new_context_engine_id);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 4, snmp_service, idmef_snmp_service_new_context_engine_id) < 0 )
-		goto error;
-
-	if ( get_string(sql, row, 5, snmp_service, idmef_snmp_service_new_command) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
+	ret = get_string(sql, row, 5, snmp_service, idmef_snmp_service_new_command);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_service(prelude_sql_connection_t *sql,
+static int get_service(preludedb_sql_t *sql,
 		       uint64_t message_ident,
 		       char parent_type,
 		       int parent_index,
 		       void *parent,
 		       idmef_service_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_service_t *service;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, name, port, iana_protocol_number, iana_protocol_name, portlist, protocol "
-				  "FROM Prelude_Service "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
-
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, name, port, iana_protocol_number, iana_protocol_name, portlist, protocol "
+					  "FROM Prelude_Service "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
 		return 0;
-	}
 
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	service = parent_new_child(parent);
-	if ( ! service )
+	if ( ! service ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_uint64(sql, row, 0, service, idmef_service_new_ident);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint64(sql, row, 0, service, idmef_service_new_ident) < 0 )
+	ret = get_string(sql, row, 1, service, idmef_service_new_name);
+	if ( ret < 0 )	     
 		goto error;
 
-	if ( get_string(sql, row, 1, service, idmef_service_new_name) < 0 )
+	ret = get_uint16(sql, row, 2, service, idmef_service_new_port);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint16(sql, row, 2, service, idmef_service_new_port) < 0 )
+	ret = get_uint8(sql, row, 3, service, idmef_service_new_iana_protocol_number);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint8(sql, row, 3, service, idmef_service_new_iana_protocol_number) < 0 )
+	ret = get_string(sql, row, 4, service, idmef_service_new_iana_protocol_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 4, service, idmef_service_new_iana_protocol_name) < 0 )
+	ret = get_string(sql, row, 5, service, idmef_service_new_portlist);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 5, service, idmef_service_new_portlist) < 0 )
+	ret = get_string(sql, row, 6, service, idmef_service_new_protocol);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 6, service, idmef_service_new_protocol) < 0 )
+	ret = get_web_service(sql, message_ident, parent_type, parent_index, service);
+	if ( ret < 0 )	     
 		goto error;
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_web_service(sql, message_ident, parent_type, parent_index, service) < 0 )
-		goto error;
-
-	if ( get_snmp_service(sql, message_ident, parent_type, parent_index, service) < 0 )
-		goto error;
-
-	return 1;
+	ret = get_snmp_service(sql, message_ident, parent_type, parent_index, service);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_address(prelude_sql_connection_t *sql,
+static int get_address(preludedb_sql_t *sql,
 		       uint64_t message_ident,
 		       char parent_type,
 		       int parent_index,
 		       void *parent,
 		       idmef_address_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_address_t *idmef_address;
-	int cnt = 0;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, category, vlan_name, vlan_num, address, netmask "
-				  "FROM Prelude_Address "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, category, vlan_name, vlan_num, address, netmask "
+					  "FROM Prelude_Address "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		idmef_address = parent_new_child(parent);
+		if ( ! idmef_address ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
+		ret = get_uint64(sql, row, 0, idmef_address, idmef_address_new_ident);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_enum(sql, row, 1, idmef_address, idmef_address_new_category, idmef_address_category_to_numeric);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 2, idmef_address, idmef_address_new_vlan_name);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_uint32(sql, row, 3, idmef_address, idmef_address_new_vlan_num);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 4, idmef_address, idmef_address_new_address);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 5, idmef_address, idmef_address_new_netmask);
+		if ( ret < 0 )
+			goto error;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		idmef_address = parent_new_child(parent);
-		if ( ! idmef_address )
-			goto error;
-
-		if ( get_uint64(sql, row, 0, idmef_address, idmef_address_new_ident) < 0 )
-			goto error;
-
-		if ( get_enum(sql, row, 1, idmef_address, idmef_address_new_category, idmef_address_category_to_numeric) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 2, idmef_address, idmef_address_new_vlan_name) < 0 )
-			goto error;
-
-		if ( get_uint32(sql, row, 3, idmef_address, idmef_address_new_vlan_num) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 4, idmef_address, idmef_address_new_address) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 5, idmef_address, idmef_address_new_netmask) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_node(prelude_sql_connection_t *sql,
+static int get_node(preludedb_sql_t *sql,
 		    uint64_t message_ident,
 		    char parent_type,
 		    int parent_index,
 		    void *parent,
 		    idmef_node_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_node_t *node;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, category, location, name "
-				  "FROM Prelude_Node "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
-				  parent_type, message_ident, parent_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, category, location, name "
+					  "FROM Prelude_Node "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _parent_index = %d",
+					  parent_type, message_ident, parent_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
-
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	node = parent_new_child(parent);
-	if ( ! node )
+	if ( ! node ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_uint64(sql, row, 0, node, idmef_node_new_ident);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint64(sql, row, 0, node, idmef_node_new_ident) < 0 )
+	ret = get_enum(sql, row, 1, node, idmef_node_new_category, idmef_node_category_to_numeric);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_enum(sql, row, 1, node, idmef_node_new_category, idmef_node_category_to_numeric) < 0 )
+	ret = get_string(sql, row, 2, node, idmef_node_new_location);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 2, node, idmef_node_new_location) < 0 )
+	ret = get_string(sql, row, 3, node, idmef_node_new_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 3, node, idmef_node_new_name) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_address(sql, message_ident, parent_type, parent_index, node,
-			 (idmef_address_t *(*)(void *)) idmef_node_new_address) < 0 )
-		goto error;
-
-	return 1;
+	ret = get_address(sql, message_ident, parent_type, parent_index, node,
+			  (idmef_address_t *(*)(void *)) idmef_node_new_address);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_analyzer(prelude_sql_connection_t *sql,
+static int get_analyzer(preludedb_sql_t *sql,
 			uint64_t message_ident,
 			char parent_type,
 			int depth,
 			void *parent,
 			idmef_analyzer_t *(*parent_new_child)(void *parent))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_analyzer_t *analyzer;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT analyzerid, name, manufacturer, model, version, class, ostype, osversion "
-				  "FROM Prelude_Analyzer "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _depth = %d",
-				  parent_type, message_ident, depth);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT analyzerid, name, manufacturer, model, version, class, ostype, osversion "
+					  "FROM Prelude_Analyzer "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 " AND _depth = %d",
+					  parent_type, message_ident, depth);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	analyzer = parent_new_child(parent);
 	if ( ! analyzer )
 		goto error;
 
-	if ( get_uint64(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid) < 0 )
+	ret = get_uint64(sql, row, 0, analyzer, idmef_analyzer_new_analyzerid);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, analyzer, idmef_analyzer_new_name) < 0 )
+	ret = get_string(sql, row, 1, analyzer, idmef_analyzer_new_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 2, analyzer, idmef_analyzer_new_manufacturer) < 0 )
+	ret = get_string(sql, row, 2, analyzer, idmef_analyzer_new_manufacturer);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 3, analyzer, idmef_analyzer_new_model) < 0 )
+	ret = get_string(sql, row, 3, analyzer, idmef_analyzer_new_model);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 4, analyzer, idmef_analyzer_new_version) < 0 )
+	ret = get_string(sql, row, 4, analyzer, idmef_analyzer_new_version);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 5, analyzer, idmef_analyzer_new_class) < 0 )
+	ret = get_string(sql, row, 5, analyzer, idmef_analyzer_new_class);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 6, analyzer, idmef_analyzer_new_ostype) < 0 )
+	ret = get_string(sql, row, 6, analyzer, idmef_analyzer_new_ostype);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 7, analyzer, idmef_analyzer_new_osversion) < 0 )
+	ret = get_string(sql, row, 7, analyzer, idmef_analyzer_new_osversion);
+	if ( ret < 0 )
 		goto error;
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	if ( get_node(sql, message_ident, parent_type, depth, analyzer,
-		      (idmef_node_t *(*)(void *)) idmef_analyzer_new_node) < 0 )
+	ret = get_node(sql, message_ident, parent_type, depth, analyzer,
+		       (idmef_node_t *(*)(void *)) idmef_analyzer_new_node);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_process(sql, message_ident, parent_type, depth, analyzer,
-			 (idmef_process_t *(*)(void *)) idmef_analyzer_new_process) < 0 )
+	ret = get_process(sql, message_ident, parent_type, depth, analyzer,
+			  (idmef_process_t *(*)(void *)) idmef_analyzer_new_process);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_analyzer(sql, message_ident, parent_type, depth + 1, analyzer,
-			  (idmef_analyzer_t *(*)(void *)) idmef_analyzer_new_analyzer) < 0 )
-		goto error;
-
-	return 1;
+	ret = get_analyzer(sql, message_ident, parent_type, depth + 1, analyzer,
+			   (idmef_analyzer_t *(*)(void *)) idmef_analyzer_new_analyzer);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_action(prelude_sql_connection_t *sql,
+static int get_action(preludedb_sql_t *sql,
 		      uint64_t message_ident,
 		      idmef_assessment_t *assessment)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_action_t *action;
-	int cnt = 0;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT category, description "
-				  "FROM Prelude_Action "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT category, description "
+					  "FROM Prelude_Action "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		action = idmef_assessment_new_action(assessment);
+		if ( ! action ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
+		ret = get_enum(sql, row, 0, action, idmef_action_new_category, idmef_action_category_to_numeric);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 1, action, idmef_action_new_description);
+		if ( ret < 0 )
+			goto error;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		action = idmef_assessment_new_action(assessment);
-		if ( ! action )
-			goto error;
-
-		if ( get_enum(sql, row, 0, action, idmef_action_new_category, idmef_action_category_to_numeric) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 1, action, idmef_action_new_description) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
-	
+	return ret;	
 }
 
-static int get_confidence(prelude_sql_connection_t *sql,
+static int get_confidence(preludedb_sql_t *sql,
 			  uint64_t message_ident,
 			  idmef_assessment_t *assessment)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_confidence_t *confidence;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT rating, confidence "
-				  "FROM Prelude_Confidence "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			return -1;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT rating, confidence "
+					  "FROM Prelude_Confidence "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	confidence = idmef_assessment_new_confidence(assessment);
-	if ( ! confidence )
+	if ( ! confidence ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_enum(sql, row, 0, confidence, idmef_confidence_new_rating, idmef_confidence_rating_to_numeric);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_enum(sql, row, 0, confidence, idmef_confidence_new_rating, idmef_confidence_rating_to_numeric) < 0 )
-		goto error;
-
-	if ( get_float(sql, row, 1, confidence, idmef_confidence_new_confidence) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
+	ret = get_float(sql, row, 1, confidence, idmef_confidence_new_confidence);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_impact(prelude_sql_connection_t *sql, 
+static int get_impact(preludedb_sql_t *sql, 
 		      uint64_t message_ident, 
 		      idmef_assessment_t *assessment)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_impact_t *impact;
+	int ret;
 
-	table = prelude_sql_query(sql, 
-				  "SELECT severity, completion, type, description "
-				  "FROM Prelude_Impact "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT severity, completion, type, description "
+					  "FROM Prelude_Impact "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	impact = idmef_assessment_new_impact(assessment);
-	if ( ! impact )
+	if ( ! impact ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_enum(sql, row, 0, impact, idmef_impact_new_severity, idmef_impact_severity_to_numeric);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_enum(sql, row, 0, impact, idmef_impact_new_severity, idmef_impact_severity_to_numeric) < 0  )
+	ret = get_enum(sql, row, 1, impact, idmef_impact_new_completion, idmef_impact_completion_to_numeric);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_enum(sql, row, 1, impact, idmef_impact_new_completion, idmef_impact_completion_to_numeric) < 0 )
+	ret = get_enum(sql, row, 2, impact, idmef_impact_new_type, idmef_impact_type_to_numeric);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_enum(sql, row, 2, impact, idmef_impact_new_type, idmef_impact_type_to_numeric) < 0 )
-		goto error;
-
-	if ( get_string(sql, row, 3, impact, idmef_impact_new_description) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
+	ret = get_string(sql, row, 3, impact, idmef_impact_new_description);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_assessment(prelude_sql_connection_t *sql, 
+static int get_assessment(preludedb_sql_t *sql, 
 			  uint64_t message_ident,
 			  idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
+	preludedb_sql_table_t *table;
 	idmef_assessment_t *assessment;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT _message_ident "
-				  "FROM Prelude_Assessment "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT _message_ident "
+					  "FROM Prelude_Assessment "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
 	assessment = idmef_alert_new_assessment(alert);
-	if ( ! assessment )
+	if ( ! assessment ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_impact(sql, message_ident, assessment);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_impact(sql, message_ident, assessment) < 0 )
+	ret = get_confidence(sql, message_ident, assessment);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_confidence(sql, message_ident, assessment) < 0 )
+	ret = get_action(sql, message_ident, assessment);
+	if ( ret < 0 )
 		goto error;
-
-	if ( get_action(sql, message_ident, assessment) < 0 )
-		goto error;
-
-	return 1;
 
  error:
-	return -1;
+	return ret;
 }
 
-static int get_file_access_permission(prelude_sql_connection_t *sql,
+static int get_file_access_permission(preludedb_sql_t *sql,
 				      uint64_t message_ident,
 				      int target_index,
 				      int file_index,
 				      int file_access_index,
 				      idmef_file_access_t *parent)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	int cnt = 0;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT perm "
-				  "FROM Prelude_FileAccess_Permission "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND "
-				  "_file_index = %d AND _file_access_index = %d",
-				  message_ident, target_index, file_index, file_access_index);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT perm "
+					  "FROM Prelude_FileAccess_Permission "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND "
+					  "_file_index = %d AND _file_access_index = %d",
+					  message_ident, target_index, file_index, file_access_index);
+	if ( ret <= 0 )
+		return ret;
 
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		ret = get_string(sql, row, 0, parent, idmef_file_access_new_permission);
+		if ( ret < 0 )
 			goto error;
-		}
-
-		return 0;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		if ( get_string(sql, row, 0, parent, idmef_file_access_new_permission) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_file_access(prelude_sql_connection_t *sql,
+static int get_file_access(preludedb_sql_t *sql,
 			   uint64_t message_ident,
 			   int target_index,
 			   int file_index,
 			   idmef_file_t *file)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
-	prelude_sql_field_t *field;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	preludedb_sql_field_t *field;
 	idmef_file_access_t *file_access;
-	int file_access_count;
+	uint32_t file_access_count;
 	int cnt;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT COUNT(*) "
-				  "FROM Prelude_FileAccess "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
-				  message_ident, target_index, file_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT COUNT(*) "
+					  "FROM Prelude_FileAccess "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
+					  message_ident, target_index, file_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return -1;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
-	}
 
-	field = prelude_sql_field_fetch(row, 0);
-	if ( ! field ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_row_fetch_field(row, 0, &field);
+	if ( ret <= 0 )
+		return ret;
 
-	file_access_count = prelude_sql_field_value_int32(field);
-
-	prelude_sql_table_free(table);
-	table = NULL;
+	ret = preludedb_sql_field_to_int32(field, &file_access_count);
+	if ( ret < 0 )
+		return ret;
 
 	for ( cnt = 0; cnt < file_access_count; cnt++ ) {
 
 		file_access = idmef_file_new_file_access(file);
-		if ( ! file_access )
+		if ( ! file_access ) {
+			ret = -1;
+			goto error;
+		}
+
+		ret = get_user_id(sql, message_ident, 'F', target_index, file_index, cnt,
+				  file_access, (idmef_user_id_t *(*)(void *)) idmef_file_access_new_user_id);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_user_id(sql, message_ident, 'F', target_index, file_index, cnt,
-				 file_access, (idmef_user_id_t *(*)(void *)) idmef_file_access_new_user_id) < 0 )
-			goto error;
-
-		if ( get_file_access_permission(sql, message_ident, target_index, file_index, cnt, file_access) < 0 )
+		ret = get_file_access_permission(sql, message_ident, target_index, file_index, cnt, file_access);
+		if ( ret < 0 )
 			goto error;
 	}
 
-	return file_access_count;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_linkage(prelude_sql_connection_t *sql,
+static int get_linkage(preludedb_sql_t *sql,
 		       uint64_t message_ident,
 		       int target_index,
 		       int file_index,
 		       idmef_file_t *file)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_linkage_t *linkage;
-	int cnt = 0;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT category, name, path "
-				  "FROM Prelude_Linkage "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
-				  message_ident, target_index, file_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT category, name, path "
+					  "FROM Prelude_Linkage "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
+					  message_ident, target_index, file_index);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		linkage = idmef_file_new_linkage(file);
+		if ( ! linkage ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		linkage = idmef_file_new_linkage(file);
-		if ( ! linkage )
+		ret = get_enum(sql, row, 0, linkage, idmef_linkage_new_category, idmef_linkage_category_to_numeric);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_enum(sql, row, 0, linkage, idmef_linkage_new_category, idmef_linkage_category_to_numeric) < 0 )
+		ret = get_string(sql, row, 1, linkage, idmef_linkage_new_name);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 1, linkage, idmef_linkage_new_name) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 2, linkage, idmef_linkage_new_path) < 0 )
+		ret = get_string(sql, row, 2, linkage, idmef_linkage_new_path);
+		if ( ret < 0 )
 			goto error;
 	}
-
-	prelude_sql_table_free(table);
-	table = NULL;
 
 	/* FIXME: file in linkage is not currently supported  */
 
-	return cnt;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
-
-	return -1;
+	preludedb_sql_table_destroy(table);
+	
+	return ret;
 }
 
-static int get_inode(prelude_sql_connection_t *sql,
+static int get_inode(preludedb_sql_t *sql,
 		     uint64_t message_ident,
 		     int target_index,
 		     int file_index,
 		     idmef_file_t *file)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_inode_t *inode;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT change_time, change_time_gmtoff, number, major_device, minor_device, "
-				  "c_major_device, c_minor_device "
-				  "FROM Prelude_Inode "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
-				  message_ident, target_index, file_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT change_time, change_time_gmtoff, number, major_device, minor_device, "
+					  "c_major_device, c_minor_device "
+					  "FROM Prelude_Inode "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
+					  message_ident, target_index, file_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	inode = idmef_file_new_inode(file);
-	if ( ! inode )
+	if ( ! inode ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_timestamp(sql, row, 0, 1, -1, inode, idmef_inode_new_change_time);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_timestamp(sql, row, 0, 1, -1, inode, idmef_inode_new_change_time) < 0 )
+	ret = get_uint32(sql, row, 2, inode, idmef_inode_new_number);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 2, inode, idmef_inode_new_number) < 0 )
+	ret = get_uint32(sql, row, 3, inode, idmef_inode_new_major_device);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 3, inode, idmef_inode_new_major_device) < 0 )
+	ret = get_uint32(sql, row, 4, inode, idmef_inode_new_minor_device);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 4, inode, idmef_inode_new_minor_device) < 0 )
+	ret = get_uint32(sql, row, 5, inode, idmef_inode_new_c_major_device);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 5, inode, idmef_inode_new_c_major_device) < 0 )
+	ret = get_uint32(sql, row, 6, inode, idmef_inode_new_c_minor_device);
+	if ( ret < 0 )
 		goto error;
-
-	if ( get_uint32(sql, row, 6, inode, idmef_inode_new_c_minor_device) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
 
-static int get_checksum(prelude_sql_connection_t *sql,
+static int get_checksum(preludedb_sql_t *sql,
 			uint64_t message_ident,
 			int target_index,
 			int file_index,
 			idmef_file_t *file)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_checksum_t *checksum;
-	int cnt = 0;
+	int ret;
 	
-	table = prelude_sql_query(sql,
-				  "SELECT value, checksum_key, algorithm "
-				  "FROM Prelude_Checksum "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
-				  message_ident, target_index, file_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT value, checksum_key, algorithm "
+					  "FROM Prelude_Checksum "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d AND _file_index = %d",
+					  message_ident, target_index, file_index);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		checksum = idmef_file_new_checksum(file);
+		if ( ! checksum ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
+		ret = get_string(sql, row, 0, checksum, idmef_checksum_new_value);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 1, checksum, idmef_checksum_new_key);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_enum(sql, row, 2, checksum, idmef_checksum_new_algorithm, idmef_checksum_algorithm_to_numeric);
+		if ( ret < 0 )
+			goto error;
 	}
-
-	cnt = 0;
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		checksum = idmef_file_new_checksum(file);
-		if ( ! checksum )
-			goto error;
-
-		if ( get_string(sql, row, 0, checksum, idmef_checksum_new_value) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 1, checksum, idmef_checksum_new_key) < 0 )
-			goto error;
-
-		if ( get_enum(sql, row, 2, checksum, idmef_checksum_new_algorithm, idmef_checksum_algorithm_to_numeric) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
 
-static int get_file(prelude_sql_connection_t *sql,
+static int get_file(preludedb_sql_t *sql,
 		    uint64_t message_ident,
 		    int target_index,
 		    idmef_target_t *target)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_file_t *file = NULL;
-	int cnt = 0;
+	int cnt;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, category, name, path, create_time, create_time_gmtoff, modify_time, modify_time_gmtoff, "
-				  "access_time, access_time_gmtoff, data_size, disk_size, fstype "
-				  "FROM Prelude_File "
-				  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d",
-				  message_ident, target_index);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, category, name, path, create_time, create_time_gmtoff, "
+					  "modify_time, modify_time_gmtoff, access_time, "
+					  "access_time_gmtoff, data_size, disk_size, fstype "
+					  "FROM Prelude_File "
+					  "WHERE _message_ident = %" PRIu64 " AND _target_index = %d",
+					  message_ident, target_index);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
 		file = idmef_target_new_file(target);
-		if ( ! file )
+		if ( ! file ) {
+			ret = -1;
+			goto error;
+		}
+
+		ret = get_uint64(sql, row, 0, file, idmef_file_new_ident);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint64(sql, row, 0, file, idmef_file_new_ident) < 0 )
+		ret = get_enum(sql, row, 1, file, idmef_file_new_category, idmef_file_category_to_numeric);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_enum(sql, row, 1, file, idmef_file_new_category, idmef_file_category_to_numeric) < 0 )
+		ret = get_string(sql, row, 2, file, idmef_file_new_name);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 2, file, idmef_file_new_name) < 0 )
+		ret = get_string(sql, row, 3, file, idmef_file_new_path);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 3, file, idmef_file_new_path) < 0 )
+		ret = get_timestamp(sql, row, 4, 5, -1, file, idmef_file_new_create_time);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 4, 5, -1, file, idmef_file_new_create_time) < 0 )
+		ret = get_timestamp(sql, row, 6, 7, -1, file, idmef_file_new_modify_time);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 6, 7, -1, file, idmef_file_new_modify_time) < 0 )
+		ret = get_timestamp(sql, row, 8, 9, -1, file, idmef_file_new_access_time);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_timestamp(sql, row, 8, 9, -1, file, idmef_file_new_access_time) < 0 )
+		ret = get_uint32(sql, row, 10, file, idmef_file_new_data_size);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint32(sql, row, 10, file, idmef_file_new_data_size) < 0 )
+		ret = get_uint32(sql, row, 11, file, idmef_file_new_disk_size);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint32(sql, row, 11, file, idmef_file_new_disk_size) < 0 )
+		ret = get_enum(sql, row, 12, file, idmef_file_new_fstype, idmef_file_fstype_to_numeric);
+		if ( ret < 0 )
 			goto error;
-
-		if ( get_enum(sql, row, 12, file, idmef_file_new_fstype, idmef_file_fstype_to_numeric) < 0 )
-			goto error;
-
-		cnt++;
 	}
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	cnt = 0;
 	file = NULL;
-
+	cnt = 0;
 	while ( (file = idmef_target_get_next_file(target, file)) ) {
 
-		if ( get_file_access(sql, message_ident, target_index, cnt, file) < 0 )
+		ret = get_file_access(sql, message_ident, target_index, cnt, file);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_linkage(sql, message_ident, target_index, cnt, file) < 0 )
+		ret = get_linkage(sql, message_ident, target_index, cnt, file);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_inode(sql, message_ident, target_index, cnt, file) < 0 )
+		ret = get_inode(sql, message_ident, target_index, cnt, file);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_checksum(sql, message_ident, target_index, cnt, file) < 0 )
+		ret = get_checksum(sql, message_ident, target_index, cnt, file);
+		if ( ret < 0 )
 			goto error;
 
 		cnt++;
 	}
-
-	return cnt;
-
+	
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_source(prelude_sql_connection_t *sql,
+static int get_source(preludedb_sql_t *sql,
 		      uint64_t message_ident,
 		      idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_source_t *source;
 	int cnt;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, spoofed, interface "
-				  "FROM Prelude_Source "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, spoofed, interface "
+					  "FROM Prelude_Source "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		source = idmef_alert_new_source(alert);
+		if ( ! source ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		source = idmef_alert_new_source(alert);
-		if ( ! source )
+		ret = get_uint64(sql, row, 0, source, idmef_source_new_ident);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint64(sql, row, 0, source, idmef_source_new_ident) < 0 )
+		ret = get_enum(sql, row, 1, source, idmef_source_new_spoofed, idmef_source_spoofed_to_numeric);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_enum(sql, row, 1, source, idmef_source_new_spoofed, idmef_source_spoofed_to_numeric) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 2, source, idmef_source_new_interface) < 0 )
+		ret = get_string(sql, row, 2, source, idmef_source_new_interface);
+		if ( ret < 0 )
 			goto error;
 	}
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	cnt = 0;
 	source = NULL;
-
+	cnt = 0;
 	while ( (source = idmef_alert_get_next_source(alert, source)) ) {
 
-		if ( get_node(sql, message_ident, 'S', cnt, source, (idmef_node_t *(*)(void *)) idmef_source_new_node) < 0 )
+		ret = get_node(sql, message_ident, 'S', cnt, source, (idmef_node_t *(*)(void *)) idmef_source_new_node);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_user(sql, message_ident, 'S', cnt, source, (idmef_user_t *(*)(void *)) idmef_source_new_user) < 0 )
+		ret = get_user(sql, message_ident, 'S', cnt, source, (idmef_user_t *(*)(void *)) idmef_source_new_user);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_process(sql, message_ident, 'S', cnt, source, (idmef_process_t *(*)(void *)) idmef_source_new_process) < 0 )
+		ret = get_process(sql, message_ident, 'S', cnt, source, (idmef_process_t *(*)(void *)) idmef_source_new_process);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_service(sql, message_ident, 'S', cnt, source, (idmef_service_t *(*)(void *)) idmef_source_new_service) < 0 )
+		ret = get_service(sql, message_ident, 'S', cnt, source, (idmef_service_t *(*)(void *)) idmef_source_new_service);
+		if ( ret < 0 )
 			goto error;
 
 		cnt++;
 	}
 
-	return cnt;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_target(prelude_sql_connection_t *sql,
+static int get_target(preludedb_sql_t *sql,
 		      uint64_t message_ident,
 		      idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_target_t *target;
 	int cnt;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT ident, decoy, interface "
-				  "FROM Prelude_Target "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, decoy, interface "
+					  "FROM Prelude_Target "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		target = idmef_alert_new_target(alert);
+		if ( ! target ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		target = idmef_alert_new_target(alert);
-		if ( ! target )
+		ret = get_uint64(sql, row, 0, target, idmef_target_new_ident);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint64(sql, row, 0, target, idmef_target_new_ident) < 0 )
+		ret = get_enum(sql, row, 1, target, idmef_target_new_decoy, idmef_target_decoy_to_numeric);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_enum(sql, row, 1, target, idmef_target_new_decoy, idmef_target_decoy_to_numeric) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 2, target, idmef_target_new_interface) < 0 )
+		ret = get_string(sql, row, 2, target, idmef_target_new_interface);
+		if ( ret < 0 )
 			goto error;
 	}
 
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	cnt = 0;
 	target = NULL;
-
+	cnt = 0;
 	while ( (target = idmef_alert_get_next_target(alert, target)) ) {
 
-		if ( get_node(sql, message_ident, 'T', cnt, target, (idmef_node_t *(*)(void *)) idmef_target_new_node) < 0 )
+		ret = get_node(sql, message_ident, 'T', cnt, target, (idmef_node_t *(*)(void *)) idmef_target_new_node);
+		if ( ret < 0 )		     
 			goto error;
 
-		if ( get_user(sql, message_ident, 'T', cnt, target, (idmef_user_t *(*)(void *)) idmef_target_new_user) < 0 )
+		ret = get_user(sql, message_ident, 'T', cnt, target, (idmef_user_t *(*)(void *)) idmef_target_new_user);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_process(sql, message_ident, 'T', cnt, target, (idmef_process_t *(*)(void *)) idmef_target_new_process) < 0 )
+		ret = get_process(sql, message_ident, 'T', cnt, target, (idmef_process_t *(*)(void *)) idmef_target_new_process);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_service(sql, message_ident, 'T', cnt, target, (idmef_service_t *(*)(void *)) idmef_target_new_service) < 0 )
+		ret = get_service(sql, message_ident, 'T', cnt, target, (idmef_service_t *(*)(void *)) idmef_target_new_service);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_file(sql, message_ident, cnt, target) < 0 )
+		ret = get_file(sql, message_ident, cnt, target);
+		if ( ret < 0 )
 			goto error;
 
 		cnt++;
 	}
 
-	return cnt;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_additional_data(prelude_sql_connection_t *sql,
+static int get_additional_data(preludedb_sql_t *sql,
 			       uint64_t message_ident,
 			       char parent_type,
 			       void *parent,
 			       idmef_additional_data_t *(*parent_new_child)(void *))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_additional_data_t *additional_data;
 	idmef_data_t *data;
-	prelude_sql_field_t *field;
-	int cnt = 0;
+	preludedb_sql_field_t *field;
 	int ret = 0;
 
-	table = prelude_sql_query(sql,
-				  "SELECT type, meaning, data "
-				  "FROM Prelude_AdditionalData "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
-				  parent_type, message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT type, meaning, data "
+					  "FROM Prelude_AdditionalData "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64 "",
+					  parent_type, message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		additional_data = parent_new_child(parent);
+		if ( ! additional_data ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		additional_data = parent_new_child(parent);
-		if ( ! additional_data )
+		ret = get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
+			       idmef_additional_data_type_to_numeric);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
-			      idmef_additional_data_type_to_numeric) < 0 )
+		ret = get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning) < 0 )
-			goto error;
-
-		field = prelude_sql_field_fetch(row, 2);
-		if ( ! field ) { /* this field is mandatory */
-			db_log(sql);
+		ret = preludedb_sql_row_fetch_field(row, 2, &field);
+		if ( ret <= 0 ) {
+			if ( ret == 0 )
+				ret = -1;
 			goto error;
 		}
 
@@ -1884,497 +1593,537 @@ static int get_additional_data(prelude_sql_connection_t *sql,
 			goto error;
 
 		switch ( idmef_additional_data_get_type(additional_data) ) {
-		case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
-			idmef_data_set_byte(data, prelude_sql_field_value_uint8(field));
-			break;
+		case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: case IDMEF_ADDITIONAL_DATA_TYPE_BYTE: {
+			uint8_t value;
 
-		case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER:
-			idmef_data_set_char(data, (char) prelude_sql_field_value_uint8(field));
+			ret = preludedb_sql_field_to_uint8(field, &value);
+			if ( ret < 0 )
+				goto error;
+
+			idmef_data_set_byte(data, value);
 			break;
+		}
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER: {
+			uint8_t value;
+
+			ret = preludedb_sql_field_to_uint8(field, &value);
+			if ( ret < 0 )
+				goto error;
+			
+			idmef_data_set_char(data, (char) value);
+			break;
+		}
 
 		case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
 		case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
 		case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
 		case IDMEF_ADDITIONAL_DATA_TYPE_XML:
-			ret = idmef_data_set_char_string_dup(data, prelude_sql_field_value(field));
+			ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
 			break;
 
-		case IDMEF_ADDITIONAL_DATA_TYPE_REAL:
-			idmef_data_set_float(data, prelude_sql_field_value_float(field));
-			break;
+		case IDMEF_ADDITIONAL_DATA_TYPE_REAL: {
+			float value;
 
-		case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER:
-			idmef_data_set_uint32(data, prelude_sql_field_value_uint32(field));
-			break;
+			ret = preludedb_sql_field_to_float(field, &value);
+			if ( ret < 0 )
+				goto error;
 
-		case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
-			ret = idmef_data_set_byte_string_dup(data,
-							     prelude_sql_field_value(field),
-							     prelude_sql_field_len(field));
+			idmef_data_set_float(data, value);
 			break;
+		}
 
-		case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP:
-			idmef_data_set_uint64(data, prelude_sql_field_value_uint64(field));
+		case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER: {
+			uint32_t value;
+
+			ret = preludedb_sql_field_to_uint32(field, &value);
+			if ( ret < 0 )
+				goto error;
+			
+			idmef_data_set_uint32(data, value);
 			break;
+		}
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING: {
+			unsigned char *value;
+			size_t value_size;
+
+			ret = preludedb_sql_unescape_binary(sql,
+							    preludedb_sql_field_get_value(field),
+							    preludedb_sql_field_get_len(field),
+							    &value, &value_size);
+			if ( ret < 0 )
+				break;
+
+			ret = idmef_data_set_byte_string_nodup(data, value, value_size);
+
+			break;
+		}
+
+		case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP: {
+			uint64_t value;
+
+			ret = preludedb_sql_field_to_uint64(field, &value);
+			if ( ret < 0 )
+				goto error;
+
+			idmef_data_set_uint64(data, value);
+			break;
+		}
 			
 		case IDMEF_ADDITIONAL_DATA_TYPE_ERROR:
-			/* nop */;
+			ret = -1;
 		}
 
 		if ( ret < 0 )
 			goto error;
 
-		cnt++;
 	}
 
-	prelude_sql_table_free(table);
-
-	return cnt;
-
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_reference(prelude_sql_connection_t *sql,
+static int get_reference(preludedb_sql_t *sql,
 			 uint64_t message_ident,
 			 idmef_classification_t *classification)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_reference_t *reference;
-	int cnt = 0;
+	int ret;
 	
-	table = prelude_sql_query(sql,
-				  "SELECT origin, name, url, meaning "
-				  "FROM Prelude_Reference "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT origin, name, url, meaning "
+					  "FROM Prelude_Reference "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		reference = idmef_classification_new_reference(classification);
+		if ( ! reference ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
+		ret = get_enum(sql, row, 0, reference, idmef_reference_new_origin,
+			       idmef_reference_origin_to_numeric);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 1, reference, idmef_reference_new_name);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 2, reference, idmef_reference_new_url);
+		if ( ret < 0 )
+			goto error;
+
+		ret = get_string(sql, row, 3, reference, idmef_reference_new_meaning);
+		if ( ret < 0 )
+			goto error;
 	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		reference = idmef_classification_new_reference(classification);
-		if ( ! reference )
-			goto error;
-
-		if ( get_enum(sql, row, 0, reference, idmef_reference_new_origin,
-			      idmef_reference_origin_to_numeric) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 1, reference, idmef_reference_new_name) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 2, reference, idmef_reference_new_url) < 0 )
-			goto error;
-
-		if ( get_string(sql, row, 3, reference, idmef_reference_new_meaning) < 0 )
-			goto error;
-
-		cnt++;
-	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_classification(prelude_sql_connection_t *sql,
+static int get_classification(preludedb_sql_t *sql,
 			      uint64_t message_ident,
 			      idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_classification_t *classification;
+	int ret;
 	
-	table = prelude_sql_query(sql,
-				  "SELECT ident, text "
-				  "FROM Prelude_Classification "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT ident, text "
+					  "FROM Prelude_Classification "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
 		goto error;
-	}
 
 	classification = idmef_alert_new_classification(alert);
-	if ( ! classification )
+	if ( ! classification ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_uint64(sql, row, 0, classification, idmef_classification_new_ident);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint64(sql, row, 0, classification, idmef_classification_new_ident) < 0 )
+	ret = get_string(sql, row, 1, classification, idmef_classification_new_text);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, classification, idmef_classification_new_text) < 0 )
+	ret = get_reference(sql, message_ident, classification);
+	if ( ret < 0 )
 		goto error;
-
-	if ( get_reference(sql, message_ident, classification) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_alertident(prelude_sql_connection_t *sql,
+static int get_alertident(preludedb_sql_t *sql,
 			  uint64_t message_ident,
 			  char parent_type,
 			  void *parent,
 			  idmef_alertident_t *(*parent_new_child)(void *))
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_alertident_t *alertident = NULL;
-	int cnt = 0;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT alertident, analyzerid "
-				  "FROM Prelude_AlertIdent "
-				  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64,
-				  parent_type, message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT alertident, analyzerid "
+					  "FROM Prelude_AlertIdent "
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRIu64,
+					  parent_type, message_ident);
+	if ( ret <= 0 )
+		return ret;
+
+	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
+
+		alertident = parent_new_child(parent);
+		if ( ! alertident ) {
+			ret = -1;
 			goto error;
 		}
 
-		return 0;
-	}
-
-	while ( (row = prelude_sql_row_fetch(table)) ) {
-
-		alertident = parent_new_child(parent);
-
-		if ( get_uint64(sql, row, 0, alertident, idmef_alertident_new_alertident) < 0 )
+		ret = get_uint64(sql, row, 0, alertident, idmef_alertident_new_alertident);
+		if ( ret < 0 )
 			goto error;
 
-		if ( get_uint64(sql, row, 1, alertident, idmef_alertident_new_analyzerid) < 0 )
+		ret = get_uint64(sql, row, 1, alertident, idmef_alertident_new_analyzerid);
+		if ( ret < 0 )
 			goto error;
-
-		cnt++;
 	}
-
-	prelude_sql_table_free(table);
-
-	return cnt;
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;	
+	return ret;
 }
 
-static int get_tool_alert(prelude_sql_connection_t *sql,
+static int get_tool_alert(preludedb_sql_t *sql,
 			  uint64_t message_ident,
 			  idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_tool_alert_t *tool_alert;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT name, command "
-				  "FROM Prelude_ToolAlert "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT name, command "
+					  "FROM Prelude_ToolAlert "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	tool_alert = idmef_alert_new_tool_alert(alert);
-	if ( ! tool_alert )
+	if ( ! tool_alert ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_string(sql, row, 0, tool_alert, idmef_tool_alert_new_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 0, tool_alert, idmef_tool_alert_new_name) < 0 )
+	ret = get_string(sql, row, 1, tool_alert, idmef_tool_alert_new_command);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 1, tool_alert, idmef_tool_alert_new_command) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return get_alertident(sql, message_ident, 'T', tool_alert,
-			      (idmef_alertident_t *(*)(void *)) idmef_tool_alert_new_alertident);
+	ret = get_alertident(sql, message_ident, 'T', tool_alert,
+			     (idmef_alertident_t *(*)(void *)) idmef_tool_alert_new_alertident);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;	
+	return ret;
 }
 
-static int get_correlation_alert(prelude_sql_connection_t *sql,
+static int get_correlation_alert(preludedb_sql_t *sql,
 				 uint64_t message_ident,
 				 idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_correlation_alert_t *correlation_alert;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT name "
-				  "FROM Prelude_CorrelationAlert "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT name "
+					  "FROM Prelude_CorrelationAlert "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	correlation_alert = idmef_alert_new_correlation_alert(alert);
-	if ( ! correlation_alert )
+	if ( ! correlation_alert ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_string(sql, row, 0, correlation_alert, idmef_correlation_alert_new_name);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 0, correlation_alert, idmef_correlation_alert_new_name) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-	table = NULL;
-
-	return get_alertident(sql, message_ident, 'C', correlation_alert,
-			      (idmef_alertident_t *(*)(void *)) idmef_correlation_alert_new_alertident);
+	ret = get_alertident(sql, message_ident, 'C', correlation_alert,
+			     (idmef_alertident_t *(*)(void *)) idmef_correlation_alert_new_alertident);
 
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
-static int get_overflow_alert(prelude_sql_connection_t *sql,
+
+static int get_overflow_alert(preludedb_sql_t *sql,
 			      uint64_t message_ident,
 			      idmef_alert_t *alert)
 {
-	prelude_sql_table_t *table;
-	prelude_sql_row_t *row;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
 	idmef_overflow_alert_t *overflow_alert;
-	prelude_sql_field_t *field;
-	idmef_data_t *data;
+	preludedb_sql_field_t *field;
+	idmef_data_t *buffer;
+	unsigned char *data;
+	size_t data_size;
+	int ret;
 
-	table = prelude_sql_query(sql,
-				  "SELECT program, size, buffer "
-				  "FROM Prelude_OverflowAlert "
-				  "WHERE _message_ident = %" PRIu64 "",
-				  message_ident);
-	if ( ! table ) {
-		if ( prelude_sql_errno(sql) ) {
-			db_log(sql);
-			goto error;
-		}
+	ret = preludedb_sql_query_sprintf(sql, &table,
+					  "SELECT program, size, buffer "
+					  "FROM Prelude_OverflowAlert "
+					  "WHERE _message_ident = %" PRIu64 "",
+					  message_ident);
+	if ( ret <= 0 )
+		return ret;
 
-		return 0;
-	}
-
-	row = prelude_sql_row_fetch(table);
-	if ( ! row ) {
-		db_log(sql);
-		goto error;
-	}
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		return ret;
 
 	overflow_alert = idmef_alert_new_overflow_alert(alert);
-	if ( ! overflow_alert )
+	if ( ! overflow_alert ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = get_string(sql, row, 0, overflow_alert, idmef_overflow_alert_new_program);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_string(sql, row, 0, overflow_alert, idmef_overflow_alert_new_program) < 0 )
+	ret = get_uint32(sql, row, 1, overflow_alert, idmef_overflow_alert_new_size);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_uint32(sql, row, 1, overflow_alert, idmef_overflow_alert_new_size) < 0 )
+	ret = preludedb_sql_row_fetch_field(row, 2, &field);
+	if ( ret < 0 )
 		goto error;
 
-	field = prelude_sql_field_fetch(row, 2);
-	if ( ! field )
+	buffer = idmef_overflow_alert_new_buffer(overflow_alert);
+	if ( ! buffer ) {
+		ret = -1;
+		goto error;
+	}
+
+	ret = preludedb_sql_unescape_binary(sql,
+					    preludedb_sql_field_get_value(field),
+					    preludedb_sql_field_get_len(field),
+					    &data, &data_size);
+
+	if ( ret < 0 )
 		goto error;
 
-	data = idmef_overflow_alert_new_buffer(overflow_alert);
-	if ( ! data )
-		goto error;
+	ret = idmef_data_set_byte_string_nodup(buffer, data, data_size);
 
-	if ( idmef_data_set_byte_string_dup(data, prelude_sql_field_value(field), prelude_sql_field_len(field)) < 0 )
-		goto error;
-
-	prelude_sql_table_free(table);
-
-	return 1;
-	
  error:
-	if ( table )
-		prelude_sql_table_free(table);
+	preludedb_sql_table_destroy(table);
 
-	return -1;
+	return ret;
 }
 
 
-
-idmef_message_t	*get_alert(prelude_db_connection_t *connection,
-			   prelude_db_message_ident_t *message_ident,
-			   uint64_t ident)
+static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t ident, uint64_t *messageid)
 {
-	prelude_sql_connection_t *sql;
-	idmef_message_t *message;
+	preludedb_sql_table_t *table;
+	preludedb_sql_row_t *row;
+	preludedb_sql_field_t *field;
+	int ret;
+
+	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid FROM %s WHERE _ident = %" PRIu64 "", 
+					  table_name, ident);
+	if ( ret <= 0 )
+		return ret;
+
+	ret = preludedb_sql_table_fetch_row(table, &row);
+	if ( ret <= 0 )
+		goto error;
+
+	ret = preludedb_sql_row_fetch_field(row, 0, &field);
+	if ( ret < 0 )
+		goto error;
+
+	ret = preludedb_sql_field_to_uint64(field, messageid);
+
+ error:
+	preludedb_sql_table_destroy(table);
+
+	return (ret < 0) ? ret : 1;
+}
+
+
+int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
+{
 	idmef_alert_t *alert;
+	int ret;
 
-	sql = prelude_db_connection_get(connection);
-	if ( ! sql ) {
-		log(LOG_ERR, "not an SQL connection !\n");
-		return NULL;
+	*message = idmef_message_new();
+	if ( ! *message )
+		return -1;
+
+	alert = idmef_message_new_alert(*message);
+	if ( ! alert ) {
+		ret = -1;
+		goto error;
 	}
 
-	message = idmef_message_new();
-	if ( ! message ) {
-		log_memory_exhausted();
-		return NULL;
+	ret = get_messageid(sql, "Prelude_Alert", ident, idmef_alert_new_messageid(alert));
+	if ( ret < 0 )
+		goto error;
+	if ( ret == 0 ) {
+		ret = preludedb_error(PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT);
+		goto error;
 	}
 
-	alert = idmef_message_new_alert(message);
-	if ( ! alert )
+	ret = get_assessment(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	idmef_alert_set_messageid(alert, prelude_db_message_ident_get_ident(message_ident));
-
-	if ( get_assessment(sql, ident, alert) < 0 )
+	ret = get_analyzer(sql, ident, 'A', 0, alert, (idmef_analyzer_t *(*)(void *)) idmef_alert_new_analyzer);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_analyzer(sql, ident, 'A', 0, alert, (idmef_analyzer_t *(*)(void *)) idmef_alert_new_analyzer) < 0 )
+	ret = get_create_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_create_time);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_create_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_create_time) < 0 )
+	ret = get_detect_time(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_detect_time(sql, ident, alert) < 0 )
+	ret = get_analyzer_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_analyzer_time);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_analyzer_time(sql, ident, 'A', alert, (idmef_time_t *(*)(void *)) idmef_alert_new_analyzer_time) < 0 )
+	ret = get_source(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_source(sql, ident, alert) < 0 )
+	ret = get_target(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_target(sql, ident, alert) < 0 )
+	ret = get_classification(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_classification(sql, ident, alert) < 0 )
+	ret = get_additional_data(sql, ident, 'A', alert, 
+				  (idmef_additional_data_t *(*)(void *)) idmef_alert_new_additional_data);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_additional_data(sql, ident, 'A', alert, 
-				 (idmef_additional_data_t *(*)(void *)) idmef_alert_new_additional_data) < 0 )
+	ret = get_tool_alert(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_tool_alert(sql, ident, alert) < 0 )
+	ret = get_correlation_alert(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_correlation_alert(sql, ident, alert) < 0 )
+	ret = get_overflow_alert(sql, ident, alert);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_overflow_alert(sql, ident, alert) < 0 )
-		goto error;
-
-	return message;
+	return 0;
 
  error:
-	if ( message )
-		idmef_message_destroy(message);
+	idmef_message_destroy(*message);
 
-	return NULL;
+	return ret;
 }
 
 
 
-idmef_message_t *get_heartbeat(prelude_db_connection_t *connection,
-			       prelude_db_message_ident_t *message_ident,
-			       uint64_t ident)
+int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
-	prelude_sql_connection_t *sql;
-	idmef_message_t *message;
 	idmef_heartbeat_t *heartbeat;
+	int ret;
 
-	sql = prelude_db_connection_get(connection);
-	if ( ! sql ) {
-		log(LOG_ERR, "not an SQL connection !\n");
-		return NULL;
+	*message = idmef_message_new();
+	if ( ! *message ) 
+		return -1;
+
+	heartbeat = idmef_message_new_heartbeat(*message);
+	if ( ! heartbeat ) {
+		ret = -1;
+		goto error;
 	}
 
-	message = idmef_message_new();
-	if ( ! message ) {
-		log_memory_exhausted();
-		return NULL;
-	}
-
-	heartbeat = idmef_message_new_heartbeat(message);
-	if ( ! heartbeat )
-		goto error;
-	
-	idmef_heartbeat_set_messageid(heartbeat, prelude_db_message_ident_get_ident(message_ident));
-
-	if ( get_analyzer(sql, ident, 'H', 0, heartbeat, (idmef_analyzer_t *(*)(void *)) idmef_heartbeat_new_analyzer) < 0 )
+	ret = get_messageid(sql, "Prelude_Heartbeat", ident, idmef_heartbeat_new_messageid(heartbeat));
+	if ( ret <= 0 )
 		goto error;
 
-	if ( get_create_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_create_time) < 0 )
+	ret = get_analyzer(sql, ident, 'H', 0, heartbeat, (idmef_analyzer_t *(*)(void *)) idmef_heartbeat_new_analyzer);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_analyzer_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_analyzer_time) < 0 )
+	ret = get_create_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_create_time);
+	if ( ret < 0 )
 		goto error;
 
-	if ( get_additional_data(sql, ident, 'H', heartbeat,
-				 (idmef_additional_data_t *(*)(void *)) idmef_heartbeat_new_additional_data) < 0 )
+	ret = get_analyzer_time(sql, ident, 'H', heartbeat, (idmef_time_t *(*)(void *)) idmef_heartbeat_new_analyzer_time);
+	if ( ret < 0 )
 		goto error;
 
-	return message;
+	ret = get_additional_data(sql, ident, 'H', heartbeat,
+				  (idmef_additional_data_t *(*)(void *)) idmef_heartbeat_new_additional_data);
+	if ( ret < 0 )
+		goto error;
+
+	return 0;
 
  error:
-	if ( message )
-		idmef_message_destroy(message);
+	idmef_message_destroy(*message);
 
-	return NULL;
+	return ret;
 }

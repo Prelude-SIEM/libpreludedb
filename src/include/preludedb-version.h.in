@@ -1,12 +1,12 @@
 /*****
 *
-* Copyright (C) 2003 Yoann Vandoorselaere <yoann@prelude-ids.org>
+* Copyright (C) 2005 Yoann Vandoorselaere <yoann@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -21,17 +21,11 @@
 *
 *****/
 
-#ifndef _LIBPRELUDEDB_DB_MESSAGE_CACHE_H
-#define _LIBPRELUDEDB_DB_MESSAGE_CACHE_H
+#ifndef _LIBPRELUDEDB_VERSION_H
+#define _LIBPRELUDEDB_VERSION_H
 
-typedef struct db_message_cache db_message_cache_t;
+#define LIBPRELUDEDB_VERSION "@VERSION@"
 
+const char *preludedb_check_version(const char *req_version);
 
-db_message_cache_t *db_message_cache_new(const char *directory);
-void db_message_cache_destroy(db_message_cache_t *cache);
-
-int db_message_cache_write(db_message_cache_t *cache, idmef_message_t *message);
-idmef_message_t *db_message_cache_read(db_message_cache_t *cache, const char *type, uint64_t ident);
-
-
-#endif /* _LIBPRELUDEDB_DB_MESSAGE_CACHE_H */
+#endif /* _LIBPRELUDEDB_VERSION_H */

@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -29,23 +29,23 @@
 #include <libprelude/prelude-list.h>
 #include <libprelude/prelude-log.h>
 
-#include "db-object-selection.h"
+#include "preludedb-object-selection.h"
 
-struct prelude_db_selected_object {
+struct preludedb_selected_object {
 	prelude_list_t list;
 	idmef_object_t *object;
-	int flags;
+	preludedb_selected_object_flags_t flags;
 };
 
-struct prelude_db_object_selection {
+struct preludedb_object_selection {
 	prelude_list_t list;
 };
 
 
 
-prelude_db_selected_object_t *prelude_db_selected_object_new(idmef_object_t *object, int flags)
+preludedb_selected_object_t *preludedb_selected_object_new(idmef_object_t *object, int flags)
 {
-	prelude_db_selected_object_t *selected_object;
+	preludedb_selected_object_t *selected_object;
 
 	selected_object = calloc(1, sizeof (*selected_object));
 	if ( ! selected_object ) {
@@ -150,14 +150,14 @@ static idmef_object_t *parse_object(const char *str, size_t len)
 }
 
 
-prelude_db_selected_object_t *prelude_db_selected_object_new_string(const char *str)
+preludedb_selected_object_t *preludedb_selected_object_new_string(const char *str)
 {
 	const char *filters;
 	const char *start, *end;
 	int ret;
 	int flags = 0;
 	idmef_object_t *object;
-	prelude_db_selected_object_t *selected;
+	preludedb_selected_object_t *selected;
 
 	filters = strchr(str, '/');
 	if ( filters ) {
@@ -192,7 +192,7 @@ prelude_db_selected_object_t *prelude_db_selected_object_new_string(const char *
 	if ( ! object )
 		return NULL;
 
-	selected = prelude_db_selected_object_new(object, flags);
+	selected = preludedb_selected_object_new(object, flags);
 	if ( ! selected )
 		idmef_object_destroy(object);
 
@@ -201,7 +201,7 @@ prelude_db_selected_object_t *prelude_db_selected_object_new_string(const char *
 
 
 
-void prelude_db_selected_object_destroy(prelude_db_selected_object_t *selected_object)
+void preludedb_selected_object_destroy(preludedb_selected_object_t *selected_object)
 {
 	idmef_object_destroy(selected_object->object);
 	free(selected_object);
@@ -209,23 +209,23 @@ void prelude_db_selected_object_destroy(prelude_db_selected_object_t *selected_o
 
 
 
-idmef_object_t *prelude_db_selected_object_get_object(prelude_db_selected_object_t *selected_object)
+idmef_object_t *preludedb_selected_object_get_object(preludedb_selected_object_t *selected_object)
 {
 	return selected_object->object;
 }
 
 
 
-int prelude_db_selected_object_get_flags(prelude_db_selected_object_t *selected_object)
+int preludedb_selected_object_get_flags(preludedb_selected_object_t *selected_object)
 {
 	return selected_object->flags;
 }
 
 
 
-prelude_db_object_selection_t *prelude_db_object_selection_new(void)
+preludedb_object_selection_t *preludedb_object_selection_new(void)
 {
-	prelude_db_object_selection_t *object_selection;
+	preludedb_object_selection_t *object_selection;
 
 	object_selection = calloc(1, sizeof (*object_selection));
 	if ( ! object_selection ) {
@@ -240,14 +240,14 @@ prelude_db_object_selection_t *prelude_db_object_selection_new(void)
 
 
 
-void prelude_db_object_selection_destroy(prelude_db_object_selection_t *object_selection)
+void preludedb_object_selection_destroy(preludedb_object_selection_t *object_selection)
 {
         prelude_list_t *ptr, *next;
-	prelude_db_selected_object_t *selected_object;
+	preludedb_selected_object_t *selected_object;
 
 	prelude_list_for_each_safe(ptr, next, &object_selection->list) {
-		selected_object = prelude_list_entry(ptr, prelude_db_selected_object_t, list);
-		prelude_db_selected_object_destroy(selected_object);
+		selected_object = prelude_list_entry(ptr, preludedb_selected_object_t, list);
+		preludedb_selected_object_destroy(selected_object);
 	}
 
 	free(object_selection);
@@ -255,16 +255,32 @@ void prelude_db_object_selection_destroy(prelude_db_object_selection_t *object_s
 
 
 
-void prelude_db_object_selection_add(prelude_db_object_selection_t *object_selection,
-                                     prelude_db_selected_object_t *selected_object)
+void preludedb_object_selection_add(preludedb_object_selection_t *object_selection,
+				    preludedb_selected_object_t *selected_object)
 {
 	prelude_list_add_tail(&selected_object->list, &object_selection->list);
 }
 
 
 
-prelude_db_selected_object_t *prelude_db_object_selection_get_next(prelude_db_object_selection_t *object_selection,
-								   prelude_db_selected_object_t *selected_object)
+preludedb_selected_object_t *preludedb_object_selection_get_next(preludedb_object_selection_t *object_selection,
+								 preludedb_selected_object_t *selected_object)
 {
-	return prelude_list_get_next(selected_object, &object_selection->list, prelude_db_selected_object_t, list);
+	return prelude_list_get_next(selected_object, &object_selection->list, preludedb_selected_object_t, list);
+}
+
+
+
+size_t preludedb_object_selection_get_count(preludedb_object_selection_t *object_selection)
+{
+	size_t cnt;
+	prelude_list_t *ptr;
+
+	cnt = 0;
+
+	prelude_list_for_each(ptr, &object_selection->list) {
+		cnt++;
+	}
+
+	return cnt;
 }

@@ -1,7 +1,7 @@
 /*****
 *
 * Copyright (C) 2001-2004 Vandoorselaere Yoann <yoann@prelude-ids.org>
-* Copyright (C) 2002 Nicolas Delon <delon.nicolas@wanadoo.fr>
+* Copyright (C) 2002-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -32,646 +32,387 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-#include <libprelude/prelude-log.h>
+#include <libprelude/prelude-error.h>
 #include <libprelude/idmef.h>
 
 #include <libpq-fe.h>
 
 #include "config.h"
 
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "plugin-sql.h"
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-error.h"
+#include "preludedb-plugin-sql.h"
 
 prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void);
 
-
-typedef enum {
-	st_allocated,
-	st_connection_failed,
-	st_connected,
-	st_query
-} session_status_t;
-
-
-
-typedef struct {
-	session_status_t status;
-	int dberrno;
-	char *dbhost;
-	char *dbport;
-	char *dbname;
-	char *dbuser;
-	char *dbpass;
+struct pg_session {
 	PGconn *pgsql;
 
 	/* query dependant variable */
 	int row;
-} session_t;
+};
 
 
 
-static plugin_sql_t plugin;
-
-
-
-static void *db_query(void *s, const char *query);
-
-
-
-static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
-                      const char *dbuser, const char *dbpass)
+static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
-        session_t *session;
-	
-        session = malloc(sizeof(*session));
-	if ( ! session ) {
-                log(LOG_ERR, "memory exhausted.\n");
-		return NULL;
-        }
-	
-	session->status = st_allocated;
-	session->dberrno = 0;
-	session->dbhost = (dbhost) ? strdup(dbhost) : NULL;
-	session->dbport = (dbport) ? strdup(dbport) : NULL;
-	session->dbname = (dbname) ? strdup(dbname) : NULL;
-	session->dbuser = (dbuser) ? strdup(dbuser) : NULL;
-	session->dbpass = (dbpass) ? strdup(dbpass) : NULL;
-	
-	return session;
-}
+	struct pg_session *s;
 
+	s = calloc(1, sizeof (struct pg_session));
+	if ( ! s )
+		return preludedb_error_from_errno(errno);
 
+        s->pgsql = PQsetdbLogin(preludedb_sql_settings_get_host(settings),
+				preludedb_sql_settings_get_port(settings),
+				NULL,
+				NULL,
+				preludedb_sql_settings_get_name(settings),
+				preludedb_sql_settings_get_user(settings),
+				preludedb_sql_settings_get_pass(settings));
 
-
-static void cleanup(void *s)
-{
-        session_t *session = s;
-
-        if ( session->dbhost )
-                free(session->dbhost);
-
-        if ( session->dbport )
-                free(session->dbport);
-
-        if ( session->dbname )
-                free(session->dbname);
-
-        if ( session->dbuser )
-                free(session->dbuser);
-
-        if ( session->dbpass )
-                free(session->dbpass);
-        
-        free(session);
-}
-
-
-
-/*
- * start transaction
- */
-static int db_begin(void *s) 
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	if ( session->status < st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return -session->dberrno;
-	}
-       
-	db_query(session, "BEGIN;");
-		
-	return -session->dberrno;
-}
-
-
-
-/*
- * commit transaction
- */
-static int db_commit(void *s)
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	session->status = st_connected;
-        	
-	db_query(session, "COMMIT;");
-
-	return -session->dberrno;
-}
-
-
-
-/*
- * end transaction
- */
-static int db_rollback(void *s)
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	session->status = st_connected;
-        		
-	db_query(session, "ROLLBACK;");
-	
-	return -session->dberrno;
-}
-
-
-
-/*
- * closes the DB connection.
- */
-static void db_close(void *s)
-{
-        session_t *session = s;
-		
-        PQfinish(session->pgsql);
-
-        cleanup(s);
-}
-
-
-
-/*
- * Escape string with single quote
- */
-static char *db_escape(void *s, const char *str, size_t len)
-{
-        char *ptr;
-        size_t rlen;
-        int i, ok = 0;
-
-        if ( ! str )
-                return strdup("NULL");
-
-        rlen = len * 2 + 3;
-        if ( rlen <= len )
-                return NULL;
-        
-        ptr = malloc(rlen);
-        if ( ! ptr ) {
-                log(LOG_ERR, "memory exhausted.\n");
-                return NULL;
+        if ( PQstatus(s->pgsql) == CONNECTION_BAD ) {
+                PQfinish(s->pgsql);
+		free(s);
+		return preludedb_error(PRELUDEDB_ERROR_CANNOT_CONNECT);
         }
 
-        ptr[ok++] = '\'';
-        
-        for ( i = 0; i < len; i++ ) {
-
-                if ( str[i] == '\'' ) {
-                        ptr[ok++] = '\\';
-                        ptr[ok++] = str[i];
-                } else
-                        ptr[ok++] = str[i];
-        }
-
-        ptr[ok++] = '\'';
-        ptr[ok] = '\0';
-        
-        return ptr;
-}
-
-
-static const char *db_limit_offset(void *s, int limit, int offset)
-{
-	static char buffer[64];
-	int ret;
-
-	if ( limit >= 0 ) {
-		if ( offset >= 0 )
-			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d OFFSET %d", limit, offset);
-		else
-			ret = snprintf(buffer, sizeof (buffer), "LIMIT %d", limit);
-
-		return (ret < 0) ? NULL : buffer;		
-	}
-
-	return "";
-}
-
-
-
-
-/*
- * Execute SQL query, return table
- */
-static void *db_query(void *s, const char *query)
-{
-        int ret;
-        PGresult *res;
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	if ( session->status < st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_NOT_CONNECTED;
-		return NULL;
-	}
-
-#ifdef DEBUG
-	log(LOG_INFO, "pgsql: %s\n", query);
-#endif
-
-	res = PQexec(session->pgsql, query);
-	if ( ! res ) {
-		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
-		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
-		return NULL;
-	}
-
-	ret = PQresultStatus(res);
-	switch ( ret ) {
-		
-	case PGRES_COMMAND_OK:
-		PQclear(res);
-		return NULL;
-
-	case PGRES_TUPLES_OK:
-		if ( PQntuples(res) == 0 ) {
-			PQclear(res);
-			return NULL;
-		}
-
-		session->status = st_query;
-		session->row = 0;
-		return res;
-
-	default:
-		log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
-		session->dberrno = ERR_PLUGIN_DB_QUERY_ERROR;
-		PQclear(res);
-	}
-
-	return NULL;
-}
-
-
-
-
-/*
- * Connect to the PgSQL database
- */
-static int db_connect(void *s)
-{
-        session_t *session = s;
-
-	session->dberrno = 0;
-
-	if ( session->status >= st_connected ) {
-		session->dberrno = ERR_PLUGIN_DB_ALREADY_CONNECTED;
-		return -session->dberrno;
-	}
-
-        session->pgsql = PQsetdbLogin(session->dbhost, session->dbport, 
-                                      NULL, NULL, session->dbname, session->dbuser, session->dbpass);
-
-        if ( PQstatus(session->pgsql) == CONNECTION_BAD ) {
-                log(LOG_INFO, "PgSQL connection failed: %s", PQerrorMessage(session->pgsql));
-                PQfinish(session->pgsql);
-                session->status = st_connection_failed;
-		session->dberrno = ERR_PLUGIN_DB_CONNECTION_FAILED;
-		return -session->dberrno;
-        }
-
-	session->status = st_connected;
+	*session = s;
 
         return 0;
 }
 
 
 
-static int db_errno(void *s)
+static void sql_close(void *session)
 {
-	session_t *session = s;
-
-	return session->dberrno;
+        PQfinish(((struct pg_session *) session)->pgsql);
+	free(session);
 }
 
 
-static void db_table_free(void *s, void *t)
+
+static const char *sql_get_error(void *session)
 {
-	session_t *session = s;
-	PGresult *res = t;
+	PQerrorMessage(((struct pg_session *) session)->pgsql);
+}
 
-	session->dberrno = 0;
 
-	session->status = st_connected;
 
-	if ( res )
+static int sql_escape(void *session, const char *input, size_t input_size, char **output)
+{
+	size_t rsize;
+
+        rsize = input_size * 2 + 3;
+        if ( rsize <= input_size )
+                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        
+        *output = malloc(rsize);
+        if ( ! *output )
+		return preludedb_error_from_errno(errno);
+
+        (*output)[0] = '\'';
+
+	rsize = PQescapeString((*output) + 1, input, input_size);
+
+        (*output)[rsize + 1] = '\'';
+        (*output)[rsize + 2] = '\0';
+
+        return 0;
+}
+
+
+
+static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
+{
+        prelude_string_t *string;
+        size_t rsize, dummy;
+        char *ptr;
+        int ret;
+
+        rsize = input_size * 2 + 3;
+        if ( rsize <= input_size )
+                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+
+        ptr = PQescapeBytea((unsigned char *) input, input_size, &dummy);
+
+        string = prelude_string_new();
+	if ( ! string )
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+
+        ret = prelude_string_sprintf(string, "'%s'", ptr);
+        free(ptr);
+        if ( ret < 0 ) {
+                prelude_string_destroy(string);
+                return ret;
+        }
+
+        *output = prelude_string_get_string_released(string);
+
+        prelude_string_destroy(string);
+
+        return 0;
+}
+
+
+
+static int sql_unescape_binary(void *session, const char *input, unsigned char **output, size_t *output_size)
+{
+	*output = PQunescapeBytea((const unsigned char *) input, output_size);
+	if ( ! *output )
+		return preludedb_error_from_errno(errno);
+
+	return 0;
+}
+
+
+
+static int sql_build_limit_offset_string(void *session, int limit, int offset, prelude_string_t *output)
+{
+	if ( limit >= 0 ) {
+		if ( offset >= 0 )
+			return prelude_string_sprintf(output, "LIMIT %d OFFSET %d", limit, offset);
+		
+		return prelude_string_sprintf(output, "LIMIT %d", limit);
+	}
+
+	return 0;
+}
+
+
+
+static int sql_query(void *session, const char *query, void **resource)
+{
+        int ret;
+        PGresult *res;
+	PGconn *pgsql = ((struct pg_session *) session)->pgsql;
+
+	res = PQexec(pgsql, query);
+	if ( ! res )
+		return preludedb_error(PRELUDEDB_ERROR_QUERY);
+
+	ret = PQresultStatus(res);
+	switch ( ret ) {
+		
+	case PGRES_COMMAND_OK:
 		PQclear(res);
-}
-
-
-
-static const char *db_field_name(void *s, void *t, unsigned int i)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	const char *name;
-
-	session->dberrno = 0;
-
-	name = PQfname(res, i);
-	if ( ! name )
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-
-	return name;
-}
-
-
-
-static int db_field_num(void *s, void *t, const char *name)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	int num;
-
-	session->dberrno = 0;
-
-	num = PQfnumber(res, name);
-	if ( num == -1 )
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-
-	return num;
-}
-
-
-
-/*
- * FIXME: type values are taken from pgsql/server/catalog/pg_type.h
- * but maybe there is a more elegant way to do that
- * 
- * Nicolas: the only "elegant way" to do it that seems to exist, is to query
- * the postgres table named pg_type 
- */
-static prelude_sql_field_type_t db_field_type(void *s, void *t, unsigned int i)
-{
-	session_t *session = s;
-	PGresult *res = t;
-
-	session->dberrno = 0;
-
-	switch ( PQftype(res, i) ) {
-		
-	case InvalidOid:
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return dbtype_unknown;
-		
-	case 20:
-		return dbtype_int64;
-
-	case 23:
-		return dbtype_int32;
-
-	case 700:
-		return dbtype_float;
-
-	case 701:
-		return dbtype_double;
-
-	default:
-		return dbtype_string;
-	}
-
-	return dbtype_unknown;	
-}
-
-
-
-static prelude_sql_field_type_t db_field_type_by_name(void *s, void *t, const char *name)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	int i;
-
-	session->dberrno = 0;
-
-	i = PQfnumber(res, name);
-	if ( i == -1 ) {
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-		return dbtype_unknown;
-	}
-
-	return db_field_type(session, res, i);	
-}
-
-
-
-static unsigned int db_fields_num(void *s, void *t)
-{
-	session_t *session = s;
-	PGresult *res = t;
-
-	session->dberrno = 0;
-
-	return PQnfields(res);
-}
-
-
-
-static unsigned int db_rows_num(void *s, void *t)
-{
-	session_t *session = s;
-	PGresult *res = t;
-
-	session->dberrno = 0;
-
-	return PQntuples(res);
-}
-
-
-
-static void *db_row_fetch(void *s, void *t)
-{
-	session_t *session = s;
-	PGresult *res = t;
-
-	session->dberrno = 0;
-
-	return ( session->row < PQntuples(res) ) ? ((void *) session->row++ + 1) : NULL;
-}
-
-
-
-static int db_field_fetch(void *s, void *t, void *r, unsigned int field, const char **value, size_t *len)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	unsigned int row = (unsigned int) r - 1;
-
-	session->dberrno = 0;
-	
-	if ( field >= PQnfields(res) ) {
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NUM;
-		return -1;
-	}
-
-	if ( PQgetisnull(res, row, field) )
 		return 0;
 
-	*value = PQgetvalue(res, row, field);
-	*len = PQgetlength(res, row, field);
+	case PGRES_TUPLES_OK:
+		if ( PQntuples(res) == 0 ) {
+			PQclear(res);
+			return 0;
+		}
+
+		((struct pg_session *)session)->row = 0;
+		*resource = res;
+		return 1;
+
+	default:
+		PQclear(res);
+	}
+
+	return preludedb_error(PRELUDEDB_ERROR_QUERY);
+}
+
+
+
+static void sql_resource_destroy(void *session, void *resource)
+{
+	if ( resource )
+		PQclear(resource);
+}
+
+
+
+static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
+{
+	return PQfname(resource, column_num);
+}
+
+
+
+static int sql_get_column_num(void *session, void *resource, const char *column_name)
+{
+	return PQfnumber(resource, column_name);
+}
+
+
+
+static unsigned int sql_get_column_count(void *session, void *resource)
+{
+	return PQnfields(resource);
+}
+
+
+
+static unsigned int sql_get_row_count(void *session, void *resource)
+{
+	return PQntuples(resource);
+}
+
+
+
+static int sql_fetch_row(void *s, void *resource, void **row)
+{
+	struct pg_session *session = s;
+
+	if ( session->row < PQntuples(((PGresult *) resource)) ) {
+		*row = (void *) (session->row++ + 1);
+		return 1;
+	}
+
+	return 0;
+}
+
+
+
+static int sql_fetch_field(void *session, void *resource, void *r,
+			   unsigned int column_num, const char **value, size_t *len)
+{
+	unsigned int row = (unsigned int) r - 1;
+	
+	if ( column_num >= PQnfields(resource) )
+		return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
+
+	if ( PQgetisnull(resource, row, column_num) )
+		return 0;
+
+	*value = PQgetvalue(resource, row, column_num);
+	*len = PQgetlength(resource, row, column_num);
 
 	return 1;
 }
 
 
 
-static int db_field_fetch_by_name(void *s, void *t, void *r, const char *name, const char **value, size_t *len)
-{
-	session_t *session = s;
-	PGresult *res = t;
-	int field;
-
-	session->dberrno = 0;
-
-	field = PQfnumber(res, name);
-	if ( field == -1 ) {
-		session->dberrno = ERR_PLUGIN_DB_ILLEGAL_FIELD_NAME;
-		return -1;
-	}
-
-	return db_field_fetch(session, res, r, field, value, len);
-}
-
-
-
-static int db_build_time_constraint(prelude_string_t *output, const char *field,
-				    prelude_sql_time_constraint_type_t type,
-				    idmef_value_relation_t relation, int value, int gmt_offset)
+static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
+					    preludedb_sql_time_constraint_type_t type,
+					    idmef_value_relation_t relation, int value, int gmt_offset)
 {
 	char buf[128];
 	const char *sql_relation;
+	int ret;
 
-	if ( snprintf(buf, sizeof (buf), "%s + INTERVAL '%d HOUR'", field, gmt_offset / 3600) < 0 )
-		return -1;
+	ret = snprintf(buf, sizeof (buf), "%s + INTERVAL '%d HOUR'", field, gmt_offset / 3600);
+	if ( ret < 0 || ret >= sizeof (buf) )
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-	sql_relation = prelude_sql_idmef_relation_to_string(relation);
+	sql_relation = preludedb_sql_get_relation_string(relation);
 	if ( ! sql_relation )
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
 	switch ( type ) {
-	case dbconstraint_year:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
 		return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s %d",
 					      buf, sql_relation, value);
 
-	case dbconstraint_month:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
 		return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s) %s %d",
 					       buf, sql_relation, value);
 
-	case dbconstraint_yday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
 		return prelude_string_sprintf(output, "EXTRACT(DOY FROM %s) %s %d",
 					      buf, sql_relation, value);
 
-	case dbconstraint_mday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
 		return prelude_string_sprintf(output, "EXTRACT(DAY FROM %s) %s %d",
 					      buf, sql_relation, value);
 
-	case dbconstraint_wday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
 		return prelude_string_sprintf(output, "EXTRACT(DOW FROM %s) %s %d",
 					      buf, sql_relation, value % 7 + 1);
 
-	case dbconstraint_hour:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
 		return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s) %s %d",
 					      buf, sql_relation, value);
 
-	case dbconstraint_min:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
 		return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s) %s %d",
 					      buf, sql_relation, value);
 
-	case dbconstraint_sec:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
 		return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s) %s %d",
 					      buf, sql_relation, value);
 	}
 
 	/* not reached */
 
-	return -1;
+	return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
 
 
 
-static int db_build_time_interval(prelude_sql_time_constraint_type_t type, int value,
-				  char *buf, size_t size)
+static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
+					  char *buf, size_t size)
 {
 	char *type_str;
 	int ret;
 
 	switch ( type ) {
-	case dbconstraint_year:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
 		type_str = "YEAR";
 		break;
 
-	case dbconstraint_month:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
 		type_str = "MONTH";
 		break;
 
-	case dbconstraint_mday:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
 		type_str = "DAY";
 		break;
 
-	case dbconstraint_hour:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
 		type_str = "HOUR";
 		break;
 
-	case dbconstraint_min:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
 		type_str = "MINUTE";
 		break;
 
-	case dbconstraint_sec:
+	case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
 		type_str = "SECOND";
 		break;
 
 	default:
-		return -1;
+		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 	}
 
 	ret = snprintf(buf, size, "INTERVAL '%d %s'", value, type_str);
 
-	return (ret < 0 || ret >= size) ? -1 : 0;
+	return (ret < 0 || ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
 }
 
 
 
 prelude_plugin_generic_t *pgsql_LTX_prelude_plugin_init(void)
 {
-        
-	/*
-         * system-wide options for the plugin should go in here
-         */
-	
+	static preludedb_plugin_sql_t plugin;
+
+	memset(&plugin, 0, sizeof (plugin));
+
         prelude_plugin_set_name(&plugin, "PgSQL");
-        prelude_plugin_set_desc(&plugin, "Will log all alert to a PostgreSQL database.");
-        plugin_set_setup_func(&plugin, db_setup);
-        plugin_set_connect_func(&plugin, db_connect);
-        plugin_set_escape_func(&plugin, db_escape);
-        plugin_set_limit_offset_func(&plugin, db_limit_offset);
-        plugin_set_query_func(&plugin, db_query);
-        plugin_set_begin_func(&plugin, db_begin);
-        plugin_set_commit_func(&plugin, db_commit);
-        plugin_set_rollback_func(&plugin, db_rollback);
-        plugin_set_closing_func(&plugin, db_close);
-        plugin_set_errno_func(&plugin, db_errno);
-	plugin_set_table_free_func(&plugin, db_table_free);
-	plugin_set_field_name_func(&plugin, db_field_name);
-	plugin_set_field_num_func(&plugin, db_field_num);
-	plugin_set_field_type_func(&plugin, db_field_type);
-	plugin_set_field_type_by_name_func(&plugin, db_field_type_by_name);
-	plugin_set_fields_num_func(&plugin, db_fields_num);
-	plugin_set_rows_num_func(&plugin, db_rows_num);
-	plugin_set_row_fetch_func(&plugin, db_row_fetch);
-	plugin_set_field_fetch_func(&plugin, db_field_fetch);
-	plugin_set_field_fetch_by_name_func(&plugin, db_field_fetch_by_name);
-	plugin_set_build_time_constraint_func(&plugin, db_build_time_constraint);
-	plugin_set_build_time_interval_func(&plugin, db_build_time_interval);
+        prelude_plugin_set_desc(&plugin, "SQL plugin for PostgreSQL database.");
+	prelude_plugin_set_author(&plugin, "Nicolas Delon");
+        prelude_plugin_set_contact(&plugin, "nicolas@prelude-ids.org");
+
+        preludedb_plugin_sql_set_open_func(&plugin, sql_open);
+        preludedb_plugin_sql_set_close_func(&plugin, sql_close);
+        preludedb_plugin_sql_set_get_error_func(&plugin, sql_get_error);
+        preludedb_plugin_sql_set_escape_func(&plugin, sql_escape);
+        preludedb_plugin_sql_set_escape_binary_func(&plugin, sql_escape_binary);
+        preludedb_plugin_sql_set_unescape_binary_func(&plugin, sql_unescape_binary);
+        preludedb_plugin_sql_set_query_func(&plugin, sql_query);
+	preludedb_plugin_sql_set_resource_destroy_func(&plugin, sql_resource_destroy);
+	preludedb_plugin_sql_set_get_column_count_func(&plugin, sql_get_column_count);
+	preludedb_plugin_sql_set_get_row_count_func(&plugin, sql_get_row_count);
+	preludedb_plugin_sql_set_get_column_name_func(&plugin, sql_get_column_name);
+	preludedb_plugin_sql_set_get_column_num_func(&plugin, sql_get_column_num);
+	preludedb_plugin_sql_set_fetch_row_func(&plugin, sql_fetch_row);
+	preludedb_plugin_sql_set_fetch_field_func(&plugin, sql_fetch_field);
+	preludedb_plugin_sql_set_build_time_constraint_string_func(&plugin, sql_build_time_constraint_string);
+	preludedb_plugin_sql_set_build_time_interval_string_func(&plugin, sql_build_time_interval_string);
+        preludedb_plugin_sql_set_build_limit_offset_string_func(&plugin, sql_build_limit_offset_string);
 
 	return (void *) &plugin;
 }
-

@@ -35,13 +35,16 @@
 #define AS_MESSAGES 0
 #define AS_VALUES 1
 
-prelude_sql_table_t *idmef_db_select(prelude_db_connection_t *conn,
-				     prelude_db_object_selection_t *selection, 
-				     idmef_criteria_t *criteria,
-				     int distinct,
-				     int limit,
-				     int offset,
-				     int as_values);
+int idmef_db_select(preludedb_sql_t *sql,
+		    preludedb_object_selection_t *selection, 
+		    idmef_criteria_t *criteria,
+		    int distinct, int limit, int offset, int as_values,
+		    preludedb_sql_table_t **table);
+
+int idmef_db_select_idents(preludedb_sql_t *sql,
+			   char type,
+			   idmef_criteria_t *criteria,
+			   int limit, int offset, preludedb_result_idents_order_t order,
+			   preludedb_sql_table_t **table);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_IDMEF_DB_SELECT_H */
-

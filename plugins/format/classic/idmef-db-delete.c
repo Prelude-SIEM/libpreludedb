@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003,2004 Nicolas Delon <nicolas@prelude-ids.org>
+* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -32,134 +32,98 @@
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-tree-wrap.h>
 
-#include "sql-connection-data.h"
-#include "sql.h"
-#include "db-message-ident.h"
-#include "db-type.h"
-#include "db-connection.h"
-#include "db-object.h"
-
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
 
 #include "idmef-db-delete.h"
 
-#define db_log(sql) log(LOG_ERR, "%s\n", prelude_sql_error(sql))
 
-#define db_query(sql, query, ident)			\
-	do {						\
-		prelude_sql_query(sql, query, ident);	\
-							\
-		if ( prelude_sql_errno(sql) ) {		\
-			db_log(sql);			\
-			goto error;			\
-		}					\
-	} while ( 0 )
-
-
-int	delete_alert(prelude_db_connection_t *connection, uint64_t ident)
+static int delete_message(preludedb_sql_t *sql, uint64_t ident, unsigned int count, const char *queries[])
 {
-	prelude_sql_connection_t *sql;
+	int i;
+	int ret;
+	int tmp;
 
-	sql = prelude_db_connection_get(connection);
-	if ( ! sql ) {
-		log(LOG_ERR, "not a SQL connection\n");
-		return -1;
+	ret = preludedb_sql_transaction_start(sql);
+	if ( ret < 0 )
+		return ret;
+
+	for ( i = 0; i < count; i++ ) {
+		ret = preludedb_sql_query_sprintf(sql, NULL, queries[i], ident);
+		if ( ret < 0 )
+			goto error;
 	}
 
-	if ( prelude_sql_begin(sql) < 0 ) {
-		db_log(sql);
-		return -3;
-	}
-
-	db_query(sql, "DELETE FROM Prelude_Action WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'A' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Address WHERE _parent_type != 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Alert WHERE _ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_AlertIdent WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Analyzer WHERE _parent_type = 'A' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'A' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Assessment WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Classification WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Reference WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Confidence WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_CorrelationAlert WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_CreateTime WHERE _parent_type = 'A' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_DetectTime WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_File WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_FileAccess WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_FileAccess_Permission WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Impact WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Inode WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Checksum WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Linkage WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Node WHERE _parent_type != 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_OverflowAlert WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Process WHERE _parent_type != 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_ProcessArg WHERE _parent_type != 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_ProcessEnv WHERE _parent_type != 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_SNMPService WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Service WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Source WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Target WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_ToolAlert WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_User WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_UserId WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_WebService WHERE _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_WebServiceArg WHERE _message_ident = %" PRIu64 "", ident);
-
-	if ( prelude_sql_commit(sql) < 0 ) {
-		db_log(sql);
-		return -4;
-	}
-
-	return 1;
+	return preludedb_sql_transaction_end(sql);
 
  error:
-	if ( prelude_sql_rollback(sql) < 0 ) {
-		log(LOG_ERR, "could not rollback: %s\n", prelude_sql_error(sql));
-		return -5;
-	}
+	tmp = preludedb_sql_transaction_abort(sql);
 
-	log(LOG_ERR, "deletion of alert %" PRIu64 " failed\n", ident);
-
-	return -6;
+	return (tmp < 0) ? tmp : ret;
+	
 }
 
 
-int	delete_heartbeat(prelude_db_connection_t *connection, uint64_t ident)
+
+int delete_alert(preludedb_sql_t *sql, uint64_t ident)
 {
-	prelude_sql_connection_t *sql;
+	static const char *queries[] = {
+		"DELETE FROM Prelude_Action WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Address WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Alert WHERE _ident = %" PRIu64,
+		"DELETE FROM Prelude_AlertIdent WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Analyzer WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Assessment WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Classification WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Reference WHERE _message_ident = %" PRIu64 "",
+		"DELETE FROM Prelude_Confidence WHERE _message_ident = %" PRIu64 "",
+		"DELETE FROM Prelude_CorrelationAlert WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_CreateTime WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_DetectTime WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_File WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_FileAccess WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_FileAccess_Permission WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Impact WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Inode WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Checksum WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Linkage WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Node WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_OverflowAlert WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Process WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_ProcessArg WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_ProcessEnv WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_SNMPService WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Service WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Source WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Target WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_ToolAlert WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_User WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_UserId WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_WebService WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_WebServiceArg WHERE _message_ident = %" PRIu64
+	};
 
-	sql = prelude_db_connection_get(connection);
-	if ( ! sql ) {
-		log(LOG_ERR, "not a SQL connection\n");
-		return -1;
-	}
+	return delete_message(sql, ident, sizeof (queries) / sizeof (queries[0]), queries);
+}
 
-	db_query(sql, "DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Address WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Analyzer WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_CreateTime WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Node WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Process WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_ProcessArg WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_ProcessEnv WHERE _parent_type = 'H' AND _message_ident = %" PRIu64 "", ident);
-	db_query(sql, "DELETE FROM Prelude_Heartbeat WHERE _ident = %" PRIu64 "", ident);
 
-	if ( prelude_sql_commit(sql) < 0 ) {
-		db_log(sql);
-		return -4;
-	}
 
-	return 0;
+int delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
+{
+	static const char *queries[] = {
+		"DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Address WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Analyzer WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_CreateTime WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Node WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Process WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_ProcessArg WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_ProcessEnv WHERE _parent_type = 'H' AND _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Heartbeat WHERE _ident = %" PRIu64,
+	};
 
- error:
-	if ( prelude_sql_rollback(sql) < 0 ) {
-		log(LOG_ERR, "could not rollback: %s\n", prelude_sql_error(sql));
-		return -5;
-	}
-
-	log(LOG_ERR, "deletion of alert %" PRIu64 " failed\n", ident);
-
-	return -6;
+	return delete_message(sql, ident, sizeof (queries) / sizeof (queries[0]), queries);
 }
