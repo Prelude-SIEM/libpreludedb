@@ -438,7 +438,7 @@ preludedb_result_values_t *preludedb_get_values(preludedb_t *db,
 	result->selection = object_selection;
 
 	ret = db->plugin->get_values(db->sql, object_selection, criteria, distinct, limit, offset, &result->res);
-	if ( ret < 0 ) {
+	if ( ret <= 0 ) {
 		free(result);
 		return NULL;
 	}
