@@ -819,9 +819,7 @@ static int insert_classification(prelude_sql_connection_t *conn, uint64_t alert_
 
 static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t parent_ident, char parent_type, idmef_additional_data_t *additional_data) 
 {
-        int size;
         const char *type;
-	const char *tmp;
         char buf[1024], *meaning, *data;
         int ret;
 
@@ -832,22 +830,19 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t paren
         if ( ! type )
                 return -1;
 
-        size = sizeof(buf);
-        
-        tmp = idmef_additional_data_to_string(additional_data, buf, &size);
-        if ( ! tmp )
+        if ( idmef_additionaldata_data_to_string(additional_data, buf, sizeof (buf)) < 0 )
                 return -2;
 
         meaning = prelude_sql_escape(conn, idmef_string(idmef_additional_data_get_meaning(additional_data)));
-        if ( ! meaning ) 
+        if ( ! meaning )
                 return -3;
-        
-        data = prelude_sql_escape(conn, tmp);
+
+        data = prelude_sql_escape(conn, buf);
         if ( ! data ) {
                 free(meaning);
                 return -4;
         }
-        
+
         ret = prelude_sql_insert(conn, "Prelude_AdditionalData", "parent_ident, parent_type, type, meaning, data",
 				 "%llu, '%c', '%s', '%s', '%s'", parent_ident, parent_type, type, meaning, data);
 

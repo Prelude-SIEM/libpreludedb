@@ -1,3 +1,9 @@
+2003-10-12  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-insert.c:
+	(insert_additional_data)
+	fit idmef_additional_data_to_string changes
+
 2003-10-08  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.c:
