@@ -39,6 +39,7 @@ typedef struct prelude_db_object_selection prelude_db_object_selection_t;
 typedef struct prelude_db_selected_object prelude_db_selected_object_t;
 
 prelude_db_selected_object_t *prelude_db_selected_object_new(idmef_object_t *object, int flags);
+prelude_db_selected_object_t *prelude_db_selected_object_new_string(const char *str);
 void prelude_db_selected_object_destroy(prelude_db_selected_object_t *selected_object);
 idmef_object_t *prelude_db_selected_object_get_object(prelude_db_selected_object_t *selected_object);
 int prelude_db_selected_object_get_flags(prelude_db_selected_object_t *selected_object);

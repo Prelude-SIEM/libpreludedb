@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.26 2003/12/21 22:36:29 nicolas Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.27 2003/12/26 18:30:44 nicolas Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -565,27 +565,23 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 #define  SWIGTYPE_p_int16_t swig_types[3] 
 #define  SWIGTYPE_p_uint16_t swig_types[4] 
 #define  SWIGTYPE_p_prelude_sql_field_t swig_types[5] 
-#define  SWIGTYPE_p_int32_t swig_types[6] 
-#define  SWIGTYPE_p_uint32_t swig_types[7] 
-#define  SWIGTYPE_p_uint64_t swig_types[8] 
-#define  SWIGTYPE_p_int64_t swig_types[9] 
-#define  SWIGTYPE_p_prelude_db_selected_object_t swig_types[10] 
-#define  SWIGTYPE_p_idmef_object_t swig_types[11] 
-#define  SWIGTYPE_p_prelude_sql_row_t swig_types[12] 
-#define  SWIGTYPE_p_void swig_types[13] 
-#define  SWIGTYPE_p_prelude_db_connection_t swig_types[14] 
-#define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[15] 
-#define  SWIGTYPE_p_idmef_message_t swig_types[16] 
-#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[17] 
-#define  SWIGTYPE_p_prelude_db_interface_t swig_types[18] 
-#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[19] 
-#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[20] 
-#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[21] 
-#define  SWIGTYPE_p_idmef_criteria_t swig_types[22] 
-#define  SWIGTYPE_p_prelude_sql_table_t swig_types[23] 
-#define  SWIGTYPE_p_idmef_string_t swig_types[24] 
-#define  SWIGTYPE_p_idmef_value_t swig_types[25] 
-static swig_type_info *swig_types[27];
+#define  SWIGTYPE_p_prelude_db_selected_object_t swig_types[6] 
+#define  SWIGTYPE_p_idmef_object_t swig_types[7] 
+#define  SWIGTYPE_p_prelude_sql_row_t swig_types[8] 
+#define  SWIGTYPE_p_void swig_types[9] 
+#define  SWIGTYPE_p_prelude_sql_connection_t swig_types[10] 
+#define  SWIGTYPE_p_prelude_db_connection_t swig_types[11] 
+#define  SWIGTYPE_p_prelude_db_object_selection_t swig_types[12] 
+#define  SWIGTYPE_p_idmef_message_t swig_types[13] 
+#define  SWIGTYPE_p_prelude_db_interface_t swig_types[14] 
+#define  SWIGTYPE_p_prelude_db_connection_data_t swig_types[15] 
+#define  SWIGTYPE_p_prelude_sql_connection_data_t swig_types[16] 
+#define  SWIGTYPE_p_prelude_db_message_ident_t swig_types[17] 
+#define  SWIGTYPE_p_idmef_criteria_t swig_types[18] 
+#define  SWIGTYPE_p_prelude_sql_table_t swig_types[19] 
+#define  SWIGTYPE_p_idmef_string_t swig_types[20] 
+#define  SWIGTYPE_p_idmef_value_t swig_types[21] 
+static swig_type_info *swig_types[23];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -621,18 +617,6 @@ SWIGEXPORT(void) SWIG_init (CV *cv, CPerlObj *);
 #include "db-object-selection.h"
 #include "db-interface.h"
 #include "db-interface-string.h"
-
-/*
- * workaround, the function prelude_db_connection_get returns a (void *)
- * and prelude_sql_* function take a (prelude_sql_connection_t *), once 
- * perl bless those types, there are not compatible anymore, so we create
- * this function to get a (prelude_sql_connection_t *) type and not a (void *)
- */
-
-static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connection_t *dbconn)
-{
-	return prelude_db_connection_get(dbconn);
-}
 
 
 #ifdef PERL_OBJECT
@@ -721,6 +705,32 @@ XS(_wrap_prelude_db_selected_object_new) {
         }
         arg2 = (int) SvIV(ST(1));
         result = (prelude_db_selected_object_t *)prelude_db_selected_object_new(arg1,arg2);
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_selected_object_t,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_selected_object_new_string) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        char *arg1 ;
+        prelude_db_selected_object_t *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_selected_object_new_string(str);");
+        }
+        if (!SvOK((SV*) ST(0))) arg1 = 0;
+        else arg1 = (char *) SvPV(ST(0), PL_na);
+        result = (prelude_db_selected_object_t *)prelude_db_selected_object_new_string((char const *)arg1);
         
         ST(argvi) = sv_newmortal();
         SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_db_selected_object_t,0);
@@ -1024,7 +1034,7 @@ XS(_wrap_prelude_db_message_ident_get_analyzerid) {
                 SWIG_croak("Type error in argument 1 of prelude_db_message_ident_get_analyzerid. Expected _p_prelude_db_message_ident_t");
             }
         }
-        result = prelude_db_message_ident_get_analyzerid(arg1);
+        result = (uint64_t)prelude_db_message_ident_get_analyzerid(arg1);
         
         {
             char tmp[32];
@@ -1062,7 +1072,7 @@ XS(_wrap_prelude_db_message_ident_get_ident) {
                 SWIG_croak("Type error in argument 1 of prelude_db_message_ident_get_ident. Expected _p_prelude_db_message_ident_t");
             }
         }
-        result = prelude_db_message_ident_get_ident(arg1);
+        result = (uint64_t)prelude_db_message_ident_get_ident(arg1);
         
         {
             char tmp[32];
@@ -2028,6 +2038,35 @@ XS(_wrap_prelude_db_connection_get) {
 }
 
 
+XS(_wrap_prelude_db_connection_get_sql) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_connection_t *arg1 = (prelude_db_connection_t *) 0 ;
+        prelude_sql_connection_t *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_connection_get_sql(conn);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_connection_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_connection_get_sql. Expected _p_prelude_db_connection_t");
+            }
+        }
+        result = (prelude_sql_connection_t *)prelude_db_connection_get_sql(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_sql_connection_t,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_prelude_db_connection_destroy) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -2919,14 +2958,10 @@ XS(_wrap_prelude_sql_field_value_int32) {
                 SWIG_croak("Type error in argument 1 of prelude_sql_field_value_int32. Expected _p_prelude_sql_field_t");
             }
         }
-        result = prelude_sql_field_value_int32(arg1);
+        result = (int32_t)prelude_sql_field_value_int32(arg1);
         
-        {
-            int32_t * resultobj = (int32_t *) malloc(sizeof(int32_t));
-            memmove(resultobj, &result, sizeof(int32_t));
-            ST(argvi) = sv_newmortal();
-            SWIG_MakePtr(ST(argvi++), (void *) resultobj, SWIGTYPE_p_int32_t,0);
-        }
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -2952,14 +2987,10 @@ XS(_wrap_prelude_sql_field_value_uint32) {
                 SWIG_croak("Type error in argument 1 of prelude_sql_field_value_uint32. Expected _p_prelude_sql_field_t");
             }
         }
-        result = prelude_sql_field_value_uint32(arg1);
+        result = (uint32_t)prelude_sql_field_value_uint32(arg1);
         
-        {
-            uint32_t * resultobj = (uint32_t *) malloc(sizeof(uint32_t));
-            memmove(resultobj, &result, sizeof(uint32_t));
-            ST(argvi) = sv_newmortal();
-            SWIG_MakePtr(ST(argvi++), (void *) resultobj, SWIGTYPE_p_uint32_t,0);
-        }
+        ST(argvi) = sv_newmortal();
+        sv_setuv(ST(argvi++), (UV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -2985,13 +3016,13 @@ XS(_wrap_prelude_sql_field_value_int64) {
                 SWIG_croak("Type error in argument 1 of prelude_sql_field_value_int64. Expected _p_prelude_sql_field_t");
             }
         }
-        result = prelude_sql_field_value_int64(arg1);
+        result = (int64_t)prelude_sql_field_value_int64(arg1);
         
         {
-            int64_t * resultobj = (int64_t *) malloc(sizeof(int64_t));
-            memmove(resultobj, &result, sizeof(int64_t));
+            char temp[256];
+            sprintf(temp,"%lld", result);
             ST(argvi) = sv_newmortal();
-            SWIG_MakePtr(ST(argvi++), (void *) resultobj, SWIGTYPE_p_int64_t,0);
+            sv_setpv((SV*)ST(argvi++), temp);
         }
         XSRETURN(argvi);
         fail:
@@ -3018,7 +3049,7 @@ XS(_wrap_prelude_sql_field_value_uint64) {
                 SWIG_croak("Type error in argument 1 of prelude_sql_field_value_uint64. Expected _p_prelude_sql_field_t");
             }
         }
-        result = prelude_sql_field_value_uint64(arg1);
+        result = (uint64_t)prelude_sql_field_value_uint64(arg1);
         
         {
             char tmp[32];
@@ -3155,35 +3186,6 @@ XS(_wrap_prelude_sql_field_value_idmef) {
 }
 
 
-XS(_wrap__prelude_db_connection_get) {
-    char _swigmsg[SWIG_MAX_ERRMSG] = "";
-    const char *_swigerr = _swigmsg;
-    {
-        prelude_db_connection_t *arg1 = (prelude_db_connection_t *) 0 ;
-        prelude_sql_connection_t *result;
-        int argvi = 0;
-        dXSARGS;
-        
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: _prelude_db_connection_get(dbconn);");
-        }
-        {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_connection_t,0) < 0) {
-                SWIG_croak("Type error in argument 1 of _prelude_db_connection_get. Expected _p_prelude_db_connection_t");
-            }
-        }
-        result = (prelude_sql_connection_t *)_prelude_db_connection_get(arg1);
-        
-        ST(argvi) = sv_newmortal();
-        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_prelude_sql_connection_t,0);
-        XSRETURN(argvi);
-        fail:
-        (void) _swigerr;
-    }
-    croak(_swigerr);
-}
-
-
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
@@ -3193,18 +3195,14 @@ static swig_type_info _swigt__p_prelude_db_message_ident_list_t[] = {{"_p_prelud
 static swig_type_info _swigt__p_int16_t[] = {{"_p_int16_t", 0, "int16_t *", 0},{"_p_int16_t"},{0}};
 static swig_type_info _swigt__p_uint16_t[] = {{"_p_uint16_t", 0, "uint16_t *", 0},{"_p_uint16_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_field_t[] = {{"_p_prelude_sql_field_t", 0, "prelude_sql_field_t *", 0},{"_p_prelude_sql_field_t"},{0}};
-static swig_type_info _swigt__p_int32_t[] = {{"_p_int32_t", 0, "int32_t *", 0},{"_p_int32_t"},{0}};
-static swig_type_info _swigt__p_uint32_t[] = {{"_p_uint32_t", 0, "uint32_t *", 0},{"_p_uint32_t"},{0}};
-static swig_type_info _swigt__p_uint64_t[] = {{"_p_uint64_t", 0, "uint64_t *", 0},{"_p_uint64_t"},{0}};
-static swig_type_info _swigt__p_int64_t[] = {{"_p_int64_t", 0, "int64_t *", 0},{"_p_int64_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_selected_object_t[] = {{"_p_prelude_db_selected_object_t", 0, "prelude_db_selected_object_t *", 0},{"_p_prelude_db_selected_object_t"},{0}};
 static swig_type_info _swigt__p_idmef_object_t[] = {{"_p_idmef_object_t", 0, "idmef_object_t *", 0},{"_p_idmef_object_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_row_t[] = {{"_p_prelude_sql_row_t", 0, "prelude_sql_row_t *", 0},{"_p_prelude_sql_row_t"},{0}};
 static swig_type_info _swigt__p_void[] = {{"_p_void", 0, "void *", 0},{"_p_void"},{0}};
+static swig_type_info _swigt__p_prelude_sql_connection_t[] = {{"_p_prelude_sql_connection_t", 0, "prelude_sql_connection_t *", 0},{"_p_prelude_sql_connection_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_connection_t[] = {{"_p_prelude_db_connection_t", 0, "prelude_db_connection_t *", 0},{"_p_prelude_db_connection_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_object_selection_t[] = {{"_p_prelude_db_object_selection_t", 0, "prelude_db_object_selection_t *", 0},{"_p_prelude_db_object_selection_t"},{0}};
 static swig_type_info _swigt__p_idmef_message_t[] = {{"_p_idmef_message_t", 0, "idmef_message_t *", 0},{"_p_idmef_message_t"},{0}};
-static swig_type_info _swigt__p_prelude_sql_connection_t[] = {{"_p_prelude_sql_connection_t", 0, "prelude_sql_connection_t *", 0},{"_p_prelude_sql_connection_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_interface_t[] = {{"_p_prelude_db_interface_t", 0, "prelude_db_interface_t *", 0},{"_p_prelude_db_interface_t"},{0}};
 static swig_type_info _swigt__p_prelude_db_connection_data_t[] = {{"_p_prelude_db_connection_data_t", 0, "prelude_db_connection_data_t *", 0},{"_p_prelude_db_connection_data_t"},{0}};
 static swig_type_info _swigt__p_prelude_sql_connection_data_t[] = {{"_p_prelude_sql_connection_data_t", 0, "prelude_sql_connection_data_t *", 0},{"_p_prelude_sql_connection_data_t"},{0}};
@@ -3221,18 +3219,14 @@ _swigt__p_prelude_db_message_ident_list_t,
 _swigt__p_int16_t, 
 _swigt__p_uint16_t, 
 _swigt__p_prelude_sql_field_t, 
-_swigt__p_int32_t, 
-_swigt__p_uint32_t, 
-_swigt__p_uint64_t, 
-_swigt__p_int64_t, 
 _swigt__p_prelude_db_selected_object_t, 
 _swigt__p_idmef_object_t, 
 _swigt__p_prelude_sql_row_t, 
 _swigt__p_void, 
+_swigt__p_prelude_sql_connection_t, 
 _swigt__p_prelude_db_connection_t, 
 _swigt__p_prelude_db_object_selection_t, 
 _swigt__p_idmef_message_t, 
-_swigt__p_prelude_sql_connection_t, 
 _swigt__p_prelude_db_interface_t, 
 _swigt__p_prelude_db_connection_data_t, 
 _swigt__p_prelude_sql_connection_data_t, 
@@ -3280,6 +3274,7 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_init", _wrap_prelude_db_init},
 {"PreludeDB::prelude_db_shutdown", _wrap_prelude_db_shutdown},
 {"PreludeDB::prelude_db_selected_object_new", _wrap_prelude_db_selected_object_new},
+{"PreludeDB::prelude_db_selected_object_new_string", _wrap_prelude_db_selected_object_new_string},
 {"PreludeDB::prelude_db_selected_object_destroy", _wrap_prelude_db_selected_object_destroy},
 {"PreludeDB::prelude_db_selected_object_get_object", _wrap_prelude_db_selected_object_get_object},
 {"PreludeDB::prelude_db_selected_object_get_flags", _wrap_prelude_db_selected_object_get_flags},
@@ -3320,6 +3315,7 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_connection_new", _wrap_prelude_db_connection_new},
 {"PreludeDB::prelude_db_connection_get_type", _wrap_prelude_db_connection_get_type},
 {"PreludeDB::prelude_db_connection_get", _wrap_prelude_db_connection_get},
+{"PreludeDB::prelude_db_connection_get_sql", _wrap_prelude_db_connection_get_sql},
 {"PreludeDB::prelude_db_connection_destroy", _wrap_prelude_db_connection_destroy},
 {"PreludeDB::prelude_sql_query", _wrap_prelude_sql_query},
 {"PreludeDB::prelude_sql_errno", _wrap_prelude_sql_errno},
@@ -3354,7 +3350,6 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_sql_field_value_double", _wrap_prelude_sql_field_value_double},
 {"PreludeDB::prelude_sql_field_value_string", _wrap_prelude_sql_field_value_string},
 {"PreludeDB::prelude_sql_field_value_idmef", _wrap_prelude_sql_field_value_idmef},
-{"PreludeDB::_prelude_db_connection_get", _wrap__prelude_db_connection_get},
 {0,0}
 };
 

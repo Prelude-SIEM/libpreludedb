@@ -32,9 +32,9 @@ prelude_db_connection_t *prelude_db_connection_new(prelude_db_type_t type, void 
 prelude_db_type_t prelude_db_connection_get_type(prelude_db_connection_t *conn);
 
 void *prelude_db_connection_get(prelude_db_connection_t *conn);
+prelude_sql_connection_t *prelude_db_connection_get_sql(prelude_db_connection_t *conn);
 
 void prelude_db_connection_destroy(prelude_db_connection_t *conn);
-
 
 #endif /* _LIBPRELUDEDB_DB_CONNECTION_H */
 

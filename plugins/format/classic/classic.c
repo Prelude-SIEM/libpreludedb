@@ -480,7 +480,8 @@ static idmef_object_value_list_t *classic_get_values(prelude_db_connection_t *co
 
 			value = idmef_value_new_for_object(object, char_val);
 			if ( ! value ) {
-				log(LOG_ERR, "could not build idmef value from object\n");
+				log(LOG_ERR, "could not build idmef value '%s' from object '%s'\n",
+				    char_val, idmef_object_get_name(object));
 				goto error;
 			}
 		}

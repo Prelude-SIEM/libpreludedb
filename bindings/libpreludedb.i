@@ -37,21 +37,9 @@
 #include "db-interface.h"
 #include "db-interface-string.h"
 
-/*
- * workaround, the function prelude_db_connection_get returns a (void *)
- * and prelude_sql_* function take a (prelude_sql_connection_t *), once 
- * perl bless those types, there are not compatible anymore, so we create
- * this function to get a (prelude_sql_connection_t *) type and not a (void *)
- */
-
-static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connection_t *dbconn)
-{
-	return prelude_db_connection_get(dbconn);
-}
-
 %}
 
-%typemap(in) char ** {
+%typemap(perl5, in) char ** {
 	AV *tempav;
 	I32 len;
 	int i;
@@ -75,11 +63,11 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	$1[i] = NULL;
 };
 
-%typemap(in) uint8_t {
+%typemap(perl5, in) uint8_t {
 	$1 = (uint8_t) SvIV($input);
 };
 
-%typemap(out) prelude_sql_field_t * {
+%typemap(perl5, out) prelude_sql_field_t * {
 
 	if ( $1 ) {
 		switch ( prelude_sql_field_info_type($1) ) {
@@ -119,7 +107,7 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	}
 };
 
-%typemap(in) uint64_t {
+%typemap(perl5, in) uint64_t {
 	if ( SvIOK($input) ) {
 		$1 = (uint64_t) SvIV($input);
 
@@ -130,7 +118,7 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	}
 };
 
-%typemap(out) uint64_t {
+%typemap(perl5, out) uint64_t {
 	char tmp[32];
 	int len;
 
@@ -142,6 +130,11 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 	}
 };
 
+typedef int int32_t;
+typedef unsigned int uint32_t;
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+
 %include "../../src/include/db-type.h"
 %include "../../src/include/db.h"
 %include "../../src/include/db-object-selection.h"
@@ -150,5 +143,3 @@ static prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connectio
 %include "../../src/include/db-interface-string.h"
 %include "../../src/include/db-connection.h"
 %include "../../src/include/sql.h"
-
-prelude_sql_connection_t *_prelude_db_connection_get(prelude_db_connection_t *dbconn);

@@ -35,6 +35,7 @@
 #include "db-type.h"
 #include "db-message-ident.h"
 #include "sql-connection-data.h"
+#include "sql.h"
 #include "db-object-selection.h"
 #include "db-connection.h" 
 #include "db-connection-data.h"

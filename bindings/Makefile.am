@@ -1,1 +1,1 @@
-SUBDIRS = perl
+SUBDIRS = perl python

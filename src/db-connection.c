@@ -24,8 +24,11 @@
 #include <stdlib.h>
 
 #include <libprelude/prelude-log.h>
+#include <libprelude/idmef.h>
 
 #include "db-type.h"
+#include "sql-connection-data.h"
+#include "sql.h"
 #include "db-connection.h"
 
 
@@ -68,6 +71,16 @@ prelude_db_type_t prelude_db_connection_get_type(prelude_db_connection_t *conn)
 void *prelude_db_connection_get(prelude_db_connection_t *conn)
 {
 	return conn ? conn->connection : NULL;
+}
+
+
+
+prelude_sql_connection_t *prelude_db_connection_get_sql(prelude_db_connection_t *conn)
+{
+	if ( conn->type != prelude_db_type_sql )
+		return NULL;
+
+	return conn->connection;
 }
 
 

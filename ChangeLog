@@ -1,3 +1,32 @@
+2003-12-26  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.c:
+	regenerated
+
+	* bindings/perl/PreludeDB.pm:
+	cleanup
+	(PreludeDBSelection)
+	modified to use the new prelude_db_selected_object_new_string
+	function (the function has been rewritten from Perl to C so that
+	it can be also used from Python)
+
+	* bindings/perl/PreludeDB.i:
+	moved in bindings/libpreludedb.i
+
+	* src/db-connection.c:
+	* src/include/db-connection.h:
+	(prelude_db_connection_get_sql)
+	new function
+
+	* src/db-object-selection.c:
+	* src/include/db-object-selection.h:
+	(prelude_db_selected_object_new_string)
+	new function, it should be used by the bindings
+
+	* bindings/python/*:
+	new files
+	python binding support
+
 2003-12-21  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/db-interface.c:

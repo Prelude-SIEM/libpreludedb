@@ -94,7 +94,7 @@ prelude_db_connection_data_t *prelude_db_interface_get_connection_data(prelude_d
 
 int prelude_db_interface_errno(prelude_db_interface_t *interface);
 
-const char * prelude_db_interface_error(prelude_db_interface_t *interface);
+const char *prelude_db_interface_error(prelude_db_interface_t *interface);
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
 
