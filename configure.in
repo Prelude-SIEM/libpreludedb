@@ -214,12 +214,14 @@ GTK_DOC_CHECK(1.0)
 db_plugin_dir=$libdir/libpreludedb/plugins
 sql_plugin_dir=$db_plugin_dir/sql
 format_plugin_dir=$db_plugin_dir/formats
+format_schema_dir=$datadir/libpreludedb
 format_config_dir=$sysconfdir/libpreludedb/plugins/formats
 
 AC_SUBST(db_plugin_dir)
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
 AC_SUBST(format_config_dir)
+AC_SUBST(format_schema_dir)
 
 AX_CFLAGS_GCC_OPTION(-Wall)
 AX_CFLAGS_GCC_OPTION(-Wstrict-prototypes)

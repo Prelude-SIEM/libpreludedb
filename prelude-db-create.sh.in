@@ -315,8 +315,8 @@ db_create_users ()
 			mysql -u ${db_user} --password=${db_password} -P ${db_port} -e "GRANT ALL PRIVILEGES ON ${db_name}.* TO ${manager_user}@${db_host} IDENTIFIED BY '${manager_password}';" ${db_name}
 
 			echo
-			echo "Creating tables with @format_config_dir@/classic/mysql.sql"
-			mysql -h ${db_host} -u ${manager_user} --password=${manager_password} -P ${db_port} --database ${db_name} < @format_config_dir@/classic/mysql.sql
+			echo "Creating tables with @format_schema_dir@/classic/mysql.sql"
+			mysql -h ${db_host} -u ${manager_user} --password=${manager_password} -P ${db_port} --database ${db_name} < @format_schema_dir@/classic/mysql.sql
 
 			;;
 		pgsql)
@@ -334,8 +334,8 @@ db_create_users ()
 
 # Tables creation:
 
-			echo "Creating tables with @format_config_dir@/classic/pgsql.sql"
-			cat @format_config_dir@/classic/pgsql.sql | \
+			echo "Creating tables with @format_schema_dir@/classic/pgsql.sql"
+			cat @format_schema_dir@/classic/pgsql.sql | \
 				PGPASSWORD=${manager_password} psql -h ${db_host} -p ${db_port} -d "${db_name}" -U "${manager_user}"
 			;;
 		*)

@@ -9,10 +9,5 @@ classic_la_SOURCES = classic.c classic-delete.c classic-get.c classic-insert.c c
 classic_LTLIBRARIES = classic.la
 classicdir = $(format_plugin_dir)
 
-install-data-local:
-	$(INSTALL) -d -m 755 $(DESTDIR)/$(format_config_dir)/classic
-	$(INSTALL) -m 644 $(srcdir)/*.sql $(DESTDIR)/$(format_config_dir)/classic
-
-uninstall-local:
-	rm -f $(DESTDIR)/$(format_config_dir)/classic/*.sql
-	rm -f $(DESTDIR)/$(format_config_dir)/classic/schema.txt
+schemadatadir = $(format_schema_dir)/classic
+dist_schemadata_DATA = mysql.sql pgsql.sql
