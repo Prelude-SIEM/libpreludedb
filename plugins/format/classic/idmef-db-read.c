@@ -544,9 +544,10 @@ strbuf_t *build_request(prelude_sql_connection_t *conn,
 			goto error;
 	}
 	
-	ret = strbuf_sprintf(request, "SELECT DISTINCT %s FROM %s WHERE %s %s %s ", 
+	ret = strbuf_sprintf(request, "SELECT DISTINCT %s FROM %s %s %s %s %s ", 
 		             strbuf_string(fields), 
-		             strbuf_string(tables), 
+		             strbuf_string(tables),
+			     ( strbuf_empty(where1) && strbuf_empty(where2) ) ? "" : "WHERE",
 		             strbuf_string(where1), 
 		             ( strbuf_empty(where1) || strbuf_empty(where2) ? "" : "AND" ), 
 		             strbuf_string(where2));
