@@ -99,12 +99,12 @@ int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value);
 int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
 
-const char *preludedb_sql_get_relation_string(idmef_value_relation_t relation);
+const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operator);
 
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 prelude_string_t *output,
 					 const char *field,
-					 idmef_value_relation_t relation, idmef_criterion_value_t *value);
+					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value);
 
 int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec);
 int preludedb_sql_time_to_timestamp(const idmef_time_t *time,

@@ -48,7 +48,7 @@ typedef struct {
 			   const char **value, size_t *len);
 	int (*build_time_constraint_string)(prelude_string_t *output, const char *field,
 					    preludedb_sql_time_constraint_type_t type,
-					    idmef_value_relation_t relation, int value, int gmt_offset);
+					    idmef_criterion_operator_t operator, int value, int gmt_offset);
 	int (*build_time_interval_string)(preludedb_sql_time_constraint_type_t type, int value,
 					  char *buf, size_t size);
 	int (*build_limit_offset_string)(void *session, int limit, int offset, prelude_string_t *output);

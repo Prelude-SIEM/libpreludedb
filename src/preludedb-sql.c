@@ -947,324 +947,39 @@ int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t
 
 
 /**
- * preludedb_sql_get_relation_string:
- * @relation: An idmef value relation.
+ * preludedb_sql_get_operator_string:
+ * @operator: An idmef value operator.
  *
- * Get the sql representation of the given idmef value relation.
+ * Get the sql representation of the given idmef value operator.
  *
- * Returns: sql representation of the relation, or NULL if there is no sql representation
- * for the given relation.
+ * Returns: sql representation of the operator, or NULL if there is no sql representation
+ * for the given operator.
  */
-const char *preludedb_sql_get_relation_string(idmef_value_relation_t relation)
+const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operator)
 {
         int i;
         struct tbl {
-                idmef_value_relation_t relation;
+                idmef_criterion_operator_t operator;
                 const char *name;
         } tbl[] = {
-                { IDMEF_VALUE_RELATION_SUBSTR,                            "LIKE" },
-                { IDMEF_VALUE_RELATION_REGEX,                               NULL },
-                { IDMEF_VALUE_RELATION_GREATER,                              ">" },
-                { IDMEF_VALUE_RELATION_GREATER|IDMEF_VALUE_RELATION_EQUAL,  ">=" },
-                { IDMEF_VALUE_RELATION_LESSER,                               "<" },
-                { IDMEF_VALUE_RELATION_LESSER|IDMEF_VALUE_RELATION_EQUAL,   "<=" },
-                { IDMEF_VALUE_RELATION_EQUAL,                                "=" },
-                { IDMEF_VALUE_RELATION_NOT_EQUAL,                           "!=" },
-                { IDMEF_VALUE_RELATION_IS_NULL,                        "IS NULL" },
-                { IDMEF_VALUE_RELATION_IS_NOT_NULL,                "IS NOT NULL" },
+                { IDMEF_CRITERION_OPERATOR_SUBSTR,					"LIKE" },
+                { IDMEF_CRITERION_OPERATOR_REGEX,					NULL },
+                { IDMEF_CRITERION_OPERATOR_GREATER,					">" },
+                { IDMEF_CRITERION_OPERATOR_GREATER|IDMEF_CRITERION_OPERATOR_EQUAL,	">=" },
+                { IDMEF_CRITERION_OPERATOR_LESSER,					"<" },
+                { IDMEF_CRITERION_OPERATOR_LESSER|IDMEF_CRITERION_OPERATOR_EQUAL,	"<=" },
+                { IDMEF_CRITERION_OPERATOR_EQUAL,					"=" },
+                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,					"!=" },
+                { IDMEF_CRITERION_OPERATOR_IS_NULL,					"IS NULL" },
+                { IDMEF_CRITERION_OPERATOR_IS_NOT_NULL,					"IS NOT NULL" },
                 { 0, NULL },
         };
 
-        for ( i = 0; tbl[i].relation != 0; i++ )
-                if ( relation == tbl[i].relation )
+        for ( i = 0; tbl[i].operator != 0; i++ )
+                if ( operator == tbl[i].operator )
                         return tbl[i].name;
         
 	return NULL;
-}
-
-
-
-static int build_time_constraint(preludedb_sql_t *sql,
-				 prelude_string_t *output, const char *field,
-				 preludedb_sql_time_constraint_type_t type,
-				 idmef_value_relation_t relation, int value)
-{
-	int32_t gmt_offset;
-
-	if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
-		return -1;
-
-	return sql->plugin->build_time_constraint_string(output, field, type, relation, value, gmt_offset);
-}
-
-
-
-static int build_time_interval(preludedb_sql_t *sql,
-			       preludedb_sql_time_constraint_type_t type, int value,
-			       char *buf, size_t size)
-
-{
-	return sql->plugin->build_time_interval_string(type, value, buf, size);
-}
-
-
-
-static const struct {
-	preludedb_sql_time_constraint_type_t type;
-	int (*get_value)(idmef_criterion_value_non_linear_time_t *);
-} non_linear_time_values[] = {
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR,	idmef_criterion_value_non_linear_time_get_year	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH,	idmef_criterion_value_non_linear_time_get_month	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY,	idmef_criterion_value_non_linear_time_get_yday	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY,	idmef_criterion_value_non_linear_time_get_mday	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY,	idmef_criterion_value_non_linear_time_get_wday	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR,	idmef_criterion_value_non_linear_time_get_hour	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_MIN,	idmef_criterion_value_non_linear_time_get_min	},
-	{ PRELUDEDB_SQL_TIME_CONSTRAINT_SEC,	idmef_criterion_value_non_linear_time_get_sec	}
-};
-
-
-
-static int build_criterion_non_linear_time_value_relation_equal(preludedb_sql_t *sql,
-								prelude_string_t *output,
-								const char *field,
-								idmef_value_relation_t relation,
-								idmef_criterion_value_non_linear_time_t *time)
-{
-	int i;
-	int value;
-	int prev = 0;
-	int ret;
-
-	for ( i = 0; i < sizeof (non_linear_time_values) / sizeof (non_linear_time_values[0]); i++ ) {
-		value = non_linear_time_values[i].get_value(time);
-		if ( value == -1 )
-			continue;
-
-		if ( prev++ ) {
-			ret = prelude_string_cat(output, " AND ");
-			if ( ret < 0 )
-				return ret;
-		}
-		
-
-		ret = build_time_constraint(sql, output, field, non_linear_time_values[i].type, relation, value);
-		if ( ret < 0 )
-			return ret;
-	}
-
-	return 0;
-}
-
-
-static int build_criterion_non_linear_time_value_relation_not_equal(preludedb_sql_t *sql,
-								    prelude_string_t *output,
-								    const char *field,
-								    idmef_criterion_value_non_linear_time_t *time)
-{
-	int ret;
-
-	ret = prelude_string_cat(output, "NOT(");
-	if ( ret < 0 )
-		return ret;
-
-	ret = build_criterion_non_linear_time_value_relation_equal(sql, output,
-								   field, IDMEF_VALUE_RELATION_EQUAL, time);
-	if ( ret < 0 )
-		return ret;
-
-	return prelude_string_cat(output, ")");
-}
-
-
-
-static int build_criterion_timestamp(preludedb_sql_t *sql,
-				     prelude_string_t *output,
-				     const char *field,
-				     idmef_value_relation_t relation,
-				     idmef_criterion_value_non_linear_time_t *time)
-{
-	struct tm tm;
-	int month, day, hour, min, sec;
-	idmef_time_t t;
-	char buf[IDMEF_TIME_MAX_STRING_SIZE];
-	int offset = 0;
-	int ret;
-
-	if ( relation == IDMEF_VALUE_RELATION_GREATER ||
-	     relation == (IDMEF_VALUE_RELATION_LESSER|IDMEF_VALUE_RELATION_EQUAL) )
-		offset = 1;
-
-	month = idmef_criterion_value_non_linear_time_get_month(time);
-	day = idmef_criterion_value_non_linear_time_get_mday(time);
-	hour = idmef_criterion_value_non_linear_time_get_hour(time);
-	min = idmef_criterion_value_non_linear_time_get_min(time);
-	sec = idmef_criterion_value_non_linear_time_get_sec(time);
-
-	memset(&tm, 0, sizeof (tm));
-	tm.tm_mday = 1;
-	tm.tm_isdst = -1;
-
-	tm.tm_year = idmef_criterion_value_non_linear_time_get_year(time) - 1900;
-
-	/*
-	 * This is not ascii art ;)
-	 */
-
-	if ( month != -1 ) {
-		tm.tm_mon = month - 1;
-
-		if ( day != -1 ) {
-			tm.tm_mday = day;
-
-			if ( hour != -1 ) {
-				tm.tm_hour = hour;
-
-				if ( min != -1 ) {
-					tm.tm_min = min;
-
-					if ( sec != -1 ) {
-						tm.tm_sec = sec + offset;
-
-					} else {
-						tm.tm_min += offset;
-					}
-				} else {
-					tm.tm_hour += offset;
-				}
-			} else {
-				tm.tm_mday += offset;
-			}
-		} else {
-			tm.tm_mon += offset;
-		}
-	} else {
-		tm.tm_year += offset;
-	}
-
-	if ( relation & IDMEF_VALUE_RELATION_LESSER )
-		tm.tm_sec -= 1;
-
-	t.sec = mktime(&tm);
-	t.usec = 0;
-
-	ret = preludedb_sql_time_to_timestamp(&t, buf, sizeof (buf), NULL, 0, NULL, 0);
-	if ( ret < 0 )
-		return ret;
-
-	return prelude_string_sprintf(output, "%s %s %s",
-				      field,
-				      preludedb_sql_get_relation_string(relation|IDMEF_VALUE_RELATION_EQUAL),
-				      buf);
-}
-
-
-
-static int build_criterion_hour(preludedb_sql_t *sql,
-				prelude_string_t *output,
-				const char *field,
-				idmef_value_relation_t relation,
-				idmef_criterion_value_non_linear_time_t *timeval)
-{
-	int hour, min, sec;
-	unsigned int total_seconds;
-	int relation_offset;
-	int32_t gmt_offset;
-	char interval[128];
-	int ret;
-
-	hour = idmef_criterion_value_non_linear_time_get_hour(timeval);
-	min = idmef_criterion_value_non_linear_time_get_min(timeval);
-	sec = idmef_criterion_value_non_linear_time_get_sec(timeval);
-
-	if ( relation & IDMEF_VALUE_RELATION_EQUAL )
-		relation_offset = 0;
-	else
-		relation_offset = 1;
-
-	total_seconds = hour * 3600;
-	if ( min != -1 ) {
-		total_seconds += min * 60;
-		if ( sec != -1 ) {
-			total_seconds += sec;
-		} else {
-			total_seconds += relation_offset * 60;
-		}
-	} else {
-		total_seconds += relation_offset * 3600;
-	}
-
-	ret = prelude_get_gmt_offset(&gmt_offset);
-	if ( ret < 0 )
-		return ret;
-
-	ret = build_time_interval(sql, PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR, gmt_offset / 3600, interval, sizeof (interval));
-	if ( ret < 0 )
-		return ret;
-
-	return prelude_string_sprintf(output,
-				      "EXTRACT(HOUR FROM %s + %s) * 3600 + "
-				      "EXTRACT(MINUTE FROM %s + %s) * 60 + "
-				      "EXTRACT(SECOND FROM %s + %s) %s %d",
-				      field, interval,
-				      field, interval,
-				      field, interval,
-				      preludedb_sql_get_relation_string(relation | IDMEF_VALUE_RELATION_EQUAL),
-				      total_seconds);
-}
-
-
-
-static int build_criterion_non_linear_time_value_relation_lesser_or_greater(preludedb_sql_t *sql,
-									    prelude_string_t *output,
-									    const char *field,
-									    idmef_value_relation_t relation,
-									    idmef_criterion_value_non_linear_time_t *time)
-{
-	int tmp;
-
-	if ( idmef_criterion_value_non_linear_time_get_year(time) != -1 )
-		return build_criterion_timestamp(sql, output, field, relation, time);
-
-	if ( idmef_criterion_value_non_linear_time_get_hour(time) != -1 )
-		return build_criterion_hour(sql, output, field, relation, time);
-
-	if ( (tmp = idmef_criterion_value_non_linear_time_get_yday(time)) != -1 )
-		return build_time_constraint(sql, output, field, PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY, relation, tmp);
-
-	if ( (tmp = idmef_criterion_value_non_linear_time_get_wday(time)) != -1 )
-		return build_time_constraint(sql, output, field, PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY, relation, tmp);
-
-	if ( (tmp = idmef_criterion_value_non_linear_time_get_month(time)) != -1 )
-		return build_time_constraint(sql, output, field, PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH, relation, tmp);
-
-	if ( (tmp = idmef_criterion_value_non_linear_time_get_mday(time)) != -1 )
-		return build_time_constraint(sql, output, field, PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY, relation, tmp);
-
-	return -1;
-}
-
-
-
-static int build_criterion_non_linear_time_value(preludedb_sql_t *sql,
-						 prelude_string_t *output,
-						 const char *field,
-						 idmef_value_relation_t relation,
-						 idmef_criterion_value_non_linear_time_t *time)
-{
-	if ( relation == IDMEF_VALUE_RELATION_EQUAL )
-		return build_criterion_non_linear_time_value_relation_equal
-			(sql, output, field, relation, time);
-
-	if ( relation == IDMEF_VALUE_RELATION_NOT_EQUAL )
-		return build_criterion_non_linear_time_value_relation_not_equal
-			(sql, output, field, time);
-
-	if ( relation & (IDMEF_VALUE_RELATION_LESSER | IDMEF_VALUE_RELATION_GREATER) )
-		return build_criterion_non_linear_time_value_relation_lesser_or_greater
-			(sql, output, field, relation, time);
-
-	return -1;
 }
 
 
@@ -1324,7 +1039,7 @@ static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char *buf,
 static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 					   prelude_string_t *output,
 					   idmef_value_t *value,
-					   idmef_value_relation_t relation)
+					   idmef_criterion_operator_t operator)
 {
 	int ret;
 	char buf[IDMEF_TIME_MAX_STRING_SIZE];
@@ -1339,7 +1054,7 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 		return prelude_string_cat(output, buf);
 	}
 
-	if ( relation == IDMEF_VALUE_RELATION_SUBSTR ) {
+	if ( operator == IDMEF_CRITERION_OPERATOR_SUBSTR ) {
 		ret = build_criterion_fixed_sql_like_value(value, buf, sizeof (buf));
 		if ( ret < 0 )
 			return ret;
@@ -1378,11 +1093,11 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 
 
 
-static int build_criterion_relation(prelude_string_t *output, idmef_value_relation_t relation)
+static int build_criterion_operator(prelude_string_t *output, idmef_criterion_operator_t operator)
 {
 	const char *tmp;
 
-	tmp = preludedb_sql_get_relation_string(relation);
+	tmp = preludedb_sql_get_operator_string(operator);
 	if ( ! tmp )
 		return -1;
 
@@ -1394,7 +1109,7 @@ static int build_criterion_relation(prelude_string_t *output, idmef_value_relati
 static int build_criterion_fixed_value(preludedb_sql_t *sql,
 				       prelude_string_t *output,
 				       const char *field,
-				       idmef_value_relation_t relation,
+				       idmef_criterion_operator_t operator,
 				       idmef_value_t *value)
 {
 	int ret;
@@ -1403,11 +1118,11 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		return ret;
 
-	ret = build_criterion_relation(output, relation);
+	ret = build_criterion_operator(output, operator);
 	if ( ret < 0 )
 		return ret;
 
-	return build_criterion_fixed_sql_value(sql, output, value, relation);
+	return build_criterion_fixed_sql_value(sql, output, value, operator);
 }
 
 
@@ -1417,7 +1132,7 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
  * @sql: Pointer to a sql object.
  * @output: Pointer to a string object, where the result content will be stored.
  * @field: The sql field name.
- * @relation: The criterion operator.
+ * @operator: The criterion operator.
  * @value: The criterion value.
  *
  * Build a sql "field operator value" string.
@@ -1427,24 +1142,21 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 prelude_string_t *output,
 					 const char *field,
-					 idmef_value_relation_t relation, idmef_criterion_value_t *value)
+					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
 {
-	if ( relation == IDMEF_VALUE_RELATION_IS_NULL )
+	if ( operator == IDMEF_CRITERION_OPERATOR_IS_NULL )
 		return prelude_string_sprintf(output, "%s IS NULL", field);
 
-	if ( relation == IDMEF_VALUE_RELATION_IS_NOT_NULL )
+	if ( operator == IDMEF_CRITERION_OPERATOR_IS_NOT_NULL )
 		return prelude_string_sprintf(output, "%s IS NOT NULL", field);
 
 	switch ( idmef_criterion_value_get_type(value) ) {
-	case IDMEF_CRITERION_VALUE_TYPE_FIXED:
-		return build_criterion_fixed_value(sql, output, field, relation,
-						   idmef_criterion_value_get_fixed(value));
-
-	case IDMEF_CRITERION_VALUE_TYPE_NON_LINEAR_TIME:
-		return build_criterion_non_linear_time_value(sql, output, field, relation,
-							     idmef_criterion_value_get_non_linear_time(value));
+	case IDMEF_CRITERION_VALUE_TYPE_VALUE:
+		return build_criterion_fixed_value(sql, output, field, operator,
+						   idmef_criterion_value_get_value(value));
+	default:
+		/* nop */;
 	}
-
 	return -1;
 }
 

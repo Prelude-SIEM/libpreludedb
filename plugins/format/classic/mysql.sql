@@ -14,12 +14,13 @@ CREATE TABLE Prelude_Alert (
 
 
 
-DROP TABLE IF EXISTS Prelude_AlertIdent;
+DROP TABLE IF EXISTS Prelude_Alertident;
 
-CREATE TABLE Prelude_AlertIdent (
+CREATE TABLE Prelude_Alertident (
  _message_ident BIGINT UNSIGNED NOT NULL,
+ _index TINYINT NOT NULL,
  _parent_type ENUM('T','C') NOT NULL, # T=ToolAlert C=CorrelationAlert
- INDEX (_parent_type, _message_ident),
+ PRIMARY KEY (_parent_type, _message_ident, _index),
  alertident VARCHAR(255) NOT NULL,
  analyzerid VARCHAR(255) NULL
 ) TYPE=InnoDB;
@@ -71,7 +72,7 @@ DROP TABLE IF EXISTS Prelude_Analyzer;
 CREATE TABLE Prelude_Analyzer (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H') NOT NULL, # A=Alert H=Hearbeat
- _index TINYINT UNSIGNED NOT NULL,
+ _index TINYINT NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident,_index),
  analyzerid VARCHAR(255) NULL,
  INDEX (_parent_type,analyzerid),
@@ -102,7 +103,8 @@ DROP TABLE IF EXISTS Prelude_Reference;
 
 CREATE TABLE Prelude_Reference (
  _message_ident BIGINT UNSIGNED NOT NULL,
- INDEX(_message_ident),
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _index),
  origin ENUM("unknown","vendor-specific","user-specific","bugtraqid","cve","osvdb") NOT NULL,
  name VARCHAR(255) NOT NULL,
  INDEX(name),
@@ -116,7 +118,7 @@ DROP TABLE IF EXISTS Prelude_Source;
 
 CREATE TABLE Prelude_Source (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _index TINYINT UNSIGNED NOT NULL,
+ _index TINYINT NOT NULL,
  PRIMARY KEY (_message_ident, _index),
  ident VARCHAR(255) NULL,
  spoofed ENUM("unknown","yes","no") NOT NULL,
@@ -129,7 +131,7 @@ DROP TABLE IF EXISTS Prelude_Target;
 
 CREATE TABLE Prelude_Target (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _index TINYINT UNSIGNED NOT NULL,
+ _index TINYINT NOT NULL,
  PRIMARY KEY (_message_ident, _index),
  ident VARCHAR(255) NULL,
  decoy ENUM("unknown","yes","no") NOT NULL,
@@ -142,9 +144,9 @@ DROP TABLE IF EXISTS Prelude_File;
 
 CREATE TABLE Prelude_File (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index TINYINT UNSIGNED NOT NULL,
- _index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _index),
+ _parent0_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _index),
  ident VARCHAR(255) NULL,
  path VARCHAR(255) NOT NULL,
  name VARCHAR(255) NOT NULL,
@@ -166,10 +168,10 @@ DROP TABLE IF EXISTS Prelude_FileAccess;
 
 CREATE TABLE Prelude_FileAccess (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index TINYINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- _index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index, _index)
+ _parent0_index TINYINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
 ) TYPE=InnoDB;
 
 
@@ -178,11 +180,12 @@ DROP TABLE IF EXISTS Prelude_FileAccess_Permission;
 
 CREATE TABLE Prelude_FileAccess_Permission (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index TINYINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- _file_access_index TINYINT UNSIGNED NOT NULL,
- INDEX(_message_ident, _target_index, _file_index, _file_access_index),
- perm VARCHAR(255) NOT NULL
+ _parent0_index TINYINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ _parent2_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _parent2_index, _index),
+ permission VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
 
 
@@ -191,9 +194,10 @@ DROP TABLE IF EXISTS Prelude_Linkage;
 
 CREATE TABLE Prelude_Linkage (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index TINYINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- INDEX (_message_ident, _target_index, _file_index),
+ _parent0_index TINYINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index),
  category ENUM("hard-link","mount-point","reparse-point","shortcut","stream","symbolic-link") NOT NULL,
  name VARCHAR(255) NOT NULL,
  path VARCHAR(255) NOT NULL
@@ -205,9 +209,9 @@ DROP TABLE IF EXISTS Prelude_Inode;
 
 CREATE TABLE Prelude_Inode (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index BIGINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index),
+ _parent0_index TINYINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index),
  change_time DATETIME NULL,
  change_time_gmtoff INTEGER NULL, 
  number INT UNSIGNED NULL,
@@ -223,9 +227,10 @@ DROP TABLE IF EXISTS Prelude_Checksum;
 
 CREATE TABLE Prelude_Checksum (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _target_index BIGINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_message_ident, _target_index, _file_index),
+ _parent0_index BIGINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index),
  algorithm ENUM("md4", "md5", "sha1", "sha2-256", "sha2-384", "sha2-512", "crc-32", "haval", "tiger", "gost") NOT NULL,
  value VARCHAR(255) NOT NULL,
  checksum_key VARCHAR(255) NULL # key is a reserved word
@@ -251,7 +256,8 @@ DROP TABLE IF EXISTS Prelude_Action;
 
 CREATE TABLE Prelude_Action (
  _message_ident BIGINT UNSIGNED NOT NULL,
- INDEX(_message_ident),
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_message_ident, _index),
  description VARCHAR(255) NULL,
  category ENUM("block-installed", "notification-sent", "taken-offline", "other") NOT NULL
 ) TYPE=InnoDB;
@@ -281,7 +287,8 @@ DROP TABLE IF EXISTS Prelude_AdditionalData;
 CREATE TABLE Prelude_AdditionalData (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A', 'H') NOT NULL,
- INDEX (_parent_type, _message_ident),
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _index),
  type ENUM("boolean","byte","character","date-time","integer","ntpstamp","portlist","real","string","byte-string","xml") NOT NULL,
  meaning VARCHAR(255) NULL,
  data BLOB NULL
@@ -334,8 +341,8 @@ DROP TABLE IF EXISTS Prelude_Node;
 CREATE TABLE Prelude_Node (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY(_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT UNSIGNED NOT NULL,
+ PRIMARY KEY(_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
  location VARCHAR(255) NULL,
@@ -351,8 +358,9 @@ DROP TABLE IF EXISTS Prelude_Address;
 CREATE TABLE Prelude_Address (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyser T=Target S=Source H=Heartbeat
- _parent_index TINYINT UNSIGNED NOT NULL,
- INDEX (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  ident VARCHAR(255) NULL,
  category ENUM("unknown","atm","e-mail","lotus-notes","mac","sna","vm","ipv4-addr","ipv4-addr-hex","ipv4-net","ipv4-net-mask","ipv6-addr","ipv6-addr-hex","ipv6-net","ipv6-net-mask") NOT NULL,
  vlan_name VARCHAR(255) NULL,
@@ -369,8 +377,8 @@ DROP TABLE IF EXISTS Prelude_User;
 CREATE TABLE Prelude_User (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  category ENUM("unknown","application","os-device") NOT NULL
 ) TYPE=InnoDB;
@@ -382,10 +390,11 @@ DROP TABLE IF EXISTS Prelude_UserId;
 CREATE TABLE Prelude_UserId (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T', 'F') NOT NULL, # T=Target User S=Source User F=File Access 
- _parent_index TINYINT UNSIGNED NOT NULL,
- _file_index TINYINT UNSIGNED NOT NULL,
- _file_access_index TINYINT UNSIGNED NOT NULL,
- INDEX (_parent_type, _message_ident, _parent_index, _file_index, _file_access_index), # _file_index and _file_access_index will always be zero if parent_type = 'F'
+ _parent0_index TINYINT NOT NULL,
+ _parent1_index TINYINT NOT NULL,
+ _parent2_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _parent1_index, _parent2_index, _index), # _parent_index1 and _parent2_index will always be zero if parent_type = 'F'
  ident VARCHAR(255) NULL,
  type ENUM("current-user","original-user","target-user","user-privs","current-group","group-privs","other-privs") NOT NULL,
  name VARCHAR(255) NULL,
@@ -400,8 +409,8 @@ DROP TABLE IF EXISTS Prelude_Process;
 CREATE TABLE Prelude_Process (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  name VARCHAR(255) NOT NULL,
  pid INTEGER UNSIGNED NULL,
@@ -415,8 +424,9 @@ DROP TABLE IF EXISTS Prelude_ProcessArg;
 CREATE TABLE Prelude_ProcessArg (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL DEFAULT 'A', # A=Analyser T=Target S=Source
- _parent_index TINYINT UNSIGNED NOT NULL,
- INDEX (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  arg VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
 
@@ -427,8 +437,9 @@ DROP TABLE IF EXISTS Prelude_ProcessEnv;
 CREATE TABLE Prelude_ProcessEnv (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyser T=Target S=Source
- _parent_index BIGINT UNSIGNED NOT NULL,
- INDEX (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index),
  env VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
 
@@ -439,8 +450,8 @@ DROP TABLE IF EXISTS Prelude_Service;
 CREATE TABLE Prelude_Service (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent_index BIGINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index BIGINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  ident VARCHAR(255) NULL,
  ip_version TINYINT UNSIGNED NULL,
  name VARCHAR(255) NULL,
@@ -460,8 +471,8 @@ DROP TABLE IF EXISTS Prelude_WebService;
 CREATE TABLE Prelude_WebService (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  url VARCHAR(255) NOT NULL,
  cgi VARCHAR(255) NULL,
  http_method VARCHAR(255) NULL
@@ -474,8 +485,9 @@ DROP TABLE IF EXISTS Prelude_WebServiceArg;
 CREATE TABLE Prelude_WebServiceArg (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ _index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  arg VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
 
@@ -486,8 +498,8 @@ DROP TABLE IF EXISTS Prelude_SNMPService;
 CREATE TABLE Prelude_SNMPService (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent_index TINYINT UNSIGNED NOT NULL,
- PRIMARY KEY (_parent_type, _message_ident, _parent_index),
+ _parent0_index TINYINT NOT NULL,
+ PRIMARY KEY (_parent_type, _message_ident, _parent0_index),
  snmp_oid VARCHAR(255) NULL, # oid is a reserved word in PostgreSQL 
  community VARCHAR(255) NULL,
  security_name VARCHAR(255) NULL,

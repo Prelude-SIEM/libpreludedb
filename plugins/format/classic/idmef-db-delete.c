@@ -72,7 +72,7 @@ int delete_alert(preludedb_sql_t *sql, uint64_t ident)
 		"DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
 		"DELETE FROM Prelude_Address WHERE _parent_type != 'H' AND _message_ident = %" PRIu64,
 		"DELETE FROM Prelude_Alert WHERE _ident = %" PRIu64,
-		"DELETE FROM Prelude_AlertIdent WHERE _message_ident = %" PRIu64,
+		"DELETE FROM Prelude_Alertident WHERE _message_ident = %" PRIu64,
 		"DELETE FROM Prelude_Analyzer WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
 		"DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'A' AND _message_ident = %" PRIu64,
 		"DELETE FROM Prelude_Assessment WHERE _message_ident = %" PRIu64,

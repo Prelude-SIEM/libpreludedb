@@ -45,7 +45,7 @@ struct preludedb_path_selection {
 
 
 int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
-				  idmef_path_t *path, int flags)
+				idmef_path_t *path, int flags)
 {
 	*selected_path = calloc(1, sizeof (**selected_path));
 	if ( ! *selected_path )
