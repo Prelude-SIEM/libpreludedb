@@ -1,5 +1,11 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/db-interface.c:
+	* src/include/db-connection-data.c:
+	add missing copyright notice
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-connection-data.c
 	* src/include/db-connection-data.c
 	* src/db-interface.c
