@@ -1419,10 +1419,10 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 idmef_value_relation_t relation, idmef_criterion_value_t *value)
 {
 	if ( relation == IDMEF_VALUE_RELATION_IS_NULL )
-		return prelude_string_sprintf(output, "%s = NULL", field);
+		return prelude_string_sprintf(output, "%s IS NULL", field);
 
 	if ( relation == IDMEF_VALUE_RELATION_IS_NOT_NULL )
-		return prelude_string_sprintf(output, "%s != NULL", field);
+		return prelude_string_sprintf(output, "%s IS NOT NULL", field);
 
 	switch ( idmef_criterion_value_get_type(value) ) {
 	case IDMEF_CRITERION_VALUE_TYPE_FIXED:
