@@ -99,8 +99,12 @@ netmask              VARCHAR(255)         null/*,*/
 
 create table Prelude_Alert (
 ident                NUMERIC(20)                 not null,
+alert_ident          NUMERIC(20)                 not null,
+analyzerid 	     NUMERIC(20)                 not null
 constraint PK_PRELUDE_ALERT primary key (ident) 
 );
+
+create unique index INDEX_PRELUDE_ALERT Prelude_Alert (alert_ident, analyzerid);
 
 create table Prelude_Analyzer (
 parent_ident         NUMERIC(20)                 not null,

@@ -4,7 +4,8 @@ CREATE TABLE Prelude_Alert (
  ident BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
  alert_ident BIGINT UNSIGNED NOT NULL,
  analyzerid BIGINT UNSIGNED NOT NULL,
- PRIMARY KEY (ident, alert_ident, analyzerid)
+ PRIMARY KEY (ident),
+ UNIQUE INDEX (alert_ident, analyzerid)
 );
 
 
