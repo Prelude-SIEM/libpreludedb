@@ -4,6 +4,10 @@
 	don't regenerate the .c source files of bindings during
 	./configure
 
+	* plugins/format/classic/db-object.c:
+	* src/db.c:
+	only print debug message if in debug mode
+
 2003-12-26  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/perl/PreludeDB.c:

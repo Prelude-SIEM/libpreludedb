@@ -62,8 +62,10 @@ int prelude_db_init(void)
 	 */
 	if ( initialized++ )
 		return 0;
-	
+
+#ifdef DEBUG
 	log(LOG_INFO, "- Starting DB subsystem\n");
+#endif /* DEBUG */
 
 #if 0
 	ret = db_dispatch_init();

@@ -216,7 +216,9 @@ int db_objects_init(const char *file)
 		return -1;
 	}
 
+#ifdef DEBUG
 	log(LOG_INFO, "- Loading database specification from file %s\n", file);
+#endif /* DEBUG */
 	
 	line = 0;
 	while ( fgets(buf, sizeof(buf), f) ) {
@@ -277,8 +279,9 @@ int db_objects_init(const char *file)
 		entry = list_entry(tmp, db_object_t, list);
 		db_object_index[i++] = entry;
 	}
-
+#ifdef DEBUG
 	log(LOG_INFO, "- %d objects loaded and indexed\n", db_object_count);
+#endif /* DEBUG */
 	
 	return 0;
 }
