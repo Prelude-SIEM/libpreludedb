@@ -1,0 +1,32 @@
+LibpreludeDB README
+===================
+
+OK, mostly for developers, quick and dirty ;-)
+
+The conceptual diagram of the library is at
+http://mops.uci.agh.edu.pl/~kzaraska/stuff/libpreludedb1.dia
+you'll need to zoom to read everything :-/
+
+The current functionality reflects what prelude-manager currently does,
+i.e. it writes IDMEF messages to the database using current database
+scheme (called 'Classic' in the library ;-)).
+
+You need following modules:
+- libpreludedb
+- libprelude, use cvs co -r db-work libprelude
+- prelude-manager, use cvs co -r db-work prelude-manager
+
+Build order:
+- libprelude
+- libpreludedb
+- prelude-manager
+
+Before building libpreludeDB adjust database name, type, etc. in
+libpreludedb/db-connections.c, function prelude_db_init_interfaces(),
+because configuration is temporarily hard-coded there. 
+
+Have fun...
+
+- Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
+  August 23, 2002
+

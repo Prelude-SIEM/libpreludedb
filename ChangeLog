@@ -1,5 +1,55 @@
+2002-08-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/db/mysql/mysql.c:
+	* plugins/db/pgsql/pgsql.c:
+	  fix a bug causing first assigned session ID to have number
+	  1 instead of 0.
+
+	* plugins/db/mysql/mysql.c:
+	* plugins/db/pgsql/pgsql.c:
+	  remove not needed prelude_option stuff
+
+	* plugins/db/mysql/mysql.c:
+	* plugins/db/pgsql/pgsql.c:
+	* src/sql-plugins.c:
+	* include/plugins-sql.h:
+	  change db_escape() prototype. Session identifier must be passed
+	  to the function so mysql_real_escape_string() can be used. 
+
+        * plugins/db/mysql/mysql.c:
+        * plugins/db/pgsql/pgsql.c:
+	* plugins/formats/classic/classic.c:
+	* plugins/formats/classic/idmef-db-output.c:
+	* src/sql-plugins.c:
+	  improve error handling and messages, remove debugging printf()'s 
+	  and log()'s. 
+
+	* README: new file. Instructions for new users. ;-)
+
+
+2002-08-23  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/db/mysql/Makefile.am:
+	* plugins/db/mysql/mysql.c:
+	  port the plugin to new API. Mostly functional, but missing
+	  db_query() function (currently not used). 
+
+	* plugins/db/Makefile.am: enable MySQL plugin
+
+2002-08-22  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* src/db.c 
+          src/include/db.h:
+          cleanup. No longer dependant on (argc, argv). 
+	  Change function prefix to prelude_db.
+
+	* src/db-connection.c, src/include/db-connection.h: 
+	  cleanup. Improved database interface handling code. 
+	  Change function prefix to prelude_db.
+
 2002-08-22  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* Initial commit:
 	  Supports writing data in old Prelude format to PostgreSQL database.
 	  Certain files / directories not (yet) used. Needs cleaning. 
+
