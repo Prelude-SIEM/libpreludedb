@@ -11,6 +11,25 @@ object=heartbeat.analyzer.class 	table=Prelude_Analyzer 		field=class 		top_tabl
 object=heartbeat.analyzer.ostype 	table=Prelude_Analyzer 		field=ostype 		top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
 object=heartbeat.analyzer.osversion 	table=Prelude_Analyzer 		field=osversion 	top_table=Prelude_Heartbeat 	top_field=ident 	condition="Prelude_Analyzer.parent_type = 'H'" 	ident_field=parent_ident
 
+object=heartbeat.additional_data.type  table=Prelude_AdditionalData  field=type  top_table=Prelude_Heartbeat  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='H'"
+object=heartbeat.additional_data.meaning  table=Prelude_AdditionalData  field=meaning  top_table=Prelude_Heartbeat  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='H'"
+object=heartbeat.additional_data.data  table=Prelude_AdditionalData  field=data  top_table=Prelude_Heartbeat  top_field=ident  ident_field=parent_ident  condition="Prelude_AdditionalData.parent_type='H'"
+
+object=heartbeat.analyzer.node.category  table=Prelude_Node  field=category  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='H'"
+object=heartbeat.analyzer.node.location  table=Prelude_Node  field=location  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='H'"
+object=heartbeat.analyzer.node.name  table=Prelude_Node  field=name  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='H'"
+object=heartbeat.analyzer.node.address.category  table=Prelude_Address  field=category  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='H'"
+object=heartbeat.analyzer.node.address.vlan_name  table=Prelude_Address  field=vlan_name  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='H'"
+object=heartbeat.analyzer.node.address.vlan_num  table=Prelude_Address  field=vlan_num  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='H'"
+object=heartbeat.analyzer.node.address.address  table=Prelude_Address  field=address  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='H'"
+object=heartbeat.analyzer.node.address.netmask  table=Prelude_Address  field=netmask  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='H'"
+
+object=heartbeat.analyzer.process.name  table=Prelude_Process  field=name  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='H'"
+object=heartbeat.analyzer.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='H'"
+object=heartbeat.analyzer.process.path  table=Prelude_Process  field=path  top_table=Prelude_Heartbeat  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='H'"
+object=heartbeat.analyzer.process.arg table=Prelude_ProcessArg field=arg top_table=Prelude_Heartbeat top_field=ident ident_field=alert_ident condition="Prelude_ProcessArg.parent_type='H'"
+object=heartbeat.analyzer.process.env table=Prelude_ProcessEnv field=env top_table=Prelude_Heartbeat top_field=ident ident_field=alert_ident condition="Prelude_ProcessEnv.parent_type='H'"
+
 object=alert.ident  table=Prelude_Alert  field=ident  
 
 object=alert.detect_time table=Prelude_DetectTime field=time top_table=Prelude_Alert top_field=ident ident_field=alert_ident
@@ -41,10 +60,18 @@ object=alert.additional_data.data  table=Prelude_AdditionalData  field=data  top
 
 object=alert.analyzer.node.category  table=Prelude_Node  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
 object=alert.analyzer.node.location  table=Prelude_Node  field=location  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
-object=alert.analyzer.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"  
-object=alert.analyzer.process.name  table=Prelude_Process  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"  
-object=alert.analyzer.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"  
-object=alert.analyzer.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"  
+object=alert.analyzer.node.name  table=Prelude_Node  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Node.parent_type='A'"
+object=alert.analyzer.node.address.category  table=Prelude_Address  field=category  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='A'"
+object=alert.analyzer.node.address.vlan_name  table=Prelude_Address  field=vlan_name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='A'"
+object=alert.analyzer.node.address.vlan_num  table=Prelude_Address  field=vlan_num  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='A'"
+object=alert.analyzer.node.address.address  table=Prelude_Address  field=address  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='A'"
+object=alert.analyzer.node.address.netmask  table=Prelude_Address  field=netmask  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Address.parent_type='A'"
+
+object=alert.analyzer.process.name  table=Prelude_Process  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"
+object=alert.analyzer.process.pid  table=Prelude_Process  field=pid  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"
+object=alert.analyzer.process.path  table=Prelude_Process  field=path  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  condition="Prelude_Process.parent_type='A'"
+object=alert.analyzer.process.arg table=Prelude_ProcessArg field=arg top_table=Prelude_Alert top_field=ident ident_field=alert_ident condition="Prelude_ProcessArg.parent_type='A'"
+object=alert.analyzer.process.env table=Prelude_ProcessEnv field=env top_table=Prelude_Alert top_field=ident ident_field=alert_ident condition="Prelude_ProcessEnv.parent_type='A'"
 
 object=alert.classification.origin  table=Prelude_Classification  field=origin  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  
 object=alert.classification.name  table=Prelude_Classification  field=name  top_table=Prelude_Alert  top_field=ident  ident_field=alert_ident  

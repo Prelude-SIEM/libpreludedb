@@ -1,3 +1,8 @@
+2003-12-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/schema.txt:
+	add support for {alert,heartbeat}.analyzer.{node,process}* objects
+
 2003-12-14  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* src/db-message-cache.c (cache_write_cb): 
