@@ -1,3 +1,12 @@
+2003-05-18  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/schema.txt:
+	minor modification to fit idmef_data's last changes
+
+	* plugins/format/classic/classic.c:
+	minor modifications to fit the idmef_criterion_new's
+	changes
+
 2003-05-13  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/sql-plugins.c:

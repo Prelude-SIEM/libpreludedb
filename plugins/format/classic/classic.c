@@ -218,8 +218,6 @@ void *	format_get_message(prelude_db_connection_t * connection,
 
 	table = idmef_db_select(connection, cache, criterion);
 
-	idmef_object_destroy(object);
-	idmef_value_destroy(value);
 	idmef_criterion_destroy(criterion);
 
 	if ( ! table )
