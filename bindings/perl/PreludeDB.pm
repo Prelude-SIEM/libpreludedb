@@ -297,7 +297,7 @@ sub	get_values
     $criteria = $opt{-criteria} if ( defined $opt{-criteria} );
     $limit = defined($opt{-limit}) ? $opt{-limit} : -1;
 
-    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $criteria, $limit);
+    $res = PreludeDB::prelude_db_interface_select_values($$self, $selection, $$criteria, $limit);
 
     unless ( $res ) {
 	Prelude::idmef_selection_destroy($selection);

@@ -1,5 +1,11 @@
 2003-09-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
+	* bindings/perl/PreludeDB.pm
+	(PreludeDB::get_values)
+	bug fix
+
+2003-09-19  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
 	* bindings/perl/PreludeDB.c:
 	regenerated
 
