@@ -52,7 +52,7 @@ while test $# -gt 0; do
 
     --libs)
       libdirs=-L@libdir@
-      echo $libdirs @libprelude_db_libs@ -lprelude -lpreludedb
+      echo @libprelude_db_libs@ $libdirs -lprelude -lpreludedb
       ;;
 
     --plugin-dir)
