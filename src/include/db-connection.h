@@ -53,13 +53,6 @@ typedef struct {
 } prelude_db_interface_t;
 
 /* Interface-specific functions */
-prelude_db_interface_t *prelude_db_connect(const char *config);
-prelude_db_interface_t *prelude_db_connect_sql_config(const char *config);
-prelude_db_interface_t *prelude_db_connect_sql(const char *name, const char *dbformat, 
-                                               const char *dbtype, const char *dbhost, 
-                                               const char *dbport, const char *dbname, 
-                                               const char *dbuser, const char *dbpass);
-
 
 prelude_db_interface_t *prelude_db_interface_new(void);
 int prelude_db_interface_set_name(prelude_db_interface_t *db, const char *name);
