@@ -82,7 +82,7 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         interface->name = strdup(name ? name : "(unnamed)");
         if ( ! interface->name ) {
                 log(LOG_ERR, "memory exhausted.\n");
-                free(interface);
+                prelude_db_interface_destroy(interface);
                 return NULL;
         }
         
@@ -92,8 +92,7 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         interface->format = (plugin_format_t *) prelude_plugin_search_by_name(format);
         if ( ! interface->format ) {
                 log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
-                free(interface->name);
-                free(interface);
+                prelude_db_interface_destroy(interface);
                 return NULL;
         }
 
