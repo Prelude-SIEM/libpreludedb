@@ -38,8 +38,8 @@
 #include <libprelude/prelude-message-buffered.h>
 
 #include <libprelude/idmef-message-id.h>
-#include <libprelude/idmef-message-send.h>
-#include <libprelude/idmef-message-recv.h>
+#include <libprelude/idmef-message-write.h>
+#include <libprelude/idmef-message-read.h>
 
 #include "db-message-cache.h"
 
@@ -124,7 +124,7 @@ static int msg_to_alert(idmef_message_t *message, prelude_msg_t *pmsg)
         if ( ! alert )
                 return -1;
         
-        if ( ! idmef_recv_alert(pmsg, alert) )
+        if ( ! idmef_read_alert(pmsg, alert) )
                 return -1;
 
         return 0;
@@ -141,7 +141,7 @@ static int msg_to_heartbeat(idmef_message_t *message, prelude_msg_t *pmsg)
         if ( ! heartbeat )
                 return -1;
 
-        if ( ! idmef_recv_heartbeat(pmsg, heartbeat) )
+        if ( ! idmef_read_heartbeat(pmsg, heartbeat) )
                 return -1;
 
         return 0;
@@ -227,7 +227,7 @@ static int write_message_to_cache(idmef_message_t *idmef, prelude_io_t *fd)
 
         prelude_msgbuf_set_data(msgbuf, fd);
         prelude_msgbuf_set_callback(msgbuf, cache_write_cb);
-        idmef_send_message(msgbuf, idmef);
+        idmef_write_message(msgbuf, idmef);
         
         prelude_msgbuf_mark_end(msgbuf);
         prelude_msgbuf_close(msgbuf);
