@@ -1,3 +1,11 @@
+2003-06-22  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/classic.c:
+	(get_message): don't use prelude_sql_field_idmef_value(),
+	do convertion manually, obtaining variable type via
+	idmef_object_get_type(). This is caused by some braindead
+	type mappings (uint64_t as STRING, eh?).
+
 2003-06-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/idmef-db-select.c:

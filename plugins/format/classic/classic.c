@@ -178,6 +178,8 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
  	idmef_object_t *object;
 	idmef_value_t *value;
 	idmef_criterion_t *criterion;
+	idmef_value_type_t type;
+	const char *char_val;
 	int cnt = 0;
 
 	/* TODO: if selection is NULL, the whole message's content should be retrieved */
@@ -211,9 +213,12 @@ idmef_message_t *get_message(prelude_db_connection_t *connection,
 		for ( field_cnt = 0; field_cnt < nfields; field_cnt++ ) {
 
 			field = prelude_sql_field_fetch(row, field_cnt);
+			char_val = prelude_sql_field_value(field);
 
-			value = prelude_sql_field_value_idmef(field);
 			object = idmef_object_ref(idmef_selection_get_next_object(selection));
+	    		type = idmef_object_get_type(object);
+			
+			value = idmef_value_new_generic(type, char_val);
 			
 			if ( idmef_message_set(message, object, value) < 0 ) {
 				prelude_sql_table_free(table);
