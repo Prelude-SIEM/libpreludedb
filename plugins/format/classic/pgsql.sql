@@ -12,7 +12,7 @@ CREATE TABLE Prelude_Alert (
  messageid NUMERIC(20) NOT NULL
 );
 
-CREATE UNIQUE INDEX _pg_index ON Prelude_Alert (messageid);
+CREATE UNIQUE INDEX prelude_alert_index ON Prelude_Alert (messageid);
 
 
 
@@ -25,7 +25,7 @@ CREATE TABLE Prelude_AlertIdent (
  analyzerid NUMERIC(20) NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_AlertIdent (_parent_type, _message_ident);
+CREATE INDEX prelude_alertident_index ON Prelude_AlertIdent (_parent_type, _message_ident);
 
 
 
@@ -66,7 +66,7 @@ CREATE TABLE Prelude_Heartbeat (
  messageid NUMERIC(20) NOT NULL
 );
 
-CREATE UNIQUE INDEX _pg_index ON Prelude_Heartbeat (messageid);
+CREATE UNIQUE INDEX prelude_heartbeat_index ON Prelude_Heartbeat (messageid);
 
 
 
@@ -87,8 +87,8 @@ CREATE TABLE Prelude_Analyzer (
  osversion VARCHAR(255) NULL
 );
 
-CREATE INDEX _pg_index_model ON Prelude_Analyzer (model);
-CREATE INDEX _pg_index_analyzerid ON Prelude_Analyzer (analyzerid);
+CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (model);
+CREATE INDEX prelude_analyzer_index_analyzerid ON Prelude_Analyzer (analyzerid);
 
 
 
@@ -100,7 +100,7 @@ CREATE TABLE Prelude_Classification (
  text VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_Classification (text);
+CREATE INDEX prelude_classification_index ON Prelude_Classification (text);
 
 
 
@@ -114,8 +114,8 @@ CREATE TABLE Prelude_Reference (
  meaning VARCHAR(255) NULL
 );
 
-CREATE INDEX _pg_index_message_ident ON Prelude_Reference (_message_ident);
-CREATE INDEX _pg_index_name on Prelude_Reference (name);
+CREATE INDEX prelude_reference_index_message_ident ON Prelude_Reference (_message_ident);
+CREATE INDEX prelude_reference_index_name on Prelude_Reference (name);
 
 
 
@@ -191,7 +191,7 @@ CREATE TABLE Prelude_FileAccess_Permission (
  perm VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_FileAccess_Permission (_message_ident, _target_index, _file_index, _file_access_index);
+CREATE INDEX prelude_fileaccess_permission_index ON Prelude_FileAccess_Permission (_message_ident, _target_index, _file_index, _file_access_index);
 
 
 
@@ -206,7 +206,7 @@ CREATE TABLE Prelude_Linkage (
  path VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_Linkage (_message_ident, _target_index, _file_index);
+CREATE INDEX prelude_linkage_index ON Prelude_Linkage (_message_ident, _target_index, _file_index);
 
 
 
@@ -261,7 +261,7 @@ CREATE TABLE Prelude_Action (
  category VARCHAR(32) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_Action (_message_ident);
+CREATE INDEX prelude_action_index ON Prelude_Action (_message_ident);
 
 
 
@@ -293,7 +293,7 @@ CREATE TABLE Prelude_AdditionalData (
  data BYTEA NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_AdditionalData (_parent_type, _message_ident);
+CREATE INDEX prelude_additional_data_index ON Prelude_AdditionalData (_parent_type, _message_ident);
 
 
 
@@ -308,7 +308,7 @@ CREATE TABLE Prelude_CreateTime (
  gmtoff NUMERIC(8) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_CreateTime (time);
+CREATE INDEX prelude_createtime_index ON Prelude_CreateTime (time);
 
 
 
@@ -321,7 +321,7 @@ CREATE TABLE Prelude_DetectTime (
  gmtoff NUMERIC(8) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_DetectTime (time);
+CREATE INDEX prelude_detecttime_index ON Prelude_DetectTime (time);
 
 
 
@@ -336,7 +336,7 @@ CREATE TABLE Prelude_AnalyzerTime (
  gmtoff NUMERIC(8) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_AnalyzerTime (time);
+CREATE INDEX prelude_analyzertime_index ON Prelude_AnalyzerTime (time);
 
 
 
@@ -353,7 +353,7 @@ CREATE TABLE Prelude_Node (
  name VARCHAR(255) NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_Node (name);
+CREATE INDEX prelude_node_index ON Prelude_Node (name);
 
 
 
@@ -371,8 +371,8 @@ CREATE TABLE Prelude_Address (
  netmask VARCHAR(255) NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_Address (_parent_type, _message_ident, _parent_index);
-CREATE INDEX _pg_index_address ON Prelude_Address (address);
+CREATE INDEX prelude_address_index ON Prelude_Address (_parent_type, _message_ident, _parent_index);
+CREATE INDEX prelude_address_index_address ON Prelude_Address (address);
 
 
 
@@ -403,7 +403,7 @@ CREATE TABLE Prelude_UserId (
  number NUMERIC(8) NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_UserId (_parent_type, _message_ident, _parent_index, _file_index, _file_access_index); /* _file_index and _file_access_index will always be zero if parent_type = 'F' */
+CREATE INDEX prelude_user_id_index ON Prelude_UserId (_parent_type, _message_ident, _parent_index, _file_index, _file_access_index); /* _file_index and _file_access_index will always be zero if parent_type = 'F' */
 
 
 
@@ -431,7 +431,7 @@ CREATE TABLE Prelude_ProcessArg (
  arg VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_ProcessArg (_parent_type, _message_ident, _parent_index);
+CREATE INDEX prelude_process_arg_index ON Prelude_ProcessArg (_parent_type, _message_ident, _parent_index);
 
 
 
@@ -444,7 +444,7 @@ CREATE TABLE Prelude_ProcessEnv (
  env VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX _pg_index ON Prelude_ProcessEnv (_parent_type, _message_ident, _parent_index);
+CREATE INDEX prelude_process_env_index ON Prelude_ProcessEnv (_parent_type, _message_ident, _parent_index);
 
 
 
@@ -465,8 +465,8 @@ CREATE TABLE Prelude_Service (
  protocol VARCHAR(255) NULL
 );
 
-CREATE INDEX _pg_index_protocol_port ON Prelude_Service (protocol, port);
-CREATE INDEX _pg_index_protocol_name ON Prelude_Service (protocol, name);
+CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (protocol, port);
+CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (protocol, name);
 
 
 
