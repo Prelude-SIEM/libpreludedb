@@ -23,7 +23,7 @@
 
 %{
 #include <pthread.h>
-#include <libprelude/prelude-list.h>
+#include <libprelude/prelude.h>
 #include <libprelude/idmef.h>
 
 #include "preludedb-error.h"
