@@ -1,3 +1,13 @@
+2003-12-29  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDBSQL)
+	remove the "close" method (it should not be directly accessed)
+
+	* bindings/python/preludedb.py:
+	documentation written
+	remove the "close" method (see above)
+
 2003-12-28  Nicolas Delon  <delon.nicolas@wanado.fr>
 
 	* plugins/format/classic/idmef-db-insert.c:

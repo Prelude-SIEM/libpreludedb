@@ -421,14 +421,6 @@ sub	rollback
 }
 
 
-sub	close
-{
-    my	$self = shift;
-
-    return (PreludeDB::prelude_sql_close($$self) < 0) ? 0 : 1;
-}
-
-
 
 package PreludeDBSQLTable;
 
