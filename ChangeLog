@@ -1,3 +1,10 @@
+2002-12-20  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/sql/pgsql.c(db_query):
+	fix a memory leak and a possible NULL pointer dereference on error.
+	Thanks to Nicolas Delon <delon.nicolas@wanadoo.fr> for pointing
+	this out.
+
 2002-12-19  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/sql/mysql.c
