@@ -200,10 +200,6 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 	
 	if ( idmef_criterion_is_chain(criterion) ) {
 
-		ret = strbuf_sprintf(where, " ( ");
-		if ( ret < 0 )
-			return ret;
-
 		entry = NULL;
 		add_operator = 0;
 		while ( (entry = idmef_criterion_get_next(criterion, entry)) ) {
@@ -226,6 +222,10 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 				ret = strbuf_sprintf(where, " %s ", operator);
 				if ( ret < 0 )
 					return ret;
+			} else {
+				ret = strbuf_sprintf(where, " ( ");
+				if ( ret < 0 )
+					return ret;
 			}
 			
 			ret = criterion_to_sql(conn, where, tables, entry);
@@ -236,8 +236,13 @@ int criterion_to_sql(prelude_sql_connection_t *conn, strbuf_t *where, strbuf_t *
 				
 		}
 		
-		ret = strbuf_sprintf(where, " ) ");
-		return ret;
+		/* add_operator = 0 signifies that the chain was empty */
+		if ( add_operator ) {
+			ret = strbuf_sprintf(where, " ) ");
+			return ret;
+		}
+		
+		return 0;
 				
 	} else {
 		
