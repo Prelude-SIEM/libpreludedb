@@ -1,3 +1,9 @@
+2003-05-13  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/sql-plugins.c:
+	* src/sql.c:
+	minor modifications to fit idmef_string's last changes
+
 2003-05-08  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/include/idmef-db-select.h:
