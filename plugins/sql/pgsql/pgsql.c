@@ -315,7 +315,12 @@ static prelude_sql_table_t *db_query(void *s, const char *query)
         res = PQexec(session->pgsql, query);
         if ( ! res || (PQresultStatus(res) != PGRES_COMMAND_OK && PQresultStatus(res) != PGRES_TUPLES_OK) ) {
                 log(LOG_ERR, "Query \"%s\" failed : %s.\n", query, PQerrorMessage(session->pgsql));
-                PQclear(res);
+
+                if (res)
+                	PQclear(res);
+                	
+                prelude_sql_table_destroy(table);
+                
                 errno = -ERR_PLUGIN_DB_QUERY_ERROR;
                 return NULL;
         }
