@@ -350,7 +350,7 @@ sub	DESTROY
 {
     my	$self = shift;
 
-    PreludeDB::prelude_db_interface_destroy($$self);
+    $$self and PreludeDB::prelude_db_interface_destroy($$self);
 }
 
 
@@ -487,7 +487,7 @@ sub	DESTROY
 {
     my	$self = shift;
 
-    PreludeDB::prelude_sql_table_free($$self);
+    $$self and PreludeDB::prelude_sql_table_free($$self);
 }
 
 

@@ -1,5 +1,24 @@
 2003-10-12  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
+	* bindings/perl/PreludeDB.pm:
+	(PreludeDB::DESTROY)
+	(PreludeDBSQLRow::DESTROY)
+	<<<grab from the ChangeLog of libprelude, we have
+	exactly the same problem in libpreludedb>>>
+	"bug" fix/workaround
+	some code like this:
+	perl -e "use Prelude; $message = new IDMEFMessage"
+	(note that I did not use "my")
+	leads to call IDMEFMessage::DESTROY -> idmef_message_destroy with a NULL
+	pointer (because the swig intermediate object has been destroyed before
+	the top IDMEFMessage::DESTROY is called itself)
+	this is very bizarre, and only happen for non-my variable at perl exit stage,
+	perl -e "use Prelude; my $message = new IDMEFMessage" will work
+	perl -e "use Prelude; $message = new IDMEFMessage; $message = undef" will also work
+	indeed, perl is great language ;)
+
+2003-10-12  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
 	* plugins/format/classic/idmef-db-insert.c:
 	(insert_additional_data)
 	fit idmef_additional_data_to_string changes
