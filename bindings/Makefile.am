@@ -8,7 +8,7 @@ BINDING_DEPENDS=libpreludedb.i libpreludedb_perl.i libpreludedb_python.i \
 		$(top_srcdir)/src/include/preludedb-sql-settings.h \
 		$(top_srcdir)/src/include/preludedb-version.h
 
-EXTRA_DIST = libpreludedb.i perl/Makefile.PL.in perl/PreludeDB.pm perl/PreludeDB.c python/setup.py.in python/preludedb.py python/_preludedb.c
+EXTRA_DIST = libpreludedb.i libpreludedb_perl.i libpreludedb_python.i perl/Makefile.PL.in perl/PreludeDB.pm perl/PreludeDB.c python/setup.py.in python/preludedb.py python/_preludedb.c
 
 all-am: perl python
 
