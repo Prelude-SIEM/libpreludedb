@@ -33,6 +33,9 @@
 #include <libprelude/idmef-tree-wrap.h>
 #include <libprelude/idmef-util.h>
 
+#include <netinet/in.h>
+#include <libprelude/extract.h>
+
 #include "sql-connection-data.h"
 #include "sql.h"
 #include "db-type.h"
@@ -851,37 +854,43 @@ static int insert_additional_data(prelude_sql_connection_t *conn, uint64_t paren
 {
         int ret;
         idmef_data_t *idata;
-	char *meaning, *data, *type;
-
+	char *meaning, *typestr, *data;
+        idmef_additional_data_type_t type;
+        unsigned char tmp[128];
+                
 	if ( ! additional_data )
 		return 0;
 
+        type = idmef_additional_data_get_type(additional_data);
         idata = idmef_additional_data_get_data(additional_data);
+
+        data = prelude_sql_escape_fast(conn,
+                                       idmef_additionaldata_data_to_string(additional_data, tmp, sizeof(tmp)),
+                                       idmef_data_get_len(idata));
         
-        data = prelude_sql_escape_fast(conn, idmef_data_get_data(idata), idmef_data_get_len(idata));
-	if ( ! data )
+        if ( ! data )
 		return -2;
 
-        type = prelude_sql_escape(conn, idmef_additional_data_type_to_string(idmef_additional_data_get_type(additional_data)));
-        if ( ! type ) {
+        typestr = prelude_sql_escape(conn, idmef_additional_data_type_to_string(type));
+        if ( ! typestr ) {
 		free(data);
                 return -3;
 	}
-
+        
         meaning = prelude_sql_escape(conn, get_string(idmef_additional_data_get_meaning(additional_data)));
         if ( ! meaning ) {
 		free(data);
-                free(type);
+                free(typestr);
                 return -4;
         }
-
+        
         ret = prelude_sql_insert(conn, "Prelude_AdditionalData", "parent_ident, parent_type, type, meaning, data",
-				 "%llu, '%c', %s, %s, %s", parent_ident, parent_type, type, meaning, data);
+				 "%llu, '%c', %s, %s, %s", parent_ident, parent_type, typestr, meaning, data);
 
         free(data);
-        free(type);
+        free(typestr);        
         free(meaning);
-
+        
         return (ret < 0) ? -5 : 1;
 }
 

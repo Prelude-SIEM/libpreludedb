@@ -1,3 +1,9 @@
+2004-02-03  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* plugins/format/classic/idmef-db-insert.c (insert_additional_data): 
+	back to using idmef_additionaldata_data_to_string(), which should
+	now work better.
+
 2004-02-01  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/python/preludedb.py:
