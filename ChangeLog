@@ -1,3 +1,19 @@
+2003-12-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* src/db-cache.c:
+	renamed in src/db-message-cache.c
+	little code cleanup
+
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	make db-interface use db-message-cache
+
+	* bindings/perl/Prelude.c:
+	regenerated
+
+	* bindings/perl/Prelude.pm:
+	updated to use cache feature of db-interface
+
 2003-12-13  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* configure.in: 

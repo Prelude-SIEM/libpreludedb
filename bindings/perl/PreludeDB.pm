@@ -177,6 +177,14 @@ sub	new
     return $db ? bless(\$db, $class) : undef;
 }
 
+sub	enable_message_cache
+{
+    my	$self = shift;
+    my	$directory = shift || "/tmp/.libpreludedb-cache";
+
+    return (prelude_db_interface_enable_message_cache($$self, $directory) < 0) ? 0 : 1;
+}
+
 sub	connect
 {
     my	$self = shift;

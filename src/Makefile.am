@@ -12,7 +12,7 @@ libpreludedb_la_SOURCES =		\
 	db-message-ident.c		\
 	db-interface.c			\
 	db-interface-string.c		\
-	db-cache.c			\
+	db-message-cache.c		\
 	db-connection.c			\
 	db-connection-data.c		\
 	db-object-selection.c		\

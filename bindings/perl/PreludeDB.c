@@ -221,7 +221,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.22 2003/12/10 17:58:55 nicolas Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.23 2003/12/14 18:11:49 nicolas Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -1118,6 +1118,92 @@ XS(_wrap_prelude_db_interface_new) {
 }
 
 
+XS(_wrap_prelude_db_interface_destroy) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_destroy(interface);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_destroy. Expected _p_prelude_db_interface_t");
+            }
+        }
+        prelude_db_interface_destroy(arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_enable_message_cache) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        char *arg2 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: prelude_db_interface_enable_message_cache(interface,cache_directory);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_enable_message_cache. Expected _p_prelude_db_interface_t");
+            }
+        }
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
+        result = (int)prelude_db_interface_enable_message_cache(arg1,(char const *)arg2);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_disable_message_cache) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: prelude_db_interface_disable_message_cache(interface);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_disable_message_cache. Expected _p_prelude_db_interface_t");
+            }
+        }
+        prelude_db_interface_disable_message_cache(arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_prelude_db_interface_get_name) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -1809,33 +1895,6 @@ XS(_wrap_prelude_db_interface_disconnect) {
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
-        XSRETURN(argvi);
-        fail:
-        (void) _swigerr;
-    }
-    croak(_swigerr);
-}
-
-
-XS(_wrap_prelude_db_interface_destroy) {
-    char _swigmsg[SWIG_MAX_ERRMSG] = "";
-    const char *_swigerr = _swigmsg;
-    {
-        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
-        int argvi = 0;
-        dXSARGS;
-        
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: prelude_db_interface_destroy(interface);");
-        }
-        {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
-                SWIG_croak("Type error in argument 1 of prelude_db_interface_destroy. Expected _p_prelude_db_interface_t");
-            }
-        }
-        prelude_db_interface_destroy(arg1);
-        
-        
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -3223,6 +3282,9 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_message_ident_get_analyzerid", _wrap_prelude_db_message_ident_get_analyzerid},
 {"PreludeDB::prelude_db_message_ident_get_ident", _wrap_prelude_db_message_ident_get_ident},
 {"PreludeDB::prelude_db_interface_new", _wrap_prelude_db_interface_new},
+{"PreludeDB::prelude_db_interface_destroy", _wrap_prelude_db_interface_destroy},
+{"PreludeDB::prelude_db_interface_enable_message_cache", _wrap_prelude_db_interface_enable_message_cache},
+{"PreludeDB::prelude_db_interface_disable_message_cache", _wrap_prelude_db_interface_disable_message_cache},
 {"PreludeDB::prelude_db_interface_get_name", _wrap_prelude_db_interface_get_name},
 {"PreludeDB::prelude_db_interface_get_format", _wrap_prelude_db_interface_get_format},
 {"PreludeDB::prelude_db_interface_connect", _wrap_prelude_db_interface_connect},
@@ -3244,7 +3306,6 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_interface_errno", _wrap_prelude_db_interface_errno},
 {"PreludeDB::prelude_db_interface_error", _wrap_prelude_db_interface_error},
 {"PreludeDB::prelude_db_interface_disconnect", _wrap_prelude_db_interface_disconnect},
-{"PreludeDB::prelude_db_interface_destroy", _wrap_prelude_db_interface_destroy},
 {"PreludeDB::prelude_db_interface_new_string", _wrap_prelude_db_interface_new_string},
 {"PreludeDB::prelude_db_connection_new", _wrap_prelude_db_connection_new},
 {"PreludeDB::prelude_db_connection_get_type", _wrap_prelude_db_connection_get_type},

@@ -41,22 +41,12 @@
 #include <libprelude/idmef-message-send.h>
 #include <libprelude/idmef-message-recv.h>
 
-#include "db-cache.h"
+#include "db-message-cache.h"
 
 
-struct db_cache {
+struct db_message_cache {
         char *directory;
 };
-
-
-
-/*
- * right now, ident are incremented of 1 for each new alert/heartbeat.
- */
-inline static int get_cache_entry(uint64_t ident)
-{
-        return ident % 10;
-}
 
 
 
@@ -64,12 +54,12 @@ static prelude_io_t *pio_open(const char *filename, const char *mode)
 {
         FILE *fd;
         prelude_io_t *pfd;
-        
+
         pfd = prelude_io_new();
         if ( ! pfd ) {
                 log(LOG_ERR, "memory exhausted.\n");
                 return NULL;
-        }        
+        }
 
         fd = fopen(filename, mode);
         if ( ! fd ) {
@@ -85,33 +75,40 @@ static prelude_io_t *pio_open(const char *filename, const char *mode)
 
 
 
-static void get_cache_filename(db_cache_t *cache, char *out, size_t size, const char *type, uint64_t ident)
+static void get_message_cache_filename(db_message_cache_t *cache,
+				       char *out, size_t size, const char *type, uint64_t ident)
 {
         int key;
 
-        key = get_cache_entry(ident);
+	/*
+	 * right now, ident are incremented of 1 for each new alert/heartbeat.
+	 */
+        key = ident % 10;
+
         snprintf(out, size, "%s/%d/%s.%llu", cache->directory, key, type, ident);
 }
 
 
 
-static int get_message_infos(idmef_message_t *msg, const char **out, uint64_t *ident)
+static int get_message_infos(idmef_message_t *message, const char **out, uint64_t *ident)
 {
         idmef_message_type_t type;
-        
-        type = idmef_message_get_type(msg);
+
+        type = idmef_message_get_type(message);
 
         if ( type == idmef_alert_message ) {
                 *out = "alert";
-                *ident = idmef_alert_get_ident(idmef_message_get_alert(msg));
+                *ident = idmef_alert_get_ident(idmef_message_get_alert(message));
         }
 
-        else if ( type == idmef_heartbeat_message ) {
+	else if ( type == idmef_heartbeat_message ) {
                 *out = "heartbeat";
-                *ident = idmef_heartbeat_get_ident(idmef_message_get_heartbeat(msg));
+                *ident = idmef_heartbeat_get_ident(idmef_message_get_heartbeat(message));
+
         }
 
-        else return -1;
+	else
+		return -1;
 
         return 0;
 }
@@ -119,15 +116,15 @@ static int get_message_infos(idmef_message_t *msg, const char **out, uint64_t *i
 
 
 
-static int msg_to_alert(idmef_message_t *idmef, prelude_msg_t *msg)
+static int msg_to_alert(idmef_message_t *message, prelude_msg_t *pmsg)
 {
         idmef_alert_t *alert;
 
-        alert = idmef_message_new_alert(idmef);
+        alert = idmef_message_new_alert(message);
         if ( ! alert )
                 return -1;
         
-        if ( ! idmef_recv_alert(msg, alert) )
+        if ( ! idmef_recv_alert(pmsg, alert) )
                 return -1;
 
         return 0;
@@ -136,15 +133,15 @@ static int msg_to_alert(idmef_message_t *idmef, prelude_msg_t *msg)
 
 
 
-static int msg_to_heartbeat(idmef_message_t *idmef, prelude_msg_t *msg)
+static int msg_to_heartbeat(idmef_message_t *message, prelude_msg_t *pmsg)
 {
         idmef_heartbeat_t *heartbeat;
         
-        heartbeat = idmef_message_new_heartbeat(idmef);
+        heartbeat = idmef_message_new_heartbeat(message);
         if ( ! heartbeat )
                 return -1;
 
-        if ( ! idmef_recv_heartbeat(msg, heartbeat) )
+        if ( ! idmef_recv_heartbeat(pmsg, heartbeat) )
                 return -1;
 
         return 0;
@@ -159,38 +156,40 @@ static idmef_message_t *read_message_from_cache(prelude_io_t *fd)
         void *buf;
         uint8_t tag;
         uint32_t len;
-        idmef_message_t *idmef;
-        prelude_msg_t *msg = NULL;
+        idmef_message_t *message;
+        prelude_msg_t *pmsg = NULL;
         
-        ret = prelude_msg_read(&msg, fd);
-        if ( ret != prelude_msg_finished )
+        if ( prelude_msg_read(&pmsg, fd) != prelude_msg_finished )
                 return NULL;
 
-        idmef = idmef_message_new();
-        if ( ! idmef ) {
-                prelude_msg_destroy(msg);
+        message = idmef_message_new();
+        if ( ! message ) {
+                prelude_msg_destroy(pmsg);
                 return NULL;
         }
 
         ret = -1;
-        while ( (prelude_msg_get(msg, &tag, &len, &buf)) > 0 ) {
+        while ( (prelude_msg_get(pmsg, &tag, &len, &buf)) > 0 ) {
 
                 if ( tag == MSG_ALERT_TAG ) {
-                        ret = msg_to_alert(idmef, msg);
+                        ret = msg_to_alert(message, pmsg);
                         break;
                 }
                 
                 else if ( tag == MSG_HEARTBEAT_TAG ) {
-                        ret = msg_to_heartbeat(idmef, msg);
+                        ret = msg_to_heartbeat(message, pmsg);
                         break;
                 }
         }
 
-        if ( ret == 0 )
-                return idmef;
+        if ( ret == 0 ) {
+		idmef_message_set_pmsg(message, pmsg);
+
+                return message;
+	}
         
-        prelude_msg_destroy(msg);
-        idmef_message_destroy(idmef);
+        prelude_msg_destroy(pmsg);
+        idmef_message_destroy(message);
                 
         return NULL;
 }
@@ -244,6 +243,7 @@ static int create_directory_if_needed(const char *directory)
         struct stat st;
         
         ret = stat(directory, &st);
+
         if ( ret == 0 )
                 return 0;
         
@@ -252,53 +252,51 @@ static int create_directory_if_needed(const char *directory)
                 return -1;
         }
 
-        ret = mkdir(directory, S_IRWXU);
-        if ( ret < 0 ) {
+        if ( mkdir(directory, S_IRWXU) < 0 ) {
                 log(LOG_ERR, "couldn't create directory %s.\n", directory);
                 return -1;
         }
 
-        return 0;
+	return 0;
 }
 
 
 
 
-static db_cache_t *create_cache_object(const char *directory)
+static db_message_cache_t *create_message_cache(const char *directory)
 {
-        db_cache_t *new;
+        db_message_cache_t *cache;
 
-        new = malloc(sizeof(*new));
-        if ( ! new ) {
+        cache = malloc(sizeof(*cache));
+        if ( ! cache ) {
                 log(LOG_ERR, "memory exhausted.\n");
                 return NULL;
         }
 
-        new->directory = strdup(directory);
-        if ( ! new->directory ) {
+        cache->directory = strdup(directory);
+        if ( ! cache->directory ) {
                 log(LOG_ERR, "memory exhausted.\n");
-                free(new);
+                free(cache);
                 return NULL;
         }
 
-        return new;
+        return cache;
 }
 
 
 
 
-int db_cache_write(db_cache_t *cache, idmef_message_t *message)
+int db_message_cache_write(db_message_cache_t *cache, idmef_message_t *message)
 {
         int ret;
         uint64_t ident;
         const char *type;
         prelude_io_t *fd;
         char filename[256];
-        
-        ret = get_message_infos(message, &type, &ident);
-        assert(ret == 0);
 
-        get_cache_filename(cache, filename, sizeof(filename), type, ident);
+        assert(get_message_infos(message, &type, &ident) == 0);
+
+        get_message_cache_filename(cache, filename, sizeof(filename), type, ident);
         
         fd = pio_open(filename, "w");
         if ( ! fd )
@@ -314,64 +312,58 @@ int db_cache_write(db_cache_t *cache, idmef_message_t *message)
 
 
 
-idmef_message_t *db_cache_read(db_cache_t *cache, const char *type, uint64_t ident)
+idmef_message_t *db_message_cache_read(db_message_cache_t *cache, const char *type, uint64_t ident)
 {
-        int ret;
         struct stat st;
         prelude_io_t *fd;
         char filename[256];
-        idmef_message_t *idmef;
-        
-        get_cache_filename(cache, filename, sizeof(filename), type, ident);
-        
-        ret = stat(filename, &st);
-        if ( ret < 0 ) {
+        idmef_message_t *message;
+
+        get_message_cache_filename(cache, filename, sizeof(filename), type, ident);
+
+        if ( stat(filename, &st) < 0 ) {
                 if ( errno != ENOENT )
                         log(LOG_ERR, "error stating %s.\n", filename);
-                
+
                 return NULL;
         }
-        
+
         fd = pio_open(filename, "r");
         if ( ! fd )
                 return NULL;
-        
-        idmef = read_message_from_cache(fd);
+
+        message = read_message_from_cache(fd);
 
         prelude_io_close(fd);
         prelude_io_destroy(fd);
 
-        return idmef;
+        return message;
 }
 
 
 
-db_cache_t *db_cache_new(const char *directory)
+db_message_cache_t *db_message_cache_new(const char *directory)
 {
-        int ret, i;
+        int i;
         char dname[256];
         
-        ret = create_directory_if_needed(directory);
-        if ( ret < 0 )
+        if ( create_directory_if_needed(directory) < 0 )
                 return NULL;
         
         for ( i = 0; i < 10; i++ ) {
                 snprintf(dname, sizeof(dname), "%s/%d", directory, i);
 
-                ret = create_directory_if_needed(dname);
-                if ( ret < 0 )
+                if ( create_directory_if_needed(dname) < 0 )
                         return NULL;
         }
 
-        return create_cache_object(directory);
+        return create_message_cache(directory);
 }
 
 
 
-void db_cache_destroy(db_cache_t *cache)
+void db_message_cache_destroy(db_message_cache_t *cache)
 {
         free(cache->directory);
         free(cache);
 }
-
-

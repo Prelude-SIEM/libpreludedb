@@ -21,13 +21,17 @@
 *
 *****/
 
-typedef struct db_cache db_cache_t;
+#ifndef _LIBPRELUDEDB_DB_MESSAGE_CACHE_H
+#define _LIBPRELUDEDB_DB_MESSAGE_CACHE_H
+
+typedef struct db_message_cache db_message_cache_t;
 
 
-db_cache_t *db_cache_new(const char *directory);
+db_message_cache_t *db_message_cache_new(const char *directory);
+void db_message_cache_destroy(db_message_cache_t *cache);
 
-void db_cache_destroy(db_cache_t *cache);
+int db_message_cache_write(db_message_cache_t *cache, idmef_message_t *message);
+idmef_message_t *db_message_cache_read(db_message_cache_t *cache, const char *type, uint64_t ident);
 
-int db_cache_write(db_cache_t *cache, idmef_message_t *message);
 
-idmef_message_t *db_cache_read(db_cache_t *cache, const char *type, uint64_t ident);
+#endif /* _LIBPRELUDEDB_DB_MESSAGE_CACHE_H */

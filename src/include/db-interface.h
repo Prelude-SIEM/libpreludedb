@@ -35,6 +35,13 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
 						 const char *format,
 						 prelude_db_connection_data_t *data);
 
+
+void prelude_db_interface_destroy(prelude_db_interface_t *interface);
+
+int prelude_db_interface_enable_message_cache(prelude_db_interface_t *interface, const char *cache_directory);
+
+void prelude_db_interface_disable_message_cache(prelude_db_interface_t *interface);
+
 char *prelude_db_interface_get_name(prelude_db_interface_t *db);
 
 char *prelude_db_interface_get_format(prelude_db_interface_t *db);
@@ -88,7 +95,5 @@ int prelude_db_interface_errno(prelude_db_interface_t *interface);
 const char * prelude_db_interface_error(prelude_db_interface_t *interface);
 
 int prelude_db_interface_disconnect(prelude_db_interface_t *interface);
-
-void prelude_db_interface_destroy(prelude_db_interface_t *interface);
 
 #endif /* _LIBPRELUDEDB_DB_INTERFACE_H */

@@ -40,6 +40,7 @@
 #include "db-connection.h" 
 #include "db-connection-data.h"
 #include "db-object-selection.h"
+#include "db-message-cache.h"
 #include "plugin-format.h"
 
 #include "db-interface.h"
@@ -50,6 +51,7 @@ struct prelude_db_interface {
 	char *name;
 	prelude_db_connection_t *db_connection;
 	prelude_db_connection_data_t *connection_data;
+	db_message_cache_t *cache;
 	plugin_format_t *format;
 	struct list_head filter_list;
 };
@@ -102,6 +104,42 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         return interface;
 }
 
+
+
+void prelude_db_interface_destroy(prelude_db_interface_t *interface)
+{
+	if ( interface->db_connection )
+		prelude_db_interface_disconnect(interface);
+	
+	prelude_db_connection_data_destroy(interface->connection_data);
+	
+	/* FIXME: when filters are implemented, destroy interface->filter_list here */
+	
+	if ( interface->name ) 
+		free(interface->name);
+
+	if ( interface->cache )
+		prelude_db_interface_disable_message_cache(interface);
+
+	free(interface);
+}
+
+
+
+int prelude_db_interface_enable_message_cache(prelude_db_interface_t *interface, const char *cache_directory)
+{
+	interface->cache = db_message_cache_new(cache_directory);
+
+	return interface->cache ? 0 : -1;
+}
+
+
+
+void prelude_db_interface_disable_message_cache(prelude_db_interface_t *interface)
+{
+	db_message_cache_destroy(interface->cache);
+	interface->cache = NULL;
+}
 
 
 
@@ -303,10 +341,27 @@ idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interfac
 						prelude_db_message_ident_t *ident,
 						idmef_object_list_t *object_list)
 {
+	idmef_message_t *message;
+
+	if ( interface->cache ) {
+		message = db_message_cache_read(interface->cache, "alert", prelude_db_message_ident_get_ident(ident));
+		if ( message )
+			return message;			
+	}
+
 	if ( ! interface->format->format_get_alert )
 		return NULL;
 
-	return interface->format->format_get_alert(interface->db_connection, ident, object_list);
+	message = interface->format->format_get_alert(interface->db_connection, ident, object_list);
+	if ( ! message )
+		return NULL;
+
+	if ( interface->cache ) {
+		if ( db_message_cache_write(interface->cache, message) < 0 )
+			log(LOG_ERR, "could not write message into cache\n");
+	}
+
+	return message;	
 }
 
 
@@ -315,10 +370,27 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 						    prelude_db_message_ident_t *ident,
 						    idmef_object_list_t *object_list)
 {
+	idmef_message_t *message;
+
+	if ( interface->cache ) {
+		message = db_message_cache_read(interface->cache, "heartbeat", prelude_db_message_ident_get_ident(ident));
+		if ( message )
+			return message;			
+	}
+
 	if ( ! interface->format->format_get_heartbeat )
 		return NULL;
 
-	return interface->format->format_get_heartbeat(interface->db_connection, ident, object_list);
+	message = interface->format->format_get_heartbeat(interface->db_connection, ident, object_list);
+	if ( ! message )
+		return NULL;
+
+	if ( interface->cache ) {
+		if ( db_message_cache_write(interface->cache, message) < 0 )
+			log(LOG_ERR, "could not write message into cache\n");
+	}
+
+	return message;
 }
 
 
@@ -458,21 +530,4 @@ idmef_object_value_list_t *prelude_db_interface_get_values(prelude_db_interface_
 	
 	return interface->format->format_get_values(interface->db_connection,
 						    data, object_selection);
-}
-
-
-
-void prelude_db_interface_destroy(prelude_db_interface_t *interface)
-{
-	if ( interface->db_connection )
-		prelude_db_interface_disconnect(interface);
-	
-	prelude_db_connection_data_destroy(interface->connection_data);
-	
-	/* FIXME: when filters are implemented, destroy interface->filter_list here */
-	
-	if ( interface->name ) 
-		free(interface->name);
-		
-	free(interface);
 }
