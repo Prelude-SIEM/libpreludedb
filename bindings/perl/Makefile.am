@@ -16,10 +16,12 @@ PreludeDB_so_SOURCES = PreludeDB.c
 PreludeDB_so_LDADD = @LIBPRELUDE_LIBS@ -lpreludedb
 noinst_PROGRAMS = PreludeDB.so
 
+endif
+
 install-exec-local:
+if HAVE_PERL
 	$(INSTALL) -d -m 755 $(DESTDIR)$(perl_dir)
 	$(INSTALL) -m 644 PreludeDB.pm $(DESTDIR)$(perl_dir)
 	$(INSTALL) -d -m 755 $(DESTDIR)$(perl_dir)/auto/PreludeDB
 	$(INSTALL) -m 644 PreludeDB.so $(DESTDIR)$(perl_dir)/auto/PreludeDB
-
 endif

@@ -16,9 +16,11 @@ _preludedb_so_SOURCES = _preludedb.c
 _preludedb_so_LDADD = @LIBPRELUDE_LIBS@ -lpreludedb
 noinst_PROGRAMS = _preludedb.so
 
+endif
+
 install-exec-local:
+if HAVE_PYTHON
 	$(INSTALL) -d -m 755 $(DESTDIR)/$(python_dir)
 	$(INSTALL) -m 644 preludedb.py $(DESTDIR)/$(python_dir)
 	$(INSTALL) -m 644 _preludedb.so $(DESTDIR)/$(python_dir)
-
 endif
