@@ -263,11 +263,11 @@ class PreludeDB:
 
     def delete_alert(self, analyzerid, ident):
         """Delete an alert."""
-        self.__delete_message(analyzerid, ident, prelude_db_interface_delete_alert)
+        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_alert)
 
     def delete_heartbeat(self, analyzerid, ident):
         """Delete a heartbeat."""
-        self.__delete_message(analyzerid, ident, prelude_db_interface_delete_heartbeat)
+        self.__delete_message(analyzerid, ident, _preludedb.prelude_db_interface_delete_heartbeat)
 
     def insert(self, message):
         "Insert an IDMEF message in the db."
