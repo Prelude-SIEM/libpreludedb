@@ -20,6 +20,6 @@ install-exec-local:
 	$(INSTALL) -d -m 755 $(DESTDIR)$(perl_dir)
 	$(INSTALL) -m 644 PreludeDB.pm $(DESTDIR)$(perl_dir)
 	$(INSTALL) -d -m 755 $(DESTDIR)$(perl_dir)/auto/PreludeDB
-	strip PreludeDB.so && $(INSTALL) -m 644 PreludeDB.so $(DESTDIR)$(perl_dir)/auto/PreludeDB
+	$(INSTALL) -m 644 PreludeDB.so $(DESTDIR)$(perl_dir)/auto/PreludeDB
 
 endif

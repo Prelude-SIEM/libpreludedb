@@ -410,7 +410,7 @@ static int get_userid(prelude_sql_connection_t *sql,
 
 	table = prelude_sql_query(sql,
 				  "SELECT type, name, number "
-				  "FROM Prelude_UserID "
+				  "FROM Prelude_UserId "
 				  "WHERE parent_type = '%c' AND parent_ident = %llu AND alert_ident = %llu",
 				  parent_type, parent_ident, alert_ident);
 	if ( ! table ) {
