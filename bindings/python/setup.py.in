@@ -77,6 +77,6 @@ setup(name="preludedb",
       py_modules=["preludedb"],
       ext_modules=[Extension("_preludedb",
                              ["_preludedb.c"],
-                             extra_compile_args=split_args("-I@top_srcdir@/src/include @LIBPRELUDE_CFLAGS@"),
-                             extra_link_args=split_args("@LIBPRELUDE_LDFLAGS@ "
-                                                        "-L@top_builddir@/src/.libs -lpreludedb @LIBPRELUDE_LIBS@"))])
+                             extra_compile_args=split_args("-I@top_srcdir@/src/include @LIBPRELUDE_CFLAGS@ @LIBPRELUDE_PTHREAD_CFLAGS@"),
+                             library_dirs=[ "@top_builddir@/src/.libs/" ],
+                             extra_link_args=split_args("@LIBPRELUDE_LDFLAGS@ @LIBPRELUDE_PTHREAD_CFLAGS@ -lpreludedb @LIBPRELUDE_LIBS@"))])
