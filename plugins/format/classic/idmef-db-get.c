@@ -1929,11 +1929,12 @@ static int get_overflow_alert(preludedb_sql_t *sql,
 }
 
 
-static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t ident, prelude_string_t *messageid)
+static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t ident,
+			 void *parent, int (*parent_new_child)(void *parent, prelude_string_t **child))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
-	preludedb_sql_field_t *field;
+	prelude_string_t *messageid;
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid FROM %s WHERE _ident = %" PRIu64 "", 
@@ -1948,11 +1949,7 @@ static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t 
 	if ( ret < 0 )
 		goto error;
 
-	ret = preludedb_sql_row_fetch_field(row, 0, &field);
-	if ( ret < 0 )
-		goto error;
-
-	ret = preludedb_sql_field_to_string(field, messageid);
+	ret = get_string(sql, row, 0, parent, parent_new_child);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -1964,7 +1961,6 @@ static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t 
 int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_alert_t *alert;
-        prelude_string_t *messageid;
 	int ret;
 
 	ret = idmef_message_new(message);
@@ -1975,19 +1971,10 @@ int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 	if ( ret < 0 )
 		goto error;
 
-	ret = idmef_alert_new_messageid(alert, &messageid);
-	if ( ret < 0 )
-		goto error;
-
-	ret = get_messageid(sql, "Prelude_Alert", ident, messageid);
+	ret = get_messageid(sql, "Prelude_Alert", ident, alert, (int (*)(void *, prelude_string_t **)) idmef_alert_new_messageid);
 	if ( ret < 0 )
 		goto error;
         
-	if ( ret == 0 ) {
-		ret = preludedb_error(PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT);
-		goto error;
-	}
-
 	ret = get_assessment(sql, ident, alert);
 	if ( ret < 0 )
 		goto error;
@@ -2050,7 +2037,6 @@ int get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message)
 {
 	idmef_heartbeat_t *heartbeat;
-	prelude_string_t *messageid;
 	int ret;
 
 	ret = idmef_message_new(message);
@@ -2061,11 +2047,7 @@ int get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **messag
 	if ( ret < 0 )
 		goto error;
 
-	ret = idmef_heartbeat_new_messageid(heartbeat, &messageid);
-	if ( ret < 0 )
-		goto error;
-
-	ret = get_messageid(sql, "Prelude_Heartbeat", ident, messageid);
+	ret = get_messageid(sql, "Prelude_Heartbeat", ident, heartbeat, (int (*)(void *, prelude_string_t **)) idmef_heartbeat_new_messageid);
 	if ( ret <= 0 )
 		goto error;
 
