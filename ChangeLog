@@ -1,3 +1,10 @@
+2003-12-14  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* src/db-message-cache.c (cache_write_cb): 
+	fix a NULL pointer dereference in the messaging subsystem
+	that would trigger if the cached alert we were written was
+	to big. Return the recycled message.
+
 2003-12-14  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* src/db-cache.c:

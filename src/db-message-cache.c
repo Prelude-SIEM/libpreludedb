@@ -211,7 +211,7 @@ static prelude_msg_t *cache_write_cb(prelude_msgbuf_t *msgbuf)
         prelude_msg_write(msg, fd);
         prelude_msg_recycle(msg);
         
-        return 0;
+        return msg;
 }
 
 
