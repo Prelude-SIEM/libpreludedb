@@ -83,6 +83,8 @@ static plugin_sql_t plugin;
 
 static void *db_query(void *s, const char *query);
 
+plugin_generic_t *plugin_init(int argc, char **argv);
+
 
 static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
                       const char *dbuser, const char *dbpass)
@@ -569,7 +571,7 @@ plugin_generic_t *plugin_init(int argc, char **argv)
         plugin_set_setup_func(&plugin, db_setup);
         plugin_set_connect_func(&plugin, db_connect);
         plugin_set_escape_func(&plugin, db_escape);
-        plugin_set_escape_func(&plugin, db_limit_offset);
+        plugin_set_limit_offset_func(&plugin, db_limit_offset);
         plugin_set_query_func(&plugin, db_query);
         plugin_set_begin_func(&plugin, db_begin);
         plugin_set_commit_func(&plugin, db_commit);

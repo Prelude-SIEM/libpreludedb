@@ -1,3 +1,19 @@
+2003-12-31  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/classic.c:
+	fix some warnings
+
+	* plugins/format/classic/idmef-db-get.c:
+	(get_ntp_timestamp)
+	remove unused variables
+
+	* plugins/sql/pgsql/pgsql.c:
+	bug fix: db_limit_offset was assigned to the escape func
+	entry of the plugin
+
+	* src/param-string.c:
+	fix some warnings
+
 2003-12-29  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* plugins/format/classic/idmef-db-get.c:

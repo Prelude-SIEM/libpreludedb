@@ -32,13 +32,17 @@
 
 #define BUFLEN 127
 
-/* Find char 'c' in first 'n' bytes of string 's' */
-static char *strnchr(char *s, char c, int n)
+/* 
+ * Find char 'c' in first 'n' bytes of string 's'
+ */
+
+static const char *strnchr(const char *s, char c, int n)
 {
 	int i;
 	
 	for ( i = 0; i < n; i++ )
-		if ( s[i] == c ) return s+i;
+		if ( s[i] == c )
+			return s + i;
 		
 	return NULL;
 }
@@ -52,9 +56,9 @@ static char *strnchr(char *s, char c, int n)
  * If a `\' is found, the following character is skipped. 
  */
 
-static char *find_separator(char *s, char *sep)
+static const char *find_separator(const char *s, char *sep)
 {
-	if ( !s || !sep )
+	if ( !s || ! sep )
 		return NULL;
 	
 	while ( s && *s ) {
@@ -154,15 +158,15 @@ static void unquote(char *s)
 char *parameter_value(const char *string, const char *field)
 {
 	char buf[BUFLEN+1]; /* +1 for trailing '\0' */
-	char *s;
-	char *sep;
-	char *data;
+	const char *s;
+	const char *sep;
+	const char *data;
 	char *ret;
 	int len;
 	int name_len;
 	int data_len;
 	
-	s = (char *) string;
+	s = string;
 	
 	do {
 		/*sep = strpbrk(s, " ");*/
@@ -181,7 +185,7 @@ char *parameter_value(const char *string, const char *field)
 		if ( data ) 
 			data++;
 		else
-			data = s+len;
+			data = s + len;
 
 		data_len = s + len - data;
 		name_len = len - data_len - 1;
@@ -192,12 +196,11 @@ char *parameter_value(const char *string, const char *field)
 		strncpy(buf, s, name_len);
 		buf[name_len] = '\0';
 			
-		if (strncasecmp(buf, field, name_len) == 0) {
+		if ( strncasecmp(buf, field, name_len) == 0 ) {
 			
 			ret = malloc(data_len + 1);
-			
-			if ( !ret ) {
-				log(LOG_ERR, "out of memory\n");
+			if ( ! ret ) {
+				log(LOG_ERR, "memory exhausted.\n");
 				return NULL;
 			}
 			

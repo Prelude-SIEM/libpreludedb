@@ -55,6 +55,9 @@
 
 static plugin_format_t plugin;
 
+plugin_generic_t *plugin_init(int argc, char **argv);
+
+
 
 static prelude_sql_table_t *get_ident_list(prelude_db_connection_t *connection,
 					   idmef_criteria_t *criteria,

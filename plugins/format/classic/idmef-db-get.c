@@ -158,7 +158,6 @@ static int get_ntp_timestamp(prelude_sql_connection_t *sql, prelude_sql_row_t *r
 {
 	prelude_sql_field_t *field;
 	const char *tmp;
-	unsigned int sec, usec;
 
 	field = prelude_sql_field_fetch(row, index);
 	if ( ! field ) {
