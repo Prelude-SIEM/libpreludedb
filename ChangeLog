@@ -1,5 +1,10 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/db-interface.c:
+	don't include "param-string.h"
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-interface.c(prelude_db_interface_new):
 	avoid problems when 'format' or 'name' parameter is NULL
 

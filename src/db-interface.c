@@ -41,7 +41,6 @@
 #include "db-connection-data.h"
 #include "db-interface.h"
 #include "plugin-format.h"
-#include "param-string.h"
 
 struct prelude_db_interface {
 	char *name;
