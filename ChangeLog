@@ -1,5 +1,13 @@
 2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
+	* src/sql-connection-data.c:
+	handle NULL parameter values correctly in all functions
+
+	* src/include/db-type.h:
+	define prelude_db_type_invalid
+
+2002-12-07  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
 	* src/db-interface.c:
 	don't include "param-string.h"
 
