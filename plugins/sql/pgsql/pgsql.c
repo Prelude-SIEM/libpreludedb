@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001-2003 Vandoorselaere Yoann <yoann@prelude-ids.org>
+* Copyright (C) 2001-2004 Vandoorselaere Yoann <yoann@prelude-ids.org>
 * Copyright (C) 2002 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
@@ -232,7 +232,7 @@ static char *db_escape(void *s, const char *str)
 
         ptr[ok++] = '\'';
         
-        for ( i = 0; i < rlen; i++ ) {
+        for ( i = 0; i < len; i++ ) {
 
                 if ( str[i] == '\'' ) {
                         ptr[ok++] = '\\';

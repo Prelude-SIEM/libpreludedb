@@ -1,3 +1,8 @@
+2004-01-14  Yoann Vandoorselaere  <yoann@prelude-ids.org>
+
+	* plugins/sql/pgsql/pgsql.c (db_escape): 
+	checking the wrong variable is bad for your health.
+
 2004-01-11  Nicolas Delon  <delon.nicolas@wanadoo.fr>
 
 	* bindings/python/preludedb.py:
