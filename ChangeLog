@@ -1,3 +1,29 @@
+2003-07-06  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* bindings/perl/PreludeDB.pm:
+	support full message fetching
+
+	* plugin/format/classic/idmef-db-delete.c:
+	fix two bugs in alert/heartbeat deletion code
+	(bad test for deletion of Prelude_Address row,
+	and Prelude_Heartbeat rows were not deleted in
+	classic_delete_heartbeat)
+
+2003-07-04  Nicolas Delon  <delon.nicolas@wanadoo.fr>
+
+	* plugins/format/classic/idmef-db-delete.c:
+	* plugins/format/classic/include/idmef-db-delete.c:
+	new files
+	* bindings/perl/PreludeDB.c:
+	regenerated
+	* bindings/perl/PreludeDB.i:
+	* bindings/perl/PreludeDB.pm:
+	* plugins/format/classic/classic.c:
+	* src/db-interface.c:
+	* src/include/db-interface.h:
+	* src/include/plugin-format.h:
+	support the deletion of alert/heartbeat
+
 2003-07-03  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 
 	* plugins/format/classic/classic.c:
