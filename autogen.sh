@@ -1,6 +1,6 @@
-libtoolize -c --force || (echo aborting ; exit)
-aclocal || (echo aborting ; exit)
-autoheader-2.53 || (echo aborting ; exit)
-automake --gnu -a -c || (echo aborting ; exit)
-autoconf-2.53 || (echo aborting ; exit)
+libtoolize -c --force
+aclocal
+autoheader
+automake --gnu -a -c
+autoconf
 #./configure
