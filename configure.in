@@ -276,9 +276,8 @@ AC_OUTPUT
 
 echo
 echo "*** Dumping configuration ***"
-echo "    - Generate documentation : $enable_gtk_doc"
-echo "    - Enable profiling       : $enable_profiling"
-echo "    - Enable MySQL plugin    : $enable_mysql"
-echo "    - Enable PostgreSQL plugin : $enable_pgsql"
-echo "    - Perl binding: $enable_perl"
-echo "    - Python binding: $enable_python";
+echo "    - Generate documentation 	: $enable_gtk_doc"
+echo "    - Enable MySQL plugin    	: $enable_mysql"
+echo "    - Enable PostgreSQL plugin 	: $enable_pgsql"
+echo "    - Perl binding		: $enable_perl"
+echo "    - Python binding		: $enable_python";
