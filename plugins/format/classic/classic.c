@@ -45,8 +45,8 @@
 #include "classic-path-resolve.h"
 
 
-
-int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data);
+int classic_LTX_prelude_plugin_version(void);
+int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
 struct db_value_info {
@@ -487,17 +487,14 @@ static void classic_destroy_values_resource(void *res)
 
 
 
-int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data)
+int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
 	static preludedb_plugin_format_t classic_plugin;
 
-        *plugin = (void *) &classic_plugin;
 	memset(&classic_plugin, 0, sizeof(classic_plugin));
 
         prelude_plugin_set_name(&classic_plugin, "Classic");
-        prelude_plugin_set_desc(&classic_plugin, "Prelude 0.9.0 database format");
-	prelude_plugin_set_author(&classic_plugin, "Nicolas Delon");
-        prelude_plugin_set_contact(&classic_plugin, "nicolas.delon@prelude-ids.com");
+        prelude_plugin_entry_set_plugin(pe, (void *) &classic_plugin);
 
 	preludedb_plugin_format_set_get_alert_idents_func(&classic_plugin, classic_get_alert_idents);
 	preludedb_plugin_format_set_get_heartbeat_idents_func(&classic_plugin, classic_get_heartbeat_idents);
@@ -515,4 +512,11 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *d
 	preludedb_plugin_format_set_destroy_values_resource_func(&classic_plugin, classic_destroy_values_resource);
 
 	return 0;
+}
+
+
+
+int classic_LTX_prelude_plugin_version(void)
+{
+        return PRELUDE_PLUGIN_API_VERSION;
 }

@@ -104,6 +104,10 @@ struct preludedb_sql_field {
 
 
 
+extern prelude_list_t _sql_plugin_list;
+
+
+
 /**
  * preludedb_sql_new:
  * @new: Pointer to a sql object to initialize.
@@ -129,7 +133,7 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 
 	(*new)->settings = settings;
 
-	(*new)->plugin = (preludedb_plugin_sql_t *) prelude_plugin_search_by_name(type);
+	(*new)->plugin = (preludedb_plugin_sql_t *) prelude_plugin_search_by_name(&_sql_plugin_list, type);
 	if ( ! (*new)->plugin ) {
 		free((*new)->type);
 		free(*new);

@@ -61,16 +61,10 @@ struct preludedb_result_values {
 };
 
 
+
 static int libpreludedb_refcount = 0;
-
-static PRELUDE_LIST(plugin_instances);
-
-
-
-static int subscribe(prelude_plugin_instance_t *pi)
-{
-        return prelude_plugin_add(pi, &plugin_instances, NULL);
-}
+PRELUDE_LIST(_sql_plugin_list);
+static PRELUDE_LIST(format_plugin_list);
 
 
 
@@ -80,7 +74,7 @@ int preludedb_init(void)
 
 	if ( libpreludedb_refcount++ > 0 )
 		return 0;
-
+        
 	ret = prelude_init(NULL, NULL);
 	if ( ret < 0 )
 		return ret;
@@ -89,7 +83,8 @@ int preludedb_init(void)
 	if ( ret < 0 )
 		return prelude_error_from_errno(errno);
 
-	ret = prelude_plugin_load_from_dir(FORMAT_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, subscribe, NULL);
+	ret = prelude_plugin_load_from_dir(&format_plugin_list, FORMAT_PLUGIN_DIR,
+                                           PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 	if ( ret < 0 )
 		return ret;
 
@@ -97,7 +92,8 @@ int preludedb_init(void)
 	if ( ret < 0 )
 		return prelude_error_from_errno(errno);
 
-	ret = prelude_plugin_load_from_dir(SQL_PLUGIN_DIR, PRELUDEDB_PLUGIN_SYMBOL, NULL, subscribe, NULL);
+	ret = prelude_plugin_load_from_dir(&_sql_plugin_list, SQL_PLUGIN_DIR,
+                                           PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 	if ( ret < 0 )
 		return ret;
 
@@ -108,20 +104,20 @@ int preludedb_init(void)
 
 void preludedb_deinit(void)
 {
-	prelude_list_t *tmp, *next;
-	prelude_plugin_instance_t *pi;
-	prelude_plugin_generic_t *plugin;
-
+        prelude_list_t *iter;
+        prelude_plugin_generic_t *pl;
+        
 	if ( --libpreludedb_refcount > 0 )
 		return;
 
-	prelude_list_for_each_safe(&plugin_instances, tmp, next) {
-		pi = prelude_linked_object_get_object(tmp);
-		plugin = prelude_plugin_instance_get_plugin(pi);
-		prelude_plugin_unload(plugin);
-		prelude_plugin_del(pi);
-	}
+        iter = NULL;
+        while ( (pl = prelude_plugin_get_next(&_sql_plugin_list, &iter)) )
+                prelude_plugin_unload(pl);
 
+        iter = NULL;
+        while ( (pl = prelude_plugin_get_next(&format_plugin_list, &iter)) )
+                prelude_plugin_unload(pl);
+        
 	prelude_deinit();
 }
 
@@ -173,7 +169,7 @@ static int preludedb_autodetect_format(preludedb_t *db)
 int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size)
 {
 	int ret;
-
+        
 	*db = calloc(1, sizeof (**db));
 	if ( ! *db ) {
 		ret = preludedb_error_from_errno(errno);
@@ -224,7 +220,7 @@ void preludedb_destroy(preludedb_t *db)
  */
 const char *preludedb_get_format(preludedb_t *db)
 {
-	return prelude_plugin_name(db->plugin);
+	return prelude_plugin_get_name(db->plugin);
 }
 
 
@@ -240,7 +236,7 @@ const char *preludedb_get_format(preludedb_t *db)
  */
 int preludedb_set_format(preludedb_t *db, const char *format_name)
 {
-	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(format_name);
+	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&format_plugin_list, format_name);
 	if ( ! db->plugin )
 		return -1;
 

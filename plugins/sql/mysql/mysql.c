@@ -49,7 +49,8 @@
 #include "preludedb.h"
 
 
-int mysql_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data);
+int mysql_LTX_prelude_plugin_version(void);
+int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
@@ -362,17 +363,13 @@ static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t t
 }
 
 
-int mysql_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *data)
+int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
 	static preludedb_plugin_sql_t sql_plugin;
 
-        *plugin = (void *) &sql_plugin;
 	memset(&sql_plugin, 0, sizeof(sql_plugin));
-
         prelude_plugin_set_name(&sql_plugin, "MySQL");
-        prelude_plugin_set_desc(&sql_plugin, "SQL plugin for MySQL database.");
-	prelude_plugin_set_author(&sql_plugin, "Nicolas Delon");
-        prelude_plugin_set_contact(&sql_plugin, "nicolas.delon@prelude-ids.com");
+        prelude_plugin_entry_set_plugin(pe, (void *) &sql_plugin);
 
         preludedb_plugin_sql_set_open_func(&sql_plugin, sql_open);
         preludedb_plugin_sql_set_close_func(&sql_plugin, sql_close);
@@ -391,4 +388,11 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_generic_t **plugin, void *dat
         preludedb_plugin_sql_set_build_limit_offset_string_func(&sql_plugin, sql_build_limit_offset_string);
 
 	return 0;
+}
+
+
+
+int mysql_LTX_prelude_plugin_version(void)
+{
+        return PRELUDE_PLUGIN_API_VERSION;
 }
