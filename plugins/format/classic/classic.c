@@ -34,8 +34,6 @@
 #include <libprelude/prelude-message.h>
 #include <libprelude/prelude-getopt.h>
 #include <libprelude/idmef.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
@@ -54,8 +52,6 @@
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
 
 static plugin_format_t plugin;
-
-plugin_generic_t *plugin_init(int argc, char **argv);
 
 
 
@@ -565,12 +561,12 @@ error:
 
 
 
-plugin_generic_t *plugin_init(int argc, char **argv)
+prelude_plugin_generic_t *prelude_plugin_init(void)
 {
 	/* System wide plugin options should go in here */
         
-        plugin_set_name(&plugin, "Classic");
-        plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
+        prelude_plugin_set_name(&plugin, "Classic");
+        prelude_plugin_set_desc(&plugin, "Prelude 0.8.0 database format");
 
 	plugin_set_get_alert_ident_list_func(&plugin, classic_get_alert_ident_list);
 	plugin_set_get_heartbeat_ident_list_func(&plugin, classic_get_heartbeat_ident_list);
@@ -590,5 +586,5 @@ plugin_generic_t *plugin_init(int argc, char **argv)
 
 	db_objects_init(CONFIG_FILE);
 
-	return (plugin_generic_t *) &plugin;
+	return (void *) &plugin;
 }

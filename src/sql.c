@@ -41,8 +41,6 @@
 #include <libprelude/list.h>
 #include <libprelude/common.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
 #include <libprelude/idmef.h>
 #include <libprelude/idmef-util.h>
 
@@ -399,7 +397,7 @@ prelude_sql_connection_t *prelude_sql_connect(prelude_sql_connection_data_t *dat
 		return NULL;
 	}
 	
-	plugin = (plugin_sql_t *) plugin_search_by_name(dbtype);
+	plugin = (plugin_sql_t *) prelude_plugin_search_by_name(dbtype);
 	if ( ! plugin ) {
 		errno = -ERR_DB_PLUGIN_NOT_FOUND;
 		return NULL;

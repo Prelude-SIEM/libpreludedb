@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * All Rights Reserved
 *
 * This file is part of the Prelude program.
@@ -36,8 +36,10 @@
 
 #include <libprelude/list.h>
 #include <libprelude/prelude-log.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
+#include <libprelude/prelude-io.h>
+#include <libprelude/prelude-message.h>
+#include <libprelude/prelude-getopt.h>
+#include <libprelude/prelude-plugin.h>
 #include <libprelude/idmef.h>
 
 #include "sql-connection-data.h"
@@ -68,7 +70,7 @@ int sql_plugins_init(const char *dirname)
 		return -1;
 	}
 
-        ret = plugin_load_from_dir(dirname, 0, NULL, NULL, NULL);
+        ret = prelude_plugin_load_from_dir(dirname, NULL, NULL);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't load plugin subsystem.\n");
                 return -1;

@@ -28,7 +28,6 @@
 
 #include <libprelude/prelude-log.h>
 
-#include <libprelude/plugin-common.h>
 #include <libprelude/config-engine.h>
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-io.h>
@@ -63,30 +62,14 @@ int prelude_db_init(void)
 	if ( initialized++ )
 		return 0;
 
-#ifdef DEBUG
-	log(LOG_INFO, "- Starting DB subsystem\n");
-#endif /* DEBUG */
-
-#if 0
-	ret = db_dispatch_init();
-	if (ret < 0)
-		return -1;
-#endif	
-
 	ret = sql_plugins_init(SQL_PLUGIN_DIR);	
 	if ( ret < 0 )
 		return -2;
-		
+        
 	ret = format_plugins_init(FORMAT_PLUGIN_DIR);	
 	if ( ret < 0 )
 		return -3;
-        
-#if 0
-	ret = filter_plugins_init(FILTER_PLUGIN_DIR, 0, NULL);
-	if (ret < 0)
-		return -4;
-#endif
-	
+        	
 	return 0;
 }
 

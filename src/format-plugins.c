@@ -36,8 +36,6 @@
 
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
@@ -73,7 +71,7 @@ int format_plugins_init(const char *dirname)
                 return -1;
 	}
 
-        ret = plugin_load_from_dir(dirname, 0, NULL, NULL, NULL);
+        ret = prelude_plugin_load_from_dir(dirname, NULL, NULL);
         if ( ret < 0 ) {
                 log(LOG_ERR, "couldn't load plugin subsystem.\n");
                 return -1;

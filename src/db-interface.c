@@ -30,8 +30,6 @@
 
 #include <libprelude/prelude-log.h>
 #include <libprelude/idmef.h>
-#include <libprelude/plugin-common.h>
-#include <libprelude/plugin-common-prv.h>
 
 #include "sql-connection-data.h"
 #include "sql.h"
@@ -93,7 +91,7 @@ prelude_db_interface_t *prelude_db_interface_new(const char *name,
         if ( ! format )
                 return interface;
         
-        interface->format = (plugin_format_t *) plugin_search_by_name(format);
+        interface->format = (plugin_format_t *) prelude_plugin_search_by_name(format);
         if ( ! interface->format ) {
                 log(LOG_ERR, "couldn't find format plugin '%s'.\n", format);
                 free(interface->name);

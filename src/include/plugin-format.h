@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
@@ -26,8 +26,14 @@
 #ifndef _LIBPRELUDEDB_PLUGIN_FORMAT_H
 #define _LIBPRELUDEDB_PLUGIN_FORMAT_H
 
+#include <libprelude/prelude-io.h>
+#include <libprelude/prelude-message.h>
+#include <libprelude/prelude-getopt.h>
+#include <libprelude/prelude-plugin.h>
+
+
 typedef struct {
-	PLUGIN_GENERIC;
+	PRELUDE_PLUGIN_GENERIC;
 
 	void *(*format_get_alert_ident_list)(prelude_db_connection_t *connection,
 					     idmef_criteria_t *criteria,

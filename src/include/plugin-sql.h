@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Copyright (C) 2002 Krzysztof Zaraska <kzaraska@student.uci.agh.edu.pl>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
@@ -25,6 +25,12 @@
 
 #ifndef _LIBPRELUDEDB_PLUGIN_DB_H
 #define _LIBPRELUDEDB_PLUGIN_DB_H
+
+#include <libprelude/prelude-io.h>
+#include <libprelude/prelude-message.h>
+#include <libprelude/prelude-getopt.h>
+#include <libprelude/prelude-plugin.h>
+
 
 #define DB_INSERT_END ((void *)0x1)
 
@@ -64,7 +70,7 @@ typedef enum {
 }	prelude_sql_time_constraint_type_t;
 
 typedef struct {
-        PLUGIN_GENERIC;
+        PRELUDE_PLUGIN_GENERIC;
 	/* general functions */
         void *(*db_setup)(const char *dbhost, const char *dbport, const char *dbname, 
                           const char *dbuser, const char *dbpass);
@@ -160,7 +166,5 @@ typedef struct {
 #define	plugin_set_field_value_func(p, f) plugin_field_value_func(p) = (f)
 
 int sql_plugins_init(const char *dirname);
-
-plugin_generic_t *plugin_init(int argc, char **argv);
 
 #endif /* _LIBPRELUDEDB_PLUGIN_DB_H */
