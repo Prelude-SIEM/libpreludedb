@@ -1934,7 +1934,6 @@ static int get_messageid(preludedb_sql_t *sql, const char *table_name, uint64_t 
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
-	prelude_string_t *messageid;
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table, "SELECT messageid FROM %s WHERE _ident = %" PRIu64 "", 
