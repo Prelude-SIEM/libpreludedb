@@ -257,6 +257,21 @@ typedef struct idmef_value idmef_value_t;
 };
 
 
+%typemap(python, in, numinputs=0) prelude_string_t *output {
+	int ret;
+	
+	ret = prelude_string_new(&($1));
+	if ( ret < 0 ) {
+		swig_python_raise_exception(ret, NULL);
+		return NULL;
+	}
+};
+%typemap(python, argout) prelude_string_t *output {
+	$result = PyString_FromStringAndSize(prelude_string_get_string($1), prelude_string_get_len($1));
+	prelude_string_destroy($1);
+};
+
+
 %typemap(in, numinputs=0) SWIGTYPE **OUTRESULT ($*1_type tmp) {
         $1 = ($1_ltype) &tmp;
 };
@@ -270,9 +285,28 @@ typedef struct idmef_value idmef_value_t;
 		$result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
 };
 
+
+%typemap(in, numinputs=0) char **output (char *tmp) {
+	$1 = &tmp;
+};
+
+%typemap(argout) char **output {
+	if ( PyInt_AsLong($result) < 0 ) {
+		swig_python_raise_exception(PyInt_AsLong($result), NULL);
+		return NULL;
+	}
+
+	$result = PyString_FromString(*$1);
+	free(*$1);
+};
+
+
 %apply SWIGTYPE **OUTRESULT {
 	preludedb_result_idents_t **,
-	preludedb_result_values_t **
+	preludedb_result_values_t **,
+	preludedb_sql_table_t **,
+	preludedb_sql_row_t **,	
+	preludedb_sql_field_t **
 };
 
 
