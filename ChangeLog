@@ -1,3 +1,19 @@
+2003-07-02  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
+
+	* plugins/format/classic/idmef-db-select.c:
+	(normalize_condition): implemented. 
+	(table_entry_new): copy criteria into table entry structure.
+	Fixed memory leaks in error handling.
+	(table_list_to_strbuf): put condition in bracket (just in case)
+	(add_table): normalize condition before matching with condition
+	in the table entry structure
+	(criterion_to_sql): use aliased table names. 
+	(build_request): compile table list after processing criteria
+
+	* plugins/format/classic/schema.txt:
+	new version of database schema file, courtesy of Davor Ocelic
+	<docelic@mail.inet.hr>.
+
 2003-07-01  Krzysztof Zaraska  <kzaraska@student.uci.agh.edu.pl>
 	
 	* plugins/format/classic/classic.c:

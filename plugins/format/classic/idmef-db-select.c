@@ -63,7 +63,50 @@ typedef struct table_list {
 
 
 
-static table_entry_t *table_entry_new(char *table,  char *top_field, char *ident_field, char *alias)
+static char *normalize_condition(char *condition, char *table, char *alias)
+{
+	char buf[1024];
+	char *start;
+	char *ret;
+
+	/*
+	 * In Perl, this would be:
+	 * ( $buf = $condition ) =~ s/$table/$alias/ ;
+	 *
+	 * Hm, again, why are we using C here?
+	 */
+	start = strstr(condition, table);
+	if ( ! start ) {
+		/* This shouldn't happen, but we'll handle it cleanly */
+		strncpy(buf, condition, sizeof(buf)-1);
+		buf[sizeof(buf)-1] = '\0';
+	} else {
+		if ( start - condition > sizeof(buf)-1 ) {
+			log(LOG_ERR, "buffer too small?!\n");
+			return NULL;
+		}
+		strncpy(buf, condition, start - condition);
+		buf[start - condition] = '\0';
+		strncat(buf, alias, sizeof(buf)-1);
+		strncat(buf, start + strlen(table), sizeof(buf)-1);
+		buf[sizeof(buf)-1] = '\0';
+	}
+
+	ret = strdup(buf);
+	if ( ! ret ) {
+		log(LOG_ERR, "out of memory\n");
+		return NULL;
+	}
+
+	return ret;
+}
+
+
+
+
+static table_entry_t *table_entry_new(char *table,  char *top_field,
+				      char *ident_field, char *alias,
+				      char *condition)
 {
 	table_entry_t *entry;
 
@@ -73,40 +116,58 @@ static table_entry_t *table_entry_new(char *table,  char *top_field, char *ident
 		return NULL;
 	}
 
-	if ( table ) {
-		entry->table = strdup(table);
-		if ( ! entry->table ) {
-			log(LOG_ERR, "out of memory!\n");
-			return NULL;
-		}
+	entry->table = strdup(table);
+	if ( ! entry->table ) {
+		log(LOG_ERR, "out of memory!\n");
+		goto error;
 	}
 
-	if ( top_field ) {
-		entry->top_field = strdup(top_field);
-		if ( ! entry->top_field ) {
-			log(LOG_ERR, "out of memory!\n");
-			return NULL;
-		}
+
+	entry->top_field = strdup(top_field);
+	if ( ! entry->top_field ) {
+		log(LOG_ERR, "out of memory!\n");
+		goto error;
 	}
 
-	if ( ident_field ) {
-		entry->ident_field = strdup(ident_field);
-		if ( ! entry->ident_field ) {
-			log(LOG_ERR, "out of memory!\n");
-			return NULL;
-		}
+	entry->ident_field = strdup(ident_field);
+	if ( ! entry->ident_field ) {
+		log(LOG_ERR, "out of memory!\n");
+		goto error;
 	}
 
-	if ( alias ) {
-		entry->alias = strdup(alias);
-		if ( ! entry->alias ) {
-			log(LOG_ERR, "out of memory!\n");
-			return NULL;
-		}
+	entry->alias = strdup(alias);
+	if ( ! entry->alias ) {
+		log(LOG_ERR, "out of memory!\n");
+		goto error;
+	}
+
+	if ( condition ) {
+		entry->condition = normalize_condition(condition, table, alias);
+		if ( ! entry->condition )
+			goto error;
 	}
 
 	/* o! no errors! ;P */
 	return entry;
+
+error:
+	free(entry);
+	if ( entry->table )
+		free(entry->table);
+
+	if ( entry->top_field )
+		free(entry->top_field);
+
+	if ( entry->ident_field )
+		free(entry->ident_field);
+
+	if ( entry->alias )
+		free(entry->alias);
+
+	if ( entry->condition )
+		free(entry->condition);
+
+	return NULL;
 }
 
 
@@ -117,6 +178,11 @@ static void table_entry_destroy(table_entry_t *entry)
 	free(entry->table);
 	free(entry->top_field);
 	free(entry->ident_field);
+	free(entry->alias);
+
+	if ( entry->condition )
+		free(entry->condition);
+
 	free(entry);
 }
 
@@ -183,7 +249,7 @@ static strbuf_t *table_list_to_strbuf(table_list_t *tlist)
 			goto error;
 
 		if ( entry->condition ) {
-			ret = strbuf_sprintf(buf, " AND %s", entry->condition);
+			ret = strbuf_sprintf(buf, " AND (%s)", entry->condition);
 			if ( ret < 0 )
 				goto error;
 		}
@@ -221,6 +287,7 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 	int id;
 	int ret;
 	char alias[64];
+	char *ncond;
 
 	if ( top_table ) {
 		if ( tlist->top_table ) {
@@ -266,8 +333,14 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 
 		if ( strcmp(table, entry->table) == 0 ) {
 			if ( condition ) {
-				if ( strcmp(condition, entry->condition) == 0 )
+				ncond = normalize_condition(condition,
+							    entry->table,
+							    entry->alias);
+				if ( strcmp(ncond, entry->condition) == 0 ) {
+					free(ncond);
 					return entry->alias;  /* already added */
+				}
+				free(ncond);
 			} else
 				return entry->alias;  /* already added */
 		}
@@ -275,11 +348,10 @@ static char *add_table(table_list_t *tlist, char *table, char *top_table,
 	}
 
 	/* not found, we have to add it */
-
 	snprintf(alias, sizeof(alias)-1, "t%d", id);
 	alias[sizeof(alias)-1] = '\0'; /* just in case */
 
-	entry = table_entry_new(table,  top_field, ident_field, alias);
+	entry = table_entry_new(table,  top_field, ident_field, alias, condition);
 	if ( ! entry )
 		return NULL;
 
@@ -419,7 +491,8 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 	idmef_object_t *object;
 	db_object_t *db;
 	char buf[VALLEN];
-	char *table, *field, *function, *top_table, *top_field, *ident_field, *condition;
+	char *table, *field, *function, *top_table, *top_field, *ident_field;
+	char *condition, *table_alias;
 	char *operator;
 	idmef_relation_t relation;
 	idmef_criterion_t *entry;
@@ -497,23 +570,17 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 		relation = idmef_criterion_get_relation(criterion);
 
 		/* Add table to JOIN list */
-		if ( ! add_table(tables, table, top_table, top_field,
-				ident_field, condition) )
+		table_alias = add_table(tables, table, top_table, top_field,
+					ident_field, condition);
+		if ( ! table_alias )
 			return -1;
 
 
 		idmef_value_to_string(idmef_criterion_get_value(criterion), buf, VALLEN);
 		value = prelude_sql_escape(conn, buf);
 
-
-		if ( condition ) {
-			ret = strbuf_sprintf(where,"%s AND ", condition);
-			if ( ret < 0 )
-				return ret;
-		}
-
 		ret = relation_to_sql(where,
-				      field ? table : NULL,
+				      field ? table_alias : NULL,
 				      field ? field : function,
 				      relation, value);
 		if ( ret < 0 )
@@ -528,6 +595,10 @@ static int criterion_to_sql(prelude_sql_connection_t *conn,
 
 
 
+/*
+ * This function does not modify WHERE clause as for now, but we pass it the
+ * relevant buffer just in case
+ */
 static int objects_to_sql(prelude_sql_connection_t *conn,
 		   strbuf_t *fields,
 		   strbuf_t *where,
@@ -622,8 +693,8 @@ error:
 
 
 static strbuf_t *build_request(prelude_sql_connection_t *conn,
-   		        idmef_selection_t *selection,
-       		        idmef_criterion_t *criterion)
+			       idmef_selection_t *selection,
+			       idmef_criterion_t *criterion)
 {
 	strbuf_t *request = NULL;
 	strbuf_t *str_tables = NULL, *where1 = NULL, *where2 = NULL, *fields = NULL;
@@ -654,16 +725,16 @@ static strbuf_t *build_request(prelude_sql_connection_t *conn,
 	if ( ret < 0 )
 		goto error;
 
-	str_tables = table_list_to_strbuf(tables);
-	if ( ! str_tables )
-		goto error;
-
 	/* criterion is optional */
 	if ( criterion ) {
 		ret = criterion_to_sql(conn, where2, tables, criterion);
 		if ( ret < 0 )
 			goto error;
 	}
+
+	str_tables = table_list_to_strbuf(tables);
+	if ( ! str_tables )
+		goto error;
 
 	ret = strbuf_sprintf(request, "SELECT %s FROM %s %s %s %s %s ;",
 		             strbuf_string(fields),
