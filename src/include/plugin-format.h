@@ -46,8 +46,13 @@ typedef struct {
 						 uint64_t ident,
 						 idmef_selection_t *selection);
 
+	int (*format_delete_alert)(prelude_db_connection_t *connection, uint64_t ident);
+
+	int (*format_delete_heartbeat)(prelude_db_connection_t *connection, uint64_t ident);
+
 	int (*format_insert_idmef_message)(prelude_db_connection_t * connection,
 					   const idmef_message_t * message);
+
 } plugin_format_t;
 
 #define	plugin_get_ident_list_func(p) (p)->format_get_ident_list
@@ -55,6 +60,8 @@ typedef struct {
 #define plugin_get_next_ident_func(p) (p)->format_get_next_ident
 #define plugin_get_alert_func(p) (p)->format_get_alert
 #define plugin_get_heartbeat_func(p) (p)->format_get_heartbeat
+#define plugin_delete_alert_func(p) (p)->format_delete_alert
+#define plugin_delete_heartbeat_func(p) (p)->format_delete_heartbeat
 #define	plugin_insert_idmef_message_func(p) (p)->format_insert_idmef_message
 
 #define	plugin_set_get_ident_list_func(p, f) plugin_get_ident_list_func(p) = (f)
@@ -62,6 +69,8 @@ typedef struct {
 #define	plugin_set_get_next_ident_func(p, f) plugin_get_next_ident_func(p) = (f)
 #define plugin_set_get_alert_func(p, f) plugin_get_alert_func(p) = (f)
 #define plugin_set_get_heartbeat_func(p, f) plugin_get_heartbeat_func(p) = (f)
+#define plugin_set_delete_alert_func(p, f) plugin_delete_alert_func(p) = (f)
+#define plugin_set_delete_heartbeat_func(p, f) plugin_delete_heartbeat_func(p) = (f)
 #define	plugin_set_insert_idmef_message_func(p, f) plugin_insert_idmef_message_func(p) = (f)
 
 int format_plugins_init(const char *dirname);

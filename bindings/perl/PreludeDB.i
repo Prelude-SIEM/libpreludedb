@@ -122,8 +122,8 @@ typedef enum {
         prelude_db_type_sql = 1
 } prelude_db_type_t;
 
-void prelude_db_init(void);
-void prelude_db_shutdown(void);
+int prelude_db_init(void);
+int prelude_db_shutdown(void);
 
 prelude_db_interface_t *prelude_db_interface_new_string(const char *conn_string);
 int prelude_db_interface_connect(prelude_db_interface_t *iface);
@@ -140,6 +140,8 @@ idmef_message_t *prelude_db_interface_get_alert(prelude_db_interface_t *interfac
 idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *interface,
                                                     uint64_t ident,
                                                     idmef_selection_t *selection);
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, int ident);
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, int ident);
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
 
 int prelude_db_connection_get_type(prelude_db_connection_t *dbconn);

@@ -46,6 +46,7 @@
 #include "idmef-db-insert.h"
 #include "idmef-db-select.h"
 #include "idmef-db-get.h"
+#include "idmef-db-delete.h"
 #include "db-object.h"
 
 #define CONFIG_FILE FORMAT_CONFIG_DIR"/classic/schema.txt"
@@ -325,6 +326,8 @@ plugin_generic_t * plugin_init(int argc, char **argv)
 	plugin_set_get_next_ident_func(&plugin, classic_get_next_ident);
 	plugin_set_get_alert_func(&plugin, classic_get_alert);
 	plugin_set_get_heartbeat_func(&plugin, classic_get_heartbeat);
+	plugin_set_delete_alert_func(&plugin, classic_delete_alert);
+	plugin_set_delete_heartbeat_func(&plugin, classic_delete_heartbeat);
 	plugin_set_insert_idmef_message_func(&plugin, classic_insert_idmef_message);
 
 	db_objects_init(CONFIG_FILE);

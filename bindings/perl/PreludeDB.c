@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.2 2003/06/30 22:15:40 nicolasd Exp $
+ * $Header: /var/lib/cvsd/cvsroot/prelude/libpreludedb/bindings/perl/PreludeDB.c,v 1.3 2003/07/04 20:56:47 nicolasd Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -567,15 +567,17 @@ XS(_wrap_prelude_db_init) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
+        int result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 0) || (items > 0)) {
             SWIG_croak("Usage: prelude_db_init();");
         }
-        prelude_db_init();
+        result = (int)prelude_db_init();
         
-        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -588,15 +590,17 @@ XS(_wrap_prelude_db_shutdown) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
+        int result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 0) || (items > 0)) {
             SWIG_croak("Usage: prelude_db_shutdown();");
         }
-        prelude_db_shutdown();
+        result = (int)prelude_db_shutdown();
         
-        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -900,6 +904,68 @@ XS(_wrap_prelude_db_interface_get_heartbeat) {
         
         ST(argvi) = sv_newmortal();
         SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_idmef_message_t,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_delete_alert) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        int arg2 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: prelude_db_interface_delete_alert(interface,ident);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_delete_alert. Expected _p_prelude_db_interface_t");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        result = (int)prelude_db_interface_delete_alert(arg1,arg2);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_prelude_db_interface_delete_heartbeat) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        prelude_db_interface_t *arg1 = (prelude_db_interface_t *) 0 ;
+        int arg2 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: prelude_db_interface_delete_heartbeat(interface,ident);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_prelude_db_interface_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of prelude_db_interface_delete_heartbeat. Expected _p_prelude_db_interface_t");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        result = (int)prelude_db_interface_delete_heartbeat(arg1,arg2);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -1611,6 +1677,8 @@ static swig_command_info swig_commands[] = {
 {"PreludeDB::prelude_db_interface_get_next_ident", _wrap_prelude_db_interface_get_next_ident},
 {"PreludeDB::prelude_db_interface_get_alert", _wrap_prelude_db_interface_get_alert},
 {"PreludeDB::prelude_db_interface_get_heartbeat", _wrap_prelude_db_interface_get_heartbeat},
+{"PreludeDB::prelude_db_interface_delete_alert", _wrap_prelude_db_interface_delete_alert},
+{"PreludeDB::prelude_db_interface_delete_heartbeat", _wrap_prelude_db_interface_delete_heartbeat},
 {"PreludeDB::prelude_db_interface_insert_idmef_message", _wrap_prelude_db_interface_insert_idmef_message},
 {"PreludeDB::prelude_db_connection_get_type", _wrap_prelude_db_connection_get_type},
 {"PreludeDB::prelude_db_connection_get", _wrap_prelude_db_connection_get},

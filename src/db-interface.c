@@ -328,11 +328,36 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 
 
 
+int	prelude_db_interface_delete_alert(prelude_db_interface_t *interface, uint64_t ident)
+{
+	if ( ! interface )
+		return -1;
+
+	if ( ! interface->format->format_delete_alert )
+		return -2;
+
+	return interface->format->format_delete_alert(interface->db_connection, ident);
+}
+
+
+
+int	prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, uint64_t ident)
+{
+	if ( ! interface )
+		return -1;
+
+	if ( ! interface->format->format_delete_heartbeat )
+		return -2;
+
+	return interface->format->format_delete_heartbeat(interface->db_connection, ident);
+}
+
+
+
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface)
 {
 	return interface ? interface->db_connection : NULL;
 }
-
 
 
 

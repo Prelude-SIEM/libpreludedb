@@ -59,6 +59,10 @@ idmef_message_t *prelude_db_interface_get_heartbeat(prelude_db_interface_t *inte
 						    uint64_t ident,
 						    idmef_selection_t *selection);
 
+int prelude_db_interface_delete_alert(prelude_db_interface_t *interface, uint64_t ident);
+
+int prelude_db_interface_delete_heartbeat(prelude_db_interface_t *interface, uint64_t ident);
+
 int prelude_db_interface_insert_idmef_message(prelude_db_interface_t * interface, const idmef_message_t * msg);
 
 prelude_db_connection_t *prelude_db_interface_get_connection(prelude_db_interface_t *interface);

@@ -22,8 +22,6 @@ XSLoader::load('PreludeDB');
 
 use strict;
 
-
-
 package PreludeDB;
 
 sub	init
@@ -170,6 +168,28 @@ sub	get_heartbeat
     Prelude::idmef_selection_destroy($object_list_handle);
 
     return $message ? bless(\$message, "IDMEFMessage") : undef;
+}
+
+sub	delete_alert
+{
+    my	$self = shift;
+    my	$ident = shift;
+    my	$retval;
+
+    $retval = PreludeDB::prelude_db_interface_delete_alert($$self, $ident);
+
+    return $retval;
+}
+
+sub	delete_heartbeat
+{
+    my	$self = shift;
+    my	$ident = shift;
+    my	$retval;
+
+    $retval = PreludeDB::prelude_db_interface_delete_heartbeat($$self, $ident);
+
+    return $retval;
 }
 
 sub	DESTROY
