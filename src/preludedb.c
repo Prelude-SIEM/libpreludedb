@@ -123,7 +123,12 @@ preludedb_t *preludedb_new(preludedb_sql_t *sql, const char *format_name)
 }
 
 
-
+/**
+ * preludedb_destroy:
+ * @db: Pointer to a db object.
+ *
+ * Destroy @db object and the underlying @sql object given as argument to preludedb_new.
+ */
 void preludedb_destroy(preludedb_t *db)
 {
 	preludedb_sql_destroy(db->sql);
@@ -132,7 +137,12 @@ void preludedb_destroy(preludedb_t *db)
 }
 
 
-
+/**
+ * preludedb_get_format_name:
+ * @db: Pointer to a db object.
+ *
+ * Returns: the format name currently used by the @db object.
+ */
 const char *preludedb_get_format_name(preludedb_t *db)
 {
 	return db->format_name;
@@ -211,6 +221,17 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 
 
 
+/**
+ * preludedb_get_error:
+ * @db: Pointer to a db object.
+ * @error: Error code to build the error string from.
+ * @output: Pointer to a char * string where the error will be stored.
+ *
+ * Build an error message from the error code given as argument and from
+ * the sql plugin error string (if any) if the error code is db related.
+ *
+ * Returns: 0 on success or a negative value if an error occur.
+ */
 int preludedb_get_error(preludedb_t *db, preludedb_error_t error, char **output)
 {
 	prelude_string_t *string;
@@ -249,13 +270,27 @@ int preludedb_get_error(preludedb_t *db, preludedb_error_t error, char **output)
 
 
 
+/**
+ * preludedb_insert_message:
+ * @db: Pointer to a db object.
+ * @message: Pointer to an IDMEF message.
+ *
+ * Insert an IDMEF message into the database.
+ * 
+ * Returns: 0 on success, or a negative value if an error occur.
+ */
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 {
 	return db->plugin->insert_message(db->sql, message);
 }
 
 
-
+/**
+ * preludedb_result_idents_destroy:
+ * @result: Pointer to an idents result object.
+ *
+ * Destroy the @result object.
+ */
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 {
 	result->db->plugin->destroy_message_idents_resource(result->res);
@@ -263,14 +298,28 @@ void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 }
 
 
-
+/**
+ * preludedb_result_idents_get_next:
+ * @result: Pointer to an idents result object.
+ * @ident: Pointer to an ident where the next ident will be stored.
+ * 
+ * Retrieve the next ident from the idents result object.
+ *
+ * Returns: 1 if an ident is available, 0 if there is no more idents available or
+ * a negative value if an error occur.
+ */
 int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident)
 {
 	return result->db->plugin->get_next_message_ident(result->res, ident);
 }
 
 
-
+/**
+ * preludedb_result_values_destroy:
+ * @result: Pointer to a result values object.
+ *
+ * Destroy the @result object.
+ */
 void preludedb_result_values_destroy(preludedb_result_values_t *result)
 {
 	result->db->plugin->destroy_values_resource(result->res);
@@ -279,6 +328,16 @@ void preludedb_result_values_destroy(preludedb_result_values_t *result)
 
 
 
+/**
+ * preludedb_result_values_get_next:
+ * @result: Pointer to a values result object.
+ * @values: Pointer to a values array where the next row of values will be stored.
+ * 
+ * Retrieve the next values row from the values result object.
+ *
+ * Returns: the number of returned values, 0 if there are no values or a negative value if an
+ * error occur.
+ */
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values)
 {
 	return result->db->plugin->get_next_values(result->res, result->selection, values);
@@ -357,7 +416,15 @@ idmef_message_t *preludedb_get_heartbeat(preludedb_t *db, uint64_t ident)
 }
 
 
-
+/**
+ * preludedb_delete_alert:
+ * @db: Pointer to a db object.
+ * @ident: ident of the alert.
+ *
+ * Delete an alert.
+ *
+ * Returns: 0 on success, or a negative value if an error occur.
+ */
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 {
 	return db->plugin->delete_alert(db->sql, ident);
@@ -365,6 +432,15 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 
 
 
+/**
+ * preludedb_delete_heartbeat:
+ * @db: Pointer to a db object.
+ * @ident: ident of the heartbeat.
+ *
+ * Delete an heartbeat.
+ *
+ * Returns: 0 on success, or a negative value if an error occur.
+ */
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
 	return db->plugin->delete_heartbeat(db->sql, ident);
