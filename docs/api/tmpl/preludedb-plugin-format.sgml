@@ -1,0 +1,256 @@
+<!-- ##### SECTION Title ##### -->
+preludedb-plugin-format
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT preludedb_plugin_format_t ##### -->
+<para>
+
+</para>
+
+@get_alert_idents: 
+@get_heartbeat_idents: 
+@get_message_ident_count: 
+@get_next_message_ident: 
+@destroy_message_idents_resource: 
+@get_alert: 
+@get_heartbeat: 
+@delete_alert: 
+@delete_heartbeat: 
+@insert_message: 
+@get_values: 
+@get_next_values: 
+@destroy_values_resource: 
+
+<!-- ##### MACRO preludedb_plugin_format_get_alert_idents_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_heartbeat_idents_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_message_ident_count_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_next_message_ident_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_destroy_message_idents_resource_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_alert_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_heartbeat_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_delete_alert_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_delete_heartbeat_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_insert_message_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_values_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_get_next_values_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_destroy_values_resource_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_alert_idents_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_heartbeat_idents_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_message_ident_count_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_next_message_ident_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_destroy_message_idents_resource_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_alert_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_heartbeat_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_delete_alert_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_delete_heartbeat_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_insert_message_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_values_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_get_next_values_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_destroy_values_resource_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+

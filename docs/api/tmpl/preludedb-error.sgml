@@ -1,0 +1,72 @@
+<!-- ##### SECTION Title ##### -->
+preludedb-error
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM preludedb_error_code_t ##### -->
+<para>
+
+</para>
+
+@PRELUDEDB_ERROR_NO_ERROR: 
+@PRELUDEDB_ERROR_GENERIC: 
+@PRELUDEDB_ERROR_INVALID_SETTINGS_STRING: 
+@PRELUDEDB_ERROR_CONNECTION: 
+@PRELUDEDB_ERROR_QUERY: 
+@PRELUDEDB_ERROR_INVALID_COLUMN_NUM: 
+@PRELUDEDB_ERROR_INVALID_COLUMN_NAME: 
+@PRELUDEDB_ERROR_INVALID_VALUE: 
+@PRELUDEDB_ERROR_INVALID_VALUE_TYPE: 
+@PRELUDEDB_ERROR_UNKNOWN_SQL_PLUGIN: 
+@PRELUDEDB_ERROR_UNKNOWN_FORMAT_PLUGIN: 
+@PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION: 
+@PRELUDEDB_ERROR_NOT_IN_TRANSACTION: 
+@PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT: 
+@PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING: 
+@PRELUDEDB_ERROR_INVALID_OBJECT_SELECTION: 
+
+<!-- ##### TYPEDEF preludedb_error_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION prelude_error_make ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Param2: 
+@Returns: 
+
+
+<!-- ##### FUNCTION prelude_error_from_errno ##### -->
+<para>
+
+</para>
+
+@Varargs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_strerror ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+

@@ -1,0 +1,242 @@
+<!-- ##### SECTION Title ##### -->
+preludedb
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### TYPEDEF preludedb_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF preludedb_result_idents_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF preludedb_result_values_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ENUM preludedb_result_idents_order_t ##### -->
+<para>
+
+</para>
+
+@PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE: 
+@PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC: 
+@PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC: 
+
+<!-- ##### MACRO PRELUDEDB_ERRBUF_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION preludedb_new ##### -->
+<para>
+
+</para>
+
+@db: 
+@sql: 
+@format_name: 
+@errbuf: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_destroy ##### -->
+<para>
+
+</para>
+
+@db: 
+
+
+<!-- ##### FUNCTION preludedb_get_format ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_set_format ##### -->
+<para>
+
+</para>
+
+@db: 
+@format_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_sql ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_result_idents_destroy ##### -->
+<para>
+
+</para>
+
+@result: 
+
+
+<!-- ##### FUNCTION preludedb_result_idents_get_next ##### -->
+<para>
+
+</para>
+
+@result: 
+@ident: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_result_values_destroy ##### -->
+<para>
+
+</para>
+
+@result: 
+
+
+<!-- ##### FUNCTION preludedb_result_values_get_next ##### -->
+<para>
+
+</para>
+
+@result: 
+@values: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_error ##### -->
+<para>
+
+</para>
+
+@db: 
+@error: 
+@errbuf: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_insert_message ##### -->
+<para>
+
+</para>
+
+@db: 
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_alert_idents ##### -->
+<para>
+
+</para>
+
+@db: 
+@criteria: 
+@limit: 
+@offset: 
+@order: 
+@result: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_heartbeat_idents ##### -->
+<para>
+
+</para>
+
+@db: 
+@criteria: 
+@limit: 
+@offset: 
+@order: 
+@result: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_alert ##### -->
+<para>
+
+</para>
+
+@db: 
+@ident: 
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_heartbeat ##### -->
+<para>
+
+</para>
+
+@db: 
+@ident: 
+@message: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_delete_alert ##### -->
+<para>
+
+</para>
+
+@db: 
+@ident: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_delete_heartbeat ##### -->
+<para>
+
+</para>
+
+@db: 
+@ident: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_values ##### -->
+<para>
+
+</para>
+
+@db: 
+@path_selection: 
+@criteria: 
+@distinct: 
+@limit: 
+@offset: 
+@result: 
+@Returns: 
+
+

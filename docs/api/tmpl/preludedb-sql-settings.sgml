@@ -1,0 +1,210 @@
+<!-- ##### SECTION Title ##### -->
+preludedb-sql-settings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_HOST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_PORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_USER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_PASS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### TYPEDEF preludedb_sql_settings_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_new ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_new_from_string ##### -->
+<para>
+
+</para>
+
+@settings: 
+@str: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_destroy ##### -->
+<para>
+
+</para>
+
+@settings: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set ##### -->
+<para>
+
+</para>
+
+@settings: 
+@name: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_from_string ##### -->
+<para>
+
+</para>
+
+@settings: 
+@str: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get ##### -->
+<para>
+
+</para>
+
+@settings: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_host ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_host ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_port ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_port ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_name ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_name ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_user ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_user ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_pass ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_pass ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+

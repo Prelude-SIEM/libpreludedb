@@ -1,0 +1,494 @@
+<!-- ##### SECTION Title ##### -->
+preludedb-sql
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM preludedb_sql_status_t ##### -->
+<para>
+
+</para>
+
+@PRELUDEDB_SQL_STATUS_DISCONNECTED: 
+@PRELUDEDB_SQL_STATUS_CONNECTED: 
+@PRELUDEDB_SQL_STATUS_TRANSACTION: 
+
+<!-- ##### ENUM preludedb_sql_time_constraint_type_t ##### -->
+<para>
+
+</para>
+
+@PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_MIN: 
+@PRELUDEDB_SQL_TIME_CONSTRAINT_SEC: 
+
+<!-- ##### TYPEDEF preludedb_sql_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF preludedb_sql_table_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF preludedb_sql_row_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### TYPEDEF preludedb_sql_field_t ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION preludedb_sql_new ##### -->
+<para>
+
+</para>
+
+@new: 
+@type: 
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_destroy ##### -->
+<para>
+
+</para>
+
+@sql: 
+
+
+<!-- ##### FUNCTION preludedb_sql_enable_query_logging ##### -->
+<para>
+
+</para>
+
+@sql: 
+@filename: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_disable_query_logging ##### -->
+<para>
+
+</para>
+
+@sql: 
+
+
+<!-- ##### FUNCTION preludedb_sql_get_plugin_error ##### -->
+<para>
+
+</para>
+
+@sql: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_query ##### -->
+<para>
+
+</para>
+
+@sql: 
+@query: 
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_query_sprintf ##### -->
+<para>
+
+</para>
+
+@sql: 
+@table: 
+@format: 
+@Varargs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_insert ##### -->
+<para>
+
+</para>
+
+@sql: 
+@table: 
+@fields: 
+@format: 
+@Varargs: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_build_limit_offset_string ##### -->
+<para>
+
+</para>
+
+@sql: 
+@limit: 
+@offset: 
+@output: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_transaction_start ##### -->
+<para>
+
+</para>
+
+@sql: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_transaction_end ##### -->
+<para>
+
+</para>
+
+@sql: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_transaction_abort ##### -->
+<para>
+
+</para>
+
+@sql: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_escape_fast ##### -->
+<para>
+
+</para>
+
+@sql: 
+@input: 
+@input_size: 
+@output: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_escape ##### -->
+<para>
+
+</para>
+
+@sql: 
+@input: 
+@output: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_escape_binary ##### -->
+<para>
+
+</para>
+
+@sql: 
+@input: 
+@input_size: 
+@output: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_unescape_binary ##### -->
+<para>
+
+</para>
+
+@sql: 
+@input: 
+@input_size: 
+@output: 
+@output_size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_destroy ##### -->
+<para>
+
+</para>
+
+@table: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_get_column_name ##### -->
+<para>
+
+</para>
+
+@table: 
+@column_num: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_get_column_num ##### -->
+<para>
+
+</para>
+
+@table: 
+@column_name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_get_column_count ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_get_row_count ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_table_fetch_row ##### -->
+<para>
+
+</para>
+
+@table: 
+@row: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_row_fetch_field ##### -->
+<para>
+
+</para>
+
+@row: 
+@column_num: 
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_row_fetch_field_by_name ##### -->
+<para>
+
+</para>
+
+@row: 
+@column_name: 
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_get_value ##### -->
+<para>
+
+</para>
+
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_get_len ##### -->
+<para>
+
+</para>
+
+@field: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_int8 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_uint8 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_int16 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_uint16 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_int32 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_uint32 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_int64 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_uint64 ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_float ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_double ##### -->
+<para>
+
+</para>
+
+@field: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_field_to_string ##### -->
+<para>
+
+</para>
+
+@field: 
+@output: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_get_operator_string ##### -->
+<para>
+
+</para>
+
+@operator: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_build_criterion_string ##### -->
+<para>
+
+</para>
+
+@sql: 
+@output: 
+@field: 
+@operator: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_time_from_timestamp ##### -->
+<para>
+
+</para>
+
+@time: 
+@time_buf: 
+@gmtoff: 
+@usec: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_time_to_timestamp ##### -->
+<para>
+
+</para>
+
+@time: 
+@time_buf: 
+@time_buf_size: 
+@gmtoff_buf: 
+@gmtoff_buf_size: 
+@usec_buf: 
+@usec_buf_size: 
+@Returns: 
+
+

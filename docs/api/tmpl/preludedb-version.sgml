@@ -1,0 +1,32 @@
+<!-- ##### SECTION Title ##### -->
+preludedb-version
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### MACRO LIBPRELUDEDB_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION preludedb_check_version ##### -->
+<para>
+
+</para>
+
+@req_version: 
+@Returns: 
+
+
