@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Vandoorselaere Yoann <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2003 Vandoorselaere Yoann <yoann@prelude-ids.org>
 * Copyright (C) 2001 Sylvain GIL <prelude@tootella.org>
 * Copyright (C) 2003 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
@@ -51,8 +51,8 @@
 #include "sql.h"
 #include "plugin-sql.h"
 
-#if !defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID<32224
-# define mysql_field_count mysql_num_fields
+#if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
+ #define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
 
 
@@ -119,11 +119,19 @@ static void *db_setup(const char *dbhost, const char *dbport, const char *dbname
 static void cleanup(void *s)
 {
         session_t *session = s;
-        	
-	free(session->dbhost);
-	free(session->dbname);
-	free(session->dbuser);
-	free(session->dbpass);
+
+        if ( session->dbhost )
+        	free(session->dbhost);
+
+        if ( session->dbname )
+                free(session->dbname);
+
+        if ( session->dbuser )
+                free(session->dbuser);
+
+        if ( session->dbpass )
+                free(session->dbpass);
+        
 	free(session);
 }
 
@@ -149,14 +157,14 @@ static void db_close(void *s)
  */
 static char *db_escape(void *s, const char *string)
 {
-        int len;
         char *escaped;
-        session_t *session = s;
+        size_t len, rlen;
+	session_t *session = s;
 
 	session->dberrno = 0;
 	
         if ( ! string )
-                string = "";
+                return strdup("NULL");
         
         /*
          * MySQL documentation say :
@@ -166,19 +174,28 @@ static char *db_escape(void *s, const char *string)
          * and you need room for the terminating null byte.)
          */
         len = strlen(string);
+
+        rlen = len * 2 + 3;
+        if ( rlen <= len )
+                return NULL;
         
-        escaped = malloc(len * 2 + 1);
+        escaped = malloc(rlen);
         if ( ! escaped ) {
                 log(LOG_ERR, "memory exhausted.\n");
 		session->dberrno = ERR_PLUGIN_DB_MEMORY_EXHAUSTED;
                 return NULL;
         }
 
+        escaped[0] = '\'';
+        
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
-        mysql_real_escape_string(session->mysql, escaped, string, len);
+        len = mysql_real_escape_string(session->mysql, escaped, string, len);
 #else
-        mysql_escape_string(escaped, string, len);
+        len = mysql_escape_string(escaped, string, len);
 #endif
+
+        escaped[len + 1] = '\'';
+        escaped[len + 2] = '\0';
         
         return escaped;
 }

@@ -39,7 +39,7 @@
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
-#include "strbuf.h"
+
 
 #include "idmef-db-delete.h"
 

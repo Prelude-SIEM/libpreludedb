@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001, 2002 Vandoorselaere Yoann <yoann@mandrakesoft.com>
+* Copyright (C) 2001-2003 Vandoorselaere Yoann <yoann@prelude-ids.org>
 * Copyright (C) 2002 Nicolas Delon <delon.nicolas@wanadoo.fr>
 * All Rights Reserved
 *
@@ -81,7 +81,7 @@ static plugin_sql_t plugin;
 
 
 
-static void *db_query(void *, const char *);
+static void *db_query(void *s, const char *query);
 
 
 static void *db_setup(const char *dbhost, const char *dbport, const char *dbname, 
@@ -112,12 +112,22 @@ static void *db_setup(const char *dbhost, const char *dbport, const char *dbname
 static void cleanup(void *s)
 {
         session_t *session = s;
-	
-	free(session->dbhost);
-	free(session->dbport);
-	free(session->dbname);
-	free(session->dbuser);
-	free(session->dbpass);
+
+        if ( session->dbhost )
+                free(session->dbhost);
+
+        if ( session->dbport )
+                free(session->dbport);
+
+        if ( session->dbname )
+                free(session->dbname);
+
+        if ( session->dbuser )
+                free(session->dbuser);
+
+        if ( session->dbpass )
+                free(session->dbpass);
+        
         free(session);
 }
 
@@ -200,15 +210,27 @@ static void db_close(void *s)
 static char *db_escape(void *s, const char *str)
 {
         char *ptr;
-        int i, ok, len = strlen(str);
+        int i, ok;
+        size_t len, rlen;
 
-        ptr = malloc((len * 2) + 1);
+        if ( ! str )
+                return strdup("NULL");
+
+        len = strlen(str);
+        
+        rlen = len * 2 + 3;
+        if ( rlen < len )
+                return NULL;
+        
+        ptr = malloc(rlen);
         if ( ! ptr ) {
                 log(LOG_ERR, "memory exhausted.\n");
                 return NULL;
         }
 
-        for ( i = 0, ok = 0; i < len; i++ ) {
+        ptr[ok++] = '\'';
+        
+        for ( i = 0; i < rlen; i++ ) {
 
                 if ( str[i] == '\'' ) {
                         ptr[ok++] = '\\';
@@ -217,6 +239,7 @@ static char *db_escape(void *s, const char *str)
                         ptr[ok++] = str[i];
         }
 
+        ptr[ok++] = '\'';
         ptr[ok] = '\0';
         
         return ptr;
@@ -547,3 +570,4 @@ plugin_generic_t *plugin_init(int argc, char **argv)
 
 	return (plugin_generic_t *) &plugin;
 }
+

@@ -38,7 +38,7 @@
 #include "db-type.h"
 #include "db-connection.h"
 #include "db-object.h"
-#include "strbuf.h"
+
 
 #include "idmef-db-get.h"
 
@@ -63,11 +63,8 @@ static int get_ ## name (prelude_sql_connection_t *sql, prelude_sql_row_t *row, 
 	return 0;												\
 }
 
-get_(int16_t, int16)
 get_(uint16_t, uint16)
-get_(int32_t, int32)
 get_(uint32_t, uint32)
-get_(int64_t, int64)
 get_(uint64_t, uint64)
 get_(float, float)
 

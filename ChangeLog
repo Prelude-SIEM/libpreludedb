@@ -1,5 +1,32 @@
 2003-12-27  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
+        * plugins/sql/mysql/mysql.c (cleanup):
+        * plugins/sql/pgsql/pgsql.c (cleanup):
+        fix possible NULL pointer dereference on cleanup.
+                                                                                                                                       
+        * plugins/sql/mysql/mysql.c (db_escape):
+        * plugins/sql/pgsql/pgsql.c (db_escape):
+        updated. Return "NULL" if input is NULL. Else, quote
+        the string using '' characters. Please note that this
+        plugin is seriously updated compared to 0-8 version
+        and that it should be synced asap.
+                                                                                                                                       
+        * plugins/format/classic/idmef-db-insert.c (insert_address):
+        (insert_node): (insert_userid): (insert_user): (insert_process):
+        (insert_snmp_service): (insert_service): (insert_inode):
+        (insert_linkage): (insert_analyzer): (insert_target):
+        (insert_source): (insert_file): (insert_classification):
+        (insert_additional_data): (insert_createtime): (insert_detecttime):
+        (insert_impact): (insert_analyzertime): (insert_action):
+        (insert_confidence): (insert_overflow_alert): (insert_tool_alert):
+        (insert_correlation_alert):
+                                                                                                                                       
+        Restore fix already applied to 0-8 branch, where the
+        responssability to quote (' ') a string is up to the database plugin.
+                                                                                                                                       
+        This avoid insertion of quoted NULL entry in the database, which
+        would be considered as valid string.
+
 	* src/include/Makefile.am (include_HEADERS): 
 	* src/Makefile.am (libpreludedb_la_SOURCES): 
 	remove strbuf.[ch].
