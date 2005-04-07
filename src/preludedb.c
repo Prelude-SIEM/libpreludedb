@@ -44,7 +44,7 @@
 
 
 struct preludedb {
-	char *format_name;
+	char *format_version;
 	preludedb_sql_t *sql;
 	preludedb_plugin_format_t *plugin;
 };
@@ -127,10 +127,11 @@ static int preludedb_autodetect_format(preludedb_t *db)
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
-	preludedb_sql_field_t *field;
+	preludedb_sql_field_t *format_name;
+	preludedb_sql_field_t *format_version;
 	int ret;
 
-	ret = preludedb_sql_query(db->sql, "SELECT name from _format", &table);
+	ret = preludedb_sql_query(db->sql, "SELECT name, version from _format", &table);
 	if ( ret <= 0 )
 		return (ret < 0) ? ret : -1;
 
@@ -138,11 +139,25 @@ static int preludedb_autodetect_format(preludedb_t *db)
 	if ( ret < 0 )
 		goto error;
 
-	ret = preludedb_sql_row_fetch_field(row, 0, &field);
+	ret = preludedb_sql_row_fetch_field(row, 0, &format_name);
 	if ( ret < 0 )
 		goto error;
 
-	ret = preludedb_set_format(db, preludedb_sql_field_get_value(field));
+	ret = preludedb_set_format(db, preludedb_sql_field_get_value(format_name));
+	if ( ret < 0 )
+		goto error;
+
+	ret = preludedb_sql_row_fetch_field(row, 1, &format_version);
+	if ( ret < 0 )
+		goto error;
+
+	ret = db->plugin->check_schema_version(preludedb_sql_field_get_value(format_version));
+	if ( ret < 0 )
+		goto error;
+
+	db->format_version = strdup(preludedb_sql_field_get_value(format_version));
+	if ( ! db->format_version )
+		ret = prelude_error_from_errno(errno);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -187,8 +202,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 	if ( ret < 0 ) {
 		preludedb_get_error(*db, ret, errbuf, size);
 
-		if ( (*db)->format_name )
-			free((*db)->format_name);
+		if ( (*db)->format_version )
+			free((*db)->format_version);
 		free(*db);
 	}
 
@@ -206,21 +221,34 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 void preludedb_destroy(preludedb_t *db)
 {
 	preludedb_sql_destroy(db->sql);
-	free(db->format_name);
+	free(db->format_version);
 	free(db);
 }
 
 
 
 /**
- * preludedb_get_format:
+ * preludedb_get_format_name:
  * @db: Pointer to a db object.
  *
  * Returns: the format name currently used by the @db object.
  */
-const char *preludedb_get_format(preludedb_t *db)
+const char *preludedb_get_format_name(preludedb_t *db)
 {
 	return prelude_plugin_get_name(db->plugin);
+}
+
+
+
+/**
+ * preludedb_get_format_version:
+ * @db: Pointer to a db object.
+ *
+ * Returns: the format version currently used by the @db object.
+ */
+const char *preludedb_get_format_version(preludedb_t *db)
+{
+	return db->format_version;
 }
 
 
@@ -238,11 +266,9 @@ int preludedb_set_format(preludedb_t *db, const char *format_name)
 {
 	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&format_plugin_list, format_name);
 	if ( ! db->plugin )
-		return -1;
-
-	db->format_name = strdup(format_name);
+		return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN);
 	
-	return db->format_name ? 0 : preludedb_error_from_errno(errno);
+	return 0;
 }
 
 

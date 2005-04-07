@@ -31,6 +31,8 @@
 typedef struct {
 	PRELUDE_PLUGIN_GENERIC;
 
+	int (*check_schema_version)(const char *version);
+
 	int (*get_alert_idents)(preludedb_sql_t *sql,
 				idmef_criteria_t *criteria,
 				int limit, int offset, preludedb_result_idents_order_t order,
@@ -66,6 +68,7 @@ typedef struct {
 } preludedb_plugin_format_t;
 
 
+#define	preludedb_plugin_format_check_schema_version_func(p) (p)->check_schema_version
 #define	preludedb_plugin_format_get_alert_idents_func(p) (p)->get_alert_idents
 #define	preludedb_plugin_format_get_heartbeat_idents_func(p) (p)->get_heartbeat_idents
 #define	preludedb_plugin_format_get_message_ident_count_func(p) (p)->get_message_ident_count
@@ -80,6 +83,7 @@ typedef struct {
 #define preludedb_plugin_format_get_next_values_func(p) (p)->get_next_values
 #define preludedb_plugin_format_destroy_values_resource_func(p) (p)->destroy_values_resource
 
+#define	preludedb_plugin_format_set_check_schema_version_func(p, f) preludedb_plugin_format_check_schema_version_func(p) = (f)
 #define	preludedb_plugin_format_set_get_alert_idents_func(p, f) preludedb_plugin_format_get_alert_idents_func(p) = (f)
 #define	preludedb_plugin_format_set_get_heartbeat_idents_func(p, f) preludedb_plugin_format_get_heartbeat_idents_func(p) = (f)
 #define	preludedb_plugin_format_set_get_message_ident_count_func(p, f) preludedb_plugin_format_get_message_ident_count_func(p) = (f)

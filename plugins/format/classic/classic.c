@@ -45,6 +45,9 @@
 #include "classic-path-resolve.h"
 
 
+#define CLASSIC_SCHEMA_VERSION 14.1
+
+
 int classic_LTX_prelude_plugin_version(void);
 int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
@@ -487,6 +490,27 @@ static void classic_destroy_values_resource(void *res)
 
 
 
+static int classic_check_schema_version(const char *version)
+{
+	double d;
+
+	if ( ! version )
+		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
+
+	if ( sscanf(version, "%lf", &d) <= 0 )
+		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
+
+	if ( d > CLASSIC_SCHEMA_VERSION )
+		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT);
+
+	if ( d < CLASSIC_SCHEMA_VERSION )
+		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD);
+
+	return 0;
+}
+
+
+
 int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
 	static preludedb_plugin_format_t classic_plugin;
@@ -496,6 +520,7 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         prelude_plugin_set_name(&classic_plugin, "Classic");
         prelude_plugin_entry_set_plugin(pe, (void *) &classic_plugin);
 
+	preludedb_plugin_format_set_check_schema_version_func(&classic_plugin, classic_check_schema_version);
 	preludedb_plugin_format_set_get_alert_idents_func(&classic_plugin, classic_get_alert_idents);
 	preludedb_plugin_format_set_get_heartbeat_idents_func(&classic_plugin, classic_get_heartbeat_idents);
 	preludedb_plugin_format_set_get_message_ident_count_func(&classic_plugin, classic_get_message_ident_count);

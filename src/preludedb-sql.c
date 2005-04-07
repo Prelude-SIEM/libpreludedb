@@ -137,7 +137,7 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 	if ( ! (*new)->plugin ) {
 		free((*new)->type);
 		free(*new);
-		return -1;
+		return prelude_error(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN);
 	}
 
 	return 0;

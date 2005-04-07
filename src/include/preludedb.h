@@ -48,7 +48,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 
 void preludedb_destroy(preludedb_t *db);
 
-const char *preludedb_get_format(preludedb_t *db);
+const char *preludedb_get_format_name(preludedb_t *db);
+const char *preludedb_get_format_version(preludedb_t *db);
 
 int preludedb_set_format(preludedb_t *db, const char *format_name);
 

@@ -44,7 +44,12 @@ const char *preludedb_strerror(preludedb_error_t error)
                 "Not in transaction",
 		"Invalid message ident",
 		"Invalid selected path string",
-		"Invalid path selection"
+		"Invalid path selection",
+		"Database schema version too old",
+		"Database schema version too recent",
+		"Database schema version invalid",
+		"Cannot load sql plugin",
+		"Cannot load format plugin"
         };
 
 	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {
