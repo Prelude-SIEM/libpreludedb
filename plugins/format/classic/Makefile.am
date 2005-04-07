@@ -1,5 +1,5 @@
 SUBDIRS=include
-EXTRA_DIST = mysql.sql mysql-rc3_rc4.sql pgsql.sql
+EXTRA_DIST = mysql.sql mysql-update-14-1.sql pgsql.sql pgsql-update-14-1.sql
 
 AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
 
@@ -10,4 +10,4 @@ classic_LTLIBRARIES = classic.la
 classicdir = $(format_plugin_dir)
 
 schemadatadir = $(format_schema_dir)/classic
-dist_schemadata_DATA = mysql.sql mysql-rc3_rc4.sql pgsql.sql
+dist_schemadata_DATA = mysql.sql mysql-update-14-1.sql pgsql.sql pgsql-update-14-1.sql
