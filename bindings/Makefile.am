@@ -39,12 +39,12 @@ endif
 perl/PreludeDB.c: $(BINDING_DEPENDS)
 if HAVE_SWIG
 	$(SWIG) -I$(top_srcdir)/src/include -o $@ -perl5 -nopm \
-	 `$(SWIG) -perl5 -help 2>&1 | grep noproxy > /dev/null && echo -noproxy` $<
+	 `$(SWIG) -perl5 -help 2>&1 | grep noproxy > /dev/null && echo -noproxy` libpreludedb.i
 endif
 
 python/_preludedb.c: $(BINDING_DEPENDS)
 if HAVE_SWIG
-	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -noproxy -interface _preludedb -module _preludedb $<
+	$(SWIG) -I$(top_srcdir)/src/include -o $@ -python -noproxy -interface _preludedb -module _preludedb libpreludedb.i
 endif
 
 
