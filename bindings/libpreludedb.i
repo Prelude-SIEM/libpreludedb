@@ -35,6 +35,12 @@
 %}
 
 typedef struct idmef_value idmef_value_t;
+typedef struct idmef_criteria idmef_criteria_t;
+typedef struct idmef_message idmef_message_t;
+typedef struct idmef_time idmef_time_t;
+typedef struct idmef_path idmef_path_t;
+typedef struct idmef_criterion_value idmef_criterion_value_t;
+typedef struct prelude_string prelude_string_t;
 
 typedef int int32_t;
 typedef unsigned int uint32_t;
