@@ -91,20 +91,27 @@ if test x$mysql_use != xno; then
 	# mysql_config --libs outputs -L'directory' instead of -Ldirectory
 	# and escaped version fools gcc in AC_CHECK_LIB so we must remove
 	# apostrophes
-	temp_mysql_flags=`echo $MYSQL_LIBS | sed -e s/\'//g`
+	temp_mysql_libs=`echo $MYSQL_LIBS | sed -e s/\'//g`
+	temp_mysql_cppflags=`echo $MYSQL_CFLAGS | sed -e s/\'//g`
 
 	# this is needed for correct linking. If we don't add mysql library
 	# flags to CFLAGS the test will always fail due to a linker error
-	CFLAGS_bak=$CFLAGS
-	CFLAGS="$CFLAGS $temp_mysql_flags"
+	LIBS_bak=$LIBS
+	CPPFLAGS_bak=$CPPFLAGS
+
+	LIBS="$LIBS $temp_mysql_libs"
+	CPPFLAGS="$CPPFLAGS $temp_mysql_cppflags"
 
 	AC_CHECK_LIB(mysqlclient, mysql_real_escape_string, have_real_escape_string=yes)
 	if test x$have_real_escape_string = xyes; then
 		AC_DEFINE(HAVE_MYSQL_REAL_ESCAPE_STRING, , mysql_real_escape_string function present)
 	fi
+	
+	AC_CHECK_HEADER(mysql.h, , mysql_use=false)
 
 	# restore the normal setting
-	CFLAGS=$CFLAGS_bak
+	LIBS=$LIBS_bak
+	CPPFLAGS=$CPPFLAGS_bak
 fi
 
 AC_ARG_ENABLE(mysql, [  --enable-mysql  Enable MySQL plugin [default=auto]], enable_mysql="$enableval", enable_mysql=auto)
