@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14');
+INSERT INTO _format (name, version) VALUES('classic', '14.1');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
