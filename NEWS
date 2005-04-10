@@ -1,18 +1,35 @@
+* 2005-04-09, libpreludedb-0.9.0-rc4:
+
+	- Fix error with bindings Makefile when using BSD make.
+
+	- Add missing 'info' severity to the MySQL schema.
+	  Provide a schema for upgrading.
+
+	- Check database schema version on initialization.
+
+	- Fix broken libpreludedb.m4 detection routine.
+
+	- Fix Perl/Python bindings regeneration problem.
+	
+	- Fix database schema for MySQL 3.23.
+
+	- Fix broken MySQL error check.
+
+
 * 2005-03-31, libpreludedb-0.9.0-rc3:
 
-- Fix PgSQL plugin loading problem.
+	- Fix PgSQL plugin loading problem.
 
 
 * 2005-03-31, libpreludedb-0.9.0-rc2:
 
-- Fix Python/Perl bindings linking order. Was linking to old version
-  of the library on system where old libprelude-0.8 was installed.
+	- Fix Python/Perl bindings linking order. Was linking to old version
+  	  of the library on system where old libprelude-0.8 was installed.
 
-- Fix an issue with the Perl bindings on make clean.
+	- Fix an issue with the Perl bindings on make clean.
 
 
-  
 * 2005-03-29, libpreludedb-0.9.0-rc1:
 
-- Initial release.
+	- Initial release.
 

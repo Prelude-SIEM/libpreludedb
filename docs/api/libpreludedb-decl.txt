@@ -23,6 +23,16 @@ typedef enum {
 #define PRELUDEDB_ERRBUF_SIZE 512
 </MACRO>
 <FUNCTION>
+<NAME>preludedb_init</NAME>
+<RETURNS>int </RETURNS>
+void
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_deinit</NAME>
+<RETURNS>void </RETURNS>
+void
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_new</NAME>
 <RETURNS>int </RETURNS>
 preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size
@@ -33,7 +43,12 @@ preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, s
 preludedb_t *db
 </FUNCTION>
 <FUNCTION>
-<NAME>preludedb_get_format</NAME>
+<NAME>preludedb_get_format_name</NAME>
+<RETURNS>const char *</RETURNS>
+preludedb_t *db
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_get_format_version</NAME>
 <RETURNS>const char *</RETURNS>
 preludedb_t *db
 </FUNCTION>
@@ -117,6 +132,8 @@ preludedb_t *db, preludedb_path_selection_t *path_selection,idmef_criteria_t *cr
 typedef struct {
 	PRELUDE_PLUGIN_GENERIC;
 
+	int (*check_schema_version)(const char *version);
+
 	int (*get_alert_idents)(preludedb_sql_t *sql,
 				idmef_criteria_t *criteria,
 				int limit, int offset, preludedb_result_idents_order_t order,
@@ -151,6 +168,10 @@ typedef struct {
 	void (*destroy_values_resource)(void *res);
 } preludedb_plugin_format_t;
 </STRUCT>
+<MACRO>
+<NAME>preludedb_plugin_format_check_schema_version_func</NAME>
+#define	preludedb_plugin_format_check_schema_version_func(p) (p)->check_schema_version
+</MACRO>
 <MACRO>
 <NAME>preludedb_plugin_format_get_alert_idents_func</NAME>
 #define	preludedb_plugin_format_get_alert_idents_func(p) (p)->get_alert_idents
@@ -202,6 +223,10 @@ typedef struct {
 <MACRO>
 <NAME>preludedb_plugin_format_destroy_values_resource_func</NAME>
 #define preludedb_plugin_format_destroy_values_resource_func(p) (p)->destroy_values_resource
+</MACRO>
+<MACRO>
+<NAME>preludedb_plugin_format_set_check_schema_version_func</NAME>
+#define	preludedb_plugin_format_set_check_schema_version_func(p, f) preludedb_plugin_format_check_schema_version_func(p) = (f)
 </MACRO>
 <MACRO>
 <NAME>preludedb_plugin_format_set_get_alert_idents_func</NAME>
@@ -257,7 +282,7 @@ typedef struct {
 </MACRO>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.0-rc1"
+#define LIBPRELUDEDB_VERSION "0.9.0-rc4"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
@@ -355,7 +380,13 @@ typedef enum {
         PRELUDEDB_ERROR_NOT_IN_TRANSACTION = 12,
 	PRELUDEDB_ERROR_INVALID_MESSAGE_IDENT = 13,
 	PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING = 14,
-	PRELUDEDB_ERROR_INVALID_OBJECT_SELECTION = 15
+	PRELUDEDB_ERROR_INVALID_OBJECT_SELECTION = 15,
+	PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD = 16,
+	PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT = 17,
+	PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID = 18,
+	PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN = 19,
+	PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN = 20
+	
 } preludedb_error_code_t;
 </ENUM>
 <TYPEDEF>

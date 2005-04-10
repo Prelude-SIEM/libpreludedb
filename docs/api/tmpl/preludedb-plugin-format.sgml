@@ -19,6 +19,7 @@ preludedb-plugin-format
 
 </para>
 
+@check_schema_version: 
 @get_alert_idents: 
 @get_heartbeat_idents: 
 @get_message_ident_count: 
@@ -32,6 +33,14 @@ preludedb-plugin-format
 @get_values: 
 @get_next_values: 
 @destroy_values_resource: 
+
+<!-- ##### MACRO preludedb_plugin_format_check_schema_version_func ##### -->
+<para>
+
+</para>
+
+@p: 
+
 
 <!-- ##### MACRO preludedb_plugin_format_get_alert_idents_func ##### -->
 <para>
@@ -135,6 +144,15 @@ preludedb-plugin-format
 </para>
 
 @p: 
+
+
+<!-- ##### MACRO preludedb_plugin_format_set_check_schema_version_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
 
 
 <!-- ##### MACRO preludedb_plugin_format_set_get_alert_idents_func ##### -->

@@ -48,6 +48,21 @@ preludedb
 
 
 
+<!-- ##### FUNCTION preludedb_init ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_deinit ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### FUNCTION preludedb_new ##### -->
 <para>
 
@@ -69,7 +84,16 @@ preludedb
 @db: 
 
 
-<!-- ##### FUNCTION preludedb_get_format ##### -->
+<!-- ##### FUNCTION preludedb_get_format_name ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_get_format_version ##### -->
 <para>
 
 </para>
