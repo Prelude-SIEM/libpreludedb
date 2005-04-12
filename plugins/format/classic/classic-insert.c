@@ -881,9 +881,9 @@ static int insert_checksum(preludedb_sql_t *sql,
                 goto error;
 
 	ret = preludedb_sql_insert(sql, "Prelude_Checksum",
-				   "_message_ident, _parent0_index, _parent1_index, value, checksum_key, algorithm",
-				   "%" PRELUDE_PRIu64 ", %d, %d, %s, %s, %s",
-				   message_ident, target_index, file_index,
+				   "_message_ident, _parent0_index, _parent1_index, _index, value, checksum_key, algorithm",
+				   "%" PRELUDE_PRIu64 ", %d, %d, %d, %s, %s, %s",
+				   message_ident, target_index, file_index, checksum_index,
 				   value, key, algorithm);
 
 error:
