@@ -98,7 +98,7 @@ static int time_with_usec_field_name_resolver(const idmef_path_t *path, int fiel
 					      const char *table_name, prelude_string_t *output)
 {
 	if ( field_context == FIELD_CONTEXT_SELECT )
-		return prelude_string_sprintf(output, "%s.time, %s.usec, %s.gmtoff", table_name, table_name, table_name);
+		return prelude_string_sprintf(output, "%s.time, %s.gmtoff, %s.usec", table_name, table_name, table_name);
 
 	return prelude_string_sprintf(output, "%s.time", table_name);
 }
