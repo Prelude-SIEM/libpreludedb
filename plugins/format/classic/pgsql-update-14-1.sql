@@ -1,1 +1,1 @@
-UPDATE _format SET version="14.1";
+UPDATE _format SET version='14.1';
