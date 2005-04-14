@@ -1567,14 +1567,17 @@ static int insert_assessment(preludedb_sql_t *sql, uint64_t message_ident, idmef
         if ( ! assessment )
                 return 0;
 
-        if ( preludedb_sql_insert(sql, "Prelude_Assessment", "_message_ident", "%" PRELUDE_PRIu64, message_ident) < 0 )
-                return -1;
+        ret = preludedb_sql_insert(sql, "Prelude_Assessment", "_message_ident", "%" PRELUDE_PRIu64, message_ident);
+	if ( ret < 0 )
+                return ret;
 
-        if ( insert_impact(sql, message_ident, idmef_assessment_get_impact(assessment)) < 0 )
-                return -1;
+        ret = insert_impact(sql, message_ident, idmef_assessment_get_impact(assessment));
+	if ( ret < 0 )
+                return ret;
         
-        if ( insert_confidence(sql, message_ident, idmef_assessment_get_confidence(assessment)) < 0 )
-                return -1;
+        ret = insert_confidence(sql, message_ident, idmef_assessment_get_confidence(assessment));
+	if ( ret < 0 )
+                return ret;
 
 	index = 0;
         last_action = action = NULL;
