@@ -1549,7 +1549,7 @@ static int insert_confidence(preludedb_sql_t *sql, uint64_t message_ident, idmef
                 return ret;
 
         ret = preludedb_sql_insert(sql, "Prelude_Confidence", "_message_ident, rating, confidence",
-				   "%" PRELUDE_PRIu64 ", %s, %d", message_ident, rating, idmef_confidence_get_confidence(confidence));
+				   "%" PRELUDE_PRIu64 ", %s, %f", message_ident, rating, idmef_confidence_get_confidence(confidence));
 
         free(rating);
         
