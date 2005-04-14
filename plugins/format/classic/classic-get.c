@@ -1539,16 +1539,6 @@ static int get_additional_data(preludedb_sql_t *sql,
 		if ( ret < 0 )
 			goto error;
 
-		ret = get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
-			       idmef_additional_data_type_to_numeric);
-		if ( ret < 0 )
-			goto error;
-
-		ret = get_enum(sql, row, 0, additional_data, idmef_additional_data_new_type,
-			       idmef_additional_data_type_to_numeric);
-		if ( ret < 0 )
-			goto error;
-
 		ret = get_string(sql, row, 1, additional_data, idmef_additional_data_new_meaning);
 		if ( ret < 0 )
 			goto error;
