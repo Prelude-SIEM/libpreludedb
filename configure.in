@@ -3,7 +3,7 @@ dnl AC_CONFIG_SRCDIR([src])
 
 AC_CANONICAL_SYSTEM
 AC_PREREQ(2.53)
-AM_INIT_AUTOMAKE(libpreludedb, 0.9.0-rc4)
+AM_INIT_AUTOMAKE(libpreludedb, 0.9.0-rc5)
 
 AM_CONFIG_HEADER(config.h)
 AM_DISABLE_STATIC
@@ -60,6 +60,7 @@ dnl ***************************************************
 # and headers in standard places
 AC_PATH_PROG(MYSQL_CONFIG, mysql_config, false)
 
+mysql_use=false
 if test x$MYSQL_CONFIG != xfalse; then
 	MYSQL_LIBS=`$MYSQL_CONFIG --libs`
 	MYSQL_CFLAGS=`$MYSQL_CONFIG --cflags`
@@ -88,7 +89,7 @@ else
 	fi
 fi
 
-if test x$mysql_use != xno; then
+if test x$mysql_use != xfalse; then
 	# mysql_config --libs outputs -L'directory' instead of -Ldirectory
 	# and escaped version fools gcc in AC_CHECK_LIB so we must remove
 	# apostrophes
@@ -103,7 +104,7 @@ if test x$mysql_use != xno; then
 	LIBS="$LIBS $temp_mysql_libs"
 	CPPFLAGS="$CPPFLAGS $temp_mysql_cppflags"
 
-	AC_CHECK_LIB(mysqlclient, mysql_real_escape_string, have_real_escape_string=yes)
+	AC_CHECK_FUNC(mysql_real_escape_string, have_real_escape_string=yes)
 	if test x$have_real_escape_string = xyes; then
 		AC_DEFINE(HAVE_MYSQL_REAL_ESCAPE_STRING, , mysql_real_escape_string function present)
 	fi
