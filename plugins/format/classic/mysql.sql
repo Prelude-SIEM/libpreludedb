@@ -76,16 +76,17 @@ CREATE TABLE Prelude_Analyzer (
  _index TINYINT NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident,_index),
  analyzerid VARCHAR(255) NULL,
- INDEX (_parent_type,analyzerid),
+ INDEX (_parent_type,_index,analyzerid),
  name VARCHAR(255) NULL,
  manufacturer VARCHAR(255) NULL,
  model VARCHAR(255) NULL,
- INDEX (_parent_type,model),
  version VARCHAR(255) NULL,
  class VARCHAR(255) NULL,
  ostype VARCHAR(255) NULL,
  osversion VARCHAR(255) NULL
 ) TYPE=InnoDB;
+
+CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (_parent_type, _index, model);
 
 
 
@@ -94,9 +95,10 @@ DROP TABLE IF EXISTS Prelude_Classification;
 CREATE TABLE Prelude_Classification (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  ident VARCHAR(255) NULL,
- text VARCHAR(255) NOT NULL,
- INDEX (text)
+ text VARCHAR(255) NOT NULL
 ) TYPE=InnoDB;
+
+CREATE INDEX prelude_classification_index_text ON Prelude_Classification (text(40));
 
 
 
@@ -108,10 +110,11 @@ CREATE TABLE Prelude_Reference (
  PRIMARY KEY (_message_ident, _index),
  origin ENUM("unknown","vendor-specific","user-specific","bugtraqid","cve","osvdb") NOT NULL,
  name VARCHAR(255) NOT NULL,
- INDEX(name),
  url VARCHAR(255) NOT NULL,
  meaning VARCHAR(255) NULL
 ) TYPE=InnoDB;
+
+CREATE INDEX prelude_reference_index_name ON Prelude_Reference (name(40));
 
 
 
@@ -347,10 +350,11 @@ CREATE TABLE Prelude_Node (
  ident VARCHAR(255) NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
  location VARCHAR(255) NULL,
- INDEX(_parent_type,location),
- name VARCHAR(255) NULL,
- INDEX(_parent_type,name)
+ name VARCHAR(255) NULL
 ) TYPE=InnoDB;
+
+CREATE INDEX prelude_node_index_location ON Prelude_Node (_parent_type,_parent0_index,location(20));
+CREATE INDEX prelude_node_index_name ON Prelude_Node (_parent_type,_parent0_index,name(20));
 
 
 
@@ -367,9 +371,10 @@ CREATE TABLE Prelude_Address (
  vlan_name VARCHAR(255) NULL,
  vlan_num INTEGER UNSIGNED NULL,
  address VARCHAR(255) NOT NULL,
- INDEX (_parent_type,address),
  netmask VARCHAR(255) NULL
 ) TYPE=InnoDB;
+
+CREATE INDEX prelude_address_index_address ON Prelude_Address (_parent_type,_parent0_index,_index,address(10));
 
 
 
@@ -464,8 +469,8 @@ CREATE TABLE Prelude_Service (
 ) TYPE=InnoDB;
 
 
-CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (_parent_type,protocol(10),port);
-CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_type,protocol(10),name(10));
+CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (_parent_type,_parent0_index,protocol(10),port);
+CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_type,_parent0_index,protocol(10),name(10));
 
 
 
