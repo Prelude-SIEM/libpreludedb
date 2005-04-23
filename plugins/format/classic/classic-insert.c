@@ -828,8 +828,8 @@ static int insert_file_access(preludedb_sql_t *sql,
         if ( ! file_access )
                 return 0;
         
-        ret = preludedb_sql_insert(sql, "Prelude_FileAccess", "_message_ident, _target_index, _file_index, _index",
-				   "%" PRELUDE_PRIu64 "%d, %d, %d", message_ident, target_index, file_index, file_access_index);
+        ret = preludedb_sql_insert(sql, "Prelude_FileAccess", "_message_ident, _parent0_index, _parent1_index, _index",
+				   "%" PRELUDE_PRIu64 ", %d, %d, %d", message_ident, target_index, file_index, file_access_index);
 	if ( ret < 0 )
                 return ret;
 
