@@ -109,7 +109,19 @@ static inline void get_optional_ ## name(char *dst, size_t size, type *value)	\
 }
 
 
-get_optional_integer(uint8, uint8_t, "%hhu")
+/*
+ * %hh convertion specifier is not portable.
+ */
+static inline void get_optional_uint8(char *dst, size_t size, uint8_t *value)
+{        
+        if ( ! value )
+                strncpy(dst, "NULL", size);
+        else {
+                unsigned int tmp = (unsigned int) *value;
+                snprintf(dst, size, "%u", tmp);
+        }
+}
+
 get_optional_integer(uint16, uint16_t, "%hu")
 get_optional_integer(int32, int32_t, "%d")
 get_optional_integer(uint32, uint32_t, "%u")

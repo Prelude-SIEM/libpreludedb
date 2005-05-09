@@ -881,14 +881,37 @@ size_t preludedb_sql_field_get_len(preludedb_sql_field_t *field)
  *
  * Returns: 0 on success, -1 if the wanted type does not match the field type.
  */
-#define preludedb_sql_field_to(name, type_name, format)						\
-int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)		\
+#define preludedb_sql_field_to(name, type_name, format)                                         \
+int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)             \
 {												\
-	return (sscanf(preludedb_sql_field_get_value(field), format, value) <= 0) ? -1 : 0;	\
+        int ret;                                                                                \
+                                                                                                \
+        ret = sscanf(preludedb_sql_field_get_value(field), format, value);                      \
+        if ( ret < 0 )                                                                          \
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
+                                                                                                \
+        return 0;                                                                               \
 }
 
-preludedb_sql_field_to(int8, int8_t, "%hhd")
-preludedb_sql_field_to(uint8, uint8_t, "%hhu")
+#define preludedb_sql_field_to_int8(name, type_name, format, min, max)                          \
+int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)             \
+{                                                                                               \
+        int tmp, ret;                                                                           \
+                                                                                                \
+        ret = sscanf(preludedb_sql_field_get_value(field), format, &tmp);                       \
+        if ( ret <= 0 || tmp < min || tmp > max )                                               \
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
+                                                                                                \
+        *value = (type_name) tmp;                                                               \
+                                                                                                \
+        return 0;                                                                               \
+}
+
+/*
+ * %hh is not a portable convertion specifier
+ */
+preludedb_sql_field_to_int8(int8, int8_t, "%d", PRELUDE_INT8_MIN, PRELUDE_INT8_MAX)
+preludedb_sql_field_to_int8(uint8, uint8_t, "%u", 0, PRELUDE_UINT8_MAX)
 preludedb_sql_field_to(int16, int16_t, "%hd")
 preludedb_sql_field_to(uint16, uint16_t, "%hu")
 preludedb_sql_field_to(int32, int32_t, "%d")
