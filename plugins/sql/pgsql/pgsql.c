@@ -55,6 +55,27 @@ struct pg_result {
 };
 
 
+static void get_error(PGconn *conn, char *errbuf, size_t size)
+{
+        int ret;
+        
+        if ( ! PQerrorMessage(conn) )
+                return;
+        
+        ret = snprintf(errbuf, size, "%s", PQerrorMessage(conn));
+        if ( ret < 0 || ret >= size )
+                return;
+
+        /*
+         * Remove trailing \n.
+         */
+        ret--;
+        while ( errbuf[ret] == '\n' || errbuf[ret] == ' ' )
+                errbuf[ret--] = 0;
+}
+
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
 {
 	PGconn *conn;
@@ -68,10 +89,8 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
 			    preludedb_sql_settings_get_pass(settings));
 
         if ( PQstatus(conn) == CONNECTION_BAD ) {
-		if ( PQerrorMessage(conn) )
-			snprintf(errbuf, size, "%s", PQerrorMessage(conn));
+                get_error(conn, errbuf, size);
                 PQfinish(conn);
-
 		return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
 
