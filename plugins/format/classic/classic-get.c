@@ -502,7 +502,7 @@ static int get_web_service_arg(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT arg "
 					  "FROM Prelude_WebServiceArg "
-					  "WHERE _parent_type = '%c' and _message_ident = %" PRELUDE_PRIu64 " and _parent0_index = %d AND _index != -1",
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
 		return ret;
@@ -1288,7 +1288,7 @@ static int get_file(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, category, name, path, create_time, create_time_gmtoff, "
 					  "modify_time, modify_time_gmtoff, access_time, "
-					  "access_time_gmtoff, data_size, disk_size, fstype "
+					  "access_time_gmtoff, data_size, disk_size, fstype, file_type "
 					  "FROM Prelude_File "
 					  "WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d AND _index != -1",
 					  message_ident, target_index);
@@ -1340,6 +1340,10 @@ static int get_file(preludedb_sql_t *sql,
 		ret = get_enum(sql, row, 12, file, idmef_file_new_fstype, idmef_file_fstype_to_numeric);
 		if ( ret < 0 )
 			goto error;
+
+                ret = get_string(sql, row, 13, file, idmef_file_new_file_type);
+                if ( ret < 0 )
+                        goto error;
 	}
 
 	file = NULL;
