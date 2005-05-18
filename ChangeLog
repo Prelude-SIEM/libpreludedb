@@ -1,3 +1,11 @@
+2005-05-18  Sebastien Tricaud <toady@gscore.org>
+
+	* plugins/format/classic/classic.c: upgrade to version 14.2
+	* plugins/formats/classic/mysql.sql: added file_type for Prelude_File + upgrade to version 14.2
+	* plugins/formats/classic/pgsql.sql: added missing fields from mysql.sql
+	* plugins/formats/classic/mysql-update-14-2.sql:
+	* plugins/formats/classic/pgsql-update-14-2.sql: added, special thanks to Jerome Marrec and Guillaume Lelarge
+
 2004-02-12  Yoann Vandoorselaere  <yoann@prelude-ids.org>
 
 	* configure.in: correct test for python/perl.

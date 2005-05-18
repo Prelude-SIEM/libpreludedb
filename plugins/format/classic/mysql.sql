@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.1');
+INSERT INTO _format (name, version) VALUES('classic', '14.2');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
@@ -163,7 +163,8 @@ CREATE TABLE Prelude_File (
  access_time_gmtoff INTEGER NULL,
  data_size INT UNSIGNED NULL,
  disk_size INT UNSIGNED NULL,
- fstype ENUM("ufs", "efs", "nfs", "afs", "ntfs", "fat16", "fat32", "pcfs", "joliet", "iso9660") NULL
+ fstype ENUM("ufs", "efs", "nfs", "afs", "ntfs", "fat16", "fat32", "pcfs", "joliet", "iso9660") NULL,
+ file_type VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
 
