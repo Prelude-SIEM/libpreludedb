@@ -220,10 +220,10 @@ static int add_index_constraint(classic_sql_joined_table_t *table, int parent_le
 	}
 
 	if ( parent_level == -1 )
-		ret = prelude_string_sprintf(table->index_constraints, "%s._index%s%d",
+		ret = prelude_string_sprintf(table->index_constraints, "%s._index %s %d",
 					     table->aliased_table_name, operator, index);
 	else
-		ret = prelude_string_sprintf(table->index_constraints, "%s._parent%d_index%s%d",
+		ret = prelude_string_sprintf(table->index_constraints, "%s._parent%d_index %s %d",
 					     table->aliased_table_name, parent_level, operator, index);
 
 	return ret;
