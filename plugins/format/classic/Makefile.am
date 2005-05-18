@@ -10,4 +10,9 @@ classic_LTLIBRARIES = classic.la
 classicdir = $(format_plugin_dir)
 
 schemadatadir = $(format_schema_dir)/classic
-dist_schemadata_DATA = mysql.sql mysql-update-14-1.sql pgsql.sql pgsql-update-14-1.sql
+dist_schemadata_DATA =  mysql.sql             	\
+			mysql-update-14-1.sql 	\
+			mysql-update-14-2.sql 	\
+			pgsql.sql 		\
+			pgsql-update-14-1.sql	\
+			pgsql-update-14-2.sql
