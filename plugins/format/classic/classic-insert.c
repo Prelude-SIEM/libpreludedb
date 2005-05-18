@@ -747,7 +747,6 @@ static int insert_inode(preludedb_sql_t *sql,
 	get_optional_uint32(minor_device, sizeof(minor_device), idmef_inode_get_minor_device(inode));
 	get_optional_uint32(c_major_device, sizeof(c_major_device), idmef_inode_get_c_major_device(inode));
 	get_optional_uint32(c_minor_device, sizeof(c_minor_device), idmef_inode_get_c_minor_device(inode));
-	get_optional_uint32(number, sizeof(number), idmef_inode_get_number(inode));
 
         ret = preludedb_sql_insert(sql, "Prelude_Inode",
 				   "_message_ident, _parent0_index, _parent1_index, "
@@ -921,7 +920,8 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
 	idmef_checksum_t *checksum, *last_checksum;
         idmef_file_access_t *file_access, *last_file_access;
 	int index;
-        char *name = NULL, *path = NULL, *category = NULL, *fstype = NULL, *ident = NULL, data_size[32], disk_size[32];
+        char *name = NULL, *path = NULL, *category = NULL, *fstype = NULL,
+                *ident = NULL, *file_type = NULL, data_size[32], disk_size[32];
         char ctime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], ctime_gmtoff[16];
         char mtime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], mtime_gmtoff[16];
         char atime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], atime_gmtoff[16];
@@ -957,6 +957,10 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
         if ( ret < 0 )
 		goto error;
 
+        ret = preludedb_sql_escape(sql, get_string(idmef_file_get_file_type(file)), &file_type);
+        if ( ret < 0 )
+		goto error;
+        
 	get_optional_uint64(data_size, sizeof(data_size), idmef_file_get_data_size(file));
 	get_optional_uint64(disk_size, sizeof(disk_size), idmef_file_get_disk_size(file));
 
@@ -967,11 +971,12 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
 	
         ret = preludedb_sql_insert(sql, "Prelude_File", "_message_ident, _parent0_index, _index, ident, category, name, path, "
 				   "create_time, create_time_gmtoff, modify_time, modify_time_gmtoff, access_time, access_time_gmtoff, "
-				   "data_size, disk_size, fstype",
-				   "%" PRELUDE_PRIu64 ", %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+				   "data_size, disk_size, fstype, file_type",
+				   "%" PRELUDE_PRIu64 ", %d, %d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
 				   message_ident, target_index, file_index,
 				   ident, category, name, path,
-				   ctime, ctime_gmtoff, mtime, mtime_gmtoff, atime, atime_gmtoff, data_size, disk_size, fstype);
+				   ctime, ctime_gmtoff, mtime, mtime_gmtoff, atime, atime_gmtoff,
+                                   data_size, disk_size, fstype, file_type);
 
         if ( ret < 0 )
                 goto error;
@@ -1047,6 +1052,9 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
 	if ( fstype )
 		free(fstype);
 
+        if ( file_type )
+                free(file_type);
+        
         return ret;
 }
 
