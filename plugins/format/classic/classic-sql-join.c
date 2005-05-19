@@ -174,7 +174,8 @@ static char resolve_correlation_alert_parent_type(const idmef_path_t *path)
 static char resolve_alert_parent_type(const idmef_path_t *path)
 {
 	switch ( idmef_path_get_class(path, 1) ) {
-	case IDMEF_CLASS_ID_CLASSIFICATION: case IDMEF_CLASS_ID_ASSESSMENT:
+	case IDMEF_CLASS_ID_CLASSIFICATION:
+        case IDMEF_CLASS_ID_ASSESSMENT:
 	case IDMEF_CLASS_ID_OVERFLOW_ALERT:
 		return 0;
 		
@@ -189,11 +190,14 @@ static char resolve_alert_parent_type(const idmef_path_t *path)
 
 	case IDMEF_CLASS_ID_TARGET:
 		return resolve_target_parent_type(path);
-
+                
 	default:
 		/* nop */;
 	}
 
+        if ( strcmp(idmef_path_get_name(path, idmef_path_get_depth(path) - 1), "detect_time") == 0 )
+                return 0;
+        
 	return 'A';
 }
 
