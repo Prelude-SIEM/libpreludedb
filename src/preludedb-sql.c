@@ -977,7 +977,7 @@ const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operato
 
 
 
-static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf, size_t size)
+static int build_criterion_fixed_sql_time_value(const idmef_value_t *value, char *buf, size_t size)
 {
 	idmef_time_t *time;
 
@@ -990,7 +990,7 @@ static int build_criterion_fixed_sql_time_value(idmef_value_t *value, char *buf,
 
 
 
-static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char **output)
+static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char **output)
 {
         size_t i = 0;
         const char *input;
@@ -1033,7 +1033,7 @@ static int build_criterion_fixed_sql_like_value(idmef_value_t *value, char **out
 
 static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 					   prelude_string_t *output,
-					   idmef_value_t *value,
+					   const idmef_value_t *value,
 					   idmef_criterion_operator_t operator)
 {
 	int ret;
@@ -1111,7 +1111,7 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 				       prelude_string_t *output,
 				       const char *field,
 				       idmef_criterion_operator_t operator,
-				       idmef_value_t *value)
+				       const idmef_value_t *value)
 {
 	int ret;
 
