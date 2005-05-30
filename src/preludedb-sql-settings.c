@@ -37,7 +37,7 @@
 
 
 struct preludedb_sql_settings {
-	prelude_hash_t *hash;
+        prelude_hash_t *hash;
 };
 
 
@@ -68,71 +68,71 @@ static char *my_strndup(const char *str, size_t len)
 
 int preludedb_sql_settings_new(preludedb_sql_settings_t **settings)
 {
-	int ret;
+        int ret;
 
-	*settings = malloc(sizeof (**settings));
-	if ( ! *settings )
-		return prelude_error_from_errno(errno);
+        *settings = malloc(sizeof (**settings));
+        if ( ! *settings )
+                return prelude_error_from_errno(errno);
 
-	ret = prelude_hash_new(&(*settings)->hash, NULL, NULL, free, free);
-	if ( ret < 0 )
-		free(*settings);
+        ret = prelude_hash_new(&(*settings)->hash, NULL, NULL, free, free);
+        if ( ret < 0 )
+                free(*settings);
 
-	return ret;
+        return ret;
 }
 
 
 
 int preludedb_sql_settings_new_from_string(preludedb_sql_settings_t **settings, const char *str)
 {
-	int ret;
+        int ret;
 
-	ret = preludedb_sql_settings_new(settings);
-	if ( ret < 0 )
-		return ret;
+        ret = preludedb_sql_settings_new(settings);
+        if ( ret < 0 )
+                return ret;
 
-	ret = preludedb_sql_settings_set_from_string(*settings, str);
-	if ( ret < 0 )
-		preludedb_sql_settings_destroy(*settings);
+        ret = preludedb_sql_settings_set_from_string(*settings, str);
+        if ( ret < 0 )
+                preludedb_sql_settings_destroy(*settings);
 
-	return ret;
+        return ret;
 }
 
 
 
 void preludedb_sql_settings_destroy(preludedb_sql_settings_t *settings)
 {
-	prelude_hash_destroy(settings->hash);       
+        prelude_hash_destroy(settings->hash);       
         free(settings);
 }
 
 
 
 int preludedb_sql_settings_set(preludedb_sql_settings_t *settings,
-			       const char *name, const char *value)
+                               const char *name, const char *value)
 {
-	char *n, *v;
+        char *n, *v;
 
-	n = strdup(name);
-	if ( ! n )
-		return preludedb_error_from_errno(errno);
+        n = strdup(name);
+        if ( ! n )
+                return preludedb_error_from_errno(errno);
 
-	v = strdup(value);
-	if ( ! v ) {
-		free(n);
-		return preludedb_error_from_errno(errno);
-	}
+        v = strdup(value);
+        if ( ! v ) {
+                free(n);
+                return preludedb_error_from_errno(errno);
+        }
 
-	return prelude_hash_set(settings->hash, n, v);
+        return prelude_hash_set(settings->hash, n, v);
 }
 
 
 
 static int get_name(const char **str, char **name)
 {
-	const char *start;
+        const char *start;
 
-	skip_spaces(str);
+        skip_spaces(str);
 
 	if ( **str == '\0' )
 		return 0;
