@@ -69,7 +69,7 @@ int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
 {
 	static const char *queries[] = {
 		"DELETE FROM Prelude_Action WHERE _message_ident = %" PRELUDE_PRIu64,
-		"DELETE FROM Prelude_AdditionalData WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent_type = 'A'"
+		"DELETE FROM Prelude_AdditionalData WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent_type = 'A'",
 		"DELETE FROM Prelude_Address WHERE _message_ident = %" PRELUDE_PRIu64 " AND _parent_type != 'H'",
 		"DELETE FROM Prelude_Alert WHERE _ident = %" PRELUDE_PRIu64,
 		"DELETE FROM Prelude_Alertident WHERE _message_ident = %" PRELUDE_PRIu64,
