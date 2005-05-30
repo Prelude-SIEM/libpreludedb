@@ -44,10 +44,12 @@
 
 static int default_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
+        char c;
+        int ret;
 	const char *class_name;
 	prelude_string_t *string;
-	int ret;
-
+        prelude_bool_t next_is_maj = TRUE;
+        
 	class_name = idmef_class_get_name(idmef_path_get_class(path, idmef_path_get_depth(path) - 2));
 
 	ret = prelude_string_new(&string);
@@ -59,27 +61,27 @@ static int default_table_name_resolver(const idmef_path_t *path, char **table_na
 		goto error;
 
 	while ( *class_name ) {
-		ret = prelude_string_sprintf(string, "%c", *class_name++ + 'A' - 'a');
-		if ( ret < 0 )
-			goto error;
-
-		while ( *class_name ) {
-			if ( *class_name == '_' ) {
-				class_name++;
-				break;
-			} else {
-				ret = prelude_string_sprintf(string, "%c", *class_name++);
-				if ( ret < 0 )
-					return ret;
-			}
-		}
-	}
+                c = *class_name++;
+                if ( c == '_' ) {
+                        next_is_maj = TRUE;
+                        continue;
+                }
+                
+                if ( next_is_maj ) {
+                        c += 'A' - 'a';
+                        next_is_maj = FALSE;
+                }
+                        
+                ret = prelude_string_ncat(string, &c, 1);
+                if ( ret < 0 )
+                        goto error;
+        }
 
 	ret = prelude_string_get_string_released(string, table_name);
 
  error:
 	prelude_string_destroy(string);
-
+        
 	return ret;
 }
 
@@ -192,6 +194,22 @@ static int checksum_field_name_resolver(const idmef_path_t *path, int field_cont
 	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
 }
 
+
+
+static int file_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
+                                    prelude_string_t *output)
+{
+	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+
+        if ( strcmp(child_name, "create_time") == 0 ||
+             strcmp(child_name, "modify_time") == 0 ||
+             strcmp(child_name, "access_time") == 0 )
+		return time_without_usec_field_name_resolver(path, field_context, table_name, output);
+
+	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+}
+
+
 typedef struct classic_idmef_class {
         idmef_class_id_t id;
         int (*resolve_table_name)(const idmef_path_t *path, char **table_name);
@@ -205,7 +223,8 @@ static const classic_idmef_class_t classes[] = {
 	{ IDMEF_CLASS_ID_HEARTBEAT, message_table_name_resolver, message_field_name_resolver },
 	{ IDMEF_CLASS_ID_PROCESS, process_table_name_resolver, default_field_name_resolver },
 	{ IDMEF_CLASS_ID_SNMP_SERVICE, default_table_name_resolver, snmp_field_name_resolver },
-	{ IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver }
+	{ IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver },
+        { IDMEF_CLASS_ID_FILE, default_table_name_resolver, file_field_name_resolver },
 };
 
 
