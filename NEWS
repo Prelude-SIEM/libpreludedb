@@ -1,3 +1,25 @@
+* 2005-05-30, libpreludedb-0.9.0-rc6:
+
+	- Fix portability problem with %hh convertion specifier (exampe: Solaris
+	  selection problem).
+
+	- Fix potential problem on 64 bits systems.
+
+	- Fix IDMEF FileAccess insertion.
+
+	- Fix bad indexes.
+	
+	- Improve DELETE operation speed.
+
+	- Handle IDMEFv14 file_type attribute.
+
+	- Fix several PostgreSQL incompatibility in generated request.
+
+	- Update PostrgreSQL schema.
+
+	- Various bugfix.
+
+	
 * 2005-04-17, libpreludedb-0.9.0-rc5:
 
 	- Fix truncated error code on some INSERT.
