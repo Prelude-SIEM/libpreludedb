@@ -31,14 +31,38 @@
 #include "preludedb-sql-settings.h"
 
 
-#define skip_spaces(str)			\
-	while ( isspace(*str) )			\
-		(str)++
+#ifndef MIN
+# define MIN(x, y) ((x) < (y)) ? (x) : (y)
+#endif
 
 
 struct preludedb_sql_settings {
 	prelude_hash_t *hash;
 };
+
+
+
+static inline void skip_spaces(const char **str) 
+{
+        while ( isspace(**str) )
+                (*str)++;
+}
+
+
+
+static char *my_strndup(const char *str, size_t len)
+{
+        char *ptr;
+
+        len = MIN(len, strlen(str));
+        
+        ptr = malloc(len + 1);
+        if ( ! ptr )
+                return NULL;
+        
+        ptr[len] = '\0';
+        return memcpy(ptr, str, len);
+}
 
 
 
@@ -108,7 +132,7 @@ static int get_name(const char **str, char **name)
 {
 	const char *start;
 
-	skip_spaces(*str);
+	skip_spaces(str);
 
 	if ( **str == '\0' )
 		return 0;
@@ -121,7 +145,7 @@ static int get_name(const char **str, char **name)
 	if ( **str != '=' || *str == start )
 		return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
 
-	*name = strndup(start, *str - start);
+	*name = my_strndup(start, *str - start);
 
 	(*str)++;
 
