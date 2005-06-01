@@ -1,3 +1,8 @@
+* 2005-05-30, libpreludedb-0.9.0-rc7:
+
+	- Fix alert deletion query issue.
+
+
 * 2005-05-30, libpreludedb-0.9.0-rc6:
 
 	- Fix portability problem with %hh convertion specifier (exampe: Solaris
