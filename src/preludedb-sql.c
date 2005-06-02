@@ -979,7 +979,7 @@ const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operato
 
 static int build_criterion_fixed_sql_time_value(const idmef_value_t *value, char *buf, size_t size)
 {
-	idmef_time_t *time;
+	const idmef_time_t *time;
 
 	time = idmef_value_get_time(value);
 	if ( ! time )
@@ -994,8 +994,8 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
 {
         size_t i = 0;
         const char *input;
-        prelude_string_t *string;
-
+        const prelude_string_t *string;
+        
 	string = idmef_value_get_string(value);
 	if ( ! string )
 		return -1;
@@ -1128,6 +1128,99 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 
 
 
+static int build_time_constraint(preludedb_sql_t *sql,
+                                 prelude_string_t *output, const char *field,
+                                 preludedb_sql_time_constraint_type_t type,
+                                 idmef_criterion_operator_t op, int value)
+{
+        long gmt_offset;
+        
+        if ( prelude_get_gmt_offset(&gmt_offset) < 0 )
+                return -1;
+
+        return sql->plugin->build_time_constraint_string(output, field, type, op, value, gmt_offset);
+}
+
+
+
+static int build_criterion_broken_down_time_equal(preludedb_sql_t *sql, prelude_string_t *output,
+                                                  const char *field, idmef_criterion_operator_t op, const struct tm *lt)
+{
+        int ret;
+        int i, prev = 0, year;
+        const struct {
+                preludedb_sql_time_constraint_type_t type;
+                const int *field_ptr;
+        } tbl[] = {
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR, &year        },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH, &lt->tm_mon },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY, &lt->tm_yday },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY, &lt->tm_mday },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY, &lt->tm_wday },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR, &lt->tm_hour },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_MIN,  &lt->tm_min  },
+                { PRELUDEDB_SQL_TIME_CONSTRAINT_SEC,  &lt->tm_sec  }
+        };
+
+        year = lt->tm_year;
+        if ( year != -1 )
+                year += 1900;
+        
+        for ( i = 0; i < sizeof(tbl) / sizeof(*tbl); i++ ) {
+                
+                if ( *(tbl[i].field_ptr) == -1 )
+                        continue;
+                        
+                if ( prev++ ) {
+                        ret = prelude_string_cat(output, " AND ");
+                        if ( ret < 0 )
+                                return ret;
+                }
+                
+                ret = build_time_constraint(sql, output, field, tbl[i].type, op, *tbl[i].field_ptr);
+                if ( ret < 0 )
+                        return ret;
+        }
+
+        return 0;
+}
+
+
+
+static int build_criterion_broken_down_time_not_equal(preludedb_sql_t *sql, prelude_string_t *output,
+                                                      const char *field, const struct tm *lt)
+{
+        int ret;
+
+        ret = prelude_string_cat(output, "NOT(");
+        if ( ret < 0 )
+                return ret;
+
+        ret = build_criterion_broken_down_time_equal(sql, output, field, IDMEF_CRITERION_OPERATOR_EQUAL, lt);
+        if ( ret < 0 )
+                return ret;
+        
+        return prelude_string_cat(output, ")");
+}
+
+
+
+
+static int build_criterion_broken_down_time(preludedb_sql_t *sql, prelude_string_t *output,
+                                            const char *field, idmef_criterion_operator_t op, const struct tm *time)
+{
+        if ( op == IDMEF_CRITERION_OPERATOR_EQUAL )
+                return build_criterion_broken_down_time_equal(sql, output, field, op, time);
+
+        else if ( op == IDMEF_CRITERION_OPERATOR_NOT_EQUAL )
+                return build_criterion_broken_down_time_not_equal(sql, output, field, time);
+        
+        return preludedb_error(PRELUDEDB_ERROR_QUERY);
+}
+
+
+
+
 /**
  * preludedb_sql_build_criterion_string:
  * @sql: Pointer to a sql object.
@@ -1145,17 +1238,27 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 const char *field,
 					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
 {
+        const void *vptr;
+
+        printf("build criterion string field=%s\n", field);
+        
 	if ( operator == IDMEF_CRITERION_OPERATOR_IS_NULL )
 		return prelude_string_sprintf(output, "%s IS NULL", field);
 
 	if ( operator == IDMEF_CRITERION_OPERATOR_IS_NOT_NULL )
 		return prelude_string_sprintf(output, "%s IS NOT NULL", field);
 
+        vptr = idmef_criterion_value_get_value(value);
+        
 	switch ( idmef_criterion_value_get_type(value) ) {
-	case IDMEF_CRITERION_VALUE_TYPE_VALUE:
-		return build_criterion_fixed_value(sql, output, field, operator,
-						  idmef_criterion_value_get_value(value));
-	default:
+
+        case IDMEF_CRITERION_VALUE_TYPE_VALUE:
+		return build_criterion_fixed_value(sql, output, field, operator, vptr);
+                
+        case IDMEF_CRITERION_VALUE_TYPE_BROKEN_DOWN_TIME:
+                return build_criterion_broken_down_time(sql, output, field, operator, vptr);
+                
+        default:
 		/* nop */;
 	}
 
