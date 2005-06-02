@@ -81,8 +81,8 @@ int preludedb_init(void)
 
 	ret = access(FORMAT_PLUGIN_DIR, F_OK);
 	if ( ret < 0 )
-		return prelude_error_from_errno(errno);
-
+                return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN);
+        
 	ret = prelude_plugin_load_from_dir(&format_plugin_list, FORMAT_PLUGIN_DIR,
                                            PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 	if ( ret < 0 )
@@ -90,7 +90,7 @@ int preludedb_init(void)
 
 	ret = access(SQL_PLUGIN_DIR, F_OK);
 	if ( ret < 0 )
-		return prelude_error_from_errno(errno);
+                return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN);
 
 	ret = prelude_plugin_load_from_dir(&_sql_plugin_list, SQL_PLUGIN_DIR,
                                            PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
