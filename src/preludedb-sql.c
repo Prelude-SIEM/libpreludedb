@@ -1240,8 +1240,6 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 {
         const void *vptr;
 
-        printf("build criterion string field=%s\n", field);
-        
 	if ( operator == IDMEF_CRITERION_OPERATOR_IS_NULL )
 		return prelude_string_sprintf(output, "%s IS NULL", field);
 
