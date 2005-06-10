@@ -1976,8 +1976,8 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
 	if ( ret < 0 )
 		return ret;
         
-        get_optional_int32(heartbeat_interval, sizeof(heartbeat_interval),
-                           idmef_heartbeat_get_heartbeat_interval(heartbeat));
+        get_optional_uint32(heartbeat_interval, sizeof(heartbeat_interval),
+                            idmef_heartbeat_get_heartbeat_interval(heartbeat));
         
         ret = preludedb_sql_insert(sql, "Prelude_Heartbeat", "messageid, heartbeat_interval",
                                    "%s, %s", messageid, heartbeat_interval);

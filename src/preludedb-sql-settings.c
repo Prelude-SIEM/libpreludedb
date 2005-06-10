@@ -201,8 +201,8 @@ static int get_value(const char **str, char **value)
 
 int preludedb_sql_settings_set_from_string(preludedb_sql_settings_t *settings, const char *str)
 {
-	char *name, *value;
 	int ret;
+	char *name = NULL, *value;
 
 	while ( (ret = get_name(&str, &name)) > 0 ) {
 		ret = get_value(&str, &value);

@@ -386,7 +386,8 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 
 	switch ( type ) {
 	case IDMEF_VALUE_TYPE_TIME: {
-		int32_t gmtoff = 0, usec = 0;
+                uint32_t usec = 0;
+		int32_t gmtoff = 0;
 		
 		idmef_time_t *time;
 

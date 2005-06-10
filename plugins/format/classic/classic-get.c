@@ -1098,7 +1098,7 @@ static int get_file_access(preludedb_sql_t *sql,
 	if ( ret <= 0 )
 		goto error;
 
-	ret = preludedb_sql_field_to_int32(field, &file_access_count);
+	ret = preludedb_sql_field_to_uint32(field, &file_access_count);
 	if ( ret < 0 )
 		goto error;
 
