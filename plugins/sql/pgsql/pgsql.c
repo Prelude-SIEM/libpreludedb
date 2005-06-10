@@ -143,21 +143,21 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
 {
         prelude_string_t *string;
         size_t rsize, dummy;
-        char *ptr;
+        unsigned char *ptr;
         int ret;
 
         rsize = input_size * 2 + 3;
         if ( rsize <= input_size )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-        ptr = PQescapeBytea(input, input_size, &dummy);
-
         ret = prelude_string_new(&string);
 	if ( ret < 0 )
 		return ret;
-
+        
+        ptr = PQescapeBytea(input, input_size, &dummy);
         ret = prelude_string_sprintf(string, "'%s'", ptr);
         free(ptr);
+
         if ( ret < 0 ) {
                 prelude_string_destroy(string);
                 return ret;
