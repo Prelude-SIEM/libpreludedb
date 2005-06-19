@@ -1761,7 +1761,7 @@ static int get_alertident(preludedb_sql_t *sql,
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT alertident, analyzerid "
 					  "FROM Prelude_Alertident "
-					  "WHERE _parent_type = '%c' AND _message_ident = % AND _index != -1" PRELUDE_PRIu64,
+					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64" AND _index != -1",
 					  parent_type, message_ident);
 	if ( ret <= 0 )
 		return ret;
