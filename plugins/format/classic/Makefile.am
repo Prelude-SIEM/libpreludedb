@@ -1,7 +1,7 @@
 SUBDIRS=include
 EXTRA_DIST = mysql.sql mysql-update-14-1.sql pgsql.sql pgsql-update-14-1.sql
 
-AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
+AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -I$(top_srcdir)/libmissing -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
 
 classic_la_LIBADD  = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 classic_la_LDFLAGS = -module -avoid-version @LIBPRELUDE_LDFLAGS@

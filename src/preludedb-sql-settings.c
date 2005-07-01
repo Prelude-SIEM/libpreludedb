@@ -21,6 +21,9 @@
 *
 *****/
 
+#include "config.h"
+#include "libmissing.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -29,11 +32,6 @@
 
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
-
-
-#ifndef MIN
-# define MIN(x, y) ((x) < (y)) ? (x) : (y)
-#endif
 
 
 struct preludedb_sql_settings {
@@ -46,22 +44,6 @@ static inline void skip_spaces(const char **str)
 {
         while ( isspace(**str) )
                 (*str)++;
-}
-
-
-
-static char *my_strndup(const char *str, size_t len)
-{
-        char *ptr;
-
-        len = MIN(len, strlen(str));
-        
-        ptr = malloc(len + 1);
-        if ( ! ptr )
-                return NULL;
-        
-        ptr[len] = '\0';
-        return memcpy(ptr, str, len);
 }
 
 
@@ -145,7 +127,7 @@ static int get_name(const char **str, char **name)
 	if ( **str != '=' || *str == start )
 		return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
 
-	*name = my_strndup(start, *str - start);
+	*name = strndup(start, *str - start);
 
 	(*str)++;
 

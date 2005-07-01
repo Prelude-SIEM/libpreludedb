@@ -21,6 +21,9 @@
 *
 *****/
 
+#include "config.h"
+#include "libmissing.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -38,8 +41,6 @@
 #include <libprelude/idmef.h>
 #include <libprelude/prelude-error.h>
 #include <libprelude/prelude-string.h>
-
-#include "config.h"
 
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"

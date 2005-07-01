@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I$(top_srcdir)/src/include @defined@ @MYSQL_CFLAGS@
+AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing @defined@ @MYSQL_CFLAGS@
 mysql_la_LDFLAGS = -module -avoid-version
 
 if HAVE_MYSQL

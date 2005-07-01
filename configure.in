@@ -10,18 +10,21 @@ AM_DISABLE_STATIC
 
 AM_MAINTAINER_MODE
 
-AC_LIBTOOL_DLOPEN
-AM_PROG_LIBTOOL
-
 dnl Checks for programs
-
+AC_PROG_CPP
 AC_PROG_CC
+gl_EARLY
+
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_C_INLINE
+AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
 
 
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
+
 
 if test "x$prefix" = "xNONE"; then
 	prefix="/usr/local"
@@ -38,6 +41,15 @@ fi
 if test "x$datadir" = "x\${prefix}/share"; then
     datadir="$prefix/share"
 fi
+
+
+dnl **************************************************
+dnl * Check for missing function replacement         *
+dnl **************************************************
+gl_SOURCE_BASE(libmissing)
+gl_M4_BASE(libmissing/m4)
+gl_INIT
+
 
 
 dnl **************************************************
