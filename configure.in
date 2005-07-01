@@ -266,6 +266,7 @@ Makefile
 prelude-db-create.sh
 
 m4/Makefile
+libmissing/Makefile
 
 src/Makefile
 src/include/Makefile
