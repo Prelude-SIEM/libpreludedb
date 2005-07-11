@@ -1,3 +1,16 @@
+* 2005-07-08, libpreludedb-0.9.0-rc8:
+
+	- Fix Perl bindings Makefile generation with some MakeMaker version.
+
+	- Use GnuLib for portability issue.
+
+	- Handle broken down criteria match.
+
+	- Improve error reporting.
+
+	- Various bugfixes.
+
+
 * 2005-05-30, libpreludedb-0.9.0-rc7:
 
 	- Fix alert deletion query issue.
