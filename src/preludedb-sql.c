@@ -994,8 +994,9 @@ static int build_criterion_fixed_sql_time_value(const idmef_value_t *value, char
 
 static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char **output)
 {
-        size_t i = 0;
+        int ret;
         const char *input;
+        prelude_string_t *outbuf;
         const prelude_string_t *string;
         
 	string = idmef_value_get_string(value);
@@ -1006,29 +1007,35 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
         if ( ! input )
                 return -1;
 
-	*output = malloc(strlen(input) + 1);
-	if ( ! *output )
-		return prelude_error_from_errno(errno);
+        ret = prelude_string_new(&outbuf);
+        if ( ret < 0 )
+                return ret;
 
         while ( *input ) {
 
-                if ( *input == '*' )
-                        (*output)[i++] = '%';
-                
+                /* Escape %, since these are SQL specific */
+                if ( *input == '%' )
+                        prelude_string_cat(outbuf, "\\%");
+
+                /* Convert unescaped * to % character */
+                else if ( *input == '*' )
+                        prelude_string_cat(outbuf, "%");
+
+                /* Convert escaped * to * character */
                 else if ( *input == '\\' && *(input + 1) == '*' ) {
                         input++;
-                        (*output)[i++] = '*';
+                        prelude_string_cat(outbuf, "*");
                 }
                 
-                else
-			(*output)[i++] = *input;
-
+                else prelude_string_ncat(outbuf, input, 1);
+                
                 input++;
         }
 
-        (*output)[i] = 0;
-        
-	return 0;
+        ret = prelude_string_get_string_released(outbuf, output);
+        prelude_string_destroy(outbuf);
+
+        return ret;
 }
 
 
