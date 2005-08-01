@@ -37,6 +37,8 @@
 #include <inttypes.h>
 #include <assert.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <libprelude/prelude-list.h>
 #include <libprelude/prelude-linked-object.h>
@@ -180,9 +182,21 @@ void preludedb_sql_destroy(preludedb_sql_t *sql)
  */
 int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filename)
 {
+        int fd, ret;
+        
 	sql->logfile = fopen(filename, "a");
+        if ( ! sql->logfile )
+                return preludedb_error_from_errno(errno);
 
-	return sql->logfile ? 0 : preludedb_error_from_errno(errno);
+        fd = fileno(sql->logfile);
+
+        ret = fcntl(fd, F_GETFD);
+        if ( ret < 0 )
+                return 0;
+        
+        fcntl(fd, F_SETFD, ret | FD_CLOEXEC);
+        
+	return 0;
 }
 
 
