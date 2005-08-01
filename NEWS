@@ -1,3 +1,14 @@
+* 2005-08-01, libpreludedb-0.9.0-rc9:
+
+	- Fix IDMEF SNMPService mapping problem.
+
+	- Fix IDMEF FileAccess permission mapping problem.
+
+	- Set close on exec flags on the logging file descriptor.
+
+	- Escape '%' character within query, since the caller is expected to use '*'.
+
+
 * 2005-07-08, libpreludedb-0.9.0-rc8:
 
 	- Fix Perl bindings Makefile generation with some MakeMaker version.

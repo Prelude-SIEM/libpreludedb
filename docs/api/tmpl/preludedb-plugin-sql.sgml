@@ -14,6 +14,9 @@ preludedb-plugin-sql
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### STRUCT preludedb_plugin_sql_t ##### -->
 <para>
 

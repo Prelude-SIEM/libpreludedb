@@ -14,6 +14,9 @@ preludedb-sql-settings
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### MACRO PRELUDEDB_SQL_SETTING_HOST ##### -->
 <para>
 

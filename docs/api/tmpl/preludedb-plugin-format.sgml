@@ -14,6 +14,9 @@ preludedb-plugin-format
 
 </para>
 
+<!-- ##### SECTION Stability_Level ##### -->
+
+
 <!-- ##### STRUCT preludedb_plugin_format_t ##### -->
 <para>
 
