@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.2');
+INSERT INTO _format (name, version) VALUES('classic', '14.3');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
@@ -502,9 +502,9 @@ CREATE TABLE Prelude_WebServiceArg (
 
 
 
-DROP TABLE IF EXISTS Prelude_SNMPService;
+DROP TABLE IF EXISTS Prelude_SnmpService;
 
-CREATE TABLE Prelude_SNMPService (
+CREATE TABLE Prelude_SnmpService (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent0_index TINYINT NOT NULL,

@@ -529,7 +529,7 @@ static int insert_snmp_service(preludedb_sql_t *sql, char parent_type, uint64_t 
 	if ( ret < 0 )
 		goto error;
         
-        ret = preludedb_sql_insert(sql, "Prelude_SNMPService",
+        ret = preludedb_sql_insert(sql, "Prelude_SnmpService",
 				   "_parent_type, _message_ident, _parent0_index, snmp_oid, community, security_name, context_name, "
 				   "context_engine_id, command",
 				   "'%c', %" PRELUDE_PRIu64 ", %d, %s, %s, %s, %s, %s, %s", 
@@ -1409,7 +1409,7 @@ static int insert_additional_data(preludedb_sql_t *sql,
 				   "_parent_type, _message_ident, _index, type, meaning, data",
 				   "'%c', %" PRELUDE_PRIu64 ", %d, %s, %s, %s",
 				   parent_type, message_ident, ad_index, type, meaning, data);
-
+        
         free(type);
         free(meaning);        
         free(data);

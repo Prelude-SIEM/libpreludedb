@@ -165,8 +165,36 @@ static int process_table_name_resolver(const idmef_path_t *path, char **table_na
 		*table_name = strdup("Prelude_ProcessArg");
 	else if ( strcmp(child_name, "env") == 0 )
 		*table_name = strdup("Prelude_ProcessEnv");
-	else
+        else
 		*table_name = strdup("Prelude_Process");
+
+	return *table_name ? 0 : prelude_error_from_errno(errno);
+}
+
+
+
+static int file_access_table_name_resolver(const idmef_path_t *path, char **table_name)
+{
+	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+
+	if ( strcmp(child_name, "permission") == 0 )
+		*table_name = strdup("Prelude_FileAccess_Permission");
+        else
+                *table_name = strdup("Prelude_FileAccess");
+        
+	return *table_name ? 0 : prelude_error_from_errno(errno);
+}
+
+
+
+static int web_service_table_name_resolver(const idmef_path_t *path, char **table_name)
+{
+	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+
+	if ( strcmp(child_name, "arg") == 0 )
+                *table_name = strdup("Prelude_WebServiceArg");
+        else
+                *table_name = strdup("Prelude_WebService");
 
 	return *table_name ? 0 : prelude_error_from_errno(errno);
 }
@@ -226,8 +254,10 @@ static const classic_idmef_class_t classes[] = {
 	{ IDMEF_CLASS_ID_HEARTBEAT, message_table_name_resolver, message_field_name_resolver },
 	{ IDMEF_CLASS_ID_PROCESS, process_table_name_resolver, default_field_name_resolver },
 	{ IDMEF_CLASS_ID_SNMP_SERVICE, default_table_name_resolver, snmp_field_name_resolver },
+        { IDMEF_CLASS_ID_WEB_SERVICE, web_service_table_name_resolver, default_field_name_resolver },
 	{ IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver },
         { IDMEF_CLASS_ID_FILE, default_table_name_resolver, file_field_name_resolver },
+        { IDMEF_CLASS_ID_FILE_ACCESS, file_access_table_name_resolver, default_field_name_resolver },
 };
 
 

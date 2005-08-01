@@ -94,7 +94,7 @@ int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
 		"DELETE FROM Prelude_Process WHERE  _message_ident = %" PRELUDE_PRIu64 " AND _parent_type != 'H'",
 		"DELETE FROM Prelude_ProcessArg WHERE  _message_ident = %" PRELUDE_PRIu64 " AND _parent_type != 'H'",
 		"DELETE FROM Prelude_ProcessEnv WHERE  _message_ident = %" PRELUDE_PRIu64 " AND _parent_type != 'H'",
-		"DELETE FROM Prelude_SNMPService WHERE _message_ident = %" PRELUDE_PRIu64,
+		"DELETE FROM Prelude_SnmpService WHERE _message_ident = %" PRELUDE_PRIu64,
 		"DELETE FROM Prelude_Service WHERE _message_ident = %" PRELUDE_PRIu64,
 		"DELETE FROM Prelude_Source WHERE _message_ident = %" PRELUDE_PRIu64,
 		"DELETE FROM Prelude_Target WHERE _message_ident = %" PRELUDE_PRIu64,

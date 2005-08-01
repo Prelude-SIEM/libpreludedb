@@ -580,7 +580,7 @@ static int get_snmp_service(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT snmp_oid, community, security_name, context_name, context_engine_id, command "
-					  "FROM Prelude_SNMPService "
+					  "FROM Prelude_SnmpService "
 					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
 	if ( ret <= 0 )
