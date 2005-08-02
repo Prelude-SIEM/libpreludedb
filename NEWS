@@ -1,3 +1,8 @@
+* 2005-08-02, libpreludedb-0.9.0-rc10:
+
+	- Include missing database schema update.
+
+
 * 2005-08-01, libpreludedb-0.9.0-rc9:
 
 	- Fix IDMEF SNMPService mapping problem.

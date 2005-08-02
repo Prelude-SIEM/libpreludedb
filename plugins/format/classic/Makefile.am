@@ -1,5 +1,4 @@
 SUBDIRS=include
-EXTRA_DIST = mysql.sql mysql-update-14-1.sql pgsql.sql pgsql-update-14-1.sql
 
 AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -I$(top_srcdir)/libmissing -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
 
@@ -13,6 +12,8 @@ schemadatadir = $(format_schema_dir)/classic
 dist_schemadata_DATA =  mysql.sql             	\
 			mysql-update-14-1.sql 	\
 			mysql-update-14-2.sql 	\
+			mysql-update-14-3.sql	\
 			pgsql.sql 		\
 			pgsql-update-14-1.sql	\
-			pgsql-update-14-2.sql
+			pgsql-update-14-2.sql	\
+			pgsql-update-14-3.sql
