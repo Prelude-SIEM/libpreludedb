@@ -60,7 +60,7 @@
 
 struct preludedb_sql {
 	char *type;
-	preludedb_sql_settings_t *settings;
+        preludedb_sql_settings_t *settings;
 	preludedb_plugin_sql_t *plugin;
 	preludedb_sql_status_t status;
         void *session;
@@ -129,6 +129,12 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 	if ( ! *new )
 		return preludedb_error_from_errno(errno);
 
+        if ( ! type ) {
+                type = preludedb_sql_settings_get_type(settings);
+                if ( ! type )
+                        return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
+        }
+        
 	(*new)->type = strdup(type);
 	if ( ! (*new)->type ) {
 		free(*new);
@@ -144,6 +150,9 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 		return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN);
 	}
 
+        if ( preludedb_sql_settings_get_log(settings) )
+                preludedb_sql_enable_query_logging(*new, preludedb_sql_settings_get_log(settings));
+        
 	return 0;
 }
 
@@ -484,8 +493,8 @@ int preludedb_sql_transaction_end(preludedb_sql_t *sql)
 {
 	int ret;
 
-	if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
+        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
+                return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
 	
 	ret = preludedb_sql_query(sql, "COMMIT", NULL);
 
