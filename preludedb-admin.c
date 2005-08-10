@@ -36,8 +36,9 @@
 #include <libpreludedb/preludedb.h>
 
 
+static sig_atomic_t stop_processing = 0;
 static const char *query_logging = NULL;
-static unsigned int max_count = 0, cur_count = 0;
+static unsigned int max_count = 0, cur_count = 0, start_offset = 0;
 
 static idmef_criteria_t *alert_criteria = NULL;
 static idmef_criteria_t *heartbeat_criteria = NULL;
@@ -52,9 +53,10 @@ static double global_elapsed = 0;
 /*
  * Runtime statistics.
  */
+static struct timeval start, end;
 static sig_atomic_t dump_stat = FALSE;
 static unsigned int stats_processed = 0;
-static struct timeval start, end;
+
 
 
 static void dump_generic_statistics(const char *infos)
@@ -81,6 +83,17 @@ static void dump_generic_statistics(const char *infos)
 static void handle_usr1(int signo)
 {
         dump_stat = TRUE;
+}
+
+
+
+static void handle_signal(int signo)
+{
+        char buf[] = "Interrupted by signal. Will exit after current transaction.\n";
+        
+        write(STDERR_FILENO, buf, sizeof(buf));
+        
+        stop_processing = TRUE;
 }
 
 
@@ -125,6 +138,12 @@ static int set_count(prelude_option_t *opt, const char *optarg, prelude_string_t
 }
 
 
+static int set_offset(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+{
+        start_offset = atoi(optarg);
+        return 0;
+}
+
 
 static int set_help(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
@@ -142,6 +161,7 @@ static void cmd_generic_help(void)
         fprintf(stderr, "  pass\t: Password to access the database.\n\n");
         
         fprintf(stderr, "Valid options:\n");       
+        fprintf(stderr, "  --offset <offset>               : Skip processing until 'offset' events.\n");
         fprintf(stderr, "  --count <count>                 : Process at most count events.\n");
         fprintf(stderr, "  --query-logging <filename>      : Log SQL query to the specified file.\n");
         fprintf(stderr, "  --alert-criteria <criteria>     : Only process alert matching criteria.\n");
@@ -217,25 +237,24 @@ static int setup_generic_options(int *argc, char **argv)
 {
         int ret;
         prelude_string_t *err;
-
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0,
-                           "count", "Stop after count events processed", PRELUDE_OPTION_ARGUMENT_REQUIRED,
-                           set_count, NULL);
         
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0,
-                           "query-logging", "Log database query to the specified filename", PRELUDE_OPTION_ARGUMENT_REQUIRED,
-                           set_query_logging, NULL);
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "offset",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_offset, NULL);
+         
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "count",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_count, NULL);
         
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0,
-                           "heartbeat-criteria", "Criteria for heartbeat", PRELUDE_OPTION_ARGUMENT_REQUIRED,
-                           set_heartbeat_criteria, NULL);
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "query-logging",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_query_logging, NULL);
+        
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "heartbeat-criteria",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_heartbeat_criteria, NULL);
                 
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0,
-                           "alert-criteria", "Criteria for heartbeat", PRELUDE_OPTION_ARGUMENT_REQUIRED,
-                           set_alert_criteria, NULL);
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "alert-criteria",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_alert_criteria, NULL);
 
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0,
-                           "help", "Print help", PRELUDE_OPTION_ARGUMENT_NONE, set_help, NULL);
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 'h', "help",
+                           NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_help, NULL);
         
         ret = prelude_option_read(NULL, NULL, argc, argv, &err, NULL);
         if ( ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_EOF )
@@ -285,27 +304,38 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         preludedb_result_idents_t *idents,
                         int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **msg))
 {
-        int ret;
+        int ret = 0;
         uint64_t ident;
         idmef_message_t *msg;
         
-        while ( (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-
-                if ( max_count && cur_count++ >= max_count )
+        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+                
+                if ( cur_count++ >= max_count && max_count )
                         return 0;
+                
+                if ( start_offset ) {
+                        start_offset--;
+                        continue;
+                }
                 
                 gettimeofday(&start, NULL);
                 
                 ret = get_message(src, ident, &msg);
-                if ( ret < 0 )
+                if ( ret < 0 ) {
                         fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
-                
+                        continue;
+                }
+
                 ret = preludedb_insert_message(dst, msg);
-                if ( ret < 0 )
-                        fprintf(stderr, "Error inserting message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
 
                 gettimeofday(&end, NULL);
+                idmef_message_destroy(msg);
                 
+                if ( ret < 0 ) {
+                        fprintf(stderr, "Error inserting message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        continue;
+                }
+                                
                 stats_processed++;
                 dump_generic_statistics(" (retrieve + insert) ");
         }
@@ -357,13 +387,18 @@ static int cmd_copy(int argc, char **argv)
 static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
                         int (*delete_message)(preludedb_t *db, uint64_t ident))
 {
-        int ret;
+        int ret = 0;
         uint64_t ident;
         
-        while ( (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
 
-                if ( max_count && cur_count++ >= max_count )
+                if ( cur_count++ >= max_count && max_count )
                         return 0;
+                
+                if ( start_offset ) {
+                        start_offset--;
+                        continue;
+                }
                 
                 ret = delete_message(db, ident);
                 if ( ret < 0 ) 
@@ -427,14 +462,19 @@ static int save_msg(prelude_msgbuf_t *msgbuf, prelude_msg_t *msg)
 static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *idents, prelude_msgbuf_t *msgbuf,
                                 int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **out))
 {
-        int ret;
+        int ret = 0;
         uint64_t ident;
         idmef_message_t *message;
         
-	while ( (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                
-                if ( max_count && cur_count++ >= max_count )
+	while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+
+                if ( cur_count++ >= max_count && max_count )
                         return 0;
+                
+                if ( start_offset ) {
+                        start_offset--;
+                        continue;
+                }
                 
                 ret = get_message(db, ident, &message);
                 if ( ret < 0 ) {
@@ -443,12 +483,12 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
                 }
 
                 ret = idmef_message_write(message, msgbuf);
+                idmef_message_destroy(message);
+                
                 if ( ret < 0 ) {
                         prelude_perror(ret, "Error writing message %" PRELUDE_PRIu64 " to disk", ident);
                         continue;
                 }
-                
-                idmef_message_destroy(message);
         }
 
         return ret;
@@ -548,7 +588,7 @@ static int cmd_load(int argc, char **argv)
 
         prelude_io_set_file_io(io, fd);
 
-        while ( 1 ) {                
+        while ( ! stop_processing ) {                
                 msg = NULL;
                 
                 ret = prelude_msg_read(&msg, io);                
@@ -560,6 +600,16 @@ static int cmd_load(int argc, char **argv)
                         
                         fprintf(stderr, "error reading message: %s.\n", prelude_strerror(ret));
                         return ret;
+                }
+                
+                if ( cur_count++ >= max_count && max_count ) {
+                        prelude_msg_destroy(msg);
+                        break;
+                }
+                
+                if ( start_offset ) {
+                        start_offset--;
+                        continue;
                 }
 
                 ret = idmef_message_new(&idmef);
@@ -586,6 +636,9 @@ static int cmd_load(int argc, char **argv)
                 prelude_msg_destroy(msg);
         }
 
+        prelude_io_close(io);
+        prelude_io_destroy(io);
+        
         return ret;
 }
 
@@ -606,6 +659,8 @@ int main(int argc, char **argv)
 	};
 
         signal(SIGUSR1, handle_usr1);
+        signal(SIGINT, handle_signal);
+        signal(SIGTERM, handle_signal);
         
 	ret = preludedb_init();
 	if ( ret < 0 )
@@ -621,6 +676,13 @@ int main(int argc, char **argv)
                         continue;
                 
                 ret = commands[i].run(argc, argv);
+                if ( ret < 0 )
+                        return ret;
+
+                if ( stop_processing )
+                        fprintf(stderr, "Interrupted by signal at transaction %u. Use --offset %u to resume operation.\n",
+                                cur_count, cur_count);
+                
                 if ( ret == 0 ) {
                         fprintf(stderr, "%u events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
                                 stats_processed, global_elapsed / 1000000, 
