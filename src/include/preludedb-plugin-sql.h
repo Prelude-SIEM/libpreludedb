@@ -51,45 +51,62 @@ typedef struct {
 	int (*build_time_interval_string)(preludedb_sql_time_constraint_type_t type, int value,
 					  char *buf, size_t size);
 	int (*build_limit_offset_string)(void *session, int limit, int offset, prelude_string_t *output);
+        const char *(*get_operator_string)(idmef_criterion_operator_t operator);
 } preludedb_plugin_sql_t;
 
 
+#define preludedb_plugin_sql_set_open_func(p, f) \
+        (p)->open = (f)
 
-#define preludedb_plugin_sql_open_func(p) (p)->open
-#define preludedb_plugin_sql_close_func(p) (p)->close
-#define preludedb_plugin_sql_get_error_func(p) (p)->get_error
-#define preludedb_plugin_sql_escape_func(p) (p)->escape
-#define preludedb_plugin_sql_escape_binary_func(p) (p)->escape_binary
-#define preludedb_plugin_sql_unescape_binary_func(p) (p)->unescape_binary
-#define preludedb_plugin_sql_query_func(p) (p)->query
-#define preludedb_plugin_sql_get_column_count_func(p) (p)->get_column_count
-#define preludedb_plugin_sql_get_row_count_func(p) (p)->get_row_count
-#define preludedb_plugin_sql_get_column_name_func(p) (p)->get_column_name
-#define preludedb_plugin_sql_get_column_num_func(p) (p)->get_column_num
-#define preludedb_plugin_sql_resource_destroy_func(p) (p)->resource_destroy
-#define preludedb_plugin_sql_fetch_row_func(p) (p)->fetch_row
-#define preludedb_plugin_sql_fetch_field_func(p) (p)->fetch_field
-#define preludedb_plugin_sql_build_time_constraint_string_func(p) (p)->build_time_constraint_string
-#define preludedb_plugin_sql_build_time_interval_string_func(p) (p)->build_time_interval_string
-#define preludedb_plugin_sql_build_limit_offset_string_func(p) (p)->build_limit_offset_string
+#define preludedb_plugin_sql_set_close_func(p, f) \
+        (p)->close = (f)
 
-#define preludedb_plugin_sql_set_open_func(p, f) preludedb_plugin_sql_open_func(p) = (f)
-#define preludedb_plugin_sql_set_close_func(p, f) preludedb_plugin_sql_close_func(p) = (f)
-#define preludedb_plugin_sql_set_get_error_func(p, f) preludedb_plugin_sql_get_error_func(p) = (f)
-#define preludedb_plugin_sql_set_escape_func(p, f) preludedb_plugin_sql_escape_func(p) = (f)
-#define preludedb_plugin_sql_set_escape_binary_func(p, f) preludedb_plugin_sql_escape_binary_func(p) = (f)
-#define preludedb_plugin_sql_set_unescape_binary_func(p, f) preludedb_plugin_sql_unescape_binary_func(p) = (f)
-#define preludedb_plugin_sql_set_query_func(p, f) preludedb_plugin_sql_query_func(p) = (f)
-#define preludedb_plugin_sql_set_get_column_count_func(p, f) preludedb_plugin_sql_get_column_count_func(p) = (f)
-#define preludedb_plugin_sql_set_get_row_count_func(p, f) preludedb_plugin_sql_get_row_count_func(p) = (f)
-#define preludedb_plugin_sql_set_get_column_name_func(p, f) preludedb_plugin_sql_get_column_name_func(p) = (f)
-#define preludedb_plugin_sql_set_get_column_num_func(p, f) preludedb_plugin_sql_get_column_num_func(p) = (f)
-#define preludedb_plugin_sql_set_resource_destroy_func(p, f) preludedb_plugin_sql_resource_destroy_func(p) = (f)
-#define preludedb_plugin_sql_set_fetch_row_func(p, f) preludedb_plugin_sql_fetch_row_func(p) = (f)
-#define preludedb_plugin_sql_set_fetch_field_func(p, f) preludedb_plugin_sql_fetch_field_func(p) = (f)
-#define	preludedb_plugin_sql_set_build_time_constraint_string_func(p, f) preludedb_plugin_sql_build_time_constraint_string_func(p) = (f)
-#define	preludedb_plugin_sql_set_build_time_interval_string_func(p, f) preludedb_plugin_sql_build_time_interval_string_func(p) = (f)
-#define	preludedb_plugin_sql_set_build_limit_offset_string_func(p, f) preludedb_plugin_sql_build_limit_offset_string_func(p) = (f)
+#define preludedb_plugin_sql_set_get_error_func(p, f) \
+        (p)->get_error = (f)
 
+#define preludedb_plugin_sql_set_escape_func(p, f) \
+        (p)->escape = (f)
+
+#define preludedb_plugin_sql_set_escape_binary_func(p, f) \
+        (p)->escape_binary = (f)
+
+#define preludedb_plugin_sql_set_unescape_binary_func(p, f) \
+        (p)->unescape_binary = (f)
+
+#define preludedb_plugin_sql_set_query_func(p, f) \
+        (p)->query = (f)
+
+#define preludedb_plugin_sql_set_get_column_count_func(p, f) \
+        (p)->get_column_count = (f)
+
+#define preludedb_plugin_sql_set_get_row_count_func(p, f) \
+        (p)->get_row_count = (f)
+
+#define preludedb_plugin_sql_set_get_column_name_func(p, f) \
+        (p)->get_column_name = (f)
+
+#define preludedb_plugin_sql_set_get_column_num_func(p, f) \
+        (p)->get_column_num = (f)
+
+#define preludedb_plugin_sql_set_resource_destroy_func(p, f) \
+        (p)->resource_destroy = (f)
+
+#define preludedb_plugin_sql_set_fetch_row_func(p, f) \
+        (p)->fetch_row = (f)
+
+#define preludedb_plugin_sql_set_fetch_field_func(p, f) \
+        (p)->fetch_field = (f)
+
+#define	preludedb_plugin_sql_set_build_time_constraint_string_func(p, f) \
+        (p)->build_time_constraint_string = (f)
+
+#define	preludedb_plugin_sql_set_build_time_interval_string_func(p, f) \
+        (p)->build_time_interval_string = (f)
+
+#define	preludedb_plugin_sql_set_build_limit_offset_string_func(p, f) \
+        (p)->build_limit_offset_string = (f)
+
+#define preludedb_plugin_sql_set_get_operator_string_func(p, f) \
+        (p)->get_operator_string = (f)
 
 #endif /* _LIBPRELUDEDB_PLUGIN_SQL_H */

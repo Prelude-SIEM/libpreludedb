@@ -101,7 +101,7 @@ int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value);
 int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
 
-const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operator);
+const char *preludedb_sql_get_operator_string(preludedb_sql_t *sql, idmef_criterion_operator_t operator);
 
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 prelude_string_t *output,

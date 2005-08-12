@@ -966,6 +966,7 @@ int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t
 
 /**
  * preludedb_sql_get_operator_string:
+ * @sql: Pointer to an #preludedb_sql_t object.
  * @operator: An idmef value operator.
  *
  * Get the sql representation of the given idmef value operator.
@@ -973,31 +974,9 @@ int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t
  * Returns: sql representation of the operator, or NULL if there is no sql representation
  * for the given operator.
  */
-const char *preludedb_sql_get_operator_string(idmef_criterion_operator_t operator)
+const char *preludedb_sql_get_operator_string(preludedb_sql_t *sql, idmef_criterion_operator_t operator)
 {
-        int i;
-        struct tbl {
-                idmef_criterion_operator_t operator;
-                const char *name;
-        } tbl[] = {
-                { IDMEF_CRITERION_OPERATOR_SUBSTR,					"LIKE" },
-                { IDMEF_CRITERION_OPERATOR_REGEX,					NULL },
-                { IDMEF_CRITERION_OPERATOR_GREATER,					">" },
-                { IDMEF_CRITERION_OPERATOR_GREATER|IDMEF_CRITERION_OPERATOR_EQUAL,	">=" },
-                { IDMEF_CRITERION_OPERATOR_LESSER,					"<" },
-                { IDMEF_CRITERION_OPERATOR_LESSER|IDMEF_CRITERION_OPERATOR_EQUAL,	"<=" },
-                { IDMEF_CRITERION_OPERATOR_EQUAL,					"=" },
-                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,					"!=" },
-                { IDMEF_CRITERION_OPERATOR_IS_NULL,					"IS NULL" },
-                { IDMEF_CRITERION_OPERATOR_IS_NOT_NULL,					"IS NOT NULL" },
-                { 0, NULL },
-        };
-
-        for ( i = 0; tbl[i].operator != 0; i++ )
-                if ( operator == tbl[i].operator )
-                        return tbl[i].name;
-        
-	return NULL;
+        return sql->plugin->get_operator_string(operator);
 }
 
 
@@ -1126,11 +1105,11 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
 
 
 
-static int build_criterion_operator(prelude_string_t *output, idmef_criterion_operator_t operator)
+static int build_criterion_operator(preludedb_sql_t *sql, prelude_string_t *output, idmef_criterion_operator_t operator)
 {
 	const char *tmp;
 
-	tmp = preludedb_sql_get_operator_string(operator);
+	tmp = preludedb_sql_get_operator_string(sql, operator);
 	if ( ! tmp )
 		return -1;
 
@@ -1151,7 +1130,7 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		return ret;
 
-	ret = build_criterion_operator(output, operator);
+	ret = build_criterion_operator(sql, output, operator);
 	if ( ret < 0 )
 		return ret;
 

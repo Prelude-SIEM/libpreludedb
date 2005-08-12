@@ -309,6 +309,35 @@ static int sql_fetch_field(void *session, void *resource, void *r,
 
 
 
+static const char *sql_get_operator_string(idmef_criterion_operator_t operator)
+{
+        int i;
+        struct tbl {
+                idmef_criterion_operator_t operator;
+                const char *name;
+        } tbl[] = {
+                { IDMEF_CRITERION_OPERATOR_SUBSTR,                                      "ILIKE"       },
+                { IDMEF_CRITERION_OPERATOR_REGEX,                                       "~*"          },
+                { IDMEF_CRITERION_OPERATOR_GREATER,                                     ">"           },
+                { IDMEF_CRITERION_OPERATOR_GREATER|IDMEF_CRITERION_OPERATOR_EQUAL,      ">="          },
+                { IDMEF_CRITERION_OPERATOR_LESSER,                                      "<"           },
+                { IDMEF_CRITERION_OPERATOR_LESSER|IDMEF_CRITERION_OPERATOR_EQUAL,       "<="          },
+                { IDMEF_CRITERION_OPERATOR_EQUAL,                                       "="           },
+                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,                                   "!="          },
+                { IDMEF_CRITERION_OPERATOR_IS_NULL,                                     "IS NULL"     },
+                { IDMEF_CRITERION_OPERATOR_IS_NOT_NULL,                                 "IS NOT NULL" },
+                { 0, NULL },
+        };
+
+        for ( i = 0; tbl[i].operator != 0; i++ )
+                if ( operator == tbl[i].operator )
+                        return tbl[i].name;
+        
+	return NULL;
+}
+
+
+
 static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
 					    preludedb_sql_time_constraint_type_t type,
 					    idmef_criterion_operator_t operator, int value, int gmt_offset)
@@ -321,7 +350,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 	if ( ret < 0 || ret >= sizeof (buf) )
 		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-	sql_operator = preludedb_sql_get_operator_string(operator);
+	sql_operator = sql_get_operator_string(operator);
 	if ( ! sql_operator )
 		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
@@ -433,6 +462,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 	preludedb_plugin_sql_set_build_time_constraint_string_func(&sql_plugin, sql_build_time_constraint_string);
 	preludedb_plugin_sql_set_build_time_interval_string_func(&sql_plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(&sql_plugin, sql_build_limit_offset_string);
+        preludedb_plugin_sql_set_get_operator_string_func(&sql_plugin, sql_get_operator_string);
 
 	return 0;
 }
