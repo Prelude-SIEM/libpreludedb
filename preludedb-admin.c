@@ -119,6 +119,26 @@ static void handle_signal(int signo)
 }
 
 
+static int db_error(preludedb_t *db, int ret, const char *fmt, ...)
+{
+        va_list ap;
+        char errbuf[PRELUDEDB_ERRBUF_SIZE];
+
+        if ( ret == 0 )
+                return ret;
+        
+        preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+
+        va_start(ap, fmt);
+        vfprintf(stderr, fmt, ap);
+        va_end(ap);
+
+        fprintf(stderr, ": %s.\n", errbuf);
+        
+        return ret;
+}
+
+
 
 static int set_alert_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
@@ -354,7 +374,8 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 
                 ret = get_message(src, ident, &msg);
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n",
+                                ident, preludedb_strerror(ret));
                         continue;
                 }
 
@@ -367,7 +388,8 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 idmef_message_destroy(msg);
                 
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error inserting message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        fprintf(stderr, "Error inserting message %" PRELUDE_PRIu64 ": %s.\n",
+                                ident, preludedb_strerror(ret));
                         continue;
                 }
 
@@ -400,24 +422,20 @@ static int cmd_copy(int argc, char **argv)
 		return ret;
         
         ret = preludedb_get_alert_idents(src, alert_criteria, -1, -1, 0, &alert_idents);        
-        if ( ret < 0 ) {
-                fprintf(stderr, "retrieving alert idents list failed: %s.\n", preludedb_strerror(ret));
-                return ret;
-        }
+        if ( ret < 0 )
+                return db_error(src, ret, "retrieving alert idents list failed");
 
         if ( ret > 0 )
                 ret = copy_iterate(src, dst, alert_idents, preludedb_get_alert);
 
         ret = preludedb_get_heartbeat_idents(src, heartbeat_criteria, -1, -1, 0, &heartbeat_idents);
-	if ( ret < 0 ) {
-                fprintf(stderr, "retrieving heartbeat idents list failed: %s.\n", preludedb_strerror(ret));
-                return ret;
-        }
+	if ( ret < 0 )
+                return db_error(src, ret, "retrieving heartbeat idents list failed");
 
         if ( ret > 0 )
                 ret = copy_iterate(src, dst, heartbeat_idents, preludedb_get_heartbeat);
         
-	return 0;
+	return ret;
 }
 
 
@@ -469,19 +487,15 @@ static int cmd_delete(int argc, char **argv)
 		return ret;
         
         ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
-	if ( ret < 0 ) {
-                fprintf(stderr, "retrieving alert ident failed: %s.\n", preludedb_strerror(ret));
-                return ret;
-        }
+	if ( ret < 0 )
+                return db_error(db, ret, "retrieving alert ident failed");
         
         if ( ret > 0 )
                 drop_iterate(db, idents, preludedb_delete_alert);
                 
         ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
-        if ( ret < 0 ) {
-                fprintf(stderr, "retrieving heartbeat ident failed: %s.\n", preludedb_strerror(ret));
-                return ret;
-        }
+        if ( ret < 0 ) 
+                return db_error(db, ret, "retrieving heartbeat ident failed");
 
         if ( ret > 0 )
                 drop_iterate(db, idents, preludedb_delete_heartbeat);
@@ -545,7 +559,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
                 dump_generic_statistics("retrieve", "save");
         }
 
-        return ret;
+        return 0;
 }
 
 
@@ -787,23 +801,24 @@ static int cmd_print(int argc, char **argv)
                 return ret;
 
         prelude_io_set_file_io(io, fd);
+
         ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
 	if ( ret <= 0 )
-                return ret;
-
+                return db_error(db, ret, "retrieving alert ident failed");
+        
         if ( ret > 0 )
                 print_iterate_message(db, idents, io, preludedb_get_alert);
-        
+
         ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
 	if ( ret <= 0 )
-                return ret;
+                return db_error(db, ret, "retrieving heartbeat ident failed");
 
         if ( ret > 0 )
                 print_iterate_message(db, idents, io, preludedb_get_heartbeat);
         
         prelude_io_close(io);
         prelude_io_destroy(io);
-        
+
         return ret;
 }
 
@@ -869,9 +884,9 @@ int main(int argc, char **argv)
                         continue;
                 
                 ret = commands[i].run(argc, argv);
-                if ( ret < 0 )
+                if ( ret < 0 )                        
                         return ret;
-
+                
                 if ( stop_processing )
                         fprintf(stderr, "Interrupted by signal at transaction %u. Use --offset %u to resume operation.\n",
                                 cur_count, cur_count);
