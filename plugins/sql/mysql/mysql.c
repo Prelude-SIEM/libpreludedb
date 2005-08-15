@@ -266,31 +266,61 @@ static int sql_fetch_field(void *session, void *resource, void *row,
 
 
 
-static const char *sql_get_operator_string(idmef_criterion_operator_t operator)
+static const char *get_operator_string(idmef_criterion_operator_t operator)
 {
         int i;
         struct tbl {
                 idmef_criterion_operator_t operator;
                 const char *name;
         } tbl[] = {
-                { IDMEF_CRITERION_OPERATOR_SUBSTR,                                      "LIKE"        },
-                { IDMEF_CRITERION_OPERATOR_REGEX,                                       "REGEXP"      },
-                { IDMEF_CRITERION_OPERATOR_GREATER,                                     ">"           },
-                { IDMEF_CRITERION_OPERATOR_GREATER|IDMEF_CRITERION_OPERATOR_EQUAL,      ">="          },
-                { IDMEF_CRITERION_OPERATOR_LESSER,                                      "<"           },
-                { IDMEF_CRITERION_OPERATOR_LESSER|IDMEF_CRITERION_OPERATOR_EQUAL,       "<="          },
-                { IDMEF_CRITERION_OPERATOR_EQUAL,                                       "="           },
-                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,                                   "!="          },
-                { IDMEF_CRITERION_OPERATOR_IS_NULL,                                     "IS NULL"     },
-                { IDMEF_CRITERION_OPERATOR_IS_NOT_NULL,                                 "IS NOT NULL" },
+
+                { IDMEF_CRITERION_OPERATOR_EQUAL,             "= BINARY"          },
+                { IDMEF_CRITERION_OPERATOR_EQUAL_NOCASE,      "="                 },
+                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,         "!= BINARY"         },
+                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL_NOCASE,  "!="                },
+
+                { IDMEF_CRITERION_OPERATOR_GREATER,           ">"                 },
+                { IDMEF_CRITERION_OPERATOR_GREATER_OR_EQUAL,  ">="                },
+                { IDMEF_CRITERION_OPERATOR_LESSER,            "<"                 },
+                { IDMEF_CRITERION_OPERATOR_LESSER_OR_EQUAL,   "<="                },
+
+                { IDMEF_CRITERION_OPERATOR_SUBSTR,            "LIKE BINARY"       },
+                { IDMEF_CRITERION_OPERATOR_SUBSTR_NOCASE,     "LIKE"              },
+                { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR,        "NOT LIKE BINARY"   },
+                { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR_NOCASE, "NOT LIKE "         },
+
+                { IDMEF_CRITERION_OPERATOR_REGEX,             "REGEXP BINARY"     },
+                { IDMEF_CRITERION_OPERATOR_REGEX_NOCASE,      "REGEXP"            },
+                { IDMEF_CRITERION_OPERATOR_NOT_REGEX,         "NOT REGEXP"        },
+                { IDMEF_CRITERION_OPERATOR_NOT_REGEX_NOCASE,  "NOT REGEXP BINARY" },
+                
+                { IDMEF_CRITERION_OPERATOR_NULL,              "IS NULL"           },
+                { IDMEF_CRITERION_OPERATOR_NOT_NULL,          "IS NOT NULL"       },
                 { 0, NULL },
         };
 
         for ( i = 0; tbl[i].operator != 0; i++ )
                 if ( operator == tbl[i].operator )
                         return tbl[i].name;
+
+        return NULL;
+}
+
+
+
+static int sql_build_constraint_string(prelude_string_t *out, const char *field,
+                                       idmef_criterion_operator_t operator, const char *value)
+{
+        const char *op_str;
         
-	return NULL;
+        op_str = get_operator_string(operator);
+        if ( ! op_str )
+                return -1;
+
+        if ( ! value )
+                value = "";
+        
+        return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
 }
 
 
@@ -303,14 +333,14 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 	const char *sql_operator;
 	int ret;
  
-	ret = snprintf(buf, sizeof (buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
-	if ( ret < 0 || ret >= sizeof (buf) )
+	ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
+	if ( ret < 0 || ret >= sizeof(buf) )
 		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-	sql_operator = sql_get_operator_string(operator);
+	sql_operator = get_operator_string(operator);
 	if ( ! sql_operator )
 		return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-
+        
 	switch ( type ) {
 	case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
 		return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
@@ -414,10 +444,10 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 	preludedb_plugin_sql_set_get_column_num_func(&sql_plugin, sql_get_column_num);
 	preludedb_plugin_sql_set_fetch_row_func(&sql_plugin, sql_fetch_row);
 	preludedb_plugin_sql_set_fetch_field_func(&sql_plugin, sql_fetch_field);
+        preludedb_plugin_sql_set_build_constraint_string_func(&sql_plugin, sql_build_constraint_string);
 	preludedb_plugin_sql_set_build_time_constraint_string_func(&sql_plugin, sql_build_time_constraint_string);
 	preludedb_plugin_sql_set_build_time_interval_string_func(&sql_plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(&sql_plugin, sql_build_limit_offset_string);
-        preludedb_plugin_sql_set_get_operator_string_func(&sql_plugin, sql_get_operator_string);
         
 	return 0;
 }

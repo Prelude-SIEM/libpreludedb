@@ -51,7 +51,8 @@ typedef struct {
 	int (*build_time_interval_string)(preludedb_sql_time_constraint_type_t type, int value,
 					  char *buf, size_t size);
 	int (*build_limit_offset_string)(void *session, int limit, int offset, prelude_string_t *output);
-        const char *(*get_operator_string)(idmef_criterion_operator_t operator);
+        int (*build_constraint_string)(prelude_string_t *out, const char *field,
+                                       idmef_criterion_operator_t operator, const char *value);
 } preludedb_plugin_sql_t;
 
 
@@ -106,7 +107,7 @@ typedef struct {
 #define	preludedb_plugin_sql_set_build_limit_offset_string_func(p, f) \
         (p)->build_limit_offset_string = (f)
 
-#define preludedb_plugin_sql_set_get_operator_string_func(p, f) \
-        (p)->get_operator_string = (f)
+#define preludedb_plugin_sql_set_build_constraint_string_func(p, f) \
+        (p)->build_constraint_string = (f)
 
 #endif /* _LIBPRELUDEDB_PLUGIN_SQL_H */
