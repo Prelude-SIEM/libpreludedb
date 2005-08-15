@@ -891,8 +891,7 @@ int main(int argc, char **argv)
                         fprintf(stderr, "Interrupted by signal at transaction %u. Use --offset %u to resume operation.\n",
                                 cur_count, cur_count);
                 
-                if ( ret == 0 )
-                        dump_stats();
+                dump_stats();
                 
                 return ret;
         }
