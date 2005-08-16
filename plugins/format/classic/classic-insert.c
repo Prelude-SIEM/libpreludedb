@@ -820,9 +820,8 @@ static int insert_file_access_permission(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_insert(sql, "Prelude_FileAccess_Permission",
 				   "_message_ident, _parent0_index, _parent1_index, _parent2_index, _index, permission",
-				   "%" PRELUDE_PRIu64 ", %d, %d, %d, %s",
-				   message_ident, target_index, file_index, file_access_index, perm_index,
-				   tmp);
+				   "%" PRELUDE_PRIu64 ", %d, %d, %d, %d, %s",
+				   message_ident, target_index, file_index, file_access_index, perm_index, tmp);
 
 	free(tmp);
 
