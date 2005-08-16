@@ -180,7 +180,6 @@ PyObject *swig_python_data(idmef_data_t *data)
 	$2 = sizeof(tmp);
 };
 
-
 %typemap(out) int {
 	if ( $1 < 0 ) {
 		swig_python_raise_exception($1, NULL);
@@ -280,6 +279,143 @@ preludedb_t *wrap_preludedb_new(preludedb_sql_t *sql, const char *format_name)
 	}
 
 	return db;
+}
+%}
+
+%ignore preludedb_get_alert_idents;
+%rename(preludedb_get_alert_idents) wrap_preludedb_get_alert_idents;
+%inline %{
+int wrap_preludedb_get_alert_idents(preludedb_t *db,
+		idmef_criteria_t *criteria, int limit, int offset,
+		preludedb_result_idents_order_t order,
+		preludedb_result_idents_t **result)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_get_alert_idents(db, criteria, limit, offset, order, result);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_get_heartbeat_idents;
+%rename(preludedb_get_heartbeat_idents) wrap_preludedb_get_heartbeat_idents;
+%inline %{
+int wrap_preludedb_get_heartbeat_idents(preludedb_t *db,
+		idmef_criteria_t *criteria, int limit, int offset,
+		preludedb_result_idents_order_t order,
+		preludedb_result_idents_t **result)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_get_heartbeat_idents(db, criteria, limit, offset, order, result);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_get_alert;
+%rename(preludedb_get_alert) wrap_preludedb_get_alert;
+%inline %{
+int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_get_alert(db, ident, message);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_get_heartbeat;
+%rename(preludedb_get_heartbeat) wrap_preludedb_get_alert;
+%inline %{
+int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_get_heartbeat(db, ident, message);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_delete_alert;
+%rename(preludedb_delete_alert) wrap_preludedb_delete_alert;
+%inline %{
+int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_delete_alert(db, ident);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_delete_heartbeat;
+%rename(preludedb_delete_heartbeat) wrap_preludedb_delete_alert;
+%inline %{
+int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_delete_heartbeat(db, ident);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
+}
+%}
+
+%ignore preludedb_get_values;
+%rename(preludedb_get_values) wrap_preludedb_get_values;
+%inline %{
+int wrap_preludedb_get_values(preludedb_t *db,
+		preludedb_path_selection_t *path_selection,
+		idmef_criteria_t *criteria,
+		prelude_bool_t distinct,
+		int limit, int offset,
+		preludedb_result_values_t **result)
+{
+	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+	int ret;
+
+	ret = preludedb_get_values(db, path_selection, criteria, distinct, limit, offset, result);
+	if (ret < 0) {
+		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
+		swig_python_raise_exception(ret, errbuf);
+	}
+
+	return ret;
 }
 %}
 
