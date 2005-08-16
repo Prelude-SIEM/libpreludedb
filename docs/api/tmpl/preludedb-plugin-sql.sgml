@@ -39,142 +39,7 @@ preludedb-plugin-sql
 @build_time_constraint_string: 
 @build_time_interval_string: 
 @build_limit_offset_string: 
-
-<!-- ##### MACRO preludedb_plugin_sql_open_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_close_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_get_error_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_escape_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_escape_binary_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_unescape_binary_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_query_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_get_column_count_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_get_row_count_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_get_column_name_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_get_column_num_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_resource_destroy_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_fetch_row_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_fetch_field_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_build_time_constraint_string_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_build_time_interval_string_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
-
-<!-- ##### MACRO preludedb_plugin_sql_build_limit_offset_string_func ##### -->
-<para>
-
-</para>
-
-@p: 
-
+@build_constraint_string: 
 
 <!-- ##### MACRO preludedb_plugin_sql_set_open_func ##### -->
 <para>
@@ -321,6 +186,15 @@ preludedb-plugin-sql
 
 
 <!-- ##### MACRO preludedb_plugin_sql_set_build_limit_offset_string_func ##### -->
+<para>
+
+</para>
+
+@p: 
+@f: 
+
+
+<!-- ##### MACRO preludedb_plugin_sql_set_build_constraint_string_func ##### -->
 <para>
 
 </para>

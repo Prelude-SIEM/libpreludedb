@@ -1,3 +1,25 @@
+* 2005-08-17, libpreludedb-0.9.0-rc11:
+
+	- More useful Python exception on PreludeDB error.
+
+	- Fix insertion of FileAccess Permission.
+
+	- Add missing retrieval of UserID tty.
+
+	- Fine grained libprelude operator now allow us to have similar behavior
+	  between different database implementation. 
+
+	- Support for more operator, including case insensitive version of most
+	  operator, and a new regexp operator.
+
+	- Fix invalid UTC offset applied to broken down time match.
+
+	- New preludedb-admin tool. Allow save/load/delete/copy/print of PreludeDB database.
+
+	- When no database password is set, don't default to "prelude". 
+	  This failed on user trying to access a database with no password.
+
+
 * 2005-08-02, libpreludedb-0.9.0-rc10:
 
 	- Include missing database schema update.

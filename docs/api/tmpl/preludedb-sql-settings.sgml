@@ -17,6 +17,13 @@ preludedb-sql-settings
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_TYPE ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO PRELUDEDB_SQL_SETTING_HOST ##### -->
 <para>
 
@@ -46,6 +53,13 @@ preludedb-sql-settings
 
 
 <!-- ##### MACRO PRELUDEDB_SQL_SETTING_PASS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_LOG ##### -->
 <para>
 
 </para>
@@ -113,6 +127,25 @@ preludedb-sql-settings
 
 @settings: 
 @name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_type ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_type ##### -->
+<para>
+
+</para>
+
+@settings: 
 @Returns: 
 
 
@@ -203,6 +236,25 @@ preludedb-sql-settings
 
 
 <!-- ##### FUNCTION preludedb_sql_settings_get_pass ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_log ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_log ##### -->
 <para>
 
 </para>

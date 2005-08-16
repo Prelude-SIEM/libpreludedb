@@ -446,15 +446,6 @@ preludedb-sql
 @Returns: 
 
 
-<!-- ##### FUNCTION preludedb_sql_get_operator_string ##### -->
-<para>
-
-</para>
-
-@operator: 
-@Returns: 
-
-
 <!-- ##### FUNCTION preludedb_sql_build_criterion_string ##### -->
 <para>
 
