@@ -285,7 +285,7 @@ static int get_user_id(preludedb_sql_t *sql,
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table,
-					  "SELECT ident, type, name, number "
+					  "SELECT ident, type, name, number, tty "
 					  "FROM Prelude_UserId "
 					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND "
 					  "_parent0_index = %d AND _parent1_index = %d AND _parent2_index = %d AND _index != -1",
@@ -310,8 +310,12 @@ static int get_user_id(preludedb_sql_t *sql,
 		ret = get_string(sql, row, 2, user_id, idmef_user_id_new_name);
 		if ( ret < 0 )
 			goto error;
-
+                
 		ret = get_uint32(sql, row, 3, user_id, idmef_user_id_new_number);
+		if ( ret < 0 )
+			goto error;
+                
+                ret = get_string(sql, row, 4, user_id, idmef_user_id_new_tty);
 		if ( ret < 0 )
 			goto error;
 	}
