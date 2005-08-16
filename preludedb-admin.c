@@ -102,8 +102,12 @@ static void dump_generic_statistics(const char *stats1, const char *stats2)
 }
 
 
-static void handle_usr1(int signo)
+static void handle_stats_signal(int signo)
 {
+        /*
+         * re-establish signal handler
+         */
+        signal(signo, handle_stats_signal);
         dump_stat = TRUE;
 }
 
@@ -112,9 +116,13 @@ static void handle_usr1(int signo)
 static void handle_signal(int signo)
 {
         char buf[] = "Interrupted by signal. Will exit after current transaction.\n";
+
+        /*
+         * re-establish signal handler
+         */
+        signal(signo, handle_signal);
         
         write(STDERR_FILENO, buf, sizeof(buf));
-        
         stop_processing = TRUE;
 }
 
@@ -866,9 +874,10 @@ int main(int argc, char **argv)
                 { "save", cmd_save     },
         };
 
-        signal(SIGUSR1, handle_usr1);
         signal(SIGINT, handle_signal);
         signal(SIGTERM, handle_signal);
+        signal(SIGUSR1, handle_stats_signal);
+        signal(SIGQUIT, handle_stats_signal);
         
 	ret = preludedb_init();
 	if ( ret < 0 )
