@@ -343,7 +343,7 @@ int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **
 %}
 
 %ignore preludedb_get_heartbeat;
-%rename(preludedb_get_heartbeat) wrap_preludedb_get_alert;
+%rename(preludedb_get_heartbeat) wrap_preludedb_get_heartbeat;
 %inline %{
 int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
@@ -379,7 +379,7 @@ int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 %}
 
 %ignore preludedb_delete_heartbeat;
-%rename(preludedb_delete_heartbeat) wrap_preludedb_delete_alert;
+%rename(preludedb_delete_heartbeat) wrap_preludedb_delete_heartbeat;
 %inline %{
 int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
