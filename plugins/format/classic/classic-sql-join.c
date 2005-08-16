@@ -31,6 +31,7 @@
 #include "preludedb-path-selection.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
+#include "preludedb-error.h"
 
 #include "classic-sql-join.h"
 
@@ -244,7 +245,10 @@ static int resolve_indexes(classic_sql_joined_table_t *table)
 	int ret = 0;
 
 	max_depth = idmef_path_get_depth(table->path);
-	parent_level = 0;
+        if ( max_depth < 2 )
+                return preludedb_error(PRELUDEDB_ERROR_QUERY);
+        
+        parent_level = 0;
 
 	for ( depth = 1; depth < max_depth - 2; depth++ ) {
 		index = idmef_path_get_index(table->path, depth);
