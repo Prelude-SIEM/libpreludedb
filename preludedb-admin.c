@@ -803,14 +803,14 @@ static int cmd_print(int argc, char **argv)
         prelude_io_set_file_io(io, fd);
 
         ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
-	if ( ret <= 0 )
+	if ( ret < 0 )
                 return db_error(db, ret, "retrieving alert ident failed");
         
         if ( ret > 0 )
                 print_iterate_message(db, idents, io, preludedb_get_alert);
 
         ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
-	if ( ret <= 0 )
+	if ( ret < 0 )
                 return db_error(db, ret, "retrieving heartbeat ident failed");
 
         if ( ret > 0 )
