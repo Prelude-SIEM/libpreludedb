@@ -8,5 +8,7 @@ distuninstallcheck_listfiles = find . -type f -print | grep -v 'perl' | grep -v 
 
 AM_CPPFLAGS = @defined@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing 
 bin_PROGRAMS = preludedb-admin
-preludedb_admin_LDADD = $(top_builddir)/src/libpreludedb.la
+
+preludedb_admin_LDFLAGS = @LIBPRELUDE_LDFLAGS@
+preludedb_admin_LDADD = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 preludedb_admin_SOURCES = preludedb-admin.c
