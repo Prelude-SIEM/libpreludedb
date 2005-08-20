@@ -214,23 +214,32 @@ static char resolve_parent_type(const idmef_path_t *path)
 
 
 
-static int add_index_constraint(classic_sql_joined_table_t *table, int parent_level, const char *operator, int index)
+static int add_index_constraint(classic_sql_joined_table_t *table, int parent_level, int index)
 {
 	int ret;
-
+        const char *operator;
+        
 	if ( ! prelude_string_is_empty(table->index_constraints) ) {
 		ret = prelude_string_cat(table->index_constraints, " AND ");
 		if ( ret < 0 )
 			return ret;
 	}
 
+        if ( index >= -1 )
+                operator = "=";
+        else {
+                /* index is PRELUDE_ERROR_IDMEF_PATH_INDEX_UNDEFINED */
+                index = -1;
+                operator = "!=";
+        }
+        
 	if ( parent_level == -1 )
 		ret = prelude_string_sprintf(table->index_constraints, "%s._index %s %d",
 					     table->aliased_table_name, operator, index);
 	else
 		ret = prelude_string_sprintf(table->index_constraints, "%s._parent%d_index %s %d",
 					     table->aliased_table_name, parent_level, operator, index);
-
+        
 	return ret;
 }
 
@@ -238,10 +247,10 @@ static int add_index_constraint(classic_sql_joined_table_t *table, int parent_le
 
 static int resolve_indexes(classic_sql_joined_table_t *table)
 {
-	unsigned int max_depth;
 	unsigned int depth;
+	unsigned int max_depth;
 	unsigned int parent_level;
-	int index;
+	int index, index1, index2;
 	int ret = 0;
 
 	max_depth = idmef_path_get_depth(table->path);
@@ -252,26 +261,22 @@ static int resolve_indexes(classic_sql_joined_table_t *table)
 
 	for ( depth = 1; depth < max_depth - 2; depth++ ) {
 		index = idmef_path_get_index(table->path, depth);
-		if ( prelude_error_get_code(index) != PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN ) {
-			if ( index >= -1 )
-				ret = add_index_constraint(table, parent_level, "=", index);
-			else
-				ret = add_index_constraint(table, parent_level, "!=", -1);
+                if ( index == PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN )
+                        continue;
+                
+                ret = add_index_constraint(table, parent_level, index);
+                if ( ret < 0 )
+                        return ret;
 
-			if ( ret < 0 )
-				return ret;
-
-			parent_level++;
-		}
+                parent_level++;
 	}
 
-	if ( prelude_error_get_code(index = idmef_path_get_index(table->path, max_depth - 1)) != PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN ||
-	     prelude_error_get_code(index = idmef_path_get_index(table->path, max_depth - 2)) != PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN ) {
-		if ( index >= -1 )
-			ret = add_index_constraint(table, -1, "=", index);
-		else
-			ret = add_index_constraint(table, -1, "!=", -1);
-	}
+        index1 = idmef_path_get_index(table->path, max_depth - 1);
+        index2 = idmef_path_get_index(table->path, max_depth - 2);
+        
+	if ( prelude_error_get_code(index = index1) != PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN ||
+	     prelude_error_get_code(index = index2) != PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN )
+                ret = add_index_constraint(table, -1, index);
 
 	return ret;
 }
