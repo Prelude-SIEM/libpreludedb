@@ -1,3 +1,8 @@
+* 2005-08-17, libpreludedb-0.9.0-rc12:
+
+	- Fix preludedb-admin link on some systems.
+
+
 * 2005-08-17, libpreludedb-0.9.0-rc11:
 
 	- More useful Python exception on PreludeDB error.
