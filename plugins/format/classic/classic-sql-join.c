@@ -261,7 +261,7 @@ static int resolve_indexes(classic_sql_joined_table_t *table)
 
 	for ( depth = 1; depth < max_depth - 2; depth++ ) {
 		index = idmef_path_get_index(table->path, depth);
-                if ( index == PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN )
+                if ( prelude_error_get_code(index) == PRELUDE_ERROR_IDMEF_PATH_INDEX_FORBIDDEN )
                         continue;
                 
                 ret = add_index_constraint(table, parent_level, index);
