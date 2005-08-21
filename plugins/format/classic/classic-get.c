@@ -1552,11 +1552,8 @@ static int get_additional_data(preludedb_sql_t *sql,
 			goto error;
 
 		ret = preludedb_sql_row_fetch_field(row, 2, &field);
-		if ( ret <= 0 ) {
-			if ( ret == 0 )
-				ret = -1;
+		if ( ret <= 0 )
 			goto error;
-		}
 
 		ret = idmef_additional_data_new_data(additional_data, &data);
 		if ( ret < 0 )
