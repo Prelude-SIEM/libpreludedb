@@ -132,7 +132,7 @@ static int message_table_name_resolver(const idmef_path_t *path, char **table_na
 		*table_name = strdup("Prelude_CreateTime");
 	else if ( strcmp(child_name, "detect_time") == 0 )
 		*table_name = strdup("Prelude_DetectTime");
-	else if ( strcmp(child_name, "analyzer_time") )
+	else if ( strcmp(child_name, "analyzer_time") == 0 )
 		*table_name = strdup("Prelude_AnalyzerTime");
 	else
 		return default_table_name_resolver(path, table_name);
@@ -147,9 +147,9 @@ static int message_field_name_resolver(const idmef_path_t *path, int field_conte
 {
 	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "create_time") ||
-	     strcmp(child_name, "detect_time") ||
-	     strcmp(child_name, "analyzer_time") )
+	if ( strcmp(child_name, "create_time") == 0 ||
+	     strcmp(child_name, "detect_time") == 0 ||
+	     strcmp(child_name, "analyzer_time") == 0 )
 		return time_with_usec_field_name_resolver(path, field_context, table_name, output);
 
 	return default_field_name_resolver(path, field_context, table_name, output);
