@@ -288,7 +288,7 @@ bindings/python/setup.py
 
 ])
 
-AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config; chmod +x prelude-db-create.sh]],[[]])
+AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
 
 AC_OUTPUT
 
