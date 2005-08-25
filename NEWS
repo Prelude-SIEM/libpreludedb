@@ -1,3 +1,10 @@
+* 2005-08-25, libpreludedb-0.9.0-rc13:
+
+	- Fix broken table comparison.
+
+	- Empty additional data are valid.
+
+
 * 2005-08-17, libpreludedb-0.9.0-rc12:
 
 	- Fix preludedb-admin link on some systems.
