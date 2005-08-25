@@ -36,7 +36,6 @@
 #include <time.h>
 #include <inttypes.h>
 #include <assert.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
 

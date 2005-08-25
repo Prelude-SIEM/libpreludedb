@@ -22,7 +22,6 @@
 *****/
 
 %{
-#include <pthread.h>
 #include <libprelude/prelude.h>
 #include <libprelude/idmef.h>
 
