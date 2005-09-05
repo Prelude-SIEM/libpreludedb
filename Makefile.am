@@ -1,5 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4 -I libmissing/m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
+EXTRA_DIST = LICENSE.README HACKING.README
 
 SUBDIRS = m4 libmissing src plugins bindings docs
 
