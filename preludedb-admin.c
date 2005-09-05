@@ -89,13 +89,15 @@ static void dump_generic_statistics(const char *stats1, const char *stats2)
         
         fprintf(stderr, "Number of events processed: %u", stats_processed);
         if ( max_count )
-                fprintf(stderr, "/%u", max_count);
-
+                fprintf(stderr, "/%u\n", max_count);
+        else
+                fprintf(stderr, "\n");
+        
         if ( stats1 )
-                fprintf(stderr, "\nAverage time to %s an event: %f.\n", stats1, elapsed1 / 1000000);
+                fprintf(stderr, "Average time to %s an event: %f.\n", stats1, elapsed1 / 1000000);
 
         if ( stats2 )
-                fprintf(stderr, "\nAverage time to %s an event: %f.\n", stats2, elapsed2 / 1000000);
+                fprintf(stderr, "Average time to %s an event: %f.\n", stats2, elapsed2 / 1000000);
         
         fprintf(stderr, "\nTotal time to process an event: %f.\n", (elapsed1 + elapsed2) / 1000000);
         dump_stat = FALSE;
@@ -286,7 +288,7 @@ static void print_help(char **argv)
         fprintf(stderr, "\tcopy   - Make a copy of a Prelude database to another database.\n");
         fprintf(stderr, "\tdelete - Delete content of a Prelude database.\n");
         fprintf(stderr, "\tload   - Load a Prelude database from a file.\n");
-        fprintf(stderr, "\tcopy   - Save a Prelude database to a file.\n\n");
+        fprintf(stderr, "\tsave   - Save a Prelude database to a file.\n\n");
 }
 
 
@@ -555,6 +557,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
 
                 gettimeofday(&start2, NULL);
                 ret = idmef_message_write(message, msgbuf);
+                prelude_msgbuf_mark_end(msgbuf);
                 gettimeofday(&end2, NULL);
                 
                 idmef_message_destroy(message);
@@ -648,7 +651,7 @@ static int cmd_load(int argc, char **argv)
                 cmd_load_help();
                 exit(1);
         }
-                
+
         ret = db_new_from_string(&db, argv[2]);
 	if ( ret < 0 )
 		return ret;
@@ -670,7 +673,7 @@ static int cmd_load(int argc, char **argv)
         
         while ( ! stop_processing ) {                
                 msg = NULL;
-                
+
                 ret = prelude_msg_read(&msg, io);                
                 if ( ret < 0 ) {
                         if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF ) {
