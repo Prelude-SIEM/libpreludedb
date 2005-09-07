@@ -27,6 +27,7 @@
 #include "config.h"
 
 #include "minmax.h"
+#include "size_max.h"
 #include "snprintf.h"
 #include "strdup.h"
 #include "strndup.h"
