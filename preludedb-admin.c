@@ -99,7 +99,7 @@ static void dump_generic_statistics(const char *stats1, const char *stats2)
         if ( stats2 )
                 fprintf(stderr, "Average time to %s an event: %f.\n", stats2, elapsed2 / 1000000);
         
-        fprintf(stderr, "\nTotal time to process an event: %f.\n", (elapsed1 + elapsed2) / 1000000);
+        fprintf(stderr, "Total time to process an event: %f.\n", (elapsed1 + elapsed2) / 1000000);
         dump_stat = FALSE;
 }
 
