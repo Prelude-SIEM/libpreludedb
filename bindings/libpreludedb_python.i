@@ -285,7 +285,7 @@ preludedb_t *wrap_preludedb_new(preludedb_sql_t *sql, const char *format_name)
 %ignore preludedb_get_alert_idents;
 %rename(preludedb_get_alert_idents) wrap_preludedb_get_alert_idents;
 %inline %{
-int wrap_preludedb_get_alert_idents(preludedb_t *db,
+unsigned int wrap_preludedb_get_alert_idents(preludedb_t *db,
 		idmef_criteria_t *criteria, int limit, int offset,
 		preludedb_result_idents_order_t order,
 		preludedb_result_idents_t **result)
@@ -297,6 +297,7 @@ int wrap_preludedb_get_alert_idents(preludedb_t *db,
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -306,7 +307,7 @@ int wrap_preludedb_get_alert_idents(preludedb_t *db,
 %ignore preludedb_get_heartbeat_idents;
 %rename(preludedb_get_heartbeat_idents) wrap_preludedb_get_heartbeat_idents;
 %inline %{
-int wrap_preludedb_get_heartbeat_idents(preludedb_t *db,
+unsigned int wrap_preludedb_get_heartbeat_idents(preludedb_t *db,
 		idmef_criteria_t *criteria, int limit, int offset,
 		preludedb_result_idents_order_t order,
 		preludedb_result_idents_t **result)
@@ -318,6 +319,7 @@ int wrap_preludedb_get_heartbeat_idents(preludedb_t *db,
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -327,7 +329,7 @@ int wrap_preludedb_get_heartbeat_idents(preludedb_t *db,
 %ignore preludedb_get_alert;
 %rename(preludedb_get_alert) wrap_preludedb_get_alert;
 %inline %{
-int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
+unsigned int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
 	char errbuf[PRELUDEDB_ERRBUF_SIZE];
 	int ret;
@@ -336,6 +338,7 @@ int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -345,7 +348,7 @@ int wrap_preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **
 %ignore preludedb_get_heartbeat;
 %rename(preludedb_get_heartbeat) wrap_preludedb_get_heartbeat;
 %inline %{
-int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
+unsigned int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
 	char errbuf[PRELUDEDB_ERRBUF_SIZE];
 	int ret;
@@ -354,6 +357,7 @@ int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -363,7 +367,7 @@ int wrap_preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_
 %ignore preludedb_delete_alert;
 %rename(preludedb_delete_alert) wrap_preludedb_delete_alert;
 %inline %{
-int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
+unsigned int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 {
 	char errbuf[PRELUDEDB_ERRBUF_SIZE];
 	int ret;
@@ -372,6 +376,7 @@ int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -381,7 +386,7 @@ int wrap_preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 %ignore preludedb_delete_heartbeat;
 %rename(preludedb_delete_heartbeat) wrap_preludedb_delete_heartbeat;
 %inline %{
-int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
+unsigned int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
 	char errbuf[PRELUDEDB_ERRBUF_SIZE];
 	int ret;
@@ -390,6 +395,7 @@ int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
@@ -399,7 +405,7 @@ int wrap_preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 %ignore preludedb_get_values;
 %rename(preludedb_get_values) wrap_preludedb_get_values;
 %inline %{
-int wrap_preludedb_get_values(preludedb_t *db,
+unsigned int wrap_preludedb_get_values(preludedb_t *db,
 		preludedb_path_selection_t *path_selection,
 		idmef_criteria_t *criteria,
 		prelude_bool_t distinct,
@@ -413,6 +419,7 @@ int wrap_preludedb_get_values(preludedb_t *db,
 	if (ret < 0) {
 		preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
 		swig_python_raise_exception(ret, errbuf);
+		return 0;
 	}
 
 	return ret;
