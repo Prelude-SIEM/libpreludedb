@@ -57,7 +57,7 @@ typedef prelude_error_t preludedb_error_t;
 
 static inline preludedb_error_t preludedb_error(preludedb_error_code_t error)
 {
-        return prelude_error_make(PRELUDE_ERROR_SOURCE_PRELUDEDB, error);
+        return (preludedb_error_t) prelude_error_make(PRELUDE_ERROR_SOURCE_PRELUDEDB, error);
 }
 
 
