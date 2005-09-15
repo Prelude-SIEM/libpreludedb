@@ -42,7 +42,7 @@ struct preludedb_sql_settings {
 
 static inline void skip_spaces(const char **str) 
 {
-        while ( isspace(**str) )
+        while ( isspace((int) **str) )
                 (*str)++;
 }
 
@@ -121,7 +121,7 @@ static int get_name(const char **str, char **name)
 
 	start = *str;
 
-	while ( isalnum(**str) || **str == '_' )
+	while ( isalnum((int) **str) || **str == '_' )
 		(*str)++;
 
 	if ( **str != '=' || *str == start )
