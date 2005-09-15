@@ -282,7 +282,7 @@ typedef struct {
 </MACRO>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.0-rc13"
+#define LIBPRELUDEDB_VERSION "0.9.0-rc14"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
@@ -393,11 +393,6 @@ typedef enum {
 <NAME>preludedb_error_t</NAME>
 typedef prelude_error_t preludedb_error_t;
 </TYPEDEF>
-<FUNCTION>
-<NAME>prelude_error_make</NAME>
-<RETURNS>return </RETURNS>
-PRELUDE_ERROR_SOURCE_PRELUDEDB, error
-</FUNCTION>
 <FUNCTION>
 <NAME>prelude_error_from_errno</NAME>
 <RETURNS>return </RETURNS>

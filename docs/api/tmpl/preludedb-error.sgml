@@ -50,16 +50,6 @@ preludedb-error
 </para>
 
 
-<!-- ##### FUNCTION prelude_error_make ##### -->
-<para>
-
-</para>
-
-@Param1: 
-@Param2: 
-@Returns: 
-
-
 <!-- ##### FUNCTION prelude_error_from_errno ##### -->
 <para>
 
