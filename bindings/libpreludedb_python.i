@@ -158,16 +158,13 @@ PyObject *swig_python_data(idmef_data_t *data)
 };
 
 
-%apply SWIGTYPE **OUTPARAM {
-	preludedb_t **,
-	preludedb_selected_path_t **,
-	preludedb_path_selection_t **,
-	preludedb_sql_t **,
-	preludedb_sql_settings_t **,
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	idmef_message_t **
-};
+%typemap(in) SWIGTYPE *INPARAM {
+        if ( $input == Py_None )
+                return NULL;
+
+        if ( SWIG_ConvertPtr($input, (void **)&arg$argnum, $1_descriptor, SWIG_POINTER_EXCEPTION|0) )
+                return NULL;
+}
 
 
 %typemap(in, numinputs=0) uint64_t *ident (uint64_t tmp) {
@@ -253,13 +250,42 @@ PyObject *swig_python_data(idmef_data_t *data)
 };
 
 
-%apply SWIGTYPE **OUTRESULT {
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	preludedb_sql_table_t **,
-	preludedb_sql_row_t **,	
-	preludedb_sql_field_t **
+
+
+%apply SWIGTYPE **OUTPARAM {
+        idmef_message_t **,
+        preludedb_t **,
+        preludedb_path_selection_t **,
+        preludedb_result_idents_t **,
+        preludedb_result_values_t **,
+        preludedb_selected_path_t **,
+        preludedb_sql_t **,
+        preludedb_sql_settings_t **
 };
+
+
+%apply SWIGTYPE *INPARAM {
+        idmef_message_t *,
+        preludedb_t *,
+        preludedb_path_selection_t *,
+        preludedb_result_idents_t *,
+        preludedb_result_values_t *,
+        preludedb_selected_path_t *,
+        preludedb_sql_t *,
+        preludedb_sql_field_t *,
+        preludedb_sql_row_t *,
+        preludedb_sql_settings_t *,
+        preludedb_sql_table_t *
+};
+
+%apply SWIGTYPE **OUTRESULT {
+        preludedb_result_idents_t **,
+        preludedb_result_values_t **,
+        preludedb_sql_field_t **,
+        preludedb_sql_row_t **,
+        preludedb_sql_table_t **
+};
+
 
 
 %ignore preludedb_new;

@@ -36,18 +36,6 @@
 };
 
 
-%apply SWIGTYPE **OUTPARAM {
-	preludedb_t **,
-	preludedb_selected_path_t **,
-	preludedb_path_selection_t **,
-	preludedb_sql_t **,
-	preludedb_sql_settings_t **,
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	idmef_message_t **
-};
-
-
 %typemap(in) uint8_t {
 	$1 = (uint8_t) SvIV($input);
 };
@@ -148,15 +136,15 @@
 };
 
 
+%typemap(in) SWIGTYPE *INPARAM {
+        if ( ! SvROK($input) ) {
+                croak("Argument $argnum is null.");
+                return;
+        }
 
-%apply SWIGTYPE **OUTRESULT {
-	preludedb_result_idents_t **,
-	preludedb_result_values_t **,
-	preludedb_sql_table_t **,
-	preludedb_sql_row_t **,	
-	preludedb_sql_field_t **
-};
-
+        if ( SWIG_ConvertPtr($input, (void **)&arg$argnum, $1_descriptor, 0) )
+                return;
+}
 
 
 %typemap(in) char **output (char *tmp) {
@@ -172,6 +160,43 @@
 	sv_setsv(SvRV($input), sv_2mortal(newSVpv(*$1, 0)));
 	free(*$1);
 };
+
+
+
+%apply SWIGTYPE **OUTPARAM {
+        idmef_message_t **,
+        preludedb_t **,
+        preludedb_path_selection_t **,
+        preludedb_result_idents_t **,
+        preludedb_result_values_t **,
+        preludedb_selected_path_t **,
+        preludedb_sql_t **,
+        preludedb_sql_settings_t **
+};
+
+
+%apply SWIGTYPE *INPARAM {
+        idmef_message_t *,
+        preludedb_t *,
+        preludedb_path_selection_t *,
+        preludedb_result_idents_t *,
+        preludedb_result_values_t *,
+        preludedb_selected_path_t *,
+        preludedb_sql_t *,
+        preludedb_sql_field_t *,
+        preludedb_sql_row_t *,
+        preludedb_sql_settings_t *,
+        preludedb_sql_table_t *
+};
+
+%apply SWIGTYPE **OUTRESULT {
+        preludedb_result_idents_t **,
+        preludedb_result_values_t **,
+        preludedb_sql_field_t **,
+        preludedb_sql_row_t **,
+        preludedb_sql_table_t **
+};
+
 
 
 %ignore preludedb_new;
