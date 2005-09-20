@@ -1,3 +1,10 @@
+* 2005-09-20, libpreludedb-0.9.0:
+
+	- 0.9.0 final.
+
+	- Make Perl/Python bindings more fault tolerant.
+
+
 * 2005-09-15, libpreludedb-0.9.0-rc14:
 
 	- Correct Python bindings exception handling.
