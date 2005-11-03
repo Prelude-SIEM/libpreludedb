@@ -491,24 +491,33 @@ static int cmd_delete(int argc, char **argv)
                 cmd_delete_help();
                 exit(1);
         }
+
+        if ( ! alert_criteria && ! heartbeat_criteria ) {
+                fprintf(stderr, "No alert or heartbeat criteria provided for deletion.\n");
+                return -1;
+        }
         
 	ret = db_new_from_string(&db, argv[2]);
 	if ( ret < 0 )
 		return ret;
-        
-        ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
-	if ( ret < 0 )
-                return db_error(db, ret, "retrieving alert ident failed");
-        
-        if ( ret > 0 )
-                drop_iterate(db, idents, preludedb_delete_alert);
-                
-        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
-        if ( ret < 0 ) 
-                return db_error(db, ret, "retrieving heartbeat ident failed");
 
-        if ( ret > 0 )
-                drop_iterate(db, idents, preludedb_delete_heartbeat);
+        if ( alert_criteria ) {
+                ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
+                if ( ret < 0 )
+                        return db_error(db, ret, "retrieving alert ident failed");
+        
+                if ( ret > 0 )
+                        drop_iterate(db, idents, preludedb_delete_alert);
+        }
+
+        if ( heartbeat_criteria ) {
+                ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
+                if ( ret < 0 ) 
+                        return db_error(db, ret, "retrieving heartbeat ident failed");
+
+                if ( ret > 0 )
+                        drop_iterate(db, idents, preludedb_delete_heartbeat);
+        }
         
         return ret;
 }
