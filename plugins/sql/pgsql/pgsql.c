@@ -216,7 +216,6 @@ static int sql_query(void *session, const char *query, void **resource)
         }
 
         ret = PQresultStatus(res->result);
-
         if ( ret == PGRES_TUPLES_OK && PQntuples(res->result) != 0 ) {
                 *resource = res;
                 return 1;
@@ -226,6 +225,9 @@ static int sql_query(void *session, const char *query, void **resource)
         free(res);
         if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
                 return 0;
+
+        if ( PQstatus(session) == CONNECTION_BAD )
+                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         
         return preludedb_error(PRELUDEDB_ERROR_QUERY);
 }

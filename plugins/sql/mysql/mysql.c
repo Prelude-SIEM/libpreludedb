@@ -78,6 +78,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
                                   port, NULL, 0) ) {
                 if ( mysql_error(*session) )
                         snprintf(errbuf, size, "%s", mysql_error(*session));
+
                 mysql_close(*session);
                 return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
@@ -150,11 +151,35 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
 
 
+static prelude_bool_t is_connection_broken(void *session)
+{
+        switch (mysql_errno(session)) {
+                        
+        case CR_CONNECTION_ERROR:
+        case CR_SERVER_GONE_ERROR:
+        case CR_SERVER_LOST:
+        case CR_CONN_HOST_ERROR:
+        case CR_IPSOCK_ERROR:
+        case ER_SERVER_SHUTDOWN:
+                return TRUE;
+
+        default:
+                return FALSE;
+        }
+}
+
+
+
 static int sql_query(void *session, const char *query, void **resource)
 {
-        if ( mysql_query(session, query) != 0 )
-                return preludedb_error(PRELUDEDB_ERROR_QUERY);
+        if ( mysql_query(session, query) != 0 ) {
 
+                if ( is_connection_broken(session) ) 
+                        return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+                
+                return preludedb_error(PRELUDEDB_ERROR_QUERY);
+        }
+        
         *resource = mysql_store_result(session);
         if ( *resource ) {
                 if ( mysql_num_rows(*resource) == 0 ) {
