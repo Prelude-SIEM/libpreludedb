@@ -27,11 +27,11 @@
 #include <libprelude/prelude-inttypes.h>
 #include <libprelude/idmef.h>
 
-#include <libpreludedb/preludedb-sql-settings.h>
-#include <libpreludedb/preludedb-sql.h>
-#include <libpreludedb/preludedb-error.h>
-#include <libpreludedb/preludedb-path-selection.h>
-#include <libpreludedb/preludedb.h>
+#include "preludedb-sql-settings.h"
+#include "preludedb-sql.h"
+#include "preludedb-error.h"
+#include "preludedb-path-selection.h"
+#include "preludedb.h"
 
 typedef struct preludedb preludedb_t;
 
