@@ -26,6 +26,7 @@ AC_DEFUN([gl_EARLY],
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
+AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
   gl_FUNC_ALLOCA
   dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
   gl_MINMAX
