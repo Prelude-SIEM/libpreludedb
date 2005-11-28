@@ -236,10 +236,11 @@ static void cmd_delete_help(void)
 
 static void cmd_save_help(void)
 {
-        fprintf(stderr, "Usage  : save <database> <filename> [options]\n");
+        fprintf(stderr, "Usage  : save <database> [filename] [options]\n");
         fprintf(stderr, "Example: preludedb-admin save \"type=mysql name=dbname user=prelude\" outputfile\n\n");
         
-        fprintf(stderr, "Save messages from <database> to <filename> (- for standard output).\n\n");
+        fprintf(stderr, "Save messages from <database> into [filename].\n");
+        fprintf(stderr, "If no filename argument is provided, data will be written to standard output.\n\n");
         
         cmd_generic_help();
 }
@@ -248,10 +249,11 @@ static void cmd_save_help(void)
 
 static void cmd_load_help(void)
 {
-        fprintf(stderr, "Usage  : load <database> <filename> [options]\n");
+        fprintf(stderr, "Usage  : load <database> [filename] [options]\n");
         fprintf(stderr, "Example: preludedb-admin load \"type=mysql name=dbname user=prelude\" inputfile\n\n");
 
-        fprintf(stderr, "Load messages from <filename> (or standard input) to <database>.\n\n");
+        fprintf(stderr, "Load messages from [filename] into <database>.\n");
+        fprintf(stderr, "If no filename argument is provided, data will be read from standard input.\n\n");
         
         cmd_generic_help();
 }
@@ -274,7 +276,8 @@ static void cmd_print_help(void)
         fprintf(stderr, "Usage  : print <database> [filename] [options]\n");
         fprintf(stderr, "Example: preludedb-admin print \"type=mysql name=dbname user=prelude\"\n\n");
         
-        fprintf(stderr, "Retrieve and print message from <database>.\n\n");
+        fprintf(stderr, "Retrieve and print message from <database>.\n");
+        fprintf(stderr, "Data will be written to [filename] if provided.\n\n");
         
         cmd_generic_help();
 }
@@ -283,11 +286,12 @@ static void cmd_print_help(void)
 
 static void print_help(char **argv)
 {
-        fprintf(stderr, "Usage: %s <copy|delete|load|save> <arguments>\n\n", argv[0]);
+        fprintf(stderr, "Usage: %s <copy|delete|load|print|save> <arguments>\n\n", argv[0]);
         
         fprintf(stderr, "\tcopy   - Make a copy of a Prelude database to another database.\n");
         fprintf(stderr, "\tdelete - Delete content of a Prelude database.\n");
         fprintf(stderr, "\tload   - Load a Prelude database from a file.\n");
+        fprintf(stderr, "\tprint  - Print message from a Prelude database.\n");
         fprintf(stderr, "\tsave   - Save a Prelude database to a file.\n\n");
 }
 
@@ -594,7 +598,7 @@ static int cmd_save(int argc, char **argv)
         preludedb_result_idents_t *idents;
 
         ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc != 4 ) {
+        if ( ret < 0 || argc < 3 ) {
                 cmd_save_help();
                 exit(1);
         }
@@ -603,7 +607,7 @@ static int cmd_save(int argc, char **argv)
 	if ( ret < 0 )
 		return ret;
 
-        if ( *argv[3] != '-' ) {
+        if ( argc > 3 && *argv[3] != '-' ) {
                 fd = fopen(argv[3], "w");
                 if ( ! fd ) {
                         fprintf(stderr, "could not open '%s' for writing: %s.\n", argv[3], strerror(errno));
