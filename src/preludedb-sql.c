@@ -981,6 +981,7 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
         const char *input;
         prelude_string_t *outbuf;
         const prelude_string_t *string;
+        prelude_bool_t escape_next = FALSE;
         
 	string = idmef_value_get_string(value);
 	if ( ! string )
@@ -993,31 +994,29 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
         ret = prelude_string_new(&outbuf);
         if ( ret < 0 )
                 return ret;
-
+        
         while ( *input ) {
-
-                /* Escape %, since these are SQL specific */
+                /*
+                 * Always escape %, since these are SQL specific.
+                 */
                 if ( *input == '%' )
                         prelude_string_cat(outbuf, "\\%");
 
-                /* Convert unescaped * to % character */
-                else if ( *input == '*' )
+                /*
+                 * Convert unescaped * to % character.
+                 */
+                else if ( *input == '*' && ! escape_next )
                         prelude_string_cat(outbuf, "%");
-
-                /* Convert escaped * to * character */
-                else if ( *input == '\\' && *(input + 1) == '*' ) {
-                        input++;
-                        prelude_string_cat(outbuf, "*");
-                }
                 
                 else prelude_string_ncat(outbuf, input, 1);
-                
+
+                escape_next = (! escape_next && *input == '\\') ? TRUE : FALSE;                
                 input++;
         }
 
         ret = prelude_string_get_string_released(outbuf, output);
         prelude_string_destroy(outbuf);
-
+          
         return ret;
 }
 
