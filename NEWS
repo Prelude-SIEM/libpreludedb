@@ -1,3 +1,10 @@
+* 2005-12-12, libpreludedb-0.9.2:
+
+	- Fix character escaping issue with two consecutive backslash 
+	  followed by a wildcard (we were escaping the wildcard, which
+          is not supposed to be escaped in this case).
+
+
 * 2005-11-28, libpreludedb-0.9.1:
 
 	- Fix automated reconnection to the database server.
