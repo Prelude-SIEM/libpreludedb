@@ -309,7 +309,7 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
 		return NULL;
 
         size -= ret;
-        errptr += ret;
+        errptr = errbuf + ret;
 
 	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB && size > 2 ) {
 		const char *plugin_error;
