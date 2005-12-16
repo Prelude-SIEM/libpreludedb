@@ -330,7 +330,6 @@ static int setup_generic_options(int *argc, char **argv)
 }
 
 
-
 static int db_new_from_string(preludedb_t **db, const char *str)
 {
         int ret;
@@ -388,8 +387,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 
                 ret = get_message(src, ident, &msg);
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n",
-                                ident, preludedb_strerror(ret));
+                        db_error(src, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
 
@@ -402,8 +400,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 idmef_message_destroy(msg);
                 
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error inserting message %" PRELUDE_PRIu64 ": %s.\n",
-                                ident, preludedb_strerror(ret));
+                        db_error(dst, ret, "Error inserting message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
 
@@ -475,7 +472,7 @@ static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
                 gettimeofday(&end1, NULL);
                 
                 if ( ret < 0 ) 
-                        fprintf(stderr, "error deleting message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        db_error(db, ret, "error deleting message %" PRELUDE_PRIu64 "", ident);
 
                 dump_generic_statistics("delete", NULL);
         }
@@ -562,7 +559,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
                 
                 ret = get_message(db, ident, &message);
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        db_error(db, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
 
@@ -727,7 +724,7 @@ static int cmd_load(int argc, char **argv)
                 gettimeofday(&start2, NULL);
                 ret = preludedb_insert_message(db, idmef);
                 if ( ret < 0 ) {
-                        fprintf(stderr, "error inserting IDMEF message: %s.\n", preludedb_strerror(ret));
+                        db_error(db, ret, "error inserting IDMEF message");
                         return ret;
                 }
                 gettimeofday(&end2, NULL);
@@ -768,7 +765,7 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 
                 ret = get_message(db, ident, &idmef);
                 if ( ret < 0 ) {
-                        fprintf(stderr, "Error retrieving message %" PRELUDE_PRIu64 ": %s.\n", ident, preludedb_strerror(ret));
+                        db_error(db, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
                 
