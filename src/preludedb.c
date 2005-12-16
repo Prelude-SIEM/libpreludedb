@@ -302,23 +302,23 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size)
 {
 	int ret;
-	size_t offset;
-
+        char *errptr;
+        
 	ret = snprintf(errbuf, size, "%s", preludedb_strerror(error));
 	if ( ret < 0 || ret >= size )
 		return NULL;
 
-	offset = ret;
+        size -= ret;
+        errptr += ret;
 
-	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {
+	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB && size > 2 ) {
 		const char *plugin_error;
 
 		plugin_error = preludedb_sql_get_plugin_error(db->sql);
 
 		if ( plugin_error ) {
-			ret = snprintf(errbuf + offset, size - offset, ": %s", plugin_error);
-			if ( ret < 0 || ret >= size - offset )
-				return NULL;
+                        strcat(errptr, ": ");
+                        strncat(errptr + 2, plugin_error, size - 3);
 		}
 	}
 
