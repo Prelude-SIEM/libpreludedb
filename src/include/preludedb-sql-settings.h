@@ -30,6 +30,7 @@
 #define PRELUDEDB_SQL_SETTING_USER "user"
 #define PRELUDEDB_SQL_SETTING_PASS "pass"
 #define PRELUDEDB_SQL_SETTING_TYPE "type"
+#define PRELUDEDB_SQL_SETTING_FILE "file"
 #define PRELUDEDB_SQL_SETTING_LOG "log"
 
 typedef struct preludedb_sql_settings preludedb_sql_settings_t;
@@ -66,5 +67,8 @@ const char *preludedb_sql_settings_get_log(const preludedb_sql_settings_t *setti
 
 int preludedb_sql_settings_set_type(preludedb_sql_settings_t *settings, const char *value);
 const char *preludedb_sql_settings_get_type(const preludedb_sql_settings_t *settings);
+
+int preludedb_sql_settings_set_file(preludedb_sql_settings_t *settings, const char *value);
+const char *preludedb_sql_settings_get_file(const preludedb_sql_settings_t *settings);
 
 #endif /* _LIBPRELUDEDB_SQL_SETTINGS_H */
