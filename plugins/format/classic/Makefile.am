@@ -8,12 +8,23 @@ classic_la_SOURCES = classic.c classic-delete.c classic-get.c classic-insert.c c
 classic_LTLIBRARIES = classic.la
 classicdir = $(format_plugin_dir)
 
+EXTRA_DIST = mysql2sqlite.sh
+MOSTLYCLEANFILES = sqlite.sql
+BUILT_SOURCES = sqlite.sql
+
+sqlite.sql:
+	rm -f sqlite.sql
+	$(srcdir)/mysql2sqlite.sh $(srcdir)/mysql.sql > sqlite.sql
+
+
 schemadatadir = $(format_schema_dir)/classic
-dist_schemadata_DATA =  mysql.sql             	\
+dist_schemadata_DATA =  mysql2sqlite.sh		\
+			mysql.sql             	\
 			mysql-update-14-1.sql 	\
 			mysql-update-14-2.sql 	\
 			mysql-update-14-3.sql	\
 			pgsql.sql 		\
 			pgsql-update-14-1.sql	\
 			pgsql-update-14-2.sql	\
-			pgsql-update-14-3.sql
+			pgsql-update-14-3.sql	\
+			sqlite.sql

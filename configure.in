@@ -185,6 +185,50 @@ AC_SUBST(PGSQL_INCLUDEDIR)
 
 
 
+dnl ********************************************************
+dnl * Check for the SQLite3 library (SQLite3 plugin)       *
+dnl ********************************************************
+
+AC_ARG_ENABLE(sqlite3, [  --enable-sqlite3  Enable SQLite3 plugin [default=auto]], enable_sqlite3="$enableval", enable_sqlite3=auto)
+
+if test x$enable_sqlite3 != xfalse; then
+
+	for dir in /usr/lib /usr/local/lib; do
+		AC_CHECK_FILE($dir/libsqlite3.so, sqlite3_dir=$dir)
+	done
+
+	if test $sqlite3_dir ; then
+		sqlite3_use=true;
+		SQLITE3_LIBS="-L$sqlite3_dir -lsqlite3" 
+	fi
+
+	for dir in /usr/include /usr/local/include; do
+		AC_CHECK_FILE($dir/sqlite3.h, sqlite3_inc=$dir)
+	done
+
+	if test $sqlite3_inc ; then
+		SQLITE3_CFLAGS=-I$sqlite3_inc
+	else
+		sqlite3_use=false;
+	fi
+fi
+
+
+if test x$enable_sqlite3 = xauto; then
+        if test x$sqlite3_use = xtrue; then
+                enable_sqlite3=yes;
+        else
+                enable_sqlite3=no;
+        fi
+fi
+
+AC_SUBST(SQLITE3_LIBS)
+AC_SUBST(SQLITE3_CFLAGS)
+
+AM_CONDITIONAL(HAVE_SQLITE3, test x$enable_sqlite3 = xyes)
+
+
+
 dnl **************************************************
 dnl * Swig support                                   *
 dnl **************************************************
@@ -283,6 +327,7 @@ plugins/Makefile
 plugins/sql/Makefile
 plugins/sql/mysql/Makefile
 plugins/sql/pgsql/Makefile
+plugins/sql/sqlite3/Makefile
 
 plugins/format/Makefile
 plugins/format/classic/Makefile
@@ -309,5 +354,6 @@ echo "*** Dumping configuration ***"
 echo "    - Generate documentation 	: $enable_gtk_doc"
 echo "    - Enable MySQL plugin    	: $enable_mysql"
 echo "    - Enable PostgreSQL plugin 	: $enable_pgsql"
+echo "    - Enable SQLite3 plugin	: $enable_sqlite3"
 echo "    - Perl binding		: $enable_perl"
 echo "    - Python binding		: $enable_python";
