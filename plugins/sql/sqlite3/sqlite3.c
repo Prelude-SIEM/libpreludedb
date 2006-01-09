@@ -42,6 +42,9 @@
 #include "preludedb-plugin-sql.h"
 
 
+#define SQLITE_BUSY_TIMEOUT INT_MAX 
+
+
 typedef struct {
         size_t len;
         void *data;
@@ -85,8 +88,8 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
                 return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
 
-        sqlite3_busy_timeout(*session, INT_MAX);
-
+        sqlite3_busy_timeout(*session, SQLITE_BUSY_TIMEOUT);
+        
         return 0;
 }
 
@@ -105,7 +108,6 @@ static const char *sql_get_error(void *session)
          * In case the last SQLite API call was successful, sqlite3_errmsg() 
          * will return "not an error". We need to return NULL in this specific case.
          */
-        
         return (sqlite3_errcode(session) != SQLITE_OK) ? sqlite3_errmsg(session) : NULL;
 }
 
@@ -321,7 +323,7 @@ static int sql_query(void *session, const char *query, void **resource)
          * FIXME: we need a better way to know the kind of operation performed.
          */
         if ( strncmp(query, "SELECT", 6) != 0 ) {
-                     
+                
                 ret = sqlite3_exec(session, query, NULL, NULL, 0);
                 if ( ret != SQLITE_OK )
                         return preludedb_error(PRELUDEDB_ERROR_QUERY);
@@ -446,7 +448,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
                 { IDMEF_CRITERION_OPERATOR_SUBSTR_NOCASE,     "LIKE"              },
                 { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR,        "NOT LIKE"          },
                 { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR_NOCASE, "NOT LIKE "         },
-                
+
                 /* { IDMEF_CRITERION_OPERATOR_REGEX,             "REGEXP BINARY"     }, 
                  * { IDMEF_CRITERION_OPERATOR_REGEX_NOCASE,      "REGEXP"            }, 
                  * { IDMEF_CRITERION_OPERATOR_NOT_REGEX,         "NOT REGEXP"        }, 
@@ -618,3 +620,4 @@ int sqlite3_LTX_prelude_plugin_version(void)
         return PRELUDE_PLUGIN_API_VERSION;
 }
 
+		
