@@ -1,9 +1,8 @@
 #!/bin/sh
-
 sed \
 	-e 's/#.*//' \
 	-e '/^DROP /d' \
-	-e 's/\w\+INT/INTEGER/' \
+	-e 's/\w*INT /INTEGER /' \
 	-e 's/UNSIGNED //' \
 	-e 's/ENUM([^)]\+)/TEXT/' \
 	-e 's/VARCHAR([^)]\+)/TEXT/' \
