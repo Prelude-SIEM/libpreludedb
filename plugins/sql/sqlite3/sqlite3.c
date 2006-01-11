@@ -493,7 +493,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         const char *sql_operator;
         int ret;
 
-        ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
+        ret = snprintf(buf, sizeof(buf), "DATETIME(%s, '%d hours')", field, gmt_offset / 3600);
         if ( ret < 0 || ret >= sizeof(buf) )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
@@ -503,35 +503,35 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 
         switch ( type ) {
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
-                        return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%Y', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
-                        return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s) %s '%d'",
+                        return  prelude_string_sprintf(output, "STRFTIME('%%m', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
-                        return prelude_string_sprintf(output, "DAYOFYEAR(%s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%j', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
-                        return prelude_string_sprintf(output, "DAYOFMONTH(%s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%d', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
-                        return prelude_string_sprintf(output, "DAYOFWEEK(%s) %s '%d'",
-                                        buf, sql_operator, value % 7 + 1);
+                        return prelude_string_sprintf(output, "STRFTIME('%%w', %s) %s '%d'",
+                                        buf, sql_operator, value % 7);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
-                        return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%H', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
-                        return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%M', %s) %s '%d'",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
-                        return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%S', %s) %s '%d'",
                                         buf, sql_operator, value);
         }
 
