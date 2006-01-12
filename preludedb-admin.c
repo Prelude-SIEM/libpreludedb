@@ -325,6 +325,8 @@ static int setup_generic_options(int *argc, char **argv)
         ret = prelude_option_read(NULL, NULL, argc, argv, &err, NULL);
         if ( ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_EOF )
                 fprintf(stderr, "Option error: %s.\n", prelude_string_get_string(err));
+        else
+                *argc -= (ret - 1);
         
         return ret;
 }
@@ -414,21 +416,21 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
 
 static int cmd_copy(int argc, char **argv)
 {
-        int ret;
+        int ret, idx;
         preludedb_t *src, *dst;
         preludedb_result_idents_t *alert_idents, *heartbeat_idents;
         
-        ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc < 4 ) {
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 3 ) {
                 cmd_copy_help();
                 exit(1);
         }
         
-	ret = db_new_from_string(&src, argv[2]);
+	ret = db_new_from_string(&src, argv[idx]);
 	if ( ret < 0 )
 		return ret;
         
-	ret = db_new_from_string(&dst, argv[3]);
+	ret = db_new_from_string(&dst, argv[idx + 1]);
 	if ( ret < 0 )
 		return ret;
         
@@ -483,12 +485,12 @@ static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
 
 static int cmd_delete(int argc, char **argv)
 {
-        int ret;
+        int ret, idx;
         preludedb_t *db;
         preludedb_result_idents_t *idents;
 
-        ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc != 3 ) {
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc != 2 ) {
                 cmd_delete_help();
                 exit(1);
         }
@@ -498,7 +500,7 @@ static int cmd_delete(int argc, char **argv)
                 return -1;
         }
         
-	ret = db_new_from_string(&db, argv[2]);
+	ret = db_new_from_string(&db, argv[idx]);
 	if ( ret < 0 )
 		return ret;
 
@@ -587,27 +589,27 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
 
 static int cmd_save(int argc, char **argv)
 {
-        int ret;
+        int ret, idx;
         preludedb_t *db;
         prelude_io_t *io;
         FILE *fd = stdout;
         prelude_msgbuf_t *msgbuf;
         preludedb_result_idents_t *idents;
 
-        ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc < 3 ) {
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 2 ) {
                 cmd_save_help();
                 exit(1);
         }
         
-        ret = db_new_from_string(&db, argv[2]);
+        ret = db_new_from_string(&db, argv[idx]);
 	if ( ret < 0 )
 		return ret;
 
-        if ( argc > 3 && *argv[3] != '-' ) {
-                fd = fopen(argv[3], "w");
+        if ( argc > 2 && *argv[idx + 1] != '-' ) {
+                fd = fopen(argv[idx + 1], "w");
                 if ( ! fd ) {
-                        fprintf(stderr, "could not open '%s' for writing: %s.\n", argv[3], strerror(errno));
+                        fprintf(stderr, "could not open '%s' for writing: %s.\n", argv[idx + 1], strerror(errno));
                         return -1;
                 }
         }
@@ -649,28 +651,28 @@ static int cmd_save(int argc, char **argv)
 
 static int cmd_load(int argc, char **argv)
 {
-        int ret;
+        int ret, idx;
         FILE *fd = stdin;
         preludedb_t *db;
         prelude_io_t *io;
         prelude_msg_t *msg;
         idmef_message_t *idmef;
  
-        ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc < 3 ) {
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 2 ) {
                 cmd_load_help();
                 exit(1);
         }
 
-        ret = db_new_from_string(&db, argv[2]);
+        ret = db_new_from_string(&db, argv[idx]);
 	if ( ret < 0 )
 		return ret;
         
-        if ( argc >= 4 && *argv[3] != '-' ) {
+        if ( argc > 2 && *argv[idx + 1] != '-' ) {
                 
-                fd = fopen(argv[3], "r");
+                fd = fopen(argv[idx + 1], "r");
                 if ( ! fd ) {
-                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[3], strerror(errno));
+                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx + 1], strerror(errno));
                         return -1;
                 }
         }
@@ -792,27 +794,27 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 
 static int cmd_print(int argc, char **argv)
 {
-        int ret;
+        int ret, idx;
         FILE *fd = stdout;
         preludedb_t *db;
         prelude_io_t *io;
         preludedb_result_idents_t *idents;
 
-        ret = setup_generic_options(&argc, argv);
-        if ( ret < 0 || argc < 3 ) {
+        idx = setup_generic_options(&argc, argv);        
+        if ( idx < 0 || argc < 2 ) {
                 cmd_print_help();
                 exit(1);
         }
-
-        ret = db_new_from_string(&db, argv[2]);
+        
+        ret = db_new_from_string(&db, argv[idx]);
 	if ( ret < 0 )
 		return ret;
 
-        if ( argc >= 4 && *argv[3] != '-' ) {
+        if ( argc > 2 && *argv[idx + 1] != '-' ) {
                                 
-                fd = fopen(argv[3], "w");
+                fd = fopen(argv[idx + 1], "w");
                 if ( ! fd ) {
-                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[3], strerror(errno));
+                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx + 1], strerror(errno));
                         return -1;
                 }
         }
@@ -905,7 +907,7 @@ int main(int argc, char **argv)
 		if ( strcmp(argv[1], commands[i].name) != 0 )
                         continue;
                 
-                ret = commands[i].run(argc, argv);
+                ret = commands[i].run(--argc, &argv[1]);
                 if ( ret < 0 )                        
                         return ret;
                 
