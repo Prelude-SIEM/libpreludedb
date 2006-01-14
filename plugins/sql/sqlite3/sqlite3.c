@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <limits.h>
+#include <regex.h>
 
 #include <sqlite3.h>
 #include <libprelude/prelude.h>
@@ -43,6 +44,20 @@
 
 
 #define SQLITE_BUSY_TIMEOUT INT_MAX 
+
+
+/*
+ * Up to SQLite 3.2.2, there was no way to create an user defined
+ * function for the REGEXP operator. In this situation, we use the
+ * GLOB operator in order to define the regexp handler.
+ */
+#if SQLITE_VERSION_NUMBER >= 3002002
+# define SQLITE_REGEX_OPERATOR "REGEXP"
+# define SQLITE_REGEX_BIND_OPERATOR "regexp"
+#else
+# define SQLITE_REGEX_OPERATOR "GLOB"
+# define SQLITE_REGEX_BIND_OPERATOR "glob"
+#endif
 
 
 typedef struct {
@@ -72,6 +87,30 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
 
+static void sqlite3_regexp(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+	int ret;
+	regex_t regex;
+
+	if ( argc != 2 ) {
+		sqlite3_result_error(context, "Invalid argument count", -1);
+		return;
+	}
+
+	ret = regcomp(&regex, sqlite3_value_text(argv[0]), REG_EXTENDED | REG_NOSUB);
+	if ( ret != 0 ) {
+		sqlite3_result_error(context, "error compiling regular expression", -1);
+		return;
+	}
+
+	ret = regexec(&regex, sqlite3_value_text(argv[1]), 0, NULL, 0);
+	regfree(&regex);
+
+	sqlite3_result_int(context, (ret == REG_NOMATCH) ? 0 : 1 );
+}
+
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
 {
         int ret;
@@ -87,6 +126,13 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
                 sqlite3_close(*session);
                 return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         }
+
+	ret = sqlite3_create_function(*session, SQLITE_REGEX_BIND_OPERATOR, 2, SQLITE_ANY, NULL, sqlite3_regexp, NULL, NULL);
+	if ( ret != SQLITE_OK ) {
+                snprintf(errbuf, size, "%s", sqlite3_errmsg(*session));
+                sqlite3_close(*session);
+                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+	}
 
         sqlite3_busy_timeout(*session, SQLITE_BUSY_TIMEOUT);
         
@@ -449,10 +495,10 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
                 { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR,        "NOT LIKE"          },
                 { IDMEF_CRITERION_OPERATOR_NOT_SUBSTR_NOCASE, "NOT LIKE "         },
 
-                /* { IDMEF_CRITERION_OPERATOR_REGEX,             "REGEXP BINARY"     }, 
-                 * { IDMEF_CRITERION_OPERATOR_REGEX_NOCASE,      "REGEXP"            }, 
-                 * { IDMEF_CRITERION_OPERATOR_NOT_REGEX,         "NOT REGEXP"        }, 
-                 * { IDMEF_CRITERION_OPERATOR_NOT_REGEX_NOCASE,  "NOT REGEXP BINARY" }, */
+                { IDMEF_CRITERION_OPERATOR_REGEX,             SQLITE_REGEX_OPERATOR        },
+                { IDMEF_CRITERION_OPERATOR_REGEX_NOCASE,      SQLITE_REGEX_OPERATOR        },
+                { IDMEF_CRITERION_OPERATOR_NOT_REGEX,         "NOT " SQLITE_REGEX_OPERATOR },
+                { IDMEF_CRITERION_OPERATOR_NOT_REGEX_NOCASE,  "NOT " SQLITE_REGEX_OPERATOR },
 
                 { IDMEF_CRITERION_OPERATOR_NULL,              "IS NULL"           },
                 { IDMEF_CRITERION_OPERATOR_NOT_NULL,          "IS NOT NULL"       },
@@ -503,35 +549,35 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 
         switch ( type ) {
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
-                        return prelude_string_sprintf(output, "STRFTIME('%%Y', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%Y', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
-                        return  prelude_string_sprintf(output, "STRFTIME('%%m', %s) %s '%d'",
+                        return  prelude_string_sprintf(output, "STRFTIME('%%m', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
-                        return prelude_string_sprintf(output, "STRFTIME('%%j', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%j', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
-                        return prelude_string_sprintf(output, "STRFTIME('%%d', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%d', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
-                        return prelude_string_sprintf(output, "STRFTIME('%%w', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%w', %s) + 0 %s %d",
                                         buf, sql_operator, value % 7);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
-                        return prelude_string_sprintf(output, "STRFTIME('%%H', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%H', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
-                        return prelude_string_sprintf(output, "STRFTIME('%%M', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%M', %s) + 0 %s %d",
                                         buf, sql_operator, value);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
-                        return prelude_string_sprintf(output, "STRFTIME('%%S', %s) %s '%d'",
+                        return prelude_string_sprintf(output, "STRFTIME('%%S', %s) + 0 %s %d",
                                         buf, sql_operator, value);
         }
 
@@ -545,41 +591,9 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
                                           char *buf, size_t size)
 {
-        char *type_str;
-        int ret;
+	/* It's not clear where this would be used... */
 
-        switch ( type ) {
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
-                        type_str = "YEAR";
-                        break;
-
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
-                        type_str = "MONTH";
-                        break;
-
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
-                        type_str = "DAY";
-                        break;
-
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
-                        type_str = "HOUR";
-                        break;
-
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
-                        type_str = "MINUTE";
-                        break;
-
-                case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
-                        type_str = "SECOND";
-                        break;
-
-                default:
-                        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-        }
-
-        ret = snprintf(buf, size, "INTERVAL %d %s", value, type_str);
-
-        return (ret < 0 || ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
+        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
 
 
