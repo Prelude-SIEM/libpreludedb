@@ -18,6 +18,7 @@
 # any checks for libraries, header files, types and library functions.
 AC_DEFUN([gl_EARLY],
 [
+  AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
 ])
@@ -26,13 +27,24 @@ AC_DEFUN([gl_EARLY],
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
-AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
+  AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
+changequote(,)dnl
+LTALLOCA=`echo "$ALLOCA" | sed 's/\.[^.]* /.lo /g;s/\.[^.]*$/.lo/'`
+changequote([, ])dnl
+AC_SUBST([LTALLOCA])
   gl_FUNC_ALLOCA
   dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
+  AC_FUNC_MALLOC
+  gl_MBCHAR
+  gl_MBITER
+  gl_FUNC_MEMCHR
   gl_MINMAX
+  gl_REGEX
   gl_C_RESTRICT
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
+  AM_STDBOOL_H
+  gl_STRCASE
   gl_FUNC_STRDUP
   gl_FUNC_STRNDUP
   gl_FUNC_STRNLEN
@@ -45,22 +57,41 @@ AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  lib/alloca.c
   lib/alloca_.h
   lib/asnprintf.c
+  lib/gettext.h
+  lib/malloc.c
+  lib/mbchar.c
+  lib/mbchar.h
+  lib/mbuiter.h
+  lib/memchr.c
   lib/minmax.h
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
   lib/printf-parse.h
+  lib/regcomp.c
+  lib/regex.c
+  lib/regex.h
+  lib/regex_internal.c
+  lib/regex_internal.h
+  lib/regexec.c
   lib/size_max.h
   lib/snprintf.c
   lib/snprintf.h
+  lib/stdbool_.h
+  lib/strcase.h
+  lib/strcasecmp.c
   lib/strdup.c
   lib/strdup.h
+  lib/strncasecmp.c
   lib/strndup.c
   lib/strndup.h
   lib/strnlen.c
   lib/strnlen.h
+  lib/strnlen1.c
+  lib/strnlen1.h
   lib/time_r.c
   lib/time_r.h
   lib/vasnprintf.c
@@ -69,19 +100,27 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vsnprintf.h
   lib/xsize.h
   m4/alloca.m4
+  m4/codeset.m4
   m4/eoverflow.m4
   m4/extensions.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
   m4/longdouble.m4
   m4/longlong.m4
+  m4/mbchar.m4
+  m4/mbiter.m4
+  m4/mbrtowc.m4
+  m4/memchr.m4
   m4/minmax.m4
   m4/onceonly_2_57.m4
+  m4/regex.m4
   m4/restrict.m4
   m4/signed.m4
   m4/size_max.m4
   m4/snprintf.m4
+  m4/stdbool.m4
   m4/stdint_h.m4
+  m4/strcase.m4
   m4/strdup.m4
   m4/strndup.m4
   m4/strnlen.m4
