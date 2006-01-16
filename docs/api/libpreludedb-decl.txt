@@ -789,6 +789,10 @@ typedef struct {
 #define PRELUDEDB_SQL_SETTING_TYPE "type"
 </MACRO>
 <MACRO>
+<NAME>PRELUDEDB_SQL_SETTING_FILE</NAME>
+#define PRELUDEDB_SQL_SETTING_FILE "file"
+</MACRO>
+<MACRO>
 <NAME>PRELUDEDB_SQL_SETTING_LOG</NAME>
 #define PRELUDEDB_SQL_SETTING_LOG "log"
 </MACRO>
@@ -893,6 +897,16 @@ preludedb_sql_settings_t *settings, const char *value
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_sql_settings_get_type</NAME>
+<RETURNS>const char *</RETURNS>
+const preludedb_sql_settings_t *settings
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_sql_settings_set_file</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_settings_t *settings, const char *value
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_sql_settings_get_file</NAME>
 <RETURNS>const char *</RETURNS>
 const preludedb_sql_settings_t *settings
 </FUNCTION>

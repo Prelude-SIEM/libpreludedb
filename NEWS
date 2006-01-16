@@ -1,3 +1,17 @@
+* 2005-01-16, libpreludedb-0.9.3:
+
+	- SQLite support.
+
+	- More accurate error reporting in preludedb-admin.
+
+	- Fix NULL error in case the buffer is too small, truncate.
+
+	- Fix license notice, stating clearly that linking from a program
+	  using a GPL compatible license is allowed. Required for Debian package 
+	  inclusion.
+
+
+
 * 2005-12-12, libpreludedb-0.9.2:
 
 	- Fix character escaping issue with two consecutive backslash 
