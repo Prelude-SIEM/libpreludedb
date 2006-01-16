@@ -34,7 +34,6 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <limits.h>
-#include <regex.h>
 
 #include <sqlite3.h>
 #include <libprelude/prelude.h>
