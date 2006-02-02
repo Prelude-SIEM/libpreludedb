@@ -327,10 +327,11 @@ static int get_user_id(preludedb_sql_t *sql,
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
                 if ( listed ) {
-                        int (*parent_new_child)(void *parent, idmef_user_id_t **, int) = parent_new_child;
+                        int (*parent_new_child)(void *parent, idmef_user_id_t **, int) =
+                                (int (*)(void *, idmef_user_id_t **, int)) _parent_new_child;
                         ret = parent_new_child(parent, &user_id, -1);
                 } else {
-                        int (*parent_new_child)(void *parent, idmef_user_id_t **) = parent_new_child;
+                        int (*parent_new_child)(void *parent, idmef_user_id_t **) = _parent_new_child;
                         ret = parent_new_child(parent, &user_id);
                 }
                 
