@@ -82,6 +82,7 @@ get_(float, float)
 
 
 
+
 static int _get_string(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 		       int index,
 		       void *parent, int (*parent_new_child)(void *parent, prelude_string_t **child))
@@ -95,6 +96,30 @@ static int _get_string(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 		return ret;
 
 	ret = parent_new_child(parent, &string);
+	if ( ret < 0 )
+		return ret;
+
+	ret = prelude_string_set_dup_fast(string,
+					  preludedb_sql_field_get_value(field),
+					  preludedb_sql_field_get_len(field));
+	
+	return (ret < 0) ? ret : 1;
+}
+
+
+static int _get_string_listed(preludedb_sql_t *sql, preludedb_sql_row_t *row,
+                              int index,
+                              void *parent, int (*parent_new_child)(void *parent, prelude_string_t **child, int pos))
+{
+	preludedb_sql_field_t *field;
+	prelude_string_t *string;
+	int ret;
+
+	ret = preludedb_sql_row_fetch_field(row, index, &field);
+	if ( ret <= 0 )
+		return ret;
+
+	ret = parent_new_child(parent, &string, -1);
 	if ( ret < 0 )
 		return ret;
 
@@ -174,6 +199,9 @@ static int _get_timestamp(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 
 #define get_string(sql, row, index, parent, parent_new_child) \
 	_get_string(sql, row, index, parent, (int (*)(void *, prelude_string_t **)) parent_new_child)
+
+#define get_string_listed(sql, row, index, parent, parent_new_child) \
+	_get_string_listed(sql, row, index, parent, (int (*)(void *, prelude_string_t **, int)) parent_new_child)
 
 #define get_enum(sql, row, index, parent, parent_new_child, convert_enum) \
 	_get_enum(sql, row, index, parent, (int (*)(void *, int **)) parent_new_child, convert_enum)
@@ -278,14 +306,14 @@ static int get_user_id(preludedb_sql_t *sql,
 		       int parent_index,
 		       int file_index,
 		       int file_access_index,
-		       void *parent,
-		       int (*parent_new_child)(void *, idmef_user_id_t **child))
+		       void *parent, prelude_bool_t listed,
+		       int (*_parent_new_child)(void *, idmef_user_id_t **child))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
 	idmef_user_id_t *user_id;
 	int ret;
-
+        
 	ret = preludedb_sql_query_sprintf(sql, &table,
 					  "SELECT ident, type, name, number, tty "
 					  "FROM Prelude_UserId "
@@ -298,8 +326,15 @@ static int get_user_id(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &user_id);
-		if ( ret < 0 )
+                if ( listed ) {
+                        int (*parent_new_child)(void *parent, idmef_user_id_t **, int) = parent_new_child;
+                        ret = parent_new_child(parent, &user_id, -1);
+                } else {
+                        int (*parent_new_child)(void *parent, idmef_user_id_t **) = parent_new_child;
+                        ret = parent_new_child(parent, &user_id);
+                }
+                
+                if ( ret < 0 )
 			goto error;
 
 		ret = get_string(sql, row, 0, user_id, idmef_user_id_new_ident);
@@ -366,7 +401,7 @@ static int get_user(preludedb_sql_t *sql,
 		goto error;
 
 	ret = get_user_id(sql, message_ident, parent_type, parent_index, 0, 0, user,
-			  (int (*)(void *, idmef_user_id_t **)) idmef_user_new_user_id);
+			  TRUE, (int (*)(void *, idmef_user_id_t **)) idmef_user_new_user_id);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -379,7 +414,7 @@ static int get_process_arg(preludedb_sql_t *sql,
 			   char parent_type,
 			   char parent_index,
 			   void *parent,
-			   int (*parent_new_child)(void *parent, prelude_string_t **child))
+			   int (*parent_new_child)(void *parent, prelude_string_t **child, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -396,7 +431,7 @@ static int get_process_arg(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = get_string(sql, row, 0, parent, parent_new_child);
+		ret = get_string_listed(sql, row, 0, parent, parent_new_child);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -412,7 +447,7 @@ static int get_process_env(preludedb_sql_t *sql,
 			   char parent_type,
 			   int parent_index,
 			   void *parent,
-			   int (*parent_new_child)(void *parent, prelude_string_t **child))
+			   int (*parent_new_child)(void *parent, prelude_string_t **child, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -429,7 +464,7 @@ static int get_process_env(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = get_string(sql, row, 0, parent, parent_new_child);
+		ret = get_string_listed(sql, row, 0, parent, parent_new_child);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -485,12 +520,12 @@ static int get_process(preludedb_sql_t *sql,
 		goto error;
 
 	ret = get_process_arg(sql, message_ident, parent_type, parent_index, process,
-			      (int (*)(void *, prelude_string_t **)) idmef_process_new_arg);
+			      (int (*)(void *, prelude_string_t **, int)) idmef_process_new_arg);
 	if ( ret < 0 )
 		goto error;
 	
 	ret = get_process_env(sql, message_ident, parent_type, parent_index, process,
-			      (int (*)(void *, prelude_string_t **)) idmef_process_new_env);
+			      (int (*)(void *, prelude_string_t **, int)) idmef_process_new_env);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -519,7 +554,7 @@ static int get_web_service_arg(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = get_string(sql, row, 0, web_service, idmef_web_service_new_arg);
+		ret = get_string_listed(sql, row, 0, web_service, idmef_web_service_new_arg);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -705,7 +740,7 @@ static int get_address(preludedb_sql_t *sql,
 		       char parent_type,
 		       int parent_index,
 		       void *parent,
-		       int (*parent_new_child)(void *parent, idmef_address_t **child))
+		       int (*parent_new_child)(void *parent, idmef_address_t **child, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -723,7 +758,7 @@ static int get_address(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &idmef_address);
+		ret = parent_new_child(parent, &idmef_address, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -803,7 +838,7 @@ static int get_node(preludedb_sql_t *sql,
 		goto error;
 
 	ret = get_address(sql, message_ident, parent_type, parent_index, node,
-			  (int (*)(void *, idmef_address_t **)) idmef_node_new_address);
+			  (int (*)(void *, idmef_address_t **, int)) idmef_node_new_address);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -1071,7 +1106,7 @@ static int get_file_access_permission(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = get_string(sql, row, 0, parent, idmef_file_access_new_permission);
+		ret = get_string_listed(sql, row, 0, parent, idmef_file_access_new_permission);
 		if ( ret < 0 )
 			goto error;
 	}
@@ -1125,7 +1160,7 @@ static int get_file_access(preludedb_sql_t *sql,
 			goto error;
 
 		ret = get_user_id(sql, message_ident, 'F', target_index, file_index, cnt,
-				  file_access, (int (*)(void *, idmef_user_id_t **)) idmef_file_access_new_user_id);
+				  file_access, FALSE, (int (*)(void *, idmef_user_id_t **)) idmef_file_access_new_user_id);
 		if ( ret < 0 )
 			goto error;
 
@@ -1538,7 +1573,7 @@ static int get_additional_data(preludedb_sql_t *sql,
 			       uint64_t message_ident,
 			       char parent_type,
 			       void *parent,
-			       int (*parent_new_child)(void *, idmef_additional_data_t **))
+			       int (*parent_new_child)(void *, idmef_additional_data_t **, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -1558,7 +1593,7 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &additional_data);
+		ret = parent_new_child(parent, &additional_data, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1773,7 +1808,7 @@ static int get_alertident(preludedb_sql_t *sql,
 			  uint64_t message_ident,
 			  char parent_type,
 			  void *parent,
-			  int (*parent_new_child)(void *parent, idmef_alertident_t **child))
+			  int (*parent_new_child)(void *parent, idmef_alertident_t **child, int pos))
 {
 	preludedb_sql_table_t *table;
 	preludedb_sql_row_t *row;
@@ -1791,7 +1826,7 @@ static int get_alertident(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &alertident);
+		ret = parent_new_child(parent, &alertident, -1);
 		if ( ret < 0 )
 			goto error;
 
@@ -1844,7 +1879,7 @@ static int get_tool_alert(preludedb_sql_t *sql,
 		goto error;
 
 	ret = get_alertident(sql, message_ident, 'T', tool_alert,
-			     (int (*)(void *, idmef_alertident_t **)) idmef_tool_alert_new_alertident);
+			     (int (*)(void *, idmef_alertident_t **, int)) idmef_tool_alert_new_alertident);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -1882,7 +1917,7 @@ static int get_correlation_alert(preludedb_sql_t *sql,
 		goto error;
 
 	ret = get_alertident(sql, message_ident, 'C', correlation_alert,
-			     (int (*)(void *, idmef_alertident_t **)) idmef_correlation_alert_new_alertident);
+			     (int (*)(void *, idmef_alertident_t **, int)) idmef_correlation_alert_new_alertident);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -2029,7 +2064,7 @@ int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **me
 		goto error;
 
 	ret = get_additional_data(sql, ident, 'A', alert, 
-				  (int (*)(void *, idmef_additional_data_t **)) idmef_alert_new_additional_data);
+				  (int (*)(void *, idmef_additional_data_t **, int)) idmef_alert_new_additional_data);
 	if ( ret < 0 )
 		goto error;
 
@@ -2116,7 +2151,7 @@ int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t 
 		goto error;
 
 	ret = get_additional_data(sql, ident, 'H', heartbeat,
-				  (int (*)(void *, idmef_additional_data_t **)) idmef_heartbeat_new_additional_data);
+				  (int (*)(void *, idmef_additional_data_t **, int)) idmef_heartbeat_new_additional_data);
 	if ( ret < 0 )
 		goto error;
 
