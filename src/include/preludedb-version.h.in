@@ -24,8 +24,16 @@
 #ifndef _LIBPRELUDEDB_VERSION_H
 #define _LIBPRELUDEDB_VERSION_H
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 #define LIBPRELUDEDB_VERSION "@VERSION@"
 
 const char *preludedb_check_version(const char *req_version);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_VERSION_H */

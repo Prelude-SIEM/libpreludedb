@@ -31,8 +31,12 @@
 #include "preludedb-sql.h"
 #include "preludedb-error.h"
 #include "preludedb-path-selection.h"
-#include "preludedb.h"
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+         
 typedef struct preludedb preludedb_t;
 
 typedef struct preludedb_result_idents preludedb_result_idents_t;
@@ -90,5 +94,8 @@ int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selec
 			 idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
 			 preludedb_result_values_t **result);
 
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_H */
