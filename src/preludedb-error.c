@@ -53,11 +53,14 @@ const char *preludedb_strerror(preludedb_error_t error)
 		"Cannot load format plugin"
         };
 
+        if ( prelude_error_is_verbose(error) )
+                return _prelude_thread_get_error();
+               
 	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {
 		preludedb_error_code_t code;
 
 		code = prelude_error_get_code(error);
-		if ( code < 0 || code >= sizeof (error_strings) / sizeof (error_strings[0]) )
+		if ( code < 0 || code >= sizeof(error_strings) / sizeof(*error_strings) )
 			return NULL;
 
 		return error_strings[code];
