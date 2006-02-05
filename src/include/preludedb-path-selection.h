@@ -24,6 +24,10 @@
 #ifndef _LIBPRELUDEDB_OBJECT_SELECTION_H
 #define _LIBPRELUDEDB_OBJECT_SELECTION_H
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 typedef enum {
 	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN = 0x01,
 	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX = 0x02,
@@ -55,5 +59,9 @@ void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
 preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
 								 preludedb_selected_path_t *selected_path);
 size_t preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* ! _LIBPRELUDEDB_OBJECT_SELECTION_H */

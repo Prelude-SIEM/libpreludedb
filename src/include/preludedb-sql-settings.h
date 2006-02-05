@@ -24,6 +24,10 @@
 #ifndef _LIBPRELUDEDB_SQL_SETTINGS_H
 #define _LIBPRELUDEDB_SQL_SETTINGS_H
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+         
 #define PRELUDEDB_SQL_SETTING_HOST "host"
 #define PRELUDEDB_SQL_SETTING_PORT "port"
 #define PRELUDEDB_SQL_SETTING_NAME "name"
@@ -70,5 +74,10 @@ const char *preludedb_sql_settings_get_type(const preludedb_sql_settings_t *sett
 
 int preludedb_sql_settings_set_file(preludedb_sql_settings_t *settings, const char *value);
 const char *preludedb_sql_settings_get_file(const preludedb_sql_settings_t *settings);
+
+         
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_SQL_SETTINGS_H */
