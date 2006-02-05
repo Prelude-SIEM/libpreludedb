@@ -27,6 +27,10 @@
 #include <libprelude/prelude-inttypes.h>
 #include <libprelude/prelude-error.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 typedef enum {
         PRELUDEDB_ERROR_NO_ERROR = 0,
         PRELUDEDB_ERROR_GENERIC = 1,
@@ -61,6 +65,21 @@ static inline preludedb_error_t preludedb_error(preludedb_error_code_t error)
 }
 
 
+
+static inline preludedb_error_t preludedb_error_verbose(preludedb_error_code_t error, const char *fmt, ...)
+{
+        int ret;
+	va_list ap;
+
+	va_start(ap, fmt);
+	ret = prelude_error_verbose_make_v(PRELUDE_ERROR_SOURCE_PRELUDEDB, error, fmt, ap);
+	va_end(ap);
+
+	return ret;
+}
+
+
+
 static inline prelude_bool_t preludedb_error_check(preludedb_error_t error,
 						   preludedb_error_code_t code)
 {
@@ -76,5 +95,9 @@ static inline preludedb_error_t preludedb_error_from_errno(int err)
 
 
 const char *preludedb_strerror(preludedb_error_t error);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_ERROR_H */
