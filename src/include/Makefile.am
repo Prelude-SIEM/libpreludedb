@@ -11,4 +11,4 @@ include_HEADERS = 			\
 	preludedb.h
 
 nodist_include_HEADERS = preludedb-version.h
-noinst_HEADERS = libmissing.h
+noinst_HEADERS = libmissing.h preludedb-plugin-format-prv.h

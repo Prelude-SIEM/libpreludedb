@@ -39,6 +39,7 @@
 
 #include "preludedb.h"
 #include "preludedb-plugin-format.h"
+#include "preludedb-plugin-format-prv.h"
 
 
 #define PRELUDEDB_PLUGIN_SYMBOL "preludedb_plugin_init"
@@ -65,7 +66,7 @@ struct preludedb_result_values {
 
 static int libpreludedb_refcount = 0;
 PRELUDE_LIST(_sql_plugin_list);
-static PRELUDE_LIST(format_plugin_list);
+static PRELUDE_LIST(plugin_format_list);
 
 
 
@@ -82,16 +83,18 @@ int preludedb_init(void)
 
 	ret = access(FORMAT_PLUGIN_DIR, F_OK);
 	if ( ret < 0 )
-                return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
+                                               "could not access format plugin directory '%s'", FORMAT_PLUGIN_DIR);
         
-	ret = prelude_plugin_load_from_dir(&format_plugin_list, FORMAT_PLUGIN_DIR,
+	ret = prelude_plugin_load_from_dir(&plugin_format_list, FORMAT_PLUGIN_DIR,
                                            PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
 	if ( ret < 0 )
 		return ret;
 
 	ret = access(SQL_PLUGIN_DIR, F_OK);
 	if ( ret < 0 )
-                return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN,
+                                               "could not access sql plugin directory '%s'", SQL_PLUGIN_DIR);
 
 	ret = prelude_plugin_load_from_dir(&_sql_plugin_list, SQL_PLUGIN_DIR,
                                            PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
@@ -110,14 +113,18 @@ void preludedb_deinit(void)
         
 	if ( --libpreludedb_refcount > 0 )
 		return;
-
+                
         iter = NULL;
-        while ( (pl = prelude_plugin_get_next(&_sql_plugin_list, &iter)) )
+        while ( (pl = prelude_plugin_get_next(&_sql_plugin_list, &iter)) ) {
                 prelude_plugin_unload(pl);
-
+                free(pl);
+        }
+        
         iter = NULL;
-        while ( (pl = prelude_plugin_get_next(&format_plugin_list, &iter)) )
+        while ( (pl = prelude_plugin_get_next(&plugin_format_list, &iter)) ) {
                 prelude_plugin_unload(pl);
+                free(pl);
+        }
         
 	prelude_deinit();
 }
@@ -265,9 +272,10 @@ const char *preludedb_get_format_version(preludedb_t *db)
  */
 int preludedb_set_format(preludedb_t *db, const char *format_name)
 {
-	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&format_plugin_list, format_name);
+	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&plugin_format_list, format_name);
 	if ( ! db->plugin )
-		return preludedb_error(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN);
+		return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
+                                               "could not find format plugin '%s'", format_name);
 	
 	return 0;
 }

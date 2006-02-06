@@ -26,7 +26,11 @@
 
 #include <libprelude/prelude-string.h>
 
-#define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE sizeof ("'1970-01-01 00:00:00'")
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+#define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE 128
 
 typedef enum {
 	PRELUDEDB_SQL_STATUS_DISCONNECTED = 0,
@@ -107,10 +111,14 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value);
 
 int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec);
-int preludedb_sql_time_to_timestamp(const idmef_time_t *time,
+int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
+                                    const idmef_time_t *time,
 				    char *time_buf, size_t time_buf_size,
 				    char *gmtoff_buf, size_t gmtoff_buf_size,
 				    char *usec_buf, size_t usec_buf_size);
      
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_SQL_H */

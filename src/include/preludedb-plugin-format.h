@@ -1,7 +1,7 @@
 /*****
 *
-* Copyright (C) 2003-2005 PreludeIDS Technologies. All Rights Reserved.
-* Author: Nicolas Delon <nicolas.delon@prelude-ids.com>
+* Copyright (C) 2005 PreludeIDS Technologies. All Rights Reserved.
+* Author: Yoann Vandoorselaere <yoann.v@prelude-ids.com>
 *
 * This file is part of the PreludeDB library.
 *
@@ -27,75 +27,83 @@
 
 #include <libprelude/prelude-plugin.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
-typedef struct {
-	PRELUDE_PLUGIN_GENERIC;
-
-	int (*check_schema_version)(const char *version);
-
-	int (*get_alert_idents)(preludedb_sql_t *sql,
-				idmef_criteria_t *criteria,
-				int limit, int offset, preludedb_result_idents_order_t order,
-				void **res);
-
-	int (*get_heartbeat_idents)(preludedb_sql_t *sql,
-				    idmef_criteria_t *criteria, 
-				    int limit, int offset, preludedb_result_idents_order_t order,
-				    void **res);
-
-	size_t (*get_message_ident_count)(void *res);
-
-	int (*get_next_message_ident)(void *res, uint64_t *ident);
-
-	void (*destroy_message_idents_resource)(void *res);
-
-	int (*get_alert)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
-
-	int (*get_heartbeat)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
-        
-	int (*delete_alert)(preludedb_sql_t *sql, uint64_t ident);
-
-	int (*delete_heartbeat)(preludedb_sql_t *sql, uint64_t ident);
-
-	int (*insert_message)(preludedb_sql_t *sql, idmef_message_t *message);
-
-	int (*get_values)(preludedb_sql_t *sql, preludedb_path_selection_t *selection,
-			  idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res);
-
-	int (*get_next_values)(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values);
-
-	void (*destroy_values_resource)(void *res);
-} preludedb_plugin_format_t;
+typedef struct preludedb_plugin_format preludedb_plugin_format_t;
 
 
-#define	preludedb_plugin_format_check_schema_version_func(p) (p)->check_schema_version
-#define	preludedb_plugin_format_get_alert_idents_func(p) (p)->get_alert_idents
-#define	preludedb_plugin_format_get_heartbeat_idents_func(p) (p)->get_heartbeat_idents
-#define	preludedb_plugin_format_get_message_ident_count_func(p) (p)->get_message_ident_count
-#define	preludedb_plugin_format_get_next_message_ident_func(p) (p)->get_next_message_ident
-#define preludedb_plugin_format_destroy_message_idents_resource_func(p) (p)->destroy_message_idents_resource
-#define preludedb_plugin_format_get_alert_func(p) (p)->get_alert
-#define preludedb_plugin_format_get_heartbeat_func(p) (p)->get_heartbeat
-#define preludedb_plugin_format_delete_alert_func(p) (p)->delete_alert
-#define preludedb_plugin_format_delete_heartbeat_func(p) (p)->delete_heartbeat
-#define preludedb_plugin_format_insert_message_func(p) (p)->insert_message
-#define preludedb_plugin_format_get_values_func(p) (p)->get_values
-#define preludedb_plugin_format_get_next_values_func(p) (p)->get_next_values
-#define preludedb_plugin_format_destroy_values_resource_func(p) (p)->destroy_values_resource
+typedef int (*preludedb_plugin_format_check_schema_version_func_t)(const char *version);
 
-#define	preludedb_plugin_format_set_check_schema_version_func(p, f) preludedb_plugin_format_check_schema_version_func(p) = (f)
-#define	preludedb_plugin_format_set_get_alert_idents_func(p, f) preludedb_plugin_format_get_alert_idents_func(p) = (f)
-#define	preludedb_plugin_format_set_get_heartbeat_idents_func(p, f) preludedb_plugin_format_get_heartbeat_idents_func(p) = (f)
-#define	preludedb_plugin_format_set_get_message_ident_count_func(p, f) preludedb_plugin_format_get_message_ident_count_func(p) = (f)
-#define	preludedb_plugin_format_set_get_next_message_ident_func(p, f) preludedb_plugin_format_get_next_message_ident_func(p) = (f)
-#define	preludedb_plugin_format_set_destroy_message_idents_resource_func(p, f) preludedb_plugin_format_destroy_message_idents_resource_func(p) = (f)
-#define preludedb_plugin_format_set_get_alert_func(p, f) preludedb_plugin_format_get_alert_func(p) = (f)
-#define preludedb_plugin_format_set_get_heartbeat_func(p, f) preludedb_plugin_format_get_heartbeat_func(p) = (f)
-#define preludedb_plugin_format_set_delete_alert_func(p, f) preludedb_plugin_format_delete_alert_func(p) = (f)
-#define preludedb_plugin_format_set_delete_heartbeat_func(p, f) preludedb_plugin_format_delete_heartbeat_func(p) = (f)
-#define preludedb_plugin_format_set_insert_message_func(p, f) preludedb_plugin_format_insert_message_func(p) = (f)
-#define preludedb_plugin_format_set_get_values_func(p, f) preludedb_plugin_format_get_values_func(p) = (f)
-#define preludedb_plugin_format_set_get_next_values_func(p, f) preludedb_plugin_format_get_next_values_func(p) = (f)
-#define preludedb_plugin_format_set_destroy_values_resource_func(p, f) preludedb_plugin_format_destroy_values_resource_func(p) = (f)
+typedef int (*preludedb_plugin_format_get_alert_idents_func_t)(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                                                               int limit, int offset, preludedb_result_idents_order_t order,
+                                                               void **res);
+
+typedef int (*preludedb_plugin_format_get_heartbeat_idents_func_t)(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                                                                   int limit, int offset, preludedb_result_idents_order_t order,
+                                                                   void **res);
+
+typedef size_t (*preludedb_plugin_format_get_message_ident_count_func_t)(void *res);
+typedef int (*preludedb_plugin_format_get_next_message_ident_func_t)(void *res, uint64_t *ident);
+typedef void (*preludedb_plugin_format_destroy_message_idents_resource_func_t)(void *res);
+typedef int (*preludedb_plugin_format_get_alert_func_t)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
+typedef int (*preludedb_plugin_format_get_heartbeat_func_t)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
+typedef int (*preludedb_plugin_format_delete_alert_func_t)(preludedb_sql_t *sql, uint64_t ident);
+typedef int (*preludedb_plugin_format_delete_heartbeat_func_t)(preludedb_sql_t *sql, uint64_t ident);
+typedef int (*preludedb_plugin_format_insert_message_func_t)(preludedb_sql_t *sql, idmef_message_t *message);
+typedef int (*preludedb_plugin_format_get_values_func_t)(preludedb_sql_t *sql, preludedb_path_selection_t *selection,
+                                                         idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res);
+
+typedef int (*preludedb_plugin_format_get_next_values_func_t)(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values);
+typedef void (*preludedb_plugin_format_destroy_values_resource_func_t)(void *res);
+
+
+
+void preludedb_plugin_format_set_check_schema_version_func(preludedb_plugin_format_t *plugin,
+                                                           preludedb_plugin_format_check_schema_version_func_t func);
+
+void preludedb_plugin_format_set_get_alert_idents_func(preludedb_plugin_format_t *plugin,
+                                                       preludedb_plugin_format_get_alert_idents_func_t func);
+
+void preludedb_plugin_format_set_get_heartbeat_idents_func(preludedb_plugin_format_t *plugin,
+                                                           preludedb_plugin_format_get_heartbeat_idents_func_t func);
+
+void preludedb_plugin_format_set_get_message_ident_count_func(preludedb_plugin_format_t *plugin,
+                                                              preludedb_plugin_format_get_message_ident_count_func_t func);
+
+void preludedb_plugin_format_set_get_next_message_ident_func(preludedb_plugin_format_t *plugin,
+                                                             preludedb_plugin_format_get_next_message_ident_func_t func);
+
+void preludedb_plugin_format_set_destroy_message_idents_resource_func(preludedb_plugin_format_t *plugin,
+                                                                      preludedb_plugin_format_destroy_message_idents_resource_func_t func);
+
+void preludedb_plugin_format_set_get_alert_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_alert_func_t func);
+
+void preludedb_plugin_format_set_get_heartbeat_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_heartbeat_func_t func);
+
+void preludedb_plugin_format_set_delete_alert_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_alert_func_t func);
+
+void preludedb_plugin_format_set_delete_heartbeat_func(preludedb_plugin_format_t *plugin,
+                                                       preludedb_plugin_format_delete_heartbeat_func_t func);
+
+void preludedb_plugin_format_set_insert_message_func(preludedb_plugin_format_t *plugin,
+                                                     preludedb_plugin_format_insert_message_func_t func);
+
+void preludedb_plugin_format_set_get_values_func(preludedb_plugin_format_t *plugin,
+                                                 preludedb_plugin_format_get_values_func_t func);
+
+void preludedb_plugin_format_set_get_next_values_func(preludedb_plugin_format_t *plugin,
+                                                      preludedb_plugin_format_get_next_values_func_t func);
+
+
+void preludedb_plugin_format_set_destroy_values_resource_func(preludedb_plugin_format_t *plugin,
+                                                              preludedb_plugin_format_destroy_values_resource_func_t func);
+
+int preludedb_plugin_format_new(preludedb_plugin_format_t **ret);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif /* _LIBPRELUDEDB_PLUGIN_FORMAT_H */
