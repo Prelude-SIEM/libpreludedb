@@ -71,7 +71,7 @@ static void get_error(PGconn *conn, char *errbuf, size_t size)
          * Remove trailing \n.
          */
         ret--;
-        while ( errbuf[ret] == '\n' || errbuf[ret] == ' ' )
+        while ( (errbuf[ret] == '\n' || errbuf[ret] == ' ') )
                 errbuf[ret--] = 0;
 }
 
@@ -156,6 +156,11 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
                 return ret;
         
         ptr = PQescapeBytea(input, input_size, &dummy);
+        if ( ! ptr ) {
+                prelude_string_destroy(string);
+                return -1;
+        }
+        
         ret = prelude_string_sprintf(string, "'%s'", ptr);
         free(ptr);
 
@@ -476,30 +481,35 @@ static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t t
 
 int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
-        static preludedb_plugin_sql_t sql_plugin;
+        int ret;
+        preludedb_plugin_sql_t *plugin;
+
+        ret = preludedb_plugin_sql_new(&plugin);
+        if ( ret < 0 )
+                return ret;
         
-        memset(&sql_plugin, 0, sizeof(sql_plugin));
-        prelude_plugin_set_name(&sql_plugin, "PgSQL");
-        prelude_plugin_entry_set_plugin(pe, (void *) &sql_plugin);
+        prelude_plugin_set_name((prelude_plugin_generic_t *) plugin, "PgSQL");
+        prelude_plugin_entry_set_plugin(pe, (void *) plugin);
         
-        preludedb_plugin_sql_set_open_func(&sql_plugin, sql_open);
-        preludedb_plugin_sql_set_close_func(&sql_plugin, sql_close);
-        preludedb_plugin_sql_set_get_error_func(&sql_plugin, sql_get_error);
-        preludedb_plugin_sql_set_escape_func(&sql_plugin, sql_escape);
-        preludedb_plugin_sql_set_escape_binary_func(&sql_plugin, sql_escape_binary);
-        preludedb_plugin_sql_set_unescape_binary_func(&sql_plugin, sql_unescape_binary);
-        preludedb_plugin_sql_set_query_func(&sql_plugin, sql_query);
-        preludedb_plugin_sql_set_resource_destroy_func(&sql_plugin, sql_resource_destroy);
-        preludedb_plugin_sql_set_get_column_count_func(&sql_plugin, sql_get_column_count);
-        preludedb_plugin_sql_set_get_row_count_func(&sql_plugin, sql_get_row_count);
-        preludedb_plugin_sql_set_get_column_name_func(&sql_plugin, sql_get_column_name);
-        preludedb_plugin_sql_set_get_column_num_func(&sql_plugin, sql_get_column_num);
-        preludedb_plugin_sql_set_fetch_row_func(&sql_plugin, sql_fetch_row);
-        preludedb_plugin_sql_set_fetch_field_func(&sql_plugin, sql_fetch_field);
-        preludedb_plugin_sql_set_build_constraint_string_func(&sql_plugin, sql_build_constraint_string);
-        preludedb_plugin_sql_set_build_time_constraint_string_func(&sql_plugin, sql_build_time_constraint_string);
-        preludedb_plugin_sql_set_build_time_interval_string_func(&sql_plugin, sql_build_time_interval_string);
-        preludedb_plugin_sql_set_build_limit_offset_string_func(&sql_plugin, sql_build_limit_offset_string);
+        preludedb_plugin_sql_set_open_func(plugin, sql_open);
+        preludedb_plugin_sql_set_close_func(plugin, sql_close);
+        preludedb_plugin_sql_set_get_error_func(plugin, sql_get_error);
+        preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
+        preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
+        preludedb_plugin_sql_set_unescape_binary_func(plugin, sql_unescape_binary);
+        preludedb_plugin_sql_set_query_func(plugin, sql_query);
+        preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);
+        preludedb_plugin_sql_set_get_column_count_func(plugin, sql_get_column_count);
+        preludedb_plugin_sql_set_get_row_count_func(plugin, sql_get_row_count);
+        preludedb_plugin_sql_set_get_column_name_func(plugin, sql_get_column_name);
+        preludedb_plugin_sql_set_get_column_num_func(plugin, sql_get_column_num);
+        preludedb_plugin_sql_set_get_operator_string_func(plugin, get_operator_string);
+        preludedb_plugin_sql_set_fetch_row_func(plugin, sql_fetch_row);
+        preludedb_plugin_sql_set_fetch_field_func(plugin, sql_fetch_field);
+        preludedb_plugin_sql_set_build_constraint_string_func(plugin, sql_build_constraint_string);
+        preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
+        preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
+        preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
 
         return 0;
 }

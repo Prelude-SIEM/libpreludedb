@@ -741,7 +741,7 @@ static int insert_inode(preludedb_sql_t *sql,
         if ( ! inode )
                 return 0;
 
-        if ( preludedb_sql_time_to_timestamp(idmef_inode_get_change_time(inode),
+        if ( preludedb_sql_time_to_timestamp(sql, idmef_inode_get_change_time(inode),
 					     ctime, sizeof (ctime), ctime_gmtoff, sizeof (ctime_gmtoff), NULL, 0) < 0 )
                 return -1;
 
@@ -928,17 +928,17 @@ static int insert_file(preludedb_sql_t *sql, uint64_t message_ident, int target_
         char mtime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], mtime_gmtoff[16];
         char atime[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE], atime_gmtoff[16];
 
-        ret = preludedb_sql_time_to_timestamp(idmef_file_get_create_time(file),
+        ret = preludedb_sql_time_to_timestamp(sql, idmef_file_get_create_time(file),
 					      ctime, sizeof (ctime), ctime_gmtoff, sizeof (ctime_gmtoff), NULL, 0);
 	if ( ret < 0 )
                 return ret;
 
-        ret = preludedb_sql_time_to_timestamp(idmef_file_get_modify_time(file),
+        ret = preludedb_sql_time_to_timestamp(sql, idmef_file_get_modify_time(file),
 					      mtime, sizeof (mtime), mtime_gmtoff, sizeof (mtime_gmtoff), NULL, 0);
 	if ( ret < 0 )
                 return ret;
 
-        ret = preludedb_sql_time_to_timestamp(idmef_file_get_access_time(file),
+        ret = preludedb_sql_time_to_timestamp(sql, idmef_file_get_access_time(file),
 					      atime, sizeof(atime), atime_gmtoff, sizeof (atime_gmtoff), NULL, 0);
 	if ( ret < 0 )
 		return ret;
@@ -1425,7 +1425,7 @@ static int insert_createtime(preludedb_sql_t *sql, char parent_type, uint64_t me
 	char utc_time_gmtoff[16];
         int ret;
 
-        ret = preludedb_sql_time_to_timestamp(time, utc_time, sizeof (utc_time), 
+        ret = preludedb_sql_time_to_timestamp(sql, time, utc_time, sizeof (utc_time), 
 					      utc_time_gmtoff, sizeof (utc_time_gmtoff),
 					      utc_time_usec, sizeof (utc_time_usec));
 	if ( ret < 0 )
@@ -1448,7 +1448,7 @@ static int insert_detecttime(preludedb_sql_t *sql, uint64_t message_ident, idmef
         if ( ! time )
                 return 0;
 
-        ret = preludedb_sql_time_to_timestamp(time, utc_time, sizeof (utc_time),
+        ret = preludedb_sql_time_to_timestamp(sql, time, utc_time, sizeof (utc_time),
 					      utc_time_gmtoff, sizeof (utc_time_gmtoff),
 					      utc_time_usec, sizeof (utc_time_usec));
 	if ( ret < 0 )
@@ -1470,7 +1470,8 @@ static int insert_analyzertime(preludedb_sql_t *sql, char parent_type, uint64_t 
         if ( ! time )
                 return 0;
 
-        ret = preludedb_sql_time_to_timestamp(time, utc_time, sizeof (utc_time), utc_time_gmtoff, sizeof (utc_time_gmtoff),
+        ret = preludedb_sql_time_to_timestamp(sql, time, utc_time, sizeof(utc_time),
+                                              utc_time_gmtoff, sizeof(utc_time_gmtoff),
 					      utc_time_usec, sizeof (utc_time_usec));
 	if ( ret < 0 )
                 return ret;
