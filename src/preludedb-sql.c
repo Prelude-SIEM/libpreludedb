@@ -302,21 +302,19 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
 {
 	int ret;
 	void *res;
-
+        struct timeval start, end;
+        
 	assert_connected(sql);
-
-	if ( sql->logfile ) {
-		size_t ret;
-
-		ret = fprintf(sql->logfile, "%s\n", query);
-		if ( ret < strlen(query) + 1 || fflush(sql->logfile) == EOF )
-			prelude_log(PRELUDE_LOG_ERR, "could not log query: %s.\n", strerror(errno));
-
-		/* Show must go on: don't stop trying executing the query even if we cannot log it */
-	}
-
+        
+        gettimeofday(&start, NULL);
 	ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
-	if ( ret < 0 ) {
+        gettimeofday(&end, NULL);
+
+        if ( sql->logfile )
+		fprintf(sql->logfile, "%.3fs %s\n",
+                        (end.tv_sec + (float) end.tv_usec / 1000000) - (start.tv_sec + (float) start.tv_usec / 1000000), query);
+        
+        if ( ret < 0 ) {
 		update_sql_from_errno(sql, ret);
 		return ret;
 	}
