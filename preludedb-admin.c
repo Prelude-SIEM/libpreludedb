@@ -149,13 +149,11 @@ static int db_error(preludedb_t *db, int ret, const char *fmt, ...)
         if ( ret == 0 )
                 return ret;
         
-        preludedb_get_error(db, ret, errbuf, sizeof(errbuf));
-
         va_start(ap, fmt);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
 
-        fprintf(stderr, ": %s.\n", errbuf);
+        fprintf(stderr, ": %s.\n", preludedb_strerror(ret));
         
         return ret;
 }
@@ -353,7 +351,6 @@ static int db_new_from_string(preludedb_t **db, const char *str)
         int ret;
         preludedb_sql_t *sql;
 	preludedb_sql_settings_t *sql_settings;
-	char errbuf[PRELUDEDB_ERRBUF_SIZE];
         
 	ret = preludedb_sql_settings_new_from_string(&sql_settings, str);
 	if ( ret < 0 ) {
@@ -368,9 +365,9 @@ static int db_new_from_string(preludedb_t **db, const char *str)
                 return ret;
         }
         
-	ret = preludedb_new(db, sql, NULL, errbuf, sizeof(errbuf));
+	ret = preludedb_new(db, sql, NULL, NULL, 0);
 	if ( ret < 0 ) {
-                fprintf(stderr, "could not initialize database '%s': %s\n", str, errbuf);
+                fprintf(stderr, "could not initialize database '%s': %s\n", str, preludedb_strerror(ret));
 		preludedb_sql_destroy(sql);
 		return ret;
 	}
