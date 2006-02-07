@@ -114,7 +114,12 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
 				    char *time_buf, size_t time_buf_size,
 				    char *gmtoff_buf, size_t gmtoff_buf_size,
 				    char *usec_buf, size_t usec_buf_size);
-     
+
+/*
+ * Deprecated, use preludedb_strerror()
+ */
+const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql);
+         
 #ifdef __cplusplus
   }
 #endif

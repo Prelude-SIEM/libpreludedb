@@ -1326,3 +1326,22 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
         
         return 0;
 }
+
+
+
+/**
+ * preludedb_sql_get_plugin_error:
+ * @sql: Pointer to a sql object.
+ *
+ * Get sql plugin specific error message.
+ * Deprecated: Use preludedb_strerror().
+ *
+ * Returns: a non NULL pointer or a NULL pointer if no error is available.
+ */
+const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
+{
+        /*
+         * deprecated.
+         */
+        return NULL;
+}
