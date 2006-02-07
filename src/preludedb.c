@@ -208,7 +208,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 		ret = preludedb_autodetect_format(*db);
 
 	if ( ret < 0 ) {
-		preludedb_get_error(*db, ret, errbuf, size);
+                if ( errbuf )
+                        preludedb_get_error(*db, ret, errbuf, size);
 
 		if ( (*db)->format_version )
 			free((*db)->format_version);
@@ -316,8 +317,8 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
         tmp = preludedb_error(prelude_error_get_code(error));
         
         ret = snprintf(errbuf, size, "%s: %s", preludedb_strerror(tmp), preludedb_strerror(error));
-	if ( ret < 0 || ret >= size )
-		return NULL;
+        if ( ret < 0 || ret >= size )
+                return NULL;
         
 	return errbuf;
 }
