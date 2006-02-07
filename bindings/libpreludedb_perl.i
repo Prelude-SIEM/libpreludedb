@@ -197,20 +197,3 @@
         preludedb_sql_table_t **
 };
 
-
-
-%ignore preludedb_new;
-
-
-%rename(preludedb_new) wrap_preludedb_new;
-%inline %{
-void wrap_preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name)
-{
-	char errbuf[PRELUDEDB_ERRBUF_SIZE];
-	int ret;
-
-	ret = preludedb_new(db, sql, format_name, errbuf, sizeof(errbuf));
-	if ( ret < 0 )
-		croak("%s", errbuf);
-}
-%}
