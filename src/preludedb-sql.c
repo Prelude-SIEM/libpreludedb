@@ -58,52 +58,52 @@
 
 
 struct preludedb_sql {
-	char *type;
+        char *type;
         preludedb_sql_settings_t *settings;
-	preludedb_plugin_sql_t *plugin;
-	preludedb_sql_status_t status;
+        preludedb_plugin_sql_t *plugin;
+        preludedb_sql_status_t status;
         void *session;
-	FILE *logfile;
-	char errbuf[PRELUDEDB_ERRBUF_SIZE];
+        FILE *logfile;
+        char errbuf[PRELUDEDB_ERRBUF_SIZE];
 };
 
 struct preludedb_sql_table {
-	preludedb_sql_t *sql;
-	void *res;
-	prelude_list_t row_list;
+        preludedb_sql_t *sql;
+        void *res;
+        prelude_list_t row_list;
 };
 
 struct preludedb_sql_row {
-	prelude_list_t list;
-	preludedb_sql_table_t *table;
-	void *res;
-	prelude_list_t field_list;
+        prelude_list_t list;
+        preludedb_sql_table_t *table;
+        void *res;
+        prelude_list_t field_list;
 };
 
 struct preludedb_sql_field {
-	prelude_list_t list;
-	preludedb_sql_row_t *row;
-	int num;
-	const char *value;
-	size_t len;
+        prelude_list_t list;
+        preludedb_sql_row_t *row;
+        int num;
+        const char *value;
+        size_t len;
 };
 
 
 
-#define assert_connected(sql)					\
-	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {	\
-		int __ret;					\
-								\
-		__ret = preludedb_sql_connect(sql);		\
-		if ( __ret < 0 )				\
-			return __ret;				\
-	}
+#define assert_connected(sql)                                   \
+        if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {   \
+                int __ret;                                      \
+                                                                \
+                __ret = preludedb_sql_connect(sql);             \
+                if ( __ret < 0 )                                \
+                        return __ret;                           \
+        }
 
 
 
-#define update_sql_from_errno(sql, error)				\
-	if ( preludedb_error_check(error, PRELUDEDB_ERROR_CONNECTION) )	\
-		preludedb_sql_disconnect(sql)
+#define update_sql_from_errno(sql, error)                               \
+        if ( preludedb_error_check(error, PRELUDEDB_ERROR_CONNECTION) ) \
+                preludedb_sql_disconnect(sql)
 
 
 
@@ -124,9 +124,9 @@ extern prelude_list_t _sql_plugin_list;
  */
 int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_settings_t *settings) 
 {
-	*new = calloc(1, sizeof (**new));
-	if ( ! *new )
-		return preludedb_error_from_errno(errno);
+        *new = calloc(1, sizeof (**new));
+        if ( ! *new )
+                return preludedb_error_from_errno(errno);
 
         if ( ! type ) {
                 type = preludedb_sql_settings_get_type(settings);
@@ -134,25 +134,25 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
                         return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING, "no 'type' specified");
         }
         
-	(*new)->type = strdup(type);
-	if ( ! (*new)->type ) {
-		free(*new);
-		return preludedb_error_from_errno(errno);
-	}
+        (*new)->type = strdup(type);
+        if ( ! (*new)->type ) {
+                free(*new);
+                return preludedb_error_from_errno(errno);
+        }
 
-	(*new)->settings = settings;
+        (*new)->settings = settings;
         
-	(*new)->plugin = (preludedb_plugin_sql_t *) prelude_plugin_search_by_name(&_sql_plugin_list, type);
-	if ( ! (*new)->plugin ) {
-		free((*new)->type);
-		free(*new);
-		return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN, "could not load sql plugin '%s'", type);
-	}
+        (*new)->plugin = (preludedb_plugin_sql_t *) prelude_plugin_search_by_name(&_sql_plugin_list, type);
+        if ( ! (*new)->plugin ) {
+                free((*new)->type);
+                free(*new);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN, "could not load sql plugin '%s'", type);
+        }
 
         if ( preludedb_sql_settings_get_log(settings) )
                 preludedb_sql_enable_query_logging(*new, preludedb_sql_settings_get_log(settings));
         
-	return 0;
+        return 0;
 }
 
 
@@ -165,16 +165,16 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
  */
 void preludedb_sql_destroy(preludedb_sql_t *sql)
 {
-	if ( sql->status >= PRELUDEDB_SQL_STATUS_CONNECTED )
-		_preludedb_plugin_sql_close(sql->plugin, sql->session);
+        if ( sql->status >= PRELUDEDB_SQL_STATUS_CONNECTED )
+                _preludedb_plugin_sql_close(sql->plugin, sql->session);
 
-	if ( sql->logfile )
-		fclose(sql->logfile);
+        if ( sql->logfile )
+                fclose(sql->logfile);
 
-	preludedb_sql_settings_destroy(sql->settings);
+        preludedb_sql_settings_destroy(sql->settings);
 
-	free(sql->type);
-	free(sql);
+        free(sql->type);
+        free(sql);
 }
 
 
@@ -209,7 +209,7 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
         
         fcntl(fd, F_SETFD, ret | FD_CLOEXEC);
         
-	return 0;
+        return 0;
 }
 
 
@@ -225,32 +225,32 @@ void preludedb_sql_disable_query_logging(preludedb_sql_t *sql)
         if ( sql->logfile && sql->logfile != stdout )
                 fclose(sql->logfile);
         
-	sql->logfile = NULL;
+        sql->logfile = NULL;
 }
 
 
 
 static int preludedb_sql_connect(preludedb_sql_t *sql)
 {
-	int ret;
+        int ret;
 
-	ret = _preludedb_plugin_sql_open(sql->plugin, sql->settings, &sql->session, sql->errbuf, sizeof(sql->errbuf));
-	if ( ret < 0 )
-		return ret;
+        ret = _preludedb_plugin_sql_open(sql->plugin, sql->settings, &sql->session, sql->errbuf, sizeof(sql->errbuf));
+        if ( ret < 0 )
+                return ret;
 
-	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+        sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
 
-	return 0;
+        return 0;
 }
 
 
 
 static void preludedb_sql_disconnect(preludedb_sql_t *sql)
 {
-	_preludedb_plugin_sql_close(sql->plugin, sql->session);
+        _preludedb_plugin_sql_close(sql->plugin, sql->session);
 
-	sql->status = PRELUDEDB_SQL_STATUS_DISCONNECTED;
-	sql->session = NULL;
+        sql->status = PRELUDEDB_SQL_STATUS_DISCONNECTED;
+        sql->session = NULL;
 }
 
 
@@ -265,31 +265,31 @@ static void preludedb_sql_disconnect(preludedb_sql_t *sql)
  */
 const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
 {
-	const char *error;
-	
-	if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED )
-		return (*sql->errbuf != 0) ? sql->errbuf : NULL;
+        const char *error;
+        
+        if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED )
+                return (*sql->errbuf != 0) ? sql->errbuf : NULL;
 
-	error = _preludedb_plugin_sql_get_error(sql->plugin, sql->session);
-	if ( error && *error != 0 )
-		return error;
+        error = _preludedb_plugin_sql_get_error(sql->plugin, sql->session);
+        if ( error && *error != 0 )
+                return error;
 
-	return (*sql->errbuf != 0) ? sql->errbuf : NULL;	
+        return (*sql->errbuf != 0) ? sql->errbuf : NULL;        
 }
 
 
 
 static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t *sql, void *res)
 {
-	*new = malloc(sizeof(**new));
-	if ( ! *new )
-		return preludedb_error_from_errno(errno);
+        *new = malloc(sizeof(**new));
+        if ( ! *new )
+                return preludedb_error_from_errno(errno);
 
-	(*new)->sql = sql;
-	(*new)->res = res;
-	prelude_list_init(&(*new)->row_list);
+        (*new)->sql = sql;
+        (*new)->res = res;
+        prelude_list_init(&(*new)->row_list);
 
-	return 0;
+        return 0;
 }
 
 
@@ -307,35 +307,35 @@ static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t 
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
-	int ret;
-	void *res;
+        int ret;
+        void *res;
         struct timeval start, end;
         
-	assert_connected(sql);
+        assert_connected(sql);
         
         gettimeofday(&start, NULL);
-	ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
+        ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
         gettimeofday(&end, NULL);
 
         if ( sql->logfile )
-		fprintf(sql->logfile, "%.3fs %s\n",
+                fprintf(sql->logfile, "%.3fs %s\n",
                         (end.tv_sec + (float) end.tv_usec / 1000000) - (start.tv_sec + (float) start.tv_usec / 1000000), query);
         
         if ( ret < 0 ) {
-		update_sql_from_errno(sql, ret);
-		return ret;
-	}
+                update_sql_from_errno(sql, ret);
+                return ret;
+        }
 
-	if ( ret == 0 )
-		return 0;
+        if ( ret == 0 )
+                return 0;
 
-	ret = preludedb_sql_table_new(table, sql, res);
-	if ( ret < 0 ) {
-		_preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, res);
-		return ret;
-	}
+        ret = preludedb_sql_table_new(table, sql, res);
+        if ( ret < 0 ) {
+                _preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, res);
+                return ret;
+        }
 
-	return 1;
+        return 1;
 }
 
 
@@ -353,30 +353,30 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
  * Returns: 1 if the query returns results, 0 if it does not, or negative value if an error occur.
  */
 int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table,
-				const char *format, ...)
+                                const char *format, ...)
 {
         va_list ap;
-	prelude_string_t *query;
-	int ret;
+        prelude_string_t *query;
+        int ret;
 
-	assert_connected(sql);
+        assert_connected(sql);
 
-	ret = prelude_string_new(&query);
-	if ( ret < 0 )
-		return ret;
+        ret = prelude_string_new(&query);
+        if ( ret < 0 )
+                return ret;
         
         va_start(ap, format);
-	ret = prelude_string_vprintf(query, format, ap);
+        ret = prelude_string_vprintf(query, format, ap);
         va_end(ap);
-	if ( ret < 0 )
-		goto error;
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_sql_query(sql, prelude_string_get_string(query), table);
+        ret = preludedb_sql_query(sql, prelude_string_get_string(query), table);
 
  error:
-	prelude_string_destroy(query);
+        prelude_string_destroy(query);
 
-	return ret;
+        return ret;
 }
 
 
@@ -394,40 +394,40 @@ int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **ta
  * Returns: 0 on success or a negative value if an error occur.
  */
 int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fields,
-			 const char *format, ...)
+                         const char *format, ...)
 {
-	va_list ap;
-	prelude_string_t *query;
-	int ret;
+        va_list ap;
+        prelude_string_t *query;
+        int ret;
 
-	assert_connected(sql);
+        assert_connected(sql);
 
-	ret = prelude_string_new(&query);
-	if ( ret < 0 )
-		return ret;
+        ret = prelude_string_new(&query);
+        if ( ret < 0 )
+                return ret;
 
-	ret = prelude_string_sprintf(query, "INSERT INTO %s (%s) VALUES(", table, fields);
-	if ( ret < 0 )
-		goto error;
+        ret = prelude_string_sprintf(query, "INSERT INTO %s (%s) VALUES(", table, fields);
+        if ( ret < 0 )
+                goto error;
 
-	va_start(ap, format);
-	ret = prelude_string_vprintf(query, format, ap);
-	va_end(ap);
-	if ( ret < 0 )
-		goto error;
+        va_start(ap, format);
+        ret = prelude_string_vprintf(query, format, ap);
+        va_end(ap);
+        if ( ret < 0 )
+                goto error;
 
-	ret = prelude_string_cat(query, ")");
-	if ( ret < 0 )
-		goto error;
+        ret = prelude_string_cat(query, ")");
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_sql_query(sql, prelude_string_get_string(query), NULL);
-	if ( ret < 0 )
-		update_sql_from_errno(sql, ret);
+        ret = preludedb_sql_query(sql, prelude_string_get_string(query), NULL);
+        if ( ret < 0 )
+                update_sql_from_errno(sql, ret);
 
  error:
-	prelude_string_destroy(query);
+        prelude_string_destroy(query);
 
-	return ret;
+        return ret;
 }
 
 
@@ -445,7 +445,7 @@ int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fi
  */
 int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int offset, prelude_string_t *output)
 {
-	return _preludedb_plugin_sql_build_limit_offset_string(sql->plugin, sql->session, limit, offset, output);
+        return _preludedb_plugin_sql_build_limit_offset_string(sql->plugin, sql->session, limit, offset, output);
 }
 
 
@@ -460,22 +460,22 @@ int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int
  */
 int preludedb_sql_transaction_start(preludedb_sql_t *sql)
 {
-	int ret;
+        int ret;
 
-	if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
+        if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )
+                return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
 
-	assert_connected(sql);
+        assert_connected(sql);
 
-	ret = preludedb_sql_query(sql, "BEGIN", NULL);
-	if ( ret < 0 ) {
-		update_sql_from_errno(sql, ret);
-		return ret;
-	}
+        ret = preludedb_sql_query(sql, "BEGIN", NULL);
+        if ( ret < 0 ) {
+                update_sql_from_errno(sql, ret);
+                return ret;
+        }
 
-	sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
+        sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
 
-	return 0;
+        return 0;
 }
 
 
@@ -490,19 +490,19 @@ int preludedb_sql_transaction_start(preludedb_sql_t *sql)
  */
 int preludedb_sql_transaction_end(preludedb_sql_t *sql)
 {
-	int ret;
+        int ret;
 
         if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
                 return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
-	
-	ret = preludedb_sql_query(sql, "COMMIT", NULL);
+        
+        ret = preludedb_sql_query(sql, "COMMIT", NULL);
 
-	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+        sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
 
-	if ( ret < 0 )
-		update_sql_from_errno(sql, ret);
+        if ( ret < 0 )
+                update_sql_from_errno(sql, ret);
 
-	return ret;
+        return ret;
 }
 
 
@@ -517,24 +517,24 @@ int preludedb_sql_transaction_end(preludedb_sql_t *sql)
  */
 int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 {
-	int ret;
-	const char *error;
+        int ret;
+        const char *error;
 
-	if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
-		return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
+        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
+                return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
 
-	error = _preludedb_plugin_sql_get_error(sql->plugin, sql->session);
-	if ( error && *error != 0 )
-		snprintf(sql->errbuf, PRELUDEDB_ERRBUF_SIZE, "%s", error);
+        error = _preludedb_plugin_sql_get_error(sql->plugin, sql->session);
+        if ( error && *error != 0 )
+                snprintf(sql->errbuf, PRELUDEDB_ERRBUF_SIZE, "%s", error);
 
-	ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
+        ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
 
-	sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+        sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
 
-	if ( ret < 0 )
-		update_sql_from_errno(sql, ret);
+        if ( ret < 0 )
+                update_sql_from_errno(sql, ret);
 
-	return ret;
+        return ret;
 }
 
 
@@ -552,7 +552,7 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
  */
 int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t input_size, char **output) 
 {
-	assert_connected(sql);
+        assert_connected(sql);
         return _preludedb_plugin_sql_escape(sql->plugin, sql->session, input, input_size, output);
 }
 
@@ -570,12 +570,12 @@ int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t in
  */
 int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output) 
 {
-	assert_connected(sql);
+        assert_connected(sql);
 
         if ( ! input ) {
-		*output = strdup("NULL");
-		return *output ? 0 : preludedb_error_from_errno(errno);
-	}
+                *output = strdup("NULL");
+                return *output ? 0 : preludedb_error_from_errno(errno);
+        }
 
         return preludedb_sql_escape_fast(sql, input, strlen(input), output);
 }
@@ -594,10 +594,10 @@ int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output)
  * Returns: 0 on success or a negative value if an error occur.
  */
 int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input, size_t input_size,
-				char **output)
+                                char **output)
 {
-	assert_connected(sql);
-	return _preludedb_plugin_sql_escape_binary(sql->plugin, sql->session, input, input_size, output);
+        assert_connected(sql);
+        return _preludedb_plugin_sql_escape_binary(sql->plugin, sql->session, input, input_size, output);
 }
 
 
@@ -615,9 +615,9 @@ int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input
  * Returns: 0 on success or a negative value if an error occur.
  */
 int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_t input_size,
-				  unsigned char **output, size_t *output_size)
+                                  unsigned char **output, size_t *output_size)
 {
-	assert_connected(sql);
+        assert_connected(sql);
         return _preludedb_plugin_sql_unescape_binary(sql->plugin, sql->session, input, input_size, output, output_size);
 }
   
@@ -631,64 +631,64 @@ int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_
  */
 void preludedb_sql_table_destroy(preludedb_sql_table_t *table)
 {
-	preludedb_sql_t *sql = table->sql;
-	preludedb_sql_row_t *row;
-	preludedb_sql_field_t *field;
+        preludedb_sql_t *sql = table->sql;
+        preludedb_sql_row_t *row;
+        preludedb_sql_field_t *field;
         prelude_list_t *tmp, *next_row, *next_field;
 
-	prelude_list_for_each_safe(&table->row_list, tmp, next_row) {
-		row = prelude_list_entry(tmp, preludedb_sql_row_t, list);
+        prelude_list_for_each_safe(&table->row_list, tmp, next_row) {
+                row = prelude_list_entry(tmp, preludedb_sql_row_t, list);
 
                 prelude_list_for_each_safe(&row->field_list, tmp, next_field) {
-			field = prelude_list_entry(tmp, preludedb_sql_field_t, list);
-			free(field);
-		}
+                        field = prelude_list_entry(tmp, preludedb_sql_field_t, list);
+                        free(field);
+                }
 
                 free(row);
-	}
+        }
         
-	_preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, table->res);
-	free(table);
+        _preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, table->res);
+        free(table);
 }
 
 
 
 static int preludedb_sql_row_new(preludedb_sql_row_t **row, preludedb_sql_table_t *table, void *res)
 {
-	*row = malloc(sizeof (**row));
-	if ( ! *row )
-		return preludedb_error_from_errno(errno);
+        *row = malloc(sizeof (**row));
+        if ( ! *row )
+                return preludedb_error_from_errno(errno);
 
-	(*row)->table = table;
-	(*row)->res = res;
+        (*row)->table = table;
+        (*row)->res = res;
 
         prelude_list_init(&(*row)->list);
-	prelude_list_init(&(*row)->field_list);
+        prelude_list_init(&(*row)->field_list);
 
         prelude_list_add_tail(&table->row_list, &(*row)->list);
-	
-	return 0;
+        
+        return 0;
 }
 
 
 
 static int preludedb_sql_field_new(preludedb_sql_field_t **field,
-				   preludedb_sql_row_t *row, int num, const char *value, size_t len)
+                                   preludedb_sql_row_t *row, int num, const char *value, size_t len)
 {
-	*field = malloc(sizeof (**field));
-	if ( ! field )
-		return preludedb_error_from_errno(errno);
-	
-	(*field)->row = row;
-	(*field)->num = num;
-	(*field)->value = value;
-	(*field)->len = len;
+        *field = malloc(sizeof (**field));
+        if ( ! field )
+                return preludedb_error_from_errno(errno);
+        
+        (*field)->row = row;
+        (*field)->num = num;
+        (*field)->value = value;
+        (*field)->len = len;
 
         prelude_list_init(&(*field)->list);
 
         prelude_list_add_tail(&row->field_list, &(*field)->list);
-	
-	return 0;
+        
+        return 0;
 }
 
 
@@ -704,7 +704,7 @@ static int preludedb_sql_field_new(preludedb_sql_field_t **field,
  */
 const char *preludedb_sql_table_get_column_name(preludedb_sql_table_t *table, unsigned int column_num)
 {
-	return _preludedb_plugin_sql_get_column_name(table->sql->plugin, table->sql->session, table->res, column_num);
+        return _preludedb_plugin_sql_get_column_name(table->sql->plugin, table->sql->session, table->res, column_num);
 }
 
 
@@ -735,7 +735,7 @@ int preludedb_sql_table_get_column_num(preludedb_sql_table_t *table, const char 
  */
 unsigned int preludedb_sql_table_get_column_count(preludedb_sql_table_t *table)
 {
-	return _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table->res);
+        return _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table->res);
 }
 
 
@@ -750,7 +750,7 @@ unsigned int preludedb_sql_table_get_column_count(preludedb_sql_table_t *table)
  */
 unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
 {
-	return _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table->res);
+        return _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table->res);
 }
 
 
@@ -767,23 +767,23 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
  */
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row)
 {
-	void *res;
-	int ret;
+        void *res;
+        int ret;
 
-	ret = _preludedb_plugin_sql_fetch_row(table->sql->plugin, table->sql->session, table->res, &res);
-	if ( ret < 0 ) {
-		update_sql_from_errno(table->sql, ret);
-		return ret;
-	}
+        ret = _preludedb_plugin_sql_fetch_row(table->sql->plugin, table->sql->session, table->res, &res);
+        if ( ret < 0 ) {
+                update_sql_from_errno(table->sql, ret);
+                return ret;
+        }
 
-	if ( ret == 0 )
-		return 0;
+        if ( ret == 0 )
+                return 0;
 
-	ret = preludedb_sql_row_new(row, table, res);
-	if ( ret < 0 )
-		return ret;
+        ret = preludedb_sql_row_new(row, table, res);
+        if ( ret < 0 )
+                return ret;
 
-	return 1;
+        return 1;
 }
 
 
@@ -800,27 +800,27 @@ int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_ro
  * a negative value if an error occur.
  */
 int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_num,
-				  preludedb_sql_field_t **field)
+                                  preludedb_sql_field_t **field)
 {
-	const char *value;
-	size_t len;
-	int ret;
+        const char *value;
+        size_t len;
+        int ret;
 
-	ret = _preludedb_plugin_sql_fetch_field(row->table->sql->plugin,
+        ret = _preludedb_plugin_sql_fetch_field(row->table->sql->plugin,
                                                 row->table->sql->session, row->table->res, row->res, column_num, &value, &len);
-	if ( ret < 0 ) {
-		update_sql_from_errno(row->table->sql, ret);
-		return ret;
-	}
+        if ( ret < 0 ) {
+                update_sql_from_errno(row->table->sql, ret);
+                return ret;
+        }
 
-	if ( ret == 0 )
-		return 0;
+        if ( ret == 0 )
+                return 0;
 
-	ret = preludedb_sql_field_new(field, row, column_num, value, len);
-	if ( ret < 0 )
-		return ret;
+        ret = preludedb_sql_field_new(field, row, column_num, value, len);
+        if ( ret < 0 )
+                return ret;
 
-	return 1;
+        return 1;
 }
 
 
@@ -837,15 +837,15 @@ int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_
  * a negative value if an error occur.
  */
 int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *column_name,
-					  preludedb_sql_field_t **field)
+                                          preludedb_sql_field_t **field)
 {
-	int column_num;
+        int column_num;
 
-	column_num = preludedb_sql_table_get_column_num(row->table, column_name);
-	if ( column_num < 0 )
-		return column_num;
+        column_num = preludedb_sql_table_get_column_num(row->table, column_name);
+        if ( column_num < 0 )
+                return column_num;
 
-	return preludedb_sql_row_fetch_field(row, column_num, field);	
+        return preludedb_sql_row_fetch_field(row, column_num, field);   
 }
 
 
@@ -860,7 +860,7 @@ int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *
  */
 const char *preludedb_sql_field_get_value(preludedb_sql_field_t *field)
 {
-	return field->value;
+        return field->value;
 }
 
 
@@ -875,7 +875,7 @@ const char *preludedb_sql_field_get_value(preludedb_sql_field_t *field)
  */
 size_t preludedb_sql_field_get_len(preludedb_sql_field_t *field)
 {
-	return field->len;
+        return field->len;
 }
 
 
@@ -891,7 +891,7 @@ size_t preludedb_sql_field_get_len(preludedb_sql_field_t *field)
  */
 #define preludedb_sql_field_to(name, type_name, format)                                         \
 int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)             \
-{												\
+{                                                                                               \
         int ret;                                                                                \
                                                                                                 \
         ret = sscanf(preludedb_sql_field_get_value(field), format, value);                      \
@@ -942,20 +942,20 @@ preludedb_sql_field_to(double, double, "%lf")
  */
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output)
 {
-	return prelude_string_ncat(output, field->value, field->len);
+        return prelude_string_ncat(output, field->value, field->len);
 }
 
 
 static int build_criterion_fixed_sql_time_value(preludedb_sql_t *sql,
                                                 const idmef_value_t *value, char *buf, size_t size)
 {
-	const idmef_time_t *time;
+        const idmef_time_t *time;
 
-	time = idmef_value_get_time(value);
-	if ( ! time )
-		return -1;
+        time = idmef_value_get_time(value);
+        if ( ! time )
+                return -1;
 
-	return preludedb_sql_time_to_timestamp(sql, time, buf, size, NULL, 0, NULL, 0);
+        return preludedb_sql_time_to_timestamp(sql, time, buf, size, NULL, 0, NULL, 0);
 }
 
 
@@ -968,9 +968,9 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
         const prelude_string_t *string;
         prelude_bool_t escape_next = FALSE;
         
-	string = idmef_value_get_string(value);
-	if ( ! string )
-		return -1;
+        string = idmef_value_get_string(value);
+        if ( ! string )
+                return -1;
 
         input = prelude_string_get_string(string);
         if ( ! input )
@@ -1008,75 +1008,75 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
 
 
 static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
-					   prelude_string_t *output,
-					   const idmef_value_t *value,
-					   idmef_criterion_operator_t operator)
+                                           prelude_string_t *output,
+                                           const idmef_value_t *value,
+                                           idmef_criterion_operator_t operator)
 {
-	int ret;
-	prelude_string_t *string;
-	char *escaped;
+        int ret;
+        prelude_string_t *string;
+        char *escaped;
 
-	if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME ) {
-		char buf[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
+        if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_TIME ) {
+                char buf[PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE];
 
-		ret = build_criterion_fixed_sql_time_value(sql, value, buf, sizeof(buf));
-		if ( ret < 0 )
-			return ret;
+                ret = build_criterion_fixed_sql_time_value(sql, value, buf, sizeof(buf));
+                if ( ret < 0 )
+                        return ret;
 
-		return prelude_string_cat(output, buf);
-	}
+                return prelude_string_cat(output, buf);
+        }
 
-	if ( operator & IDMEF_CRITERION_OPERATOR_SUBSTR ) {
-		char *tmp;
+        if ( operator & IDMEF_CRITERION_OPERATOR_SUBSTR ) {
+                char *tmp;
 
-		ret = build_criterion_fixed_sql_like_value(value, &tmp);
-		if ( ret < 0 )
-			return ret;
+                ret = build_criterion_fixed_sql_like_value(value, &tmp);
+                if ( ret < 0 )
+                        return ret;
 
-		ret = preludedb_sql_escape(sql, tmp, &escaped);
-		if ( ret < 0 ) {
-			free(tmp);
-			return ret;
-		}
+                ret = preludedb_sql_escape(sql, tmp, &escaped);
+                if ( ret < 0 ) {
+                        free(tmp);
+                        return ret;
+                }
 
-		ret = prelude_string_cat(output, escaped);
+                ret = prelude_string_cat(output, escaped);
 
-		free(tmp);
-		free(escaped);
+                free(tmp);
+                free(escaped);
 
-		return ret;		
-	}
+                return ret;             
+        }
 
-	ret = prelude_string_new(&string);
-	if ( ret < 0 )
-		return ret;
+        ret = prelude_string_new(&string);
+        if ( ret < 0 )
+                return ret;
 
-	ret = idmef_value_to_string(value, string);
-	if ( ret < 0 ) {
-		prelude_string_destroy(string);
-		return ret;
-	}
+        ret = idmef_value_to_string(value, string);
+        if ( ret < 0 ) {
+                prelude_string_destroy(string);
+                return ret;
+        }
 
-	ret = preludedb_sql_escape(sql, prelude_string_get_string(string), &escaped);
-	prelude_string_destroy(string);
-	if ( ret < 0 )
-		return ret;
+        ret = preludedb_sql_escape(sql, prelude_string_get_string(string), &escaped);
+        prelude_string_destroy(string);
+        if ( ret < 0 )
+                return ret;
 
-	ret = prelude_string_cat(output, escaped);
-	free(escaped);
+        ret = prelude_string_cat(output, escaped);
+        free(escaped);
 
-	return ret;
+        return ret;
 }
 
 
 
 static int build_criterion_fixed_value(preludedb_sql_t *sql,
-				       prelude_string_t *output,
-				       const char *field,
-				       idmef_criterion_operator_t operator,
-				       const idmef_value_t *value)
+                                       prelude_string_t *output,
+                                       const char *field,
+                                       idmef_criterion_operator_t operator,
+                                       const idmef_value_t *value)
 {
-	int ret;
+        int ret;
         prelude_string_t *value_str;
 
         ret = prelude_string_new(&value_str);
@@ -1210,23 +1210,23 @@ static int build_criterion_regex(preludedb_sql_t *sql, prelude_string_t *output,
  * Returns: 0 on success, or a negative value if an error occur.
  */
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
-					 prelude_string_t *output,
-					 const char *field,
-					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
+                                         prelude_string_t *output,
+                                         const char *field,
+                                         idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
 {
         const void *vptr;
         
-	if ( operator == IDMEF_CRITERION_OPERATOR_NULL )
+        if ( operator == IDMEF_CRITERION_OPERATOR_NULL )
                 return prelude_string_sprintf(output, "%s %s", field,
                                               _preludedb_plugin_sql_get_operator_string(sql->plugin, operator));
         
-	if ( operator == IDMEF_CRITERION_OPERATOR_NOT_NULL )
-		return prelude_string_sprintf(output, "%s %s", field,
+        if ( operator == IDMEF_CRITERION_OPERATOR_NOT_NULL )
+                return prelude_string_sprintf(output, "%s %s", field,
                                               _preludedb_plugin_sql_get_operator_string(sql->plugin, operator));
 
         vptr = idmef_criterion_value_get_value(value);
         
-	switch ( idmef_criterion_value_get_type(value) ) {
+        switch ( idmef_criterion_value_get_type(value) ) {
                                 
         case IDMEF_CRITERION_VALUE_TYPE_VALUE:
                 return build_criterion_fixed_value(sql, output, field, operator,
@@ -1241,10 +1241,10 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                                         idmef_criterion_value_get_broken_down_time(value));
                 
         default:
-		/* nop */;
-	}
+                /* nop */;
+        }
 
-	return -1;
+        return -1;
 }
 
 
@@ -1262,7 +1262,7 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
  */
 int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec)
 {
-	int ret;
+        int ret;
         struct tm tm;
         
         memset(&tm, 0, sizeof (tm));
@@ -1276,11 +1276,11 @@ int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, 
 
         tm.tm_year -= 1900;
         tm.tm_mon -= 1;
-	tm.tm_isdst = -1;
+        tm.tm_isdst = -1;
 
         idmef_time_set_sec(time, prelude_timegm(&tm));
         idmef_time_set_usec(time, usec);
-	idmef_time_set_gmt_offset(time, gmtoff);
+        idmef_time_set_gmt_offset(time, gmtoff);
         
         return 0;
 }
@@ -1304,9 +1304,9 @@ int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, 
  */
 int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
                                     const idmef_time_t *time,
-				    char *time_buf, size_t time_buf_size,
-				    char *gmtoff_buf, size_t gmtoff_buf_size,
-				    char *usec_buf, size_t usec_buf_size)
+                                    char *time_buf, size_t time_buf_size,
+                                    char *gmtoff_buf, size_t gmtoff_buf_size,
+                                    char *usec_buf, size_t usec_buf_size)
 {
         int ret;
         time_t t;
@@ -1316,15 +1316,15 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
                 snprintf(time_buf, time_buf_size,  "NULL");
 
                 if ( gmtoff_buf )
-			snprintf(gmtoff_buf, gmtoff_buf_size, "NULL");
+                        snprintf(gmtoff_buf, gmtoff_buf_size, "NULL");
 
                 if ( usec_buf )
-			snprintf(usec_buf, usec_buf_size, "NULL");
+                        snprintf(usec_buf, usec_buf_size, "NULL");
 
                 return 0;
         }
 
-	t = idmef_time_get_sec(time);
+        t = idmef_time_get_sec(time);
         
         if ( ! gmtime_r(&t, &utc) )
                 return prelude_error_from_errno(errno);
@@ -1333,11 +1333,11 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
         if ( ret < 0 )
                 return ret;
         
-	if ( gmtoff_buf )
-		snprintf(gmtoff_buf, gmtoff_buf_size, "%d", idmef_time_get_gmt_offset(time));
+        if ( gmtoff_buf )
+                snprintf(gmtoff_buf, gmtoff_buf_size, "%d", idmef_time_get_gmt_offset(time));
 
-	if ( usec_buf )
-		snprintf(usec_buf, usec_buf_size, "%d", idmef_time_get_usec(time));
+        if ( usec_buf )
+                snprintf(usec_buf, usec_buf_size, "%d", idmef_time_get_usec(time));
         
         return 0;
 }
