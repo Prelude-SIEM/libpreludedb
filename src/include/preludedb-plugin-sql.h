@@ -32,9 +32,8 @@
 
 typedef struct preludedb_plugin_sql preludedb_plugin_sql_t;
 
-typedef int (*preludedb_plugin_sql_open_func_t)(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size);
+typedef int (*preludedb_plugin_sql_open_func_t)(preludedb_sql_settings_t *settings, void **session);         
 typedef void (*preludedb_plugin_sql_close_func_t)(void *session);
-typedef const char *(*preludedb_plugin_sql_get_error_func_t)(void *session);
 typedef int (*preludedb_plugin_sql_escape_func_t)(void *session, const char *input, size_t input_size, char **output);
 typedef int (*preludedb_plugin_sql_escape_binary_func_t)(void *session, const unsigned char *input, size_t input_size, char **output);
 typedef int (*preludedb_plugin_sql_unescape_binary_func_t)(void *session, const char *input, unsigned char **output, size_t *output_size);
@@ -68,15 +67,11 @@ typedef int (*preludedb_plugin_sql_build_timestamp_string_func_t)(const struct t
 void preludedb_plugin_sql_set_open_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_open_func_t func);
 
 int _preludedb_plugin_sql_open(preludedb_plugin_sql_t *plugin,
-                               preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size);
+                               preludedb_sql_settings_t *settings, void **session);
 
 void preludedb_plugin_sql_set_close_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_close_func_t func);
 
 void _preludedb_plugin_sql_close(preludedb_plugin_sql_t *plugin, void *session);
-
-void preludedb_plugin_sql_set_get_error_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_error_func_t func);
-
-const char *_preludedb_plugin_sql_get_error(preludedb_plugin_sql_t *plugin, void *session);
 
 void preludedb_plugin_sql_set_escape_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_escape_func_t func);
 

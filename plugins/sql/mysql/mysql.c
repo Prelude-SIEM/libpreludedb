@@ -59,8 +59,45 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 #endif /* ! MYSQL_VERSION_ID */
 
 
-static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
+static prelude_bool_t is_connection_broken(void *session)
 {
+        switch (mysql_errno(session)) {
+                        
+        case CR_CONNECTION_ERROR:
+        case CR_SERVER_GONE_ERROR:
+        case CR_SERVER_LOST:
+        case CR_CONN_HOST_ERROR:
+        case CR_IPSOCK_ERROR:
+        case ER_SERVER_SHUTDOWN:
+                return TRUE;
+
+        default:
+                return FALSE;
+        }
+}
+
+
+
+static int handle_error(void *session, prelude_error_code_t code)
+{
+        int ret;
+        
+        if ( is_connection_broken(session) ) 
+                code = PRELUDEDB_ERROR_CONNECTION;
+        
+        if ( mysql_errno(session) )
+                ret = preludedb_error_verbose(code, "%s", mysql_error(session));
+        else
+                ret = preludedb_error(code);
+
+        return ret;
+}
+
+
+
+static int sql_open(preludedb_sql_settings_t *settings, void **session)
+{
+        int ret;
         unsigned int port = 0;
 
         if ( preludedb_sql_settings_get_port(settings) )
@@ -76,11 +113,11 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
                                   preludedb_sql_settings_get_pass(settings),
                                   preludedb_sql_settings_get_name(settings),
                                   port, NULL, 0) ) {
-                if ( mysql_error(*session) )
-                        snprintf(errbuf, size, "%s", mysql_error(*session));
-
+                
+                ret = handle_error(*session, PRELUDEDB_ERROR_CONNECTION);
                 mysql_close(*session);
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+
+                return ret;
         }
 
         return 0;
@@ -92,14 +129,6 @@ static void sql_close(void *session)
 {
         mysql_close((MYSQL *) session);
 }
-
-
-
-static const char *sql_get_error(void *session)
-{
-        return mysql_error(session);
-}
-
 
 
 static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
@@ -151,34 +180,11 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
 
 
-static prelude_bool_t is_connection_broken(void *session)
-{
-        switch (mysql_errno(session)) {
-                        
-        case CR_CONNECTION_ERROR:
-        case CR_SERVER_GONE_ERROR:
-        case CR_SERVER_LOST:
-        case CR_CONN_HOST_ERROR:
-        case CR_IPSOCK_ERROR:
-        case ER_SERVER_SHUTDOWN:
-                return TRUE;
-
-        default:
-                return FALSE;
-        }
-}
-
-
 
 static int sql_query(void *session, const char *query, void **resource)
 {
-        if ( mysql_query(session, query) != 0 ) {
-
-                if ( is_connection_broken(session) ) 
-                        return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
-                
-                return preludedb_error(PRELUDEDB_ERROR_QUERY);
-        }
+        if ( mysql_query(session, query) != 0 )
+                return handle_error(session, PRELUDEDB_ERROR_QUERY);
         
         *resource = mysql_store_result(session);
         if ( *resource ) {
@@ -190,7 +196,7 @@ static int sql_query(void *session, const char *query, void **resource)
                 return 1;
         }
 
-        return mysql_errno(session) ? preludedb_error(PRELUDEDB_ERROR_QUERY) : 0;
+        return mysql_errno(session) ? handle_error(session, PRELUDEDB_ERROR_QUERY) : 0;
 }
 
 
@@ -463,7 +469,6 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         
         preludedb_plugin_sql_set_open_func(plugin, sql_open);
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
-        preludedb_plugin_sql_set_get_error_func(plugin, sql_get_error);
         preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);

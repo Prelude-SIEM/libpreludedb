@@ -56,29 +56,42 @@ struct pg_result {
 };
 
 
-static void get_error(PGconn *conn, char *errbuf, size_t size)
+
+static int handle_error(prelude_error_code_t code, PGconn *conn)
 {
         int ret;
+        char *tmp;
+        size_t len;
+        const char *error;
         
-        if ( ! PQerrorMessage(conn) )
-                return;
+        if ( PQstatus(conn) == CONNECTION_BAD )
+                code = PRELUDEDB_ERROR_CONNECTION;
         
-        ret = snprintf(errbuf, size, "%s", PQerrorMessage(conn));
-        if ( ret < 0 || ret >= size )
-                return;
-
+        error = PQerrorMessage(conn);
+        if ( ! error )
+                return preludedb_error(code);
+        
         /*
-         * Remove trailing \n.
+         * Pgsql error message are formatted. Remove trailing '\n'.
          */
-        ret--;
-        while ( (errbuf[ret] == '\n' || errbuf[ret] == ' ') )
-                errbuf[ret--] = 0;
+        tmp = strdup(error);
+        if ( ! tmp )
+                return preludedb_error_verbose(code, "%s", error);
+
+        len = strlen(tmp) - 1;
+        while ( tmp[len] == '\n' || tmp[len] == ' ' )
+                tmp[len--] = 0;
+
+        ret = preludedb_error_verbose(code, "%s", tmp);
+        free(tmp);
+
+        return ret;
 }
 
 
-
-static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
+static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
+        int ret;
         PGconn *conn;
 
         conn = PQsetdbLogin(preludedb_sql_settings_get_host(settings),
@@ -90,9 +103,9 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session, char *er
                             preludedb_sql_settings_get_pass(settings));
 
         if ( PQstatus(conn) == CONNECTION_BAD ) {
-                get_error(conn, errbuf, size);
+                ret = handle_error(PRELUDEDB_ERROR_CONNECTION, conn);
                 PQfinish(conn);
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+                return ret;
         }
 
         *session = conn;
@@ -106,14 +119,6 @@ static void sql_close(void *session)
 {
         PQfinish(session);
 }
-
-
-
-static const char *sql_get_error(void *session)
-{
-        return PQerrorMessage(session);
-}
-
 
 
 static int sql_escape(void *session, const char *input, size_t input_size, char **output)
@@ -214,10 +219,10 @@ static int sql_query(void *session, const char *query, void **resource)
 
         res->row = -1;
 
-        res->result = PQexec(session, query);
+        res->result = PQexec(session, query);        
         if ( ! res->result ) {
                 free(res);
-                return preludedb_error(PRELUDEDB_ERROR_QUERY);
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
         }
 
         ret = PQresultStatus(res->result);
@@ -230,11 +235,8 @@ static int sql_query(void *session, const char *query, void **resource)
         free(res);
         if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
                 return 0;
-
-        if ( PQstatus(session) == CONNECTION_BAD )
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
         
-        return preludedb_error(PRELUDEDB_ERROR_QUERY);
+        return handle_error(PRELUDEDB_ERROR_QUERY, session);
 }
 
 
@@ -493,7 +495,6 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         
         preludedb_plugin_sql_set_open_func(plugin, sql_open);
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
-        preludedb_plugin_sql_set_get_error_func(plugin, sql_get_error);
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
         preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
         preludedb_plugin_sql_set_unescape_binary_func(plugin, sql_unescape_binary);

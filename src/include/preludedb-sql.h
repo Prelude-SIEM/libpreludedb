@@ -62,8 +62,6 @@ void preludedb_sql_destroy(preludedb_sql_t *sql);
 int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filename);
 void preludedb_sql_disable_query_logging(preludedb_sql_t *sql);
 
-const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql);
-
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table);
 int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table, const char *format, ...);
 

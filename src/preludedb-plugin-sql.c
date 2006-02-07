@@ -35,7 +35,6 @@ struct preludedb_plugin_sql {
 
         preludedb_plugin_sql_open_func_t open;
         preludedb_plugin_sql_close_func_t close;
-        preludedb_plugin_sql_get_error_func_t get_error;
         preludedb_plugin_sql_escape_func_t escape;
         preludedb_plugin_sql_escape_binary_func_t escape_binary;
         preludedb_plugin_sql_unescape_binary_func_t unescape_binary;
@@ -77,9 +76,9 @@ void preludedb_plugin_sql_set_open_func(preludedb_plugin_sql_t *plugin, preluded
 
 
 int _preludedb_plugin_sql_open(preludedb_plugin_sql_t *plugin,
-                               preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
+                               preludedb_sql_settings_t *settings, void **session)
 {
-        return plugin->open(settings, session, errbuf, size);
+        return plugin->open(settings, session);
 }
 
 
@@ -93,22 +92,6 @@ void preludedb_plugin_sql_set_close_func(preludedb_plugin_sql_t *plugin, prelude
 void _preludedb_plugin_sql_close(preludedb_plugin_sql_t *plugin, void *session)
 {
         plugin->close(session);
-}
-
-
-void preludedb_plugin_sql_set_get_error_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_error_func_t func)
-{
-        plugin->get_error = func;
-}
-
-
-
-const char *_preludedb_plugin_sql_get_error(preludedb_plugin_sql_t *plugin, void *session)
-{
-	if ( ! plugin->get_error )
-		return NULL;
-
-        return plugin->get_error(session);
 }
 
 

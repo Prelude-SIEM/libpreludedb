@@ -110,27 +110,31 @@ static void sqlite3_regexp(sqlite3_context *context, int argc, sqlite3_value **a
 
 
 
-static int sql_open(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size)
+static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
         const char *dbfile;
 
         dbfile = preludedb_sql_settings_get_file(settings);
-        if ( ! dbfile )
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+        if ( ! dbfile || ! *dbfile )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "no database file specified");
+
+        ret = access(dbfile, F_OK);
+        if ( ret != 0 )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "database file '%s' does not exist", dbfile);
         
-        ret = sqlite3_open(dbfile, (sqlite3 **) session);
+        ret = sqlite3_open(dbfile, (sqlite3 **) session);        
         if ( ret != SQLITE_OK ) {
-                snprintf(errbuf, size, "%s", sqlite3_errmsg(*session));
+                ret = preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "%s", sqlite3_errmsg(*session));
                 sqlite3_close(*session);
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+                return ret;
         }
 
 	ret = sqlite3_create_function(*session, SQLITE_REGEX_BIND_OPERATOR, 2, SQLITE_ANY, NULL, sqlite3_regexp, NULL, NULL);
 	if ( ret != SQLITE_OK ) {
-                snprintf(errbuf, size, "%s", sqlite3_errmsg(*session));
+                ret = preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "%s", sqlite3_errmsg(*session));
                 sqlite3_close(*session);
-                return preludedb_error(PRELUDEDB_ERROR_CONNECTION);
+                return ret;
 	}
 
         sqlite3_busy_timeout(*session, SQLITE_BUSY_TIMEOUT);
@@ -145,16 +149,6 @@ static void sql_close(void *session)
         sqlite3_close(session);
 }
 
-
-
-static const char *sql_get_error(void *session)
-{
-        /*
-         * In case the last SQLite API call was successful, sqlite3_errmsg() 
-         * will return "not an error". We need to return NULL in this specific case.
-         */
-        return (sqlite3_errcode(session) != SQLITE_OK) ? sqlite3_errmsg(session) : NULL;
-}
 
 
 static int sql_escape(void *session, const char *input, size_t input_size, char **output)
@@ -269,7 +263,7 @@ static void sql_resource_destroy(void *session, void *res)
 
 
 
-static int sql_read_row(sqlite3_stmt *statement, sqlite3_resource_t **resource)
+static int sql_read_row(void *session, sqlite3_stmt *statement, sqlite3_resource_t **resource)
 {
         int ret;
         unsigned int i;
@@ -290,7 +284,7 @@ static int sql_read_row(sqlite3_stmt *statement, sqlite3_resource_t **resource)
                 
                 if ( ret == SQLITE_ERROR || ret == SQLITE_MISUSE || ret == SQLITE_BUSY ) {
                         sql_resource_destroy(NULL, *resource);
-                        return preludedb_error(PRELUDEDB_ERROR_QUERY);
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s", sqlite3_errmsg(session));
                 }
                 
                 else if ( ret == SQLITE_DONE )
@@ -334,14 +328,14 @@ static int sql_query(void *session, const char *query, void **resource)
                 
                 ret = sqlite3_exec(session, query, NULL, NULL, 0);
                 if ( ret != SQLITE_OK )
-                        return preludedb_error(PRELUDEDB_ERROR_QUERY);
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
 
         } else {
                 ret = sqlite3_prepare(session, query, strlen(query), &statement, &unparsed);
                 if ( ret != SQLITE_OK )
-                        return preludedb_error(PRELUDEDB_ERROR_QUERY);
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
 
-                ret = sql_read_row(statement, (sqlite3_resource_t **) resource);        
+                ret = sql_read_row(session, statement, (sqlite3_resource_t **) resource);        
                 if ( ret != 1 ) {
                         sqlite3_finalize(statement);
                         return ret;
@@ -574,7 +568,6 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 
         preludedb_plugin_sql_set_open_func(plugin, sql_open);
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
-        preludedb_plugin_sql_set_get_error_func(plugin, sql_get_error);
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);

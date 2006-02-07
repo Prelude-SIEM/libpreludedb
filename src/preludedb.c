@@ -212,7 +212,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 
 		if ( (*db)->format_version )
 			free((*db)->format_version);
-		free(*db);
+
+                free(*db);
 	}
 
 	return ret;
@@ -310,26 +311,14 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size)
 {
 	int ret;
-        char *errptr;
+        preludedb_error_t tmp;
+
+        tmp = preludedb_error(prelude_error_get_code(error));
         
-	ret = snprintf(errbuf, size, "%s", preludedb_strerror(error));
+        ret = snprintf(errbuf, size, "%s: %s", preludedb_strerror(tmp), preludedb_strerror(error));
 	if ( ret < 0 || ret >= size )
 		return NULL;
-
-        size -= ret;
-        errptr = errbuf + ret;
-
-	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB && size > 2 ) {
-		const char *plugin_error;
-
-		plugin_error = preludedb_sql_get_plugin_error(db->sql);
-
-		if ( plugin_error ) {
-                        strcat(errptr, ": ");
-                        strncat(errptr + 2, plugin_error, size - 3);
-		}
-	}
-
+        
 	return errbuf;
 }
 
