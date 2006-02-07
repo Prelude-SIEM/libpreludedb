@@ -144,8 +144,7 @@ static void handle_signal(int signo)
 static int db_error(preludedb_t *db, int ret, const char *fmt, ...)
 {
         va_list ap;
-        char errbuf[PRELUDEDB_ERRBUF_SIZE];
-
+        
         if ( ret == 0 )
                 return ret;
         
