@@ -17,189 +17,400 @@ preludedb-plugin-sql
 <!-- ##### SECTION Stability_Level ##### -->
 
 
-<!-- ##### STRUCT preludedb_plugin_sql_t ##### -->
+<!-- ##### TYPEDEF preludedb_plugin_sql_t ##### -->
 <para>
 
 </para>
 
-@open: 
-@close: 
-@get_error: 
-@escape: 
-@escape_binary: 
-@unescape_binary: 
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_column_name_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@resource: 
+@column_num: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_operator_string_func_t ##### -->
+<para>
+
+</para>
+
+@operator: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_error_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_build_constraint_string_func_t ##### -->
+<para>
+
+</para>
+
+@out: 
+@field: 
+@operator: 
+@value: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_unescape_binary_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@input: 
+@output: 
+@output_size: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_escape_binary_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@input: 
+@input_size: 
+@output: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_query_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
 @query: 
-@get_column_count: 
-@get_row_count: 
-@get_column_name: 
-@get_column_num: 
-@resource_destroy: 
-@fetch_row: 
-@fetch_field: 
-@build_time_constraint_string: 
-@build_time_interval_string: 
-@build_limit_offset_string: 
-@build_constraint_string: 
+@res: 
+@Returns: 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_open_func ##### -->
+
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_column_num_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@resource: 
+@column_name: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_close_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_resource_destroy_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@resource: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_get_error_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_build_timestamp_string_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@t: 
+@out: 
+@size: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_escape_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_build_limit_offset_string_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@limit: 
+@offset: 
+@output: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_escape_binary_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_build_timestamp_string_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_unescape_binary_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_build_time_interval_string_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@type: 
+@value: 
+@buf: 
+@size: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_query_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_open_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@settings: 
+@session: 
+@errbuf: 
+@size: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_get_column_count_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_fetch_field_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@resource: 
+@row: 
+@column_num: 
+@value: 
+@len: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_get_row_count_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_operator_string_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_get_column_name_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_close_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_get_column_num_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_build_time_constraint_string_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@output: 
+@field: 
+@type: 
+@operator: 
+@value: 
+@gmt_offset: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_resource_destroy_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_escape_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@input: 
+@input_size: 
+@output: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_fetch_row_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_fetch_row_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@session: 
+@resource: 
+@row: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_fetch_field_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_new ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_build_time_constraint_string_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_open_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_build_time_interval_string_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_close_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_build_limit_offset_string_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_error_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_sql_set_build_constraint_string_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_sql_set_escape_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_escape_binary_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_unescape_binary_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_query_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_column_count_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_row_count_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_column_name_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_column_num_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_resource_destroy_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_fetch_row_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_fetch_field_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_build_time_constraint_string_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_build_time_interval_string_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_build_limit_offset_string_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_build_constraint_string_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
 
 

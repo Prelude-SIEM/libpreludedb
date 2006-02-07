@@ -128,161 +128,183 @@ preludedb_t *db, uint64_t ident
 preludedb_t *db, preludedb_path_selection_t *path_selection,idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,preludedb_result_values_t **result
 </FUNCTION>
 <STRUCT>
-<NAME>preludedb_plugin_format_t</NAME>
-typedef struct {
+<NAME>preludedb_plugin_format</NAME>
+struct preludedb_plugin_format {
 	PRELUDE_PLUGIN_GENERIC;
 
-	int (*check_schema_version)(const char *version);
-
-	int (*get_alert_idents)(preludedb_sql_t *sql,
-				idmef_criteria_t *criteria,
-				int limit, int offset, preludedb_result_idents_order_t order,
-				void **res);
-
-	int (*get_heartbeat_idents)(preludedb_sql_t *sql,
-				    idmef_criteria_t *criteria, 
-				    int limit, int offset, preludedb_result_idents_order_t order,
-				    void **res);
-
-	size_t (*get_message_ident_count)(void *res);
-
-	int (*get_next_message_ident)(void *res, uint64_t *ident);
-
-	void (*destroy_message_idents_resource)(void *res);
-
-	int (*get_alert)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
-
-	int (*get_heartbeat)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
-        
-	int (*delete_alert)(preludedb_sql_t *sql, uint64_t ident);
-
-	int (*delete_heartbeat)(preludedb_sql_t *sql, uint64_t ident);
-
-	int (*insert_message)(preludedb_sql_t *sql, idmef_message_t *message);
-
-	int (*get_values)(preludedb_sql_t *sql, preludedb_path_selection_t *selection,
-			  idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res);
-
-	int (*get_next_values)(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values);
-
-	void (*destroy_values_resource)(void *res);
-} preludedb_plugin_format_t;
+        preludedb_plugin_format_check_schema_version_func_t check_schema_version;
+        preludedb_plugin_format_get_alert_idents_func_t get_alert_idents;
+        preludedb_plugin_format_get_heartbeat_idents_func_t get_heartbeat_idents;
+        preludedb_plugin_format_get_message_ident_count_func_t get_message_ident_count;
+        preludedb_plugin_format_get_next_message_ident_func_t get_next_message_ident;
+        preludedb_plugin_format_destroy_message_idents_resource_func_t destroy_message_idents_resource;
+        preludedb_plugin_format_get_alert_func_t get_alert;
+        preludedb_plugin_format_get_heartbeat_func_t get_heartbeat;
+        preludedb_plugin_format_delete_alert_func_t delete_alert;
+        preludedb_plugin_format_delete_heartbeat_func_t delete_heartbeat;
+        preludedb_plugin_format_insert_message_func_t insert_message;
+        preludedb_plugin_format_get_values_func_t get_values;
+        preludedb_plugin_format_get_next_values_func_t get_next_values;
+        preludedb_plugin_format_destroy_values_resource_func_t destroy_values_resource;
+};
 </STRUCT>
-<MACRO>
-<NAME>preludedb_plugin_format_check_schema_version_func</NAME>
-#define	preludedb_plugin_format_check_schema_version_func(p) (p)->check_schema_version
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_alert_idents_func</NAME>
-#define	preludedb_plugin_format_get_alert_idents_func(p) (p)->get_alert_idents
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_heartbeat_idents_func</NAME>
-#define	preludedb_plugin_format_get_heartbeat_idents_func(p) (p)->get_heartbeat_idents
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_message_ident_count_func</NAME>
-#define	preludedb_plugin_format_get_message_ident_count_func(p) (p)->get_message_ident_count
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_next_message_ident_func</NAME>
-#define	preludedb_plugin_format_get_next_message_ident_func(p) (p)->get_next_message_ident
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_destroy_message_idents_resource_func</NAME>
-#define preludedb_plugin_format_destroy_message_idents_resource_func(p) (p)->destroy_message_idents_resource
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_alert_func</NAME>
-#define preludedb_plugin_format_get_alert_func(p) (p)->get_alert
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_heartbeat_func</NAME>
-#define preludedb_plugin_format_get_heartbeat_func(p) (p)->get_heartbeat
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_delete_alert_func</NAME>
-#define preludedb_plugin_format_delete_alert_func(p) (p)->delete_alert
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_delete_heartbeat_func</NAME>
-#define preludedb_plugin_format_delete_heartbeat_func(p) (p)->delete_heartbeat
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_insert_message_func</NAME>
-#define preludedb_plugin_format_insert_message_func(p) (p)->insert_message
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_values_func</NAME>
-#define preludedb_plugin_format_get_values_func(p) (p)->get_values
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_get_next_values_func</NAME>
-#define preludedb_plugin_format_get_next_values_func(p) (p)->get_next_values
-</MACRO>
-<MACRO>
-<NAME>preludedb_plugin_format_destroy_values_resource_func</NAME>
-#define preludedb_plugin_format_destroy_values_resource_func(p) (p)->destroy_values_resource
-</MACRO>
-<MACRO>
+<TYPEDEF>
+<NAME>preludedb_plugin_format_t</NAME>
+typedef struct preludedb_plugin_format preludedb_plugin_format_t;
+</TYPEDEF>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_check_schema_version_func_t</NAME>
+<RETURNS>int </RETURNS>
+const char *version
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_alert_idents_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                                                               int limit, int offset, preludedb_result_idents_order_t order,
+                                                               void **res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_heartbeat_idents_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                                                                   int limit, int offset, preludedb_result_idents_order_t order,
+                                                                   void **res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_message_ident_count_func_t</NAME>
+<RETURNS>size_t </RETURNS>
+void *res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_next_message_ident_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *res, uint64_t *ident
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_destroy_message_idents_resource_func_t</NAME>
+<RETURNS>void </RETURNS>
+void *res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_alert_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_heartbeat_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_alert_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, uint64_t ident
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_heartbeat_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, uint64_t ident
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_insert_message_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, idmef_message_t *message
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_values_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_t *sql, preludedb_path_selection_t *selection,
+                                                         idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_get_next_values_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *res, preludedb_path_selection_t *selection, idmef_value_t ***values
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_destroy_values_resource_func_t</NAME>
+<RETURNS>void </RETURNS>
+void *res
+</USER_FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_check_schema_version_func</NAME>
-#define	preludedb_plugin_format_set_check_schema_version_func(p, f) preludedb_plugin_format_check_schema_version_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_check_schema_version_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_alert_idents_func</NAME>
-#define	preludedb_plugin_format_set_get_alert_idents_func(p, f) preludedb_plugin_format_get_alert_idents_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_alert_idents_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_heartbeat_idents_func</NAME>
-#define	preludedb_plugin_format_set_get_heartbeat_idents_func(p, f) preludedb_plugin_format_get_heartbeat_idents_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_heartbeat_idents_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_message_ident_count_func</NAME>
-#define	preludedb_plugin_format_set_get_message_ident_count_func(p, f) preludedb_plugin_format_get_message_ident_count_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_message_ident_count_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_next_message_ident_func</NAME>
-#define	preludedb_plugin_format_set_get_next_message_ident_func(p, f) preludedb_plugin_format_get_next_message_ident_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_next_message_ident_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_destroy_message_idents_resource_func</NAME>
-#define	preludedb_plugin_format_set_destroy_message_idents_resource_func(p, f) preludedb_plugin_format_destroy_message_idents_resource_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_destroy_message_idents_resource_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_alert_func</NAME>
-#define preludedb_plugin_format_set_get_alert_func(p, f) preludedb_plugin_format_get_alert_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_alert_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_heartbeat_func</NAME>
-#define preludedb_plugin_format_set_get_heartbeat_func(p, f) preludedb_plugin_format_get_heartbeat_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_heartbeat_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_delete_alert_func</NAME>
-#define preludedb_plugin_format_set_delete_alert_func(p, f) preludedb_plugin_format_delete_alert_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_alert_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_delete_heartbeat_func</NAME>
-#define preludedb_plugin_format_set_delete_heartbeat_func(p, f) preludedb_plugin_format_delete_heartbeat_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_heartbeat_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_insert_message_func</NAME>
-#define preludedb_plugin_format_set_insert_message_func(p, f) preludedb_plugin_format_insert_message_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_insert_message_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_values_func</NAME>
-#define preludedb_plugin_format_set_get_values_func(p, f) preludedb_plugin_format_get_values_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_values_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_get_next_values_func</NAME>
-#define preludedb_plugin_format_set_get_next_values_func(p, f) preludedb_plugin_format_get_next_values_func(p) = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_get_next_values_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_destroy_values_resource_func</NAME>
-#define preludedb_plugin_format_set_destroy_values_resource_func(p, f) preludedb_plugin_format_destroy_values_resource_func(p) = (f)
-</MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_destroy_values_resource_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_format_new</NAME>
+<RETURNS>int </RETURNS>
+preludedb_plugin_format_t **ret
+</FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.2"
+#define LIBPRELUDEDB_VERSION "0.9.4"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
@@ -405,7 +427,7 @@ preludedb_error_t error
 </FUNCTION>
 <MACRO>
 <NAME>PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE</NAME>
-#define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE sizeof ("'1970-01-01 00:00:00'")
+#define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE 128
 </MACRO>
 <ENUM>
 <NAME>preludedb_sql_status_t</NAME>
@@ -642,128 +664,212 @@ idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec
 <FUNCTION>
 <NAME>preludedb_sql_time_to_timestamp</NAME>
 <RETURNS>int </RETURNS>
-const idmef_time_t *time,char *time_buf, size_t time_buf_size,char *gmtoff_buf, size_t gmtoff_buf_size,char *usec_buf, size_t usec_buf_size
+preludedb_sql_t *sql,const idmef_time_t *time,char *time_buf, size_t time_buf_size,char *gmtoff_buf, size_t gmtoff_buf_size,char *usec_buf, size_t usec_buf_size
 </FUNCTION>
-<STRUCT>
+<TYPEDEF>
 <NAME>preludedb_plugin_sql_t</NAME>
-typedef struct {
-        PRELUDE_PLUGIN_GENERIC;
-
-        int (*open)(preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size);
-        void (*close) (void *session);
-	const char *(*get_error)(void *session);
-        int (*escape)(void *session, const char *input, size_t input_size, char **output);
-	int (*escape_binary)(void *session, const unsigned char *input, size_t input_size, char **output);
-	int (*unescape_binary)(void *session, const char *input, unsigned char **output, size_t *output_size);
-        int (*query)(void *session, const char *query, void **res);
-	unsigned int (*get_column_count)(void *session, void *resource);
-	unsigned int (*get_row_count)(void *session, void *resource);
-	const char *(*get_column_name)(void *session, void *resource, unsigned int column_num);
-	int (*get_column_num)(void *session, void *resource, const char *column_name);
-	void (*resource_destroy)(void *session, void *resource);
-	int (*fetch_row)(void *session, void *resource, void **row);
-	int (*fetch_field)(void *session, void *resource, void *row, unsigned int column_num,
-			   const char **value, size_t *len);
-	int (*build_time_constraint_string)(prelude_string_t *output, const char *field,
-					    preludedb_sql_time_constraint_type_t type,
-					    idmef_criterion_operator_t operator, int value, int gmt_offset);
-	int (*build_time_interval_string)(preludedb_sql_time_constraint_type_t type, int value,
-					  char *buf, size_t size);
-	int (*build_limit_offset_string)(void *session, int limit, int offset, prelude_string_t *output);
-        int (*build_constraint_string)(prelude_string_t *out, const char *field,
-                                       idmef_criterion_operator_t operator, const char *value);
-} preludedb_plugin_sql_t;
-</STRUCT>
-<MACRO>
+typedef struct preludedb_plugin_sql preludedb_plugin_sql_t;
+</TYPEDEF>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_open_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_close_func_t</NAME>
+<RETURNS>void </RETURNS>
+void *session
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_get_error_func_t</NAME>
+<RETURNS>const char *</RETURNS>
+void *session
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_escape_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, const char *input, size_t input_size, char **output
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_escape_binary_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, const unsigned char *input, size_t input_size, char **output
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_unescape_binary_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, const char *input, unsigned char **output, size_t *output_size
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_query_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, const char *query, void **res
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_get_column_name_func_t</NAME>
+<RETURNS>const char *</RETURNS>
+void *session, void *resource, unsigned int column_num
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_get_column_num_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, void *resource, const char *column_name
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_resource_destroy_func_t</NAME>
+<RETURNS>void </RETURNS>
+void *session, void *resource
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_fetch_row_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, void *resource, void **row
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_fetch_field_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, void *resource, void *row,
+                                                       unsigned int column_num, const char **value, size_t *len
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_build_time_constraint_string_func_t</NAME>
+<RETURNS>int </RETURNS>
+prelude_string_t *output, const char *field,
+                                                                        preludedb_sql_time_constraint_type_t type,
+                                                                        idmef_criterion_operator_t operator, int value, int gmt_offset
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_build_time_interval_string_func_t</NAME>
+<RETURNS>int </RETURNS>
+preludedb_sql_time_constraint_type_t type, int value,
+                                                                      char *buf, size_t size
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_build_limit_offset_string_func_t</NAME>
+<RETURNS>int </RETURNS>
+void *session, int limit, int offset, prelude_string_t *output
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_build_constraint_string_func_t</NAME>
+<RETURNS>int </RETURNS>
+prelude_string_t *out, const char *field,
+                                                                   idmef_criterion_operator_t operator, const char *value
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_get_operator_string_func_t</NAME>
+<RETURNS>const char *</RETURNS>
+idmef_criterion_operator_t operator
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_sql_build_timestamp_string_func_t</NAME>
+<RETURNS>int </RETURNS>
+const struct tm *t, char *out, size_t size
+</USER_FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_open_func</NAME>
-#define preludedb_plugin_sql_set_open_func(p, f) \
-        (p)->open = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_open_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_close_func</NAME>
-#define preludedb_plugin_sql_set_close_func(p, f) \
-        (p)->close = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_close_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_get_error_func</NAME>
-#define preludedb_plugin_sql_set_get_error_func(p, f) \
-        (p)->get_error = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_error_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_escape_func</NAME>
-#define preludedb_plugin_sql_set_escape_func(p, f) \
-        (p)->escape = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_escape_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_escape_binary_func</NAME>
-#define preludedb_plugin_sql_set_escape_binary_func(p, f) \
-        (p)->escape_binary = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_escape_binary_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_unescape_binary_func</NAME>
-#define preludedb_plugin_sql_set_unescape_binary_func(p, f) \
-        (p)->unescape_binary = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_unescape_binary_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_query_func</NAME>
-#define preludedb_plugin_sql_set_query_func(p, f) \
-        (p)->query = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_query_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_get_column_count_func</NAME>
-#define preludedb_plugin_sql_set_get_column_count_func(p, f) \
-        (p)->get_column_count = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_column_count_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_get_row_count_func</NAME>
-#define preludedb_plugin_sql_set_get_row_count_func(p, f) \
-        (p)->get_row_count = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_row_count_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_get_column_name_func</NAME>
-#define preludedb_plugin_sql_set_get_column_name_func(p, f) \
-        (p)->get_column_name = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_column_name_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_get_column_num_func</NAME>
-#define preludedb_plugin_sql_set_get_column_num_func(p, f) \
-        (p)->get_column_num = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_column_num_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_resource_destroy_func</NAME>
-#define preludedb_plugin_sql_set_resource_destroy_func(p, f) \
-        (p)->resource_destroy = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_resource_destroy_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_fetch_row_func</NAME>
-#define preludedb_plugin_sql_set_fetch_row_func(p, f) \
-        (p)->fetch_row = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_fetch_row_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_fetch_field_func</NAME>
-#define preludedb_plugin_sql_set_fetch_field_func(p, f) \
-        (p)->fetch_field = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_fetch_field_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_build_time_constraint_string_func</NAME>
-#define	preludedb_plugin_sql_set_build_time_constraint_string_func(p, f) \
-        (p)->build_time_constraint_string = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_build_time_constraint_string_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_build_time_interval_string_func</NAME>
-#define	preludedb_plugin_sql_set_build_time_interval_string_func(p, f) \
-        (p)->build_time_interval_string = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_build_time_interval_string_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_build_limit_offset_string_func</NAME>
-#define	preludedb_plugin_sql_set_build_limit_offset_string_func(p, f) \
-        (p)->build_limit_offset_string = (f)
-</MACRO>
-<MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_build_limit_offset_string_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_sql_set_build_constraint_string_func</NAME>
-#define preludedb_plugin_sql_set_build_constraint_string_func(p, f) \
-        (p)->build_constraint_string = (f)
-</MACRO>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_build_constraint_string_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_sql_set_get_operator_string_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_get_operator_string_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_sql_set_build_timestamp_string_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_sql_t *plugin,preludedb_plugin_sql_build_timestamp_string_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_sql_new</NAME>
+<RETURNS>int </RETURNS>
+preludedb_plugin_sql_t **plugin
+</FUNCTION>
 <MACRO>
 <NAME>PRELUDEDB_SQL_SETTING_HOST</NAME>
 #define PRELUDEDB_SQL_SETTING_HOST "host"

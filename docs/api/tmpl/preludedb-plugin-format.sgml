@@ -17,7 +17,7 @@ preludedb-plugin-format
 <!-- ##### SECTION Stability_Level ##### -->
 
 
-<!-- ##### STRUCT preludedb_plugin_format_t ##### -->
+<!-- ##### STRUCT preludedb_plugin_format ##### -->
 <para>
 
 </para>
@@ -37,241 +37,294 @@ preludedb-plugin-format
 @get_next_values: 
 @destroy_values_resource: 
 
-<!-- ##### MACRO preludedb_plugin_format_check_schema_version_func ##### -->
+<!-- ##### TYPEDEF preludedb_plugin_format_t ##### -->
 <para>
 
 </para>
 
-@p: 
 
-
-<!-- ##### MACRO preludedb_plugin_format_get_alert_idents_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_values_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@selection: 
+@criteria: 
+@distinct: 
+@limit: 
+@offset: 
+@res: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_heartbeat_idents_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_alert_idents_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@criteria: 
+@limit: 
+@offset: 
+@order: 
+@res: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_message_ident_count_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_alert_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@ident: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_next_message_ident_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_new ##### -->
 <para>
 
 </para>
 
-@p: 
+@ret: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_destroy_message_idents_resource_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_heartbeat_idents_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@criteria: 
+@limit: 
+@offset: 
+@order: 
+@res: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_alert_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_message_ident_count_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@res: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_heartbeat_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_alert_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@ident: 
+@message: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_delete_alert_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_next_values_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@res: 
+@selection: 
+@values: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_delete_heartbeat_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_heartbeat_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@ident: 
+@message: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_insert_message_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_get_next_message_ident_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@res: 
+@ident: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_values_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_destroy_values_resource_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@res: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_get_next_values_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_insert_message_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@sql: 
+@message: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_destroy_values_resource_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_check_schema_version_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
+@version: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_check_schema_version_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_destroy_message_idents_resource_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@res: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_alert_idents_func ##### -->
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_heartbeat_func_t ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@sql: 
+@ident: 
+@Returns: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_heartbeat_idents_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_check_schema_version_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_message_ident_count_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_alert_idents_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_next_message_ident_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_heartbeat_idents_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_destroy_message_idents_resource_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_message_ident_count_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_alert_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_next_message_ident_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_heartbeat_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_destroy_message_idents_resource_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_delete_alert_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_alert_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_delete_heartbeat_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_heartbeat_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_insert_message_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_alert_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_values_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_heartbeat_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_get_next_values_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_insert_message_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
 
 
-<!-- ##### MACRO preludedb_plugin_format_set_destroy_values_resource_func ##### -->
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_values_func ##### -->
 <para>
 
 </para>
 
-@p: 
-@f: 
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_get_next_values_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_destroy_values_resource_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
 
 

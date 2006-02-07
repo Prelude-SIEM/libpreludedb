@@ -59,6 +59,13 @@ preludedb-sql-settings
 
 
 
+<!-- ##### MACRO PRELUDEDB_SQL_SETTING_FILE ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO PRELUDEDB_SQL_SETTING_LOG ##### -->
 <para>
 
@@ -255,6 +262,25 @@ preludedb-sql-settings
 
 
 <!-- ##### FUNCTION preludedb_sql_settings_get_log ##### -->
+<para>
+
+</para>
+
+@settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_set_file ##### -->
+<para>
+
+</para>
+
+@settings: 
+@value: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_sql_settings_get_file ##### -->
 <para>
 
 </para>
