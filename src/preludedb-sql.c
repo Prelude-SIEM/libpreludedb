@@ -191,13 +191,18 @@ void preludedb_sql_destroy(preludedb_sql_t *sql)
 int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filename)
 {
         int fd, ret;
-        
-	sql->logfile = fopen(filename, "a");
+
+        if ( ! filename ) {
+                sql->logfile = stdout;
+                return 0;
+        }
+
+        sql->logfile = fopen(filename, "a");
         if ( ! sql->logfile )
                 return preludedb_error_from_errno(errno);
-
+        
         fd = fileno(sql->logfile);
-
+        
         ret = fcntl(fd, F_GETFD);
         if ( ret < 0 )
                 return 0;
@@ -217,7 +222,9 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
  */
 void preludedb_sql_disable_query_logging(preludedb_sql_t *sql)
 {
-        fclose(sql->logfile);
+        if ( sql->logfile != stdout )
+                fclose(sql->logfile);
+        
 	sql->logfile = NULL;
 }
 
