@@ -222,7 +222,7 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
  */
 void preludedb_sql_disable_query_logging(preludedb_sql_t *sql)
 {
-        if ( sql->logfile != stdout )
+        if ( sql->logfile && sql->logfile != stdout )
                 fclose(sql->logfile);
         
 	sql->logfile = NULL;
