@@ -1212,8 +1212,8 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                               _preludedb_plugin_sql_get_operator_string(sql->plugin, operator));
         
         else if ( operator & IDMEF_CRITERION_OPERATOR_NOT ) {
-                ret = prelude_string_sprintf(output, "(%s %s AND ", field,
-                             _preludedb_plugin_sql_get_operator_string(sql->plugin, IDMEF_CRITERION_OPERATOR_NOT_NULL));
+                ret = prelude_string_sprintf(output, "(%s %s OR ", field,
+                             _preludedb_plugin_sql_get_operator_string(sql->plugin, IDMEF_CRITERION_OPERATOR_NULL));
                 if ( ret < 0 )
                         return ret;
         }
