@@ -99,6 +99,14 @@
 
 @p: 
 
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_error_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@Returns: 
+
 <!-- ##### MACRO preludedb_plugin_sql_get_row_count_func ##### -->
 <para>
 
@@ -126,6 +134,14 @@
 </para>
 
 @p: 
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_get_error_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
 
 <!-- ##### MACRO preludedb_plugin_sql_unescape_binary_func ##### -->
 <para>

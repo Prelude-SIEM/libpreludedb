@@ -43,15 +43,6 @@ preludedb-plugin-sql
 @Returns: 
 
 
-<!-- ##### USER_FUNCTION preludedb_plugin_sql_get_error_func_t ##### -->
-<para>
-
-</para>
-
-@session: 
-@Returns: 
-
-
 <!-- ##### USER_FUNCTION preludedb_plugin_sql_build_constraint_string_func_t ##### -->
 <para>
 
@@ -170,9 +161,10 @@ preludedb-plugin-sql
 
 @settings: 
 @session: 
+@Returns: 
+<!-- # Unused Parameters # -->
 @errbuf: 
 @size: 
-@Returns: 
 
 
 <!-- ##### USER_FUNCTION preludedb_plugin_sql_fetch_field_func_t ##### -->
@@ -262,15 +254,6 @@ preludedb-plugin-sql
 
 
 <!-- ##### FUNCTION preludedb_plugin_sql_set_close_func ##### -->
-<para>
-
-</para>
-
-@plugin: 
-@func: 
-
-
-<!-- ##### FUNCTION preludedb_plugin_sql_set_get_error_func ##### -->
 <para>
 
 </para>

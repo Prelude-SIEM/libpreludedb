@@ -50,21 +50,21 @@ preludedb-error
 </para>
 
 
-<!-- ##### FUNCTION prelude_error_from_errno ##### -->
-<para>
-
-</para>
-
-@Varargs: 
-@Returns: 
-
-
 <!-- ##### FUNCTION preludedb_strerror ##### -->
 <para>
 
 </para>
 
 @error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION prelude_error_from_errno ##### -->
+<para>
+
+</para>
+
+@Varargs: 
 @Returns: 
 
 

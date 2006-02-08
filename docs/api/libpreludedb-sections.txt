@@ -90,9 +90,8 @@ preludedb_path_selection_get_count
 <FILE>preludedb-error</FILE>
 preludedb_error_code_t
 preludedb_error_t
-prelude_error_make
-prelude_error_from_errno
 preludedb_strerror
+prelude_error_from_errno
 </SECTION>
 
 <SECTION>
@@ -151,7 +150,6 @@ preludedb_sql_time_to_timestamp
 preludedb_plugin_sql_t
 preludedb_plugin_sql_get_column_name_func_t
 preludedb_plugin_sql_get_operator_string_func_t
-preludedb_plugin_sql_get_error_func_t
 preludedb_plugin_sql_build_constraint_string_func_t
 preludedb_plugin_sql_unescape_binary_func_t
 preludedb_plugin_sql_escape_binary_func_t
@@ -172,7 +170,6 @@ preludedb_plugin_sql_fetch_row_func_t
 preludedb_plugin_sql_new
 preludedb_plugin_sql_set_open_func
 preludedb_plugin_sql_set_close_func
-preludedb_plugin_sql_set_get_error_func
 preludedb_plugin_sql_set_escape_func
 preludedb_plugin_sql_set_escape_binary_func
 preludedb_plugin_sql_set_unescape_binary_func

@@ -1,3 +1,26 @@
+* 2006-02-08, libpreludedb-0.9.4:
+
+	- Fix for filtering IDMEF field using the '!=' operator, which resulted in 
+	  filtering of events where the field did not exist (#129). 
+
+	- Implement a "move" command in preludedb-admin.
+
+	- When SQL query logging is enabled, log the time taken to execute the query.
+
+	- Improve plugin API by making it opaque so that existing plugin don't break
+	  if we add more SQL plugin function.
+
+	- Verbose error reporting, make the plugin error API viable for more drivers.
+
+	- Fix error reporting from perl and python bindings.
+
+	- Make libpreludedb header files c++ compiler friendly.
+
+	- Enforce listed IDMEF value ordering. IDMEF value were sometime unordered
+	  because of an uninitialized list position problem.
+
+
+
 * 2005-01-16, libpreludedb-0.9.3:
 
 	- SQLite support.

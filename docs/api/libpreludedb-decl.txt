@@ -487,11 +487,6 @@ preludedb_sql_t *sql, const char *filename
 preludedb_sql_t *sql
 </FUNCTION>
 <FUNCTION>
-<NAME>preludedb_sql_get_plugin_error</NAME>
-<RETURNS>const char *</RETURNS>
-preludedb_sql_t *sql
-</FUNCTION>
-<FUNCTION>
 <NAME>preludedb_sql_query</NAME>
 <RETURNS>int </RETURNS>
 preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table
@@ -666,6 +661,11 @@ idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec
 <RETURNS>int </RETURNS>
 preludedb_sql_t *sql,const idmef_time_t *time,char *time_buf, size_t time_buf_size,char *gmtoff_buf, size_t gmtoff_buf_size,char *usec_buf, size_t usec_buf_size
 </FUNCTION>
+<FUNCTION>
+<NAME>preludedb_sql_get_plugin_error</NAME>
+<RETURNS>const char *</RETURNS>
+preludedb_sql_t *sql
+</FUNCTION>
 <TYPEDEF>
 <NAME>preludedb_plugin_sql_t</NAME>
 typedef struct preludedb_plugin_sql preludedb_plugin_sql_t;
@@ -673,16 +673,11 @@ typedef struct preludedb_plugin_sql preludedb_plugin_sql_t;
 <USER_FUNCTION>
 <NAME>preludedb_plugin_sql_open_func_t</NAME>
 <RETURNS>int </RETURNS>
-preludedb_sql_settings_t *settings, void **session, char *errbuf, size_t size
+preludedb_sql_settings_t *settings, void **session
 </USER_FUNCTION>
 <USER_FUNCTION>
 <NAME>preludedb_plugin_sql_close_func_t</NAME>
 <RETURNS>void </RETURNS>
-void *session
-</USER_FUNCTION>
-<USER_FUNCTION>
-<NAME>preludedb_plugin_sql_get_error_func_t</NAME>
-<RETURNS>const char *</RETURNS>
 void *session
 </USER_FUNCTION>
 <USER_FUNCTION>
@@ -774,11 +769,6 @@ preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_open_func_t func
 <NAME>preludedb_plugin_sql_set_close_func</NAME>
 <RETURNS>void </RETURNS>
 preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_close_func_t func
-</FUNCTION>
-<FUNCTION>
-<NAME>preludedb_plugin_sql_set_get_error_func</NAME>
-<RETURNS>void </RETURNS>
-preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_error_func_t func
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_plugin_sql_set_escape_func</NAME>
