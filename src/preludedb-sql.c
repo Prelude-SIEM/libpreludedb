@@ -1199,37 +1199,41 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                          const char *field,
                                          idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
 {
+        int ret = -1;
         const void *vptr;
+        idmef_criterion_value_type_t type;
         
-        if ( operator == IDMEF_CRITERION_OPERATOR_NULL )
+        if ( operator == IDMEF_CRITERION_OPERATOR_NULL ) 
                 return prelude_string_sprintf(output, "%s %s", field,
                                               _preludedb_plugin_sql_get_operator_string(sql->plugin, operator));
         
-        if ( operator == IDMEF_CRITERION_OPERATOR_NOT_NULL )
+        else if ( operator == IDMEF_CRITERION_OPERATOR_NOT_NULL )
                 return prelude_string_sprintf(output, "%s %s", field,
                                               _preludedb_plugin_sql_get_operator_string(sql->plugin, operator));
-
+        
+        else if ( operator & IDMEF_CRITERION_OPERATOR_NOT ) {
+                ret = prelude_string_sprintf(output, "(%s %s AND ", field,
+                             _preludedb_plugin_sql_get_operator_string(sql->plugin, IDMEF_CRITERION_OPERATOR_NOT_NULL));
+                if ( ret < 0 )
+                        return ret;
+        }
+        
+        type = idmef_criterion_value_get_type(value);
         vptr = idmef_criterion_value_get_value(value);
         
-        switch ( idmef_criterion_value_get_type(value) ) {
-                                
-        case IDMEF_CRITERION_VALUE_TYPE_VALUE:
-                return build_criterion_fixed_value(sql, output, field, operator,
-                                                   idmef_criterion_value_get_value(value));
-                
-        case IDMEF_CRITERION_VALUE_TYPE_REGEX:
-                return build_criterion_regex(sql, output, field, operator,
-                                             idmef_criterion_value_get_regex(value));
+        if ( type == IDMEF_CRITERION_VALUE_TYPE_VALUE )
+                ret = build_criterion_fixed_value(sql, output, field, operator, idmef_criterion_value_get_value(value));
 
-        case IDMEF_CRITERION_VALUE_TYPE_BROKEN_DOWN_TIME:
-                return build_criterion_broken_down_time(sql, output, field, operator,
-                                                        idmef_criterion_value_get_broken_down_time(value));
-                
-        default:
-                /* nop */;
-        }
+        else if ( type == IDMEF_CRITERION_VALUE_TYPE_REGEX )
+                ret = build_criterion_regex(sql, output, field, operator, idmef_criterion_value_get_regex(value));
 
-        return -1;
+        else if ( type == IDMEF_CRITERION_VALUE_TYPE_BROKEN_DOWN_TIME )
+                ret = build_criterion_broken_down_time(sql, output, field, operator, idmef_criterion_value_get_broken_down_time(value));
+        
+        if ( ret >= 0 && operator & IDMEF_CRITERION_OPERATOR_NOT )
+                ret = prelude_string_sprintf(output, ")");
+
+        return ret;
 }
 
 
