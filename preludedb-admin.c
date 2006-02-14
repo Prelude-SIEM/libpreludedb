@@ -402,7 +402,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 
                 ret = get_message(src, ident, &msg);
                 if ( ret < 0 ) {
-                        db_error(src, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
+                        db_error(src, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
 
@@ -606,7 +606,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
                 
                 ret = get_message(db, ident, &message);
                 if ( ret < 0 ) {
-                        db_error(db, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
+                        db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
 
@@ -823,7 +823,7 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 
                 ret = get_message(db, ident, &idmef);
                 if ( ret < 0 ) {
-                        db_error(db, ret, "Error retrieving message %" PRELUDE_PRIu64 "", ident);
+                        db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
                 
