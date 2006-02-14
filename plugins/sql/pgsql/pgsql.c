@@ -36,7 +36,7 @@
 
 #include <libprelude/prelude-error.h>
 #include <libprelude/idmef.h>
-#include <libpq-fe.h>
+#include <postgresql/libpq-fe.h>
 
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
