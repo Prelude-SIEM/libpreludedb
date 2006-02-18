@@ -139,8 +139,9 @@ PyObject *swig_python_data(idmef_data_t *data)
 		$result = PyList_New(0);
 
 		for ( cnt = 0; cnt < size; cnt++ ) {
-			PyList_Append($result,
-				      SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0));
+			PyObject *s = SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0);
+			PyList_Append($result, s);
+			Py_XDECREF(s);
 		}
 
 		free(values);
