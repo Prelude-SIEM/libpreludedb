@@ -54,9 +54,6 @@
 #include "preludedb.h"
 
 
-#define PRELUDEDB_PLUGIN_SYMBOL "preludedb_plugin_init"
-
-
 struct preludedb_sql {
         char *type;
         preludedb_sql_settings_t *settings;
