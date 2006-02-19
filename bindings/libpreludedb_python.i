@@ -252,41 +252,6 @@ PyObject *swig_python_data(idmef_data_t *data)
 
 
 
-
-%apply SWIGTYPE **OUTPARAM {
-        idmef_message_t **,
-        preludedb_t **,
-        preludedb_path_selection_t **,
-        preludedb_result_idents_t **,
-        preludedb_result_values_t **,
-        preludedb_selected_path_t **,
-        preludedb_sql_t **,
-        preludedb_sql_settings_t **
-};
-
-
-%apply SWIGTYPE *INPARAM {
-        idmef_message_t *,
-        preludedb_t *,
-        preludedb_path_selection_t *,
-        preludedb_result_idents_t *,
-        preludedb_result_values_t *,
-        preludedb_selected_path_t *,
-        preludedb_sql_t *,
-        preludedb_sql_field_t *,
-        preludedb_sql_row_t *,
-        preludedb_sql_settings_t *,
-        preludedb_sql_table_t *
-};
-
-%apply SWIGTYPE **OUTRESULT {
-        preludedb_result_idents_t **,
-        preludedb_result_values_t **,
-        preludedb_sql_field_t **,
-        preludedb_sql_row_t **,
-        preludedb_sql_table_t **
-};
-
 %pythoncode %{
 import prelude
 
