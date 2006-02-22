@@ -484,9 +484,6 @@ static int classic_get_next_values(void *res, preludedb_path_selection_t *select
                 return ret;
         }
 
-        if ( value_cnt == 0 )
-                free(*values);
-
 	return value_cnt;
 }
 
