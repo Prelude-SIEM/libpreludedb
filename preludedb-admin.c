@@ -389,14 +389,14 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
         idmef_message_t *msg;
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
-                
+                                
                 if ( start_offset ) {
                         start_offset--;
                         continue;
                 }
+                
+                if ( cur_count++ >= max_count && max_count )
+                        return 0;
 
                 gettimeofday(&start1, NULL);
                 
@@ -500,14 +500,14 @@ static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
         uint64_t ident;
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
                 
                 if ( start_offset ) {
                         start_offset--;
                         continue;
                 }
+
+                if ( cur_count++ >= max_count && max_count )
+                        return 0;
 
                 gettimeofday(&start1, NULL);
                 ret = delete_message(db, ident);
@@ -593,14 +593,14 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
         idmef_message_t *message;
         
 	while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
                 
                 if ( start_offset ) {
                         start_offset--;
                         continue;
                 }
+
+                if ( cur_count++ >= max_count && max_count )
+                        return 0;
                 
                 gettimeofday(&start1, NULL);
                 
@@ -749,15 +749,16 @@ static int cmd_load(int argc, char **argv)
                         fprintf(stderr, "error reading message: %s.\n", prelude_strerror(ret));
                         return ret;
                 }
+                                
+                if ( start_offset ) {
+                        start_offset--;
+                        continue;
+                }
+
                 
                 if ( cur_count++ >= max_count && max_count ) {
                         prelude_msg_destroy(msg);
                         break;
-                }
-                
-                if ( start_offset ) {
-                        start_offset--;
-                        continue;
                 }
 
                 ret = idmef_message_new(&idmef);
@@ -810,14 +811,13 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
         
 	while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
                                 
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
-                
                 if ( start_offset ) {
                         start_offset--;
                         continue;
                 }
 
+                if ( cur_count++ >= max_count && max_count )
+                        return 0;
 
                 gettimeofday(&start1, NULL);
 
