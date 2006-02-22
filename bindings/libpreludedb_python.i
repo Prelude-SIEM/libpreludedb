@@ -38,69 +38,7 @@ void swig_python_raise_exception(int error, const char *strerror)
         Py_DECREF(exception_class);
         Py_DECREF(exception);
 }
-
-PyObject *swig_python_string(prelude_string_t *string)
-{
-        return PyString_FromStringAndSize(prelude_string_get_string(string), prelude_string_get_len(string));
-}
-
-PyObject *swig_python_data(idmef_data_t *data)
-{
-        switch ( idmef_data_get_type(data) ) {
-        case IDMEF_DATA_TYPE_CHAR: case IDMEF_DATA_TYPE_BYTE:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), 1);
-
-        case IDMEF_DATA_TYPE_CHAR_STRING:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), idmef_data_get_len(data) - 1);
-
-        case IDMEF_DATA_TYPE_BYTE_STRING:
-                return PyString_FromStringAndSize(idmef_data_get_data(data), idmef_data_get_len(data));
-
-        case IDMEF_DATA_TYPE_UINT32:
-                return PyLong_FromLongLong(idmef_data_get_uint32(data));
-
-        case IDMEF_DATA_TYPE_UINT64:
-                return PyLong_FromUnsignedLongLong(idmef_data_get_uint64(data));
-
-        case IDMEF_DATA_TYPE_FLOAT:
-                return PyFloat_FromDouble((double) idmef_data_get_float(data));
-
-        default:
-                return NULL;
-        }
-}
 %}
-
-
-%typemap(in) int *argc (int tmp) {
-	tmp = PyInt_AsLong($input);
-	$1 = &tmp;
-};
-
-
-%typemap(in) char **argv {
-	/* Check if is a list */
-	if ( PyList_Check($input) ) {
-		int size = PyList_Size($input);
-		int i = 0;
-
-		$1 = (char **) malloc((size+1) * sizeof(char *));
-		for ( i = 0; i < size; i++ ) {
-			PyObject *o = PyList_GetItem($input,i);
-			if ( PyString_Check(o) )
-				$1[i] = PyString_AsString(PyList_GetItem($input, i));
-			else {
-				PyErr_SetString(PyExc_TypeError, "list must contain strings");
-				free($1);
-				return NULL;
-			}
-		}
-		$1[i] = 0;
-	} else {
-		PyErr_SetString(PyExc_TypeError, "not a list");
-		return NULL;
-	}
-};
 
 
 %typemap(in) const char * {
