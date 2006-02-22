@@ -503,17 +503,17 @@ static int classic_check_schema_version(const char *version)
 	if ( ! version )
 		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
-	if ( sscanf(version, "%lf", &d) <= 0 )
+	if ( sscanf(version, "%g", &d) <= 0 )
 		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
-
+        
 	if ( d > CLASSIC_SCHEMA_VERSION )
 		return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT,
-                                               "Database schema version %lf is too recent (%lf required)",
+                                               "Database schema version %g is too recent (%g required)",
                                                d, CLASSIC_SCHEMA_VERSION);
 
 	if ( d < CLASSIC_SCHEMA_VERSION )
 		return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD,
-                                               "Database schema version %lf is too old (%lf required)",
+                                               "Database schema version %g is too old (%g required)",
                                                d, CLASSIC_SCHEMA_VERSION);
 
 	return 0;
