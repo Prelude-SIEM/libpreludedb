@@ -503,7 +503,7 @@ static int classic_check_schema_version(const char *version)
 	if ( ! version )
 		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
-	if ( sscanf(version, "%g", &d) <= 0 )
+	if ( sscanf(version, "%lf", &d) <= 0 )
 		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
         
 	if ( d > CLASSIC_SCHEMA_VERSION )
