@@ -473,13 +473,19 @@ static int classic_get_next_values(void *res, preludedb_path_selection_t *select
 
 		sql_cnt += ret;
 	}
-
+        
 	if ( ret < 0 ) {
 		unsigned int cnt;
-
+                
 		for ( cnt = 0; cnt < value_cnt; cnt++ )
 			idmef_value_destroy((*values)[cnt]);
-	}
+
+                free(*values);
+                return ret;
+        }
+
+        if ( value_cnt == 0 )
+                free(*values);
 
 	return value_cnt;
 }
@@ -504,10 +510,14 @@ static int classic_check_schema_version(const char *version)
 		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
 	if ( d > CLASSIC_SCHEMA_VERSION )
-		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT);
+		return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT,
+                                               "Database schema version %lf is too recent (%lf required)",
+                                               d, CLASSIC_SCHEMA_VERSION);
 
 	if ( d < CLASSIC_SCHEMA_VERSION )
-		return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD);
+		return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD,
+                                               "Database schema version %lf is too old (%lf required)",
+                                               d, CLASSIC_SCHEMA_VERSION);
 
 	return 0;
 }
