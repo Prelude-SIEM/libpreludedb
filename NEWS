@@ -1,3 +1,17 @@
+* 2006-02-22, libpreludedb-0.9.5:
+
+	- Fix important memory leak in Python bindings, Prewikka should end-up 
+	  consuming way less memory than it used to.
+
+	- Fix PostgreSQL plugin compilation problem.
+
+	- Fix for preludedb-admin --count handling when --offset was used.
+
+	- Provide more information in preludedb-admin error message.
+
+	- Various cleanup.
+
+
 * 2006-02-08, libpreludedb-0.9.4:
 
 	- Fix for filtering IDMEF field using the '!=' operator, which resulted in 
