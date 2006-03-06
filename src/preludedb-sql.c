@@ -292,10 +292,12 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
         gettimeofday(&start, NULL);
         ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
         gettimeofday(&end, NULL);
-
-        if ( sql->logfile )
-                fprintf(sql->logfile, "%.3fs %s\n",
-                        (end.tv_sec + (float) end.tv_usec / 1000000) - (start.tv_sec + (float) start.tv_usec / 1000000), query);
+        
+        if ( sql->logfile ) {                
+                fprintf(sql->logfile, "%fs %s\n",
+                        (end.tv_sec + (double) end.tv_usec / 1000000) -
+                        (start.tv_sec + (double) start.tv_usec / 1000000), query);
+        }
         
         if ( ret < 0 ) {
                 update_sql_from_errno(sql, ret);
