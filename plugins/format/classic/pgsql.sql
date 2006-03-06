@@ -13,6 +13,7 @@ CREATE TABLE Prelude_Alert (
  messageid VARCHAR(255) NULL
 );
 
+CREATE INDEX prelude_alert_messageid ON Prelude_Alert(messageid)
 
 
 DROP TABLE Prelude_Alertident;
@@ -296,7 +297,7 @@ CREATE TABLE Prelude_AdditionalData (
  _index INT4 NOT NULL,
  type VARCHAR(32) NOT NULL,
  meaning VARCHAR(255) NULL,
- data BYTEA NULL,
+ data BYTEA NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _index)
 );
 

@@ -13,6 +13,7 @@ CREATE TABLE Prelude_Alert (
  messageid VARCHAR(255) NULL
 ) TYPE=InnoDB;
 
+CREATE INDEX prelude_alert_messageid ON Prelude_Alert (messageid);
 
 
 DROP TABLE IF EXISTS Prelude_Alertident;
@@ -296,7 +297,7 @@ CREATE TABLE Prelude_AdditionalData (
  _index TINYINT NOT NULL,
  type ENUM("boolean","byte","character","date-time","integer","ntpstamp","portlist","real","string","byte-string","xml") NOT NULL,
  meaning VARCHAR(255) NULL,
- data BLOB NULL,
+ data BLOB NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _index)
 ) TYPE=InnoDB;
 

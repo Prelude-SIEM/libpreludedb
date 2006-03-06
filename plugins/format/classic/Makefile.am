@@ -18,11 +18,14 @@ dist_schemadata_DATA =  mysql2sqlite.sh		\
 			mysql-update-14-1.sql 	\
 			mysql-update-14-2.sql 	\
 			mysql-update-14-3.sql	\
+			mysql-update-14-4.sql	\
 			pgsql.sql 		\
 			pgsql-update-14-1.sql	\
 			pgsql-update-14-2.sql	\
 			pgsql-update-14-3.sql	\
-			sqlite.sql
+			pgsql-update-14-4.sql	\
+			sqlite.sql		\
+			sqlite-update-14-4.sql
 
 
 sqlite.sql: mysql.sql
