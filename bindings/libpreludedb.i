@@ -41,12 +41,21 @@ typedef struct idmef_path idmef_path_t;
 typedef struct idmef_criterion_value idmef_criterion_value_t;
 typedef struct prelude_string prelude_string_t;
 
+%include <libprelude/prelude-inttypes.h>
+
 typedef int int32_t;
 typedef unsigned int uint32_t;
-typedef long long int64_t;
-typedef unsigned long long uint64_t;
+
+#ifdef __PRELUDE_HAVE_64BIT_LONG
+  typedef long int64_t;
+  typedef unsigned long uint64_t;
+#else
+  typedef long long int64_t;
+  typedef unsigned long long uint64_t;
+#endif
+
 typedef signed int preludedb_error_t;
-typedef signed int prelude_bool_t;
+
 
 #ifdef SWIGPYTHON
 %include libpreludedb_python.i
