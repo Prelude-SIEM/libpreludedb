@@ -1,3 +1,14 @@
+* 2006-03-08, libpreludedb-0.9.6:
+
+	- Fix PostgreSQL plugin compilation problem.
+
+	- Update database schema: enforce that AdditionalData data field is not NULL.
+
+	- Improve Swig basic type mapping situation regarding to the target architecture.
+
+	- Fix query time calculation.
+	
+
 * 2006-02-22, libpreludedb-0.9.5.1:
 
 	- Correctly read database schema version.
