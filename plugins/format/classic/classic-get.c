@@ -119,7 +119,7 @@ static int _get_string_listed(preludedb_sql_t *sql, preludedb_sql_row_t *row,
 	if ( ret <= 0 )
 		return ret;
 
-	ret = parent_new_child(parent, &string, -1);
+	ret = parent_new_child(parent, &string, IDMEF_LIST_APPEND);
 	if ( ret < 0 )
 		return ret;
 
@@ -329,7 +329,7 @@ static int get_user_id(preludedb_sql_t *sql,
                 if ( listed ) {
                         int (*parent_new_child)(void *parent, idmef_user_id_t **, int) =
                                 (int (*)(void *, idmef_user_id_t **, int)) _parent_new_child;
-                        ret = parent_new_child(parent, &user_id, -1);
+                        ret = parent_new_child(parent, &user_id, IDMEF_LIST_APPEND);
                 } else {
                         int (*parent_new_child)(void *parent, idmef_user_id_t **) = _parent_new_child;
                         ret = parent_new_child(parent, &user_id);
@@ -759,7 +759,7 @@ static int get_address(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &idmef_address, -1);
+		ret = parent_new_child(parent, &idmef_address, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -870,7 +870,7 @@ static int get_analyzer(preludedb_sql_t *sql,
 
 	index = 0;
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
-		ret = parent_new_child(parent, &analyzer, -1);
+		ret = parent_new_child(parent, &analyzer, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -945,7 +945,7 @@ static int get_action(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_assessment_new_action(assessment, &action, -1);
+		ret = idmef_assessment_new_action(assessment, &action, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			return ret;
 
@@ -1156,7 +1156,7 @@ static int get_file_access(preludedb_sql_t *sql,
 
 	for ( cnt = 0; cnt < file_access_count; cnt++ ) {
 
-		ret = idmef_file_new_file_access(file, &file_access, -1);
+		ret = idmef_file_new_file_access(file, &file_access, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1199,7 +1199,7 @@ static int get_linkage(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_file_new_linkage(file, &linkage, -1);
+		ret = idmef_file_new_linkage(file, &linkage, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1306,7 +1306,7 @@ static int get_checksum(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_file_new_checksum(file, &checksum, -1);
+		ret = idmef_file_new_checksum(file, &checksum, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1354,7 +1354,7 @@ static int get_file(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_target_new_file(target, &file, -1);
+		ret = idmef_target_new_file(target, &file, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1453,7 +1453,7 @@ static int get_source(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_alert_new_source(alert, &source, -1);
+		ret = idmef_alert_new_source(alert, &source, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1520,7 +1520,7 @@ static int get_target(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_alert_new_target(alert, &target, -1);
+		ret = idmef_alert_new_target(alert, &target, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1594,7 +1594,7 @@ static int get_additional_data(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &additional_data, -1);
+		ret = parent_new_child(parent, &additional_data, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1734,7 +1734,7 @@ static int get_reference(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = idmef_classification_new_reference(classification, &reference, -1);
+		ret = idmef_classification_new_reference(classification, &reference, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
@@ -1827,7 +1827,7 @@ static int get_alertident(preludedb_sql_t *sql,
 
 	while ( (ret = preludedb_sql_table_fetch_row(table, &row)) > 0 ) {
 
-		ret = parent_new_child(parent, &alertident, -1);
+		ret = parent_new_child(parent, &alertident, IDMEF_LIST_APPEND);
 		if ( ret < 0 )
 			goto error;
 
