@@ -30,6 +30,7 @@
 #include "preludedb-sql.h"
 #include "preludedb-path-selection.h"
 #include "preludedb.h"
+#include "preludedb-version.h"
 
 %}
 
@@ -103,6 +104,7 @@ typedef signed int preludedb_error_t;
 %include "preludedb-sql-settings.h"
 %include "preludedb-sql.h"
 %include "preludedb.h"
+%include "preludedb-version.h"
 %include "preludedb-path-selection.h"
 
 prelude_bool_t preludedb_error_check(preludedb_error_t error, preludedb_error_code_t code);
