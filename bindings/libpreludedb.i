@@ -47,13 +47,8 @@ typedef struct prelude_string prelude_string_t;
 typedef int int32_t;
 typedef unsigned int uint32_t;
 
-#ifdef __PRELUDE_HAVE_64BIT_LONG
-  typedef long int64_t;
-  typedef unsigned long uint64_t;
-#else
-  typedef long long int64_t;
-  typedef unsigned long long uint64_t;
-#endif
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
 
 typedef signed int preludedb_error_t;
 
