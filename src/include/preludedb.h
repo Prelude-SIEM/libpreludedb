@@ -94,6 +94,16 @@ int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selec
 			 idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
 			 preludedb_result_values_t **result);
 
+
+int preludedb_transaction_start(preludedb_t *db);
+         
+
+int preludedb_transaction_end(preludedb_t *db);
+         
+
+int preludedb_transaction_abort(preludedb_t *db);
+         
+
 #ifdef __cplusplus
   }
 #endif

@@ -54,6 +54,17 @@
 #include "preludedb.h"
 
 
+
+#define assert_connected(sql)                                   \
+        if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {   \
+                int __ret;                                      \
+                                                                \
+                __ret = preludedb_sql_connect(sql);             \
+                if ( __ret < 0 )                                \
+                        return __ret;                           \
+        }
+
+
 struct preludedb_sql {
         char *type;
         preludedb_sql_settings_t *settings;
@@ -61,6 +72,7 @@ struct preludedb_sql {
         preludedb_sql_status_t status;
         void *session;
         FILE *logfile;
+        prelude_bool_t internal_transaction_disabled;
 };
 
 struct preludedb_sql_table {
@@ -85,16 +97,11 @@ struct preludedb_sql_field {
 };
 
 
-
-#define assert_connected(sql)                                   \
-        if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {   \
-                int __ret;                                      \
-                                                                \
-                __ret = preludedb_sql_connect(sql);             \
-                if ( __ret < 0 )                                \
-                        return __ret;                           \
-        }
-
+int _preludedb_sql_transaction_start(preludedb_sql_t *sql);
+int _preludedb_sql_transaction_end(preludedb_sql_t *sql);
+int _preludedb_sql_transaction_abort(preludedb_sql_t *sql);
+void _preludedb_sql_enable_internal_transaction(preludedb_sql_t *sql);
+void _preludedb_sql_disable_internal_transaction(preludedb_sql_t *sql);
 
 
 extern prelude_list_t _sql_plugin_list;
@@ -428,6 +435,28 @@ int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int
 
 
 
+int _preludedb_sql_transaction_start(preludedb_sql_t *sql)
+{
+        int ret;
+                
+        if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )                
+                return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
+        
+        assert_connected(sql);
+
+        ret = preludedb_sql_query(sql, "BEGIN", NULL);
+        if ( ret < 0 ) {
+                update_sql_from_errno(sql, ret);
+                return ret;
+        }
+        
+        sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
+
+        return 0;
+}
+
+
+
 /**
  * preludedb_sql_transaction_start:
  * @sql: Pointer to a sql object.
@@ -438,39 +467,19 @@ int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int
  */
 int preludedb_sql_transaction_start(preludedb_sql_t *sql)
 {
-        int ret;
+        if ( sql->internal_transaction_disabled )
+                return 0;
 
-        if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )
-                return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
-
-        assert_connected(sql);
-
-        ret = preludedb_sql_query(sql, "BEGIN", NULL);
-        if ( ret < 0 ) {
-                update_sql_from_errno(sql, ret);
-                return ret;
-        }
-
-        sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
-
-        return 0;
+        return _preludedb_sql_transaction_start(sql);
 }
 
 
 
-/**
- * preludedb_sql_transaction_end:
- * @sql: Pointer to a sql object.
- *
- * Finish a sql transaction (SQL COMMIT command).
- *
- * Returns: 0 on success or a negative value if an error occur.
- */
-int preludedb_sql_transaction_end(preludedb_sql_t *sql)
+int _preludedb_sql_transaction_end(preludedb_sql_t *sql)
 {
         int ret;
 
-        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
+        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )                
                 return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
         
         ret = preludedb_sql_query(sql, "COMMIT", NULL);
@@ -485,22 +494,33 @@ int preludedb_sql_transaction_end(preludedb_sql_t *sql)
 
 
 
+
 /**
- * preludedb_sql_transaction_abort:
+ * preludedb_sql_transaction_end:
  * @sql: Pointer to a sql object.
  *
- * Abort a sql transaction (SQL ROLLBACK command).
+ * Finish a sql transaction (SQL COMMIT command).
  *
  * Returns: 0 on success or a negative value if an error occur.
  */
-int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
+int preludedb_sql_transaction_end(preludedb_sql_t *sql)
+{
+        if ( sql->internal_transaction_disabled )
+                return 0;
+
+        return _preludedb_sql_transaction_end(sql);
+}
+
+
+
+int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 {
         int ret;
         char *original_error = NULL;
         
         if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
                 return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
-
+        
         if ( _prelude_thread_get_error() ) 
                 original_error = strdup(_prelude_thread_get_error());
         
@@ -519,6 +539,25 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
         }
         
         return ret;
+}
+
+
+
+
+/**
+ * preludedb_sql_transaction_abort:
+ * @sql: Pointer to a sql object.
+ *
+ * Abort a sql transaction (SQL ROLLBACK command).
+ *
+ * Returns: 0 on success or a negative value if an error occur.
+ */
+int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
+{
+        if ( sql->internal_transaction_disabled )
+                return 0;
+
+        return _preludedb_sql_transaction_abort(sql);
 }
 
 
@@ -1347,4 +1386,18 @@ const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
          * deprecated.
          */
         return NULL;
+}
+
+
+
+void _preludedb_sql_enable_internal_transaction(preludedb_sql_t *sql)
+{
+        sql->internal_transaction_disabled = FALSE;
+}
+
+
+
+void _preludedb_sql_disable_internal_transaction(preludedb_sql_t *sql)
+{
+        sql->internal_transaction_disabled = TRUE;
 }

@@ -64,6 +64,15 @@ struct preludedb_result_values {
 
 
 
+
+int _preludedb_sql_transaction_start(preludedb_sql_t *sql);
+int _preludedb_sql_transaction_end(preludedb_sql_t *sql);
+int _preludedb_sql_transaction_abort(preludedb_sql_t *sql);
+void _preludedb_sql_enable_internal_transaction(preludedb_sql_t *sql);
+void _preludedb_sql_disable_internal_transaction(preludedb_sql_t *sql);
+
+
+
 static int libpreludedb_refcount = 0;
 PRELUDE_LIST(_sql_plugin_list);
 static PRELUDE_LIST(plugin_format_list);
@@ -565,4 +574,79 @@ int preludedb_get_values(preludedb_t *db,
 		free(*result);
 
 	return ret;
+}
+
+
+
+/**
+ * preludedb_transaction_start:
+ * @db: Pointer to a #preludedb_t object.
+ *
+ * Begin a transaction using @db object. Internal transaction
+ * handling will be disabled until preludedb_transaction_end()
+ * or preludedb_transaction_abort() is called.
+ *
+ * Returns: 0 on success or a negative value if an error occur.
+ */
+int preludedb_transaction_start(preludedb_t *db)
+{
+        int ret;
+        
+        ret = _preludedb_sql_transaction_start(db->sql);
+        if ( ret < 0 )
+                return ret;
+        
+        _preludedb_sql_disable_internal_transaction(db->sql);
+
+        return ret;
+}
+
+
+
+/**
+ * preludedb_transaction_end:
+ * @db: Pointer to a #preludedb_t object.
+ *
+ * Terminate a sql transaction (SQL COMMIT command) initiated
+ * with preludedb_transaction_start(). Internal transaction
+ * handling will be enabled again once this function return.
+ *
+ * Returns: 0 on success or a negative value if an error occur.
+ */
+int preludedb_transaction_end(preludedb_t *db)
+{
+        int ret;
+        
+        ret = _preludedb_sql_transaction_end(db->sql);
+        _preludedb_sql_enable_internal_transaction(db->sql);
+
+        if ( ret < 0 )
+                return ret;
+        
+        return ret;
+}
+
+
+
+/**
+ * preludedb_transaction_abort:
+ * @db: Pointer to a #preludedb_t object.
+ *
+ * Abort a sql transaction (SQL ROLLBACK command) initiated
+ * with preludedb_transaction_start(). Internal transaction
+ * handling will be enabled again once this function return.
+ *
+ * Returns: 0 on success or a negative value if an error occur.
+ */
+int preludedb_transaction_abort(preludedb_t *db)
+{
+        int ret;
+        
+        ret = _preludedb_sql_transaction_abort(db->sql);
+        _preludedb_sql_enable_internal_transaction(db->sql);
+
+        if ( ret < 0 )
+                return ret;
+        
+        return ret;
 }
