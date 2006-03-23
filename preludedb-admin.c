@@ -457,6 +457,9 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         if ( ret < 0 )
                 return db_error(src, ret, "retrieving alert idents list failed");
         
+        preludedb_transaction_start(src);
+        preludedb_transaction_start(dst);
+
         if ( ret > 0 ) {
                 ret = copy_iterate(src, dst, idents, delete_copied ?
                                    preludedb_delete_alert : NULL, preludedb_get_alert);
@@ -464,15 +467,26 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         }
         
         ret = preludedb_get_heartbeat_idents(src, heartbeat_criteria, -1, -1, 0, &idents);
-	if ( ret < 0 )
-                return db_error(src, ret, "retrieving heartbeat idents list failed");
-
+	if ( ret < 0 ) {
+                ret = db_error(src, ret, "retrieving heartbeat idents list failed");
+                goto err;
+        }
+        
         if ( ret > 0 ) {
                 ret = copy_iterate(src, dst, idents, delete_copied ?
                                    preludedb_delete_heartbeat : NULL, preludedb_get_heartbeat);
                 preludedb_result_idents_destroy(idents);
         }
 
+ err:
+        if ( ret < 0 ) {
+                preludedb_transaction_end(src);
+                preludedb_transaction_abort(dst);
+        } else {
+                preludedb_transaction_end(src);
+                preludedb_transaction_end(dst);
+        }
+        
         preludedb_destroy(src);
         preludedb_destroy(dst);
         
@@ -544,11 +558,15 @@ static int cmd_delete(int argc, char **argv)
 	if ( ret < 0 )
 		return ret;
 
+        preludedb_transaction_start(db);
+        
         if ( alert_criteria ) {
                 ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
-                if ( ret < 0 )
-                        return db_error(db, ret, "retrieving alert ident failed");
-        
+                if ( ret < 0 ) {
+                        ret = db_error(db, ret, "retrieving alert ident failed");
+                        goto err;
+                }
+                
                 if ( ret > 0 ) {
                         drop_iterate(db, idents, preludedb_delete_alert);
                         preludedb_result_idents_destroy(idents);
@@ -557,15 +575,24 @@ static int cmd_delete(int argc, char **argv)
 
         if ( heartbeat_criteria ) {
                 ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
-                if ( ret < 0 ) 
-                        return db_error(db, ret, "retrieving heartbeat ident failed");
-
+                if ( ret < 0 ) {
+                        ret = db_error(db, ret, "retrieving heartbeat ident failed");
+                        goto err;
+                }
+                
                 if ( ret > 0 ) {
-                        drop_iterate(db, idents, preludedb_delete_heartbeat);
+                        drop_iterate(db, idents, preludedb_delete_heartbeat);                        
                         preludedb_result_idents_destroy(idents);
                 }
         }
 
+ err:
+        
+        if ( ret < 0 )
+                preludedb_transaction_abort(db);
+        else
+                preludedb_transaction_end(db);
+        
         preludedb_destroy(db);
         return ret;
 }
@@ -735,7 +762,8 @@ static int cmd_load(int argc, char **argv)
                 return ret;
 
         prelude_io_set_file_io(io, fd);
-        
+        preludedb_transaction_start(db);
+                
         while ( ! stop_processing ) {                
                 msg = NULL;
 
@@ -747,7 +775,7 @@ static int cmd_load(int argc, char **argv)
                         }
                         
                         fprintf(stderr, "error reading message: %s.\n", prelude_strerror(ret));
-                        return ret;
+                        break;
                 }
                                 
                 if ( start_offset ) {
@@ -764,7 +792,7 @@ static int cmd_load(int argc, char **argv)
                 ret = idmef_message_new(&idmef);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error creating new IDMEF message: %s.\n", prelude_strerror(ret));
-                        return ret;
+                        break;
                 }
 
                 gettimeofday(&start1, NULL);
@@ -772,7 +800,7 @@ static int cmd_load(int argc, char **argv)
                 ret = idmef_message_read(idmef, msg);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error decoding IDMEF message: %s.\n", prelude_strerror(ret));
-                        return ret;
+                        break;
                 }
 
                 gettimeofday(&end1, NULL);
@@ -781,7 +809,7 @@ static int cmd_load(int argc, char **argv)
                 ret = preludedb_insert_message(db, idmef);
                 if ( ret < 0 ) {
                         db_error(db, ret, "error inserting IDMEF message");
-                        return ret;
+                        break;
                 }
                 gettimeofday(&end2, NULL);
                 
@@ -791,6 +819,11 @@ static int cmd_load(int argc, char **argv)
                 dump_generic_statistics("read", "insert");
         }
 
+        if ( ret < 0 )
+                preludedb_transaction_abort(db);
+        else
+                preludedb_transaction_end(db);
+        
         if ( fd != stdin )
                 prelude_io_close(io);
         
