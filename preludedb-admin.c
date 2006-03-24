@@ -49,6 +49,8 @@ static unsigned int max_count = 0, cur_count = 0, start_offset = 0;
 static idmef_criteria_t *alert_criteria = NULL;
 static idmef_criteria_t *heartbeat_criteria = NULL;
 
+static prelude_bool_t use_global_transaction = TRUE;
+
 
 /*
  * Global statistics
@@ -210,6 +212,13 @@ static int set_offset(prelude_option_t *opt, const char *optarg, prelude_string_
 }
 
 
+static int set_disable_global_transaction(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+{
+        use_global_transaction = FALSE;
+        return 0;
+}
+
+
 static int set_help(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
         return prelude_error(PRELUDE_ERROR_EOF);
@@ -231,6 +240,7 @@ static void cmd_generic_help(void)
         fprintf(stderr, "  --query-logging [filename]      : Log SQL query to the specified file.\n");
         fprintf(stderr, "  --alert-criteria <criteria>     : Only process alert matching criteria.\n");
         fprintf(stderr, "  --heartbeat-criteria <criteria> : Only process heartbeat matching criteria.\n");
+        fprintf(stderr, "  --disable-global-transaction    : Per events transaction instead of one transaction for all events.\n");
 }
 
 
@@ -331,6 +341,9 @@ static int setup_generic_options(int *argc, char **argv)
                 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "alert-criteria",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_alert_criteria, NULL);
+        
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "disable-global-transaction",
+                           NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_disable_global_transaction, NULL);
 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 'h', "help",
                            NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_help, NULL);
@@ -558,7 +571,8 @@ static int cmd_delete(int argc, char **argv)
 	if ( ret < 0 )
 		return ret;
 
-        preludedb_transaction_start(db);
+        if ( use_global_transaction )
+                preludedb_transaction_start(db);
         
         if ( alert_criteria ) {
                 ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
@@ -587,11 +601,12 @@ static int cmd_delete(int argc, char **argv)
         }
 
  err:
-        
-        if ( ret < 0 )
-                preludedb_transaction_abort(db);
-        else
-                preludedb_transaction_end(db);
+        if ( use_global_transaction ) {
+                if ( ret < 0 )
+                        preludedb_transaction_abort(db);
+                else
+                        preludedb_transaction_end(db);
+        }
         
         preludedb_destroy(db);
         return ret;
@@ -762,7 +777,9 @@ static int cmd_load(int argc, char **argv)
                 return ret;
 
         prelude_io_set_file_io(io, fd);
-        preludedb_transaction_start(db);
+
+        if ( use_global_transaction )
+                preludedb_transaction_start(db);
                 
         while ( ! stop_processing ) {                
                 msg = NULL;
@@ -818,11 +835,13 @@ static int cmd_load(int argc, char **argv)
 
                 dump_generic_statistics("read", "insert");
         }
-
-        if ( ret < 0 )
-                preludedb_transaction_abort(db);
-        else
-                preludedb_transaction_end(db);
+        
+        if ( use_global_transaction ) {
+                if ( ret < 0 )
+                        preludedb_transaction_abort(db);
+                else
+                        preludedb_transaction_end(db);
+        }
         
         if ( fd != stdin )
                 prelude_io_close(io);
