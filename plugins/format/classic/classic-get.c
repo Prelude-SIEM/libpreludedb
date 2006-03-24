@@ -1136,8 +1136,7 @@ static int get_file_access(preludedb_sql_t *sql,
 					  "SELECT COUNT(*) "
 					  "FROM Prelude_FileAccess "
 					  "WHERE _message_ident = %" PRELUDE_PRIu64
-                                          " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1 "
-                                          "ORDER BY _index ASC",
+                                          " AND _parent0_index = %d AND _parent1_index = %d AND _index != -1",
                                           message_ident, target_index, file_index);
 	if ( ret <= 0 )
 		return ret;
