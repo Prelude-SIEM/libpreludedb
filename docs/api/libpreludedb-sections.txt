@@ -26,6 +26,9 @@ preludedb_get_heartbeat
 preludedb_delete_alert
 preludedb_delete_heartbeat
 preludedb_get_values
+preludedb_transaction_abort
+preludedb_transaction_end
+preludedb_transaction_start
 </SECTION>
 
 <SECTION>

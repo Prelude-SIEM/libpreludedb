@@ -267,3 +267,30 @@ preludedb
 @Returns: 
 
 
+<!-- ##### FUNCTION preludedb_transaction_abort ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_transaction_end ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_transaction_start ##### -->
+<para>
+
+</para>
+
+@db: 
+@Returns: 
+
+

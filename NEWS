@@ -1,3 +1,27 @@
+* 2006-03-24, libpreludedb-0.9.7:
+
+	- Fix Perl/Python bindings uint64 handling on 32 bits machine.
+
+	- Make preludedb_check_version available from Perl/Python bindings.
+	
+	- Use new IDMEF_LIST_APPEND primitive, require libprelude 0.9.6.
+
+	- Add libprelude dependencie to SQL plugins, since they depend on 
+	  libprelude symbols. Fix compilation problem with some distribution.
+
+	- Use global transaction surrounding all operation in preludedb-admin,
+	  this bring a major performance improvement for insert operation.
+
+	- Fix PostgreSQL FileAccess query failure.
+
+	- Dynamic PostgreSQL schema generation (this fix certain inefficient 
+	  datatype that were used in the old version). Update schema would be hard
+	  to do for all postgreSQL version, thus using preludedb-admin copy for 
+	  the update is required.
+
+	- API improvement.
+
+
 * 2006-03-08, libpreludedb-0.9.6:
 
 	- Fix PostgreSQL plugin compilation problem.
