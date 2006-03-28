@@ -777,9 +777,6 @@ static int cmd_load(int argc, char **argv)
                 return ret;
 
         prelude_io_set_file_io(io, fd);
-
-        if ( use_global_transaction )
-                preludedb_transaction_start(db);
                 
         while ( ! stop_processing ) {                
                 msg = NULL;
@@ -835,14 +832,7 @@ static int cmd_load(int argc, char **argv)
 
                 dump_generic_statistics("read", "insert");
         }
-        
-        if ( use_global_transaction ) {
-                if ( ret < 0 )
-                        preludedb_transaction_abort(db);
-                else
-                        preludedb_transaction_end(db);
-        }
-        
+                
         if ( fd != stdin )
                 prelude_io_close(io);
         
