@@ -304,6 +304,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
                 fprintf(sql->logfile, "%fs %s\n",
                         (end.tv_sec + (double) end.tv_usec / 1000000) -
                         (start.tv_sec + (double) start.tv_usec / 1000000), query);
+
                 fflush(sql->logfile);
         }
         
