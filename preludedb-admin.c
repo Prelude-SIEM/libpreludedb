@@ -37,6 +37,9 @@
 #include "preludedb.h"
 
 
+#define MAX_EVENT_PER_TRANSACTION 1000
+
+
 /*
  * FIXME: cleanup the statistics handling mess.
  */
@@ -49,7 +52,8 @@ static unsigned int max_count = 0, cur_count = 0, start_offset = 0;
 static idmef_criteria_t *alert_criteria = NULL;
 static idmef_criteria_t *heartbeat_criteria = NULL;
 
-static prelude_bool_t use_global_transaction = TRUE;
+static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
+
 
 
 /*
@@ -78,6 +82,18 @@ static void free_global(void)
         if ( heartbeat_criteria )
                 idmef_criteria_destroy(heartbeat_criteria);
 }
+
+
+
+static void flush_transaction_if_needed(preludedb_t *db, unsigned int *event_no)
+{
+        if ( events_per_transaction && (*event_no)++ == events_per_transaction ) {
+                preludedb_transaction_end(db);
+                preludedb_transaction_start(db);
+                *event_no = 0;
+        }
+}
+
 
 
 static void dump_generic_statistics(const char *stats1, const char *stats2)
@@ -212,9 +228,9 @@ static int set_offset(prelude_option_t *opt, const char *optarg, prelude_string_
 }
 
 
-static int set_disable_global_transaction(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+static int set_events_per_transaction(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
-        use_global_transaction = FALSE;
+        events_per_transaction = atoi(optarg);
         return 0;
 }
 
@@ -240,7 +256,8 @@ static void cmd_generic_help(void)
         fprintf(stderr, "  --query-logging [filename]      : Log SQL query to the specified file.\n");
         fprintf(stderr, "  --alert-criteria <criteria>     : Only process alert matching criteria.\n");
         fprintf(stderr, "  --heartbeat-criteria <criteria> : Only process heartbeat matching criteria.\n");
-        fprintf(stderr, "  --disable-global-transaction    : Per events transaction instead of one transaction for all events.\n");
+        fprintf(stderr, "  --events-per-transaction        : Maximum number of event to process per transaction (default %d).\n",
+                events_per_transaction);
 }
 
 
@@ -342,8 +359,8 @@ static int setup_generic_options(int *argc, char **argv)
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "alert-criteria",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_alert_criteria, NULL);
         
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "disable-global-transaction",
-                           NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_disable_global_transaction, NULL);
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "events-per-transaction",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_events_per_transaction, NULL);
 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 'h', "help",
                            NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_help, NULL);
@@ -400,6 +417,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
         int ret = 0;
         uint64_t ident;
         idmef_message_t *msg;
+        unsigned int src_event_no = 0, dst_event_no = 0;
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
                                 
@@ -436,8 +454,11 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         ret = delete_message(src, ident);
                         if ( ret < 0 )
                                 db_error(src, ret, "error deleting message %" PRELUDE_PRIu64 "", ident);
-                }
 
+                        flush_transaction_if_needed(src, &src_event_no);
+                }
+                
+                flush_transaction_if_needed(dst, &dst_event_no);
                 dump_generic_statistics("retrieve", "insert");
         }
         
@@ -469,9 +490,11 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         ret = preludedb_get_alert_idents(src, alert_criteria, -1, -1, 0, &idents);        
         if ( ret < 0 )
                 return db_error(src, ret, "retrieving alert idents list failed");
-        
-        preludedb_transaction_start(src);
-        preludedb_transaction_start(dst);
+
+        if ( events_per_transaction > 1 ) {
+                preludedb_transaction_start(src);
+                preludedb_transaction_start(dst);
+        }
 
         if ( ret > 0 ) {
                 ret = copy_iterate(src, dst, idents, delete_copied ?
@@ -492,12 +515,14 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         }
 
  err:
-        if ( ret < 0 ) {
-                preludedb_transaction_end(src);
-                preludedb_transaction_abort(dst);
-        } else {
-                preludedb_transaction_end(src);
-                preludedb_transaction_end(dst);
+        if ( events_per_transaction > 1 ) {
+                if ( ret < 0 ) {
+                        preludedb_transaction_abort(src);
+                        preludedb_transaction_abort(dst);
+                } else {
+                        preludedb_transaction_end(src);
+                        preludedb_transaction_end(dst);
+                }
         }
         
         preludedb_destroy(src);
@@ -525,6 +550,7 @@ static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
 {
         int ret = 0;
         uint64_t ident;
+        unsigned int event_no = 0;
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
                 
@@ -542,7 +568,8 @@ static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
                 
                 if ( ret < 0 ) 
                         db_error(db, ret, "error deleting message %" PRELUDE_PRIu64 "", ident);
-
+                
+                flush_transaction_if_needed(db, &event_no);
                 dump_generic_statistics("delete", NULL);
         }
 
@@ -571,7 +598,7 @@ static int cmd_delete(int argc, char **argv)
 	if ( ret < 0 )
 		return ret;
 
-        if ( use_global_transaction )
+        if ( events_per_transaction > 1 )
                 preludedb_transaction_start(db);
         
         if ( alert_criteria ) {
@@ -601,7 +628,7 @@ static int cmd_delete(int argc, char **argv)
         }
 
  err:
-        if ( use_global_transaction ) {
+        if ( events_per_transaction > 1 ) {
                 if ( ret < 0 )
                         preludedb_transaction_abort(db);
                 else
@@ -752,7 +779,8 @@ static int cmd_load(int argc, char **argv)
         prelude_io_t *io;
         prelude_msg_t *msg;
         idmef_message_t *idmef;
- 
+        unsigned int event_no = 0;
+        
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc < 2 ) {
                 cmd_load_help();
@@ -777,7 +805,10 @@ static int cmd_load(int argc, char **argv)
                 return ret;
 
         prelude_io_set_file_io(io, fd);
-                
+
+        if ( events_per_transaction > 1 )
+                preludedb_transaction_start(db);
+         
         while ( ! stop_processing ) {                
                 msg = NULL;
 
@@ -830,9 +861,17 @@ static int cmd_load(int argc, char **argv)
                 idmef_message_destroy(idmef);
                 prelude_msg_destroy(msg);
 
+                flush_transaction_if_needed(db, &event_no);
                 dump_generic_statistics("read", "insert");
         }
-                
+
+        if ( events_per_transaction > 1 ) {
+                if ( ret < 0 )
+                        preludedb_transaction_abort(db);
+                else
+                        preludedb_transaction_end(db);
+        }
+               
         if ( fd != stdin )
                 prelude_io_close(io);
         
