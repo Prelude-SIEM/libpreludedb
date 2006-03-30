@@ -319,7 +319,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.7"
+#define LIBPRELUDEDB_VERSION "0.9.7.1"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
@@ -448,8 +448,8 @@ preludedb_error_t error
 <NAME>preludedb_sql_status_t</NAME>
 typedef enum {
 	PRELUDEDB_SQL_STATUS_DISCONNECTED = 0,
-	PRELUDEDB_SQL_STATUS_CONNECTED    = 1,
-	PRELUDEDB_SQL_STATUS_TRANSACTION  = 2
+	PRELUDEDB_SQL_STATUS_CONNECTED =    1,
+	PRELUDEDB_SQL_STATUS_TRANSACTION =  2
 } preludedb_sql_status_t;
 </ENUM>
 <ENUM>

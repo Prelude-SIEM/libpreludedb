@@ -3,12 +3,12 @@ dnl AC_CONFIG_SRCDIR([src])
 
 AC_CANONICAL_SYSTEM
 AC_PREREQ(2.53)
-AM_INIT_AUTOMAKE(libpreludedb, 0.9.7)
+AM_INIT_AUTOMAKE(libpreludedb, 0.9.7.1)
 
 dnl library soname 
 dnl check http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91
 libpreludedb_current=3
-libpreludedb_revision=0
+libpreludedb_revision=1
 libpreludedb_age=3
 
 libpreludedb_soname=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
