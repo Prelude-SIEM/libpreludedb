@@ -1301,7 +1301,7 @@ int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, 
                      &tm.tm_hour, &tm.tm_min, &tm.tm_sec);
 
         if ( ret < 6 )
-                return -1;
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Database returned an unknown time format: '%s'", time_buf);
 
         tm.tm_year -= 1900;
         tm.tm_mon -= 1;
