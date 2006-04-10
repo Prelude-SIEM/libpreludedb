@@ -110,7 +110,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 
         *session = conn;
 
-        return 0;
+        return sql_query(conn, "SET DATESTYLE TO 'ISO'", NULL);
 }
 
 
