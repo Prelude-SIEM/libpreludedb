@@ -89,6 +89,39 @@ static int handle_error(prelude_error_code_t code, PGconn *conn)
 }
 
 
+
+static int sql_query(void *session, const char *query, void **resource)
+{
+        int ret;
+        struct pg_result *res;
+
+        res = calloc(1, sizeof (*res));
+        if ( ! res )
+                return prelude_error_from_errno(errno);
+
+        res->row = -1;
+
+        res->result = PQexec(session, query);        
+        if ( ! res->result ) {
+                free(res);
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        }
+
+        ret = PQresultStatus(res->result);
+        if ( ret == PGRES_TUPLES_OK && PQntuples(res->result) != 0 ) {
+                *resource = res;
+                return 1;
+        }
+        
+        PQclear(res->result);
+        free(res);
+        if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
+                return 0;
+        
+        return handle_error(PRELUDEDB_ERROR_QUERY, session);
+}
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
@@ -204,39 +237,6 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
         }
 
         return 0;
-}
-
-
-
-static int sql_query(void *session, const char *query, void **resource)
-{
-        int ret;
-        struct pg_result *res;
-
-        res = calloc(1, sizeof (*res));
-        if ( ! res )
-                return prelude_error_from_errno(errno);
-
-        res->row = -1;
-
-        res->result = PQexec(session, query);        
-        if ( ! res->result ) {
-                free(res);
-                return handle_error(PRELUDEDB_ERROR_QUERY, session);
-        }
-
-        ret = PQresultStatus(res->result);
-        if ( ret == PGRES_TUPLES_OK && PQntuples(res->result) != 0 ) {
-                *resource = res;
-                return 1;
-        }
-        
-        PQclear(res->result);
-        free(res);
-        if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
-                return 0;
-        
-        return handle_error(PRELUDEDB_ERROR_QUERY, session);
 }
 
 
