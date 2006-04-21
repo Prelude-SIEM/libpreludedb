@@ -47,7 +47,7 @@
 #include "classic-path-resolve.h"
 
 
-#define CLASSIC_SCHEMA_VERSION 14.4
+#define CLASSIC_SCHEMA_VERSION 14.5
 
 
 int classic_LTX_prelude_plugin_version(void);

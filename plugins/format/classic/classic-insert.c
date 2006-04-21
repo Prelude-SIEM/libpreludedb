@@ -498,8 +498,8 @@ static int insert_process(preludedb_sql_t *sql, char parent_type, uint64_t messa
 static int insert_snmp_service(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, int parent_index,
                                idmef_snmp_service_t *snmp_service) 
 {
-        char *oid = NULL, *community = NULL, *security_name = NULL, *context_name = NULL, *context_engine_id = NULL,
-		*command = NULL;
+        char *oid = NULL, *community = NULL, *security_name = NULL, *context_name = NULL,
+                *context_engine_id = NULL, *command = NULL, mpm[12], sem[12], sel[12];
         int ret = -1;
 
         if ( ! snmp_service )
@@ -508,14 +508,15 @@ static int insert_snmp_service(preludedb_sql_t *sql, char parent_type, uint64_t 
         ret = preludedb_sql_escape(sql, get_string(idmef_snmp_service_get_oid(snmp_service)), &oid);
 	if ( ret < 0 )
 		goto error;
-
-        ret = preludedb_sql_escape(sql, get_string(idmef_snmp_service_get_community(snmp_service)), &community);
-	if ( ret < 0 )
-		goto error;
-
+        
+        get_optional_uint32(mpm, sizeof(mpm), idmef_snmp_service_get_message_processing_model(snmp_service));
+        get_optional_uint32(sem, sizeof(sem), idmef_snmp_service_get_security_model(snmp_service));
+                
         ret = preludedb_sql_escape(sql, get_string(idmef_snmp_service_get_security_name(snmp_service)), &security_name);
 	if ( ret < 0 )
 		goto error;
+
+        get_optional_uint32(sel, sizeof(sel), idmef_snmp_service_get_security_level(snmp_service));
 
         ret = preludedb_sql_escape(sql, get_string(idmef_snmp_service_get_context_name(snmp_service)), &context_name);
 	if ( ret < 0 )
@@ -530,10 +531,11 @@ static int insert_snmp_service(preludedb_sql_t *sql, char parent_type, uint64_t 
 		goto error;
         
         ret = preludedb_sql_insert(sql, "Prelude_SnmpService",
-				   "_parent_type, _message_ident, _parent0_index, snmp_oid, community, security_name, context_name, "
+				   "_parent_type, _message_ident, _parent0_index, snmp_oid, message_processing_model, "
+                                   "security_model, security_name, security_level, context_name, "
 				   "context_engine_id, command",
-				   "'%c', %" PRELUDE_PRIu64 ", %d, %s, %s, %s, %s, %s, %s", 
-				   parent_type, message_ident, parent_index, oid, community, security_name, context_name,
+				   "'%c', %" PRELUDE_PRIu64 ", %d, %s, %s, %s, %s, %s, %s, %s, %s", 
+				   parent_type, message_ident, parent_index, oid, mpm, sem, security_name, sel, context_name,
 				   context_engine_id, command);
 
  error:

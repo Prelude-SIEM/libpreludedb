@@ -625,7 +625,8 @@ static int get_snmp_service(preludedb_sql_t *sql,
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table,
-					  "SELECT snmp_oid, community, security_name, context_name, context_engine_id, command "
+					  "SELECT snmp_oid, message_processing_model, security_model, security_name, "
+                                          "security_level, context_name, context_engine_id, command "
 					  "FROM Prelude_SnmpService "
 					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
@@ -644,23 +645,31 @@ static int get_snmp_service(preludedb_sql_t *sql,
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 1, snmp_service, idmef_snmp_service_new_community);
+        ret = get_uint32(sql, row, 1, snmp_service, idmef_snmp_service_new_message_processing_model);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 2, snmp_service, idmef_snmp_service_new_security_name);
+        ret = get_uint32(sql, row, 2, snmp_service, idmef_snmp_service_new_security_model);
+	if ( ret < 0 )
+		goto error;
+        
+	ret = get_string(sql, row, 3, snmp_service, idmef_snmp_service_new_security_name);
 	if ( ret < 0 )
 		goto error;
 
-	ret =get_string(sql, row, 3, snmp_service, idmef_snmp_service_new_context_name);
+        ret = get_uint32(sql, row, 4, snmp_service, idmef_snmp_service_new_security_level);
+	if ( ret < 0 )
+		goto error;
+        
+	ret = get_string(sql, row, 5, snmp_service, idmef_snmp_service_new_context_name);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 4, snmp_service, idmef_snmp_service_new_context_engine_id);
+	ret = get_string(sql, row, 6, snmp_service, idmef_snmp_service_new_context_engine_id);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 5, snmp_service, idmef_snmp_service_new_command);
+	ret = get_string(sql, row, 7, snmp_service, idmef_snmp_service_new_command);
 
  error:
 	preludedb_sql_table_destroy(table);
@@ -681,7 +690,7 @@ static int get_service(preludedb_sql_t *sql,
 	int ret;
 
 	ret = preludedb_sql_query_sprintf(sql, &table,
-					  "SELECT ident, name, port, iana_protocol_number, iana_protocol_name, portlist, protocol "
+					  "SELECT ident, ip_version, name, port, iana_protocol_number, iana_protocol_name, portlist, protocol "
 					  "FROM Prelude_Service "
 					  "WHERE _parent_type = '%c' AND _message_ident = %" PRELUDE_PRIu64 " AND _parent0_index = %d",
 					  parent_type, message_ident, parent_index);
@@ -699,28 +708,32 @@ static int get_service(preludedb_sql_t *sql,
 	ret = get_string(sql, row, 0, service, idmef_service_new_ident);
 	if ( ret < 0 )
 		goto error;
+        
+	ret = get_uint8(sql, row, 1, service, idmef_service_new_ip_version);
+	if ( ret < 0 )
+		goto error;
 
-	ret = get_string(sql, row, 1, service, idmef_service_new_name);
+	ret = get_string(sql, row, 2, service, idmef_service_new_name);
 	if ( ret < 0 )	     
 		goto error;
 
-	ret = get_uint16(sql, row, 2, service, idmef_service_new_port);
+	ret = get_uint16(sql, row, 3, service, idmef_service_new_port);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_uint8(sql, row, 3, service, idmef_service_new_iana_protocol_number);
+	ret = get_uint8(sql, row, 4, service, idmef_service_new_iana_protocol_number);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 4, service, idmef_service_new_iana_protocol_name);
+	ret = get_string(sql, row, 5, service, idmef_service_new_iana_protocol_name);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 5, service, idmef_service_new_portlist);
+	ret = get_string(sql, row, 6, service, idmef_service_new_portlist);
 	if ( ret < 0 )
 		goto error;
 
-	ret = get_string(sql, row, 6, service, idmef_service_new_protocol);
+	ret = get_string(sql, row, 7, service, idmef_service_new_protocol);
 	if ( ret < 0 )
 		goto error;
 

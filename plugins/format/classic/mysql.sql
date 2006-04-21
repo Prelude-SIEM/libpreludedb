@@ -511,8 +511,10 @@ CREATE TABLE Prelude_SnmpService (
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
  _parent0_index TINYINT NOT NULL,
  snmp_oid VARCHAR(255) NULL, # oid is a reserved word in PostgreSQL 
- community VARCHAR(255) NULL,
+ message_processing_model INTEGER UNSIGNED NULL,
+ security_model INTEGER UNSIGNED NULL,
  security_name VARCHAR(255) NULL,
+ security_level INTEGER UNSIGNED NULL,
  context_name VARCHAR(255) NULL,
  context_engine_id VARCHAR(255) NULL,
  command VARCHAR(255) NULL,
