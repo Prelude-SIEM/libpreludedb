@@ -61,10 +61,14 @@ static inline int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **outp
 	switch ( idmef_data_get_type(data) ) {
         case IDMEF_DATA_TYPE_BYTE:
         case IDMEF_DATA_TYPE_BYTE_STRING:
-        case IDMEF_DATA_TYPE_CHAR_STRING:
-        case IDMEF_DATA_TYPE_CHAR:
                 return preludedb_sql_escape_binary(sql, idmef_data_get_data(data), idmef_data_get_len(data), output);
-		
+                
+        case IDMEF_DATA_TYPE_CHAR_STRING:
+                return preludedb_sql_escape_binary(sql, idmef_data_get_data(data), idmef_data_get_len(data) - 1, output);
+
+        case IDMEF_DATA_TYPE_CHAR:
+		return preludedb_sql_escape_binary(sql, idmef_data_get_data(data), 1, output);
+                
 	default:
 		ret = prelude_string_new(&string);
 		if ( ret < 0 )
