@@ -172,22 +172,17 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 
         (*output)[rsize + 1] = '\'';
         (*output)[rsize + 2] = '\0';
-
+        
         return 0;
 }
 
 
-
 static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
 {
-        prelude_string_t *string;
-        size_t rsize, dummy;
-        unsigned char *ptr;
         int ret;
-
-        rsize = input_size * 2 + 3;
-        if ( rsize <= input_size )
-                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        size_t dummy;
+        unsigned char *ptr;
+        prelude_string_t *string;
 
         ret = prelude_string_new(&string);
         if ( ret < 0 )
@@ -208,9 +203,8 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
         }
 
         ret = prelude_string_get_string_released(string, output);
-
         prelude_string_destroy(string);
-
+        
         return 0;
 }
 
