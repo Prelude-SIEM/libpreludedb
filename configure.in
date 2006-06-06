@@ -163,7 +163,7 @@ if test x$with_pgsql != xno; then
 	fi
    fi
 
-   if test x$pgsql_required = xtrue -a x$PG_CONFIG = xno -o x$with_pgsql != xyes; then
+   if test x$pgsql_required = xtrue && (test x$PG_CONFIG = xno -o x$with_pgsql != xyes); then
       AC_MSG_ERROR(error activating PostgreSQL support)
    fi
 fi
