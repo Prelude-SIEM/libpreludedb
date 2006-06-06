@@ -1,4 +1,5 @@
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004-2006 Free Software Foundation, Inc.
+#
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
 # Public License, this file may be distributed as part of a program
@@ -43,6 +44,7 @@ AC_SUBST([LTALLOCA])
   gl_C_RESTRICT
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
+  gt_TYPE_SSIZE_T
   AM_STDBOOL_H
   gl_STRCASE
   gl_FUNC_STRDUP
@@ -118,6 +120,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/signed.m4
   m4/size_max.m4
   m4/snprintf.m4
+  m4/ssize_t.m4
   m4/stdbool.m4
   m4/stdint_h.m4
   m4/strcase.m4

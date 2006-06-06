@@ -1,3 +1,21 @@
+* 2006-06-06, libpreludedb-0.9.8:
+
+	- Always use prelude_escape_binary() when inserting additional data, even in case 
+	  we're inserting a string, since the database field might be of a type that require 
+	  binary kind of escaping. Fix #143.
+
+	- Implement reading of message_processing_model, security_model, security_level.
+	  Handling of community member is deprecated (IDMEFv16 update).
+
+	- Fix a bug where Service->ip_version would not be read from database.
+
+	- Upon connection to a PostgreSQL database, set default date style to ISO: 
+	  this is needed since libpreludedb assume ISO format to parse database timestamp.
+	  Fix #140.
+
+	- Error reporting improvement.
+
+
 * 2006-03-30, libpreludedb-0.9.7.1:
 	
 	- Flush the SQL query logfile after each query.

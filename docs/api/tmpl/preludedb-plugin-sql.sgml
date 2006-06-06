@@ -162,9 +162,6 @@ preludedb-plugin-sql
 @settings: 
 @session: 
 @Returns: 
-<!-- # Unused Parameters # -->
-@errbuf: 
-@size: 
 
 
 <!-- ##### USER_FUNCTION preludedb_plugin_sql_fetch_field_func_t ##### -->
