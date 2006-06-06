@@ -65,7 +65,7 @@ dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
 
-AM_PATH_LIBPRELUDE(0.9.6, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?) )
+AM_PATH_LIBPRELUDE(0.9.9, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?) )
 
 defined="$defined $LIBPRELUDE_CFLAGS"
 
@@ -150,6 +150,7 @@ if test x$with_pgsql != xno; then
    if test x$with_pgsql != xyes; then default_path=$with_pgsql; fi
 
    AC_PATH_PROG(PG_CONFIG, pg_config, no, $PATH:$default_path/bin; fi)
+   with_pgsql=no
 
    if test x$PG_CONFIG != xno; then
 	PGSQL_LIBDIR=`$PG_CONFIG --libdir`
@@ -183,6 +184,7 @@ AC_ARG_WITH(sqlite3, AC_HELP_STRING(--with-sqlite3=@<:@=PFX@:>@, Enable Sqlite3 
 if test x$with_sqlite3 != xno; then
    default_path="/usr /usr/local"
    if test x$with_sqlite3 != xyes; then default_path=$with_sqlite3; fi
+   with_sqlite3=no
 
    for dir in $default_path; do
        AC_CHECK_FILE($dir/lib/libsqlite3.so, SQLITE3_LIBS="-L$dir -lsqlite3")
