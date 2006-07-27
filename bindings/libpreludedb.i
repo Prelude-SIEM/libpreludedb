@@ -31,7 +31,7 @@
 #include "preludedb-path-selection.h"
 #include "preludedb.h"
 #include "preludedb-version.h"
-
+#include <libprelude/prelude-inttypes.h>
 %}
 
 typedef struct idmef_value idmef_value_t;
@@ -42,8 +42,6 @@ typedef struct idmef_path idmef_path_t;
 typedef struct idmef_criterion_value idmef_criterion_value_t;
 typedef struct prelude_string prelude_string_t;
 
-%include <libprelude/prelude-inttypes.h>
-
 typedef int int32_t;
 typedef unsigned int uint32_t;
 
@@ -51,6 +49,11 @@ typedef long long int64_t;
 typedef unsigned long long uint64_t;
 
 typedef signed int preludedb_error_t;
+
+typedef enum { 
+	PRELUDE_BOOL_TRUE = TRUE, 
+	PRELUDE_BOOL_FALSE = FALSE 
+} prelude_bool_t;
 
 
 #ifdef SWIGPYTHON
