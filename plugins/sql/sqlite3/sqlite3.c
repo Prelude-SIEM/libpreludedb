@@ -96,13 +96,13 @@ static void sqlite3_regexp(sqlite3_context *context, int argc, sqlite3_value **a
 		return;
 	}
 
-	ret = regcomp(&regex, sqlite3_value_text(argv[0]), REG_EXTENDED | REG_NOSUB);
+	ret = regcomp(&regex, (const char *) sqlite3_value_text(argv[0]), REG_EXTENDED | REG_NOSUB);
 	if ( ret != 0 ) {
 		sqlite3_result_error(context, "error compiling regular expression", -1);
 		return;
 	}
 
-	ret = regexec(&regex, sqlite3_value_text(argv[1]), 0, NULL, 0);
+	ret = regexec(&regex, (const char *) sqlite3_value_text(argv[1]), 0, NULL, 0);
 	regfree(&regex);
 
 	sqlite3_result_int(context, (ret == REG_NOMATCH) ? 0 : 1 );

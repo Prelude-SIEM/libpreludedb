@@ -104,7 +104,7 @@ void preludedb_plugin_sql_set_escape_func(preludedb_plugin_sql_t *plugin, prelud
 int _preludedb_plugin_sql_escape(preludedb_plugin_sql_t *plugin, void *session, const char *input, size_t input_size, char **output)
 {
         if ( ! plugin->escape )
-                return _preludedb_plugin_sql_escape_binary(plugin, session, input, input_size, output);
+                return _preludedb_plugin_sql_escape_binary(plugin, session, (const unsigned char *) input, input_size, output);
                 
         return plugin->escape(session, input, input_size, output);
 }

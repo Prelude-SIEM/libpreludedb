@@ -80,7 +80,8 @@ static inline int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **outp
 			return ret;
 		}
 
-		ret = preludedb_sql_escape_binary(sql, prelude_string_get_string(string), prelude_string_get_len(string), output);
+		ret = preludedb_sql_escape_binary(sql, (const unsigned char *) prelude_string_get_string(string),
+                                                  prelude_string_get_len(string), output);
 		prelude_string_destroy(string);
 
 		return ret;
