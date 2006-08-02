@@ -64,29 +64,30 @@ int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
 
 static int parse_filter(const char *str, size_t len)
 {
-	struct { char *name; int flag; } filter_table[] = {
+        int i;
+	struct {
+                const char *name;
+                int flag;
+        } filter_table[] = {
 		{ "group_by",	PRELUDEDB_SELECTED_OBJECT_GROUP_BY	},
 		{ "order_desc",	PRELUDEDB_SELECTED_OBJECT_ORDER_DESC	},
 		{ "order_asc",	PRELUDEDB_SELECTED_OBJECT_ORDER_ASC	}
 	};
-	int cnt;
-
-	for ( cnt = 0; cnt < sizeof (filter_table) / sizeof (filter_table[0]); cnt++ ) {
-		if ( len == strlen(filter_table[cnt].name) &&
-		     strncmp(str, filter_table[cnt].name, len) == 0 )
-			return filter_table[cnt].flag;
+        
+        for ( i = 0; i < sizeof(filter_table) / sizeof(*filter_table); i++ ) {
+		if ( strncmp(str, filter_table[i].name, len) == 0 )
+			return filter_table[i].flag;
 	}
 
-	return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
+	return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING, "Invalid path filter string '%s'", str);
 }
 
 
 
 static int parse_filters(const char *str)
 {
+	int flags = 0, ret;
 	const char *start, *end;
-	int flags = 0;
-	int ret;
 
 	start = str;
 
@@ -109,52 +110,47 @@ static int parse_filters(const char *str)
 
 static int parse_function(const char *str)
 {
-	struct { char *name; int flag; } function_table[] = {
-		{ "min(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN	 },
-		{ "max(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX	 },
-		{ "avg(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG	 },
-		{ "std(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD	 },
-		{ "count(",	PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT }
+        int i;
+	struct {
+                const char *name;
+                size_t len;
+                int flag;
+        } function_table[] = {
+		{ "min(",   4, PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN	},
+		{ "max(",   4, PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX	},
+		{ "avg(",   4, PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG	},
+		{ "std(",   4, PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD	},
+		{ "count(", 6, PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT }
 	};
-	int cnt;
 
-	for ( cnt = 0; cnt < sizeof (function_table) / sizeof (function_table[0]); cnt++ ) {
-		if ( strncmp(str, function_table[cnt].name, strlen(function_table[cnt].name)) == 0 )
-			return function_table[cnt].flag;
+	for ( i = 0; i < sizeof(function_table) / sizeof(*function_table); i++ ) {
+		if ( strncmp(str, function_table[i].name, function_table[i].len) == 0 )
+			return function_table[i].flag;
 	}
 
 	return 0;
 }
 
 
-
 static int parse_path(const char *str, size_t len, idmef_path_t **path)
 {
-	char *buf;
-	int ret;
+	char buf[len + 1];
 
-	buf = malloc(len + 1);
-	if ( ! buf )
-		return preludedb_error_from_errno(errno);
-
+        if ( len + 1 < len )
+                return -1;
+        
 	memcpy(buf, str, len);
 	buf[len] = 0;
 
-	ret = idmef_path_new_fast(path, buf);
-
-	free(buf);
-
-	return ret;
+	return idmef_path_new_fast(path, buf);
 }
 
 
 int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path, const char *str)
 {
-	const char *filters;
-	const char *start, *end;
-	int ret;
-	int flags = 0;
+	int ret, flags = 0;
 	idmef_path_t *path;
+	const char *filters, *start, *end;
 
 	filters = strchr(str, '/');
 	if ( filters ) {
@@ -171,14 +167,11 @@ int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path
 
 	if ( ret ) {
 		flags |= ret;
-
-		start = strchr(str, '(');
-		end = strrchr(str, ')');
-		if ( ! start || ! end )
+                
+		if ( ! (start = strchr(str, '(')) || ! (end = strrchr(str, ')')) )
 			return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 
-		ret = parse_path(start + 1, end - start - 1, &path);
-
+		ret = parse_path(start + 1, end - (start + 1), &path);
 	} else {
 		if ( filters )
 			ret = parse_path(str, filters - str, &path);
@@ -222,7 +215,7 @@ int preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path)
 
 int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
 {
-	*path_selection = calloc(1, sizeof (**path_selection));
+	*path_selection = calloc(1, sizeof(**path_selection));
 	if ( ! *path_selection )
 		return preludedb_error_from_errno(errno);
 
@@ -266,14 +259,11 @@ preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_sele
 
 size_t preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection)
 {
-	size_t cnt;
+	size_t cnt = 0;
 	prelude_list_t *ptr;
 
-	cnt = 0;
-
-	prelude_list_for_each(&path_selection->list, ptr) {
+	prelude_list_for_each(&path_selection->list, ptr)
 		cnt++;
-	}
 
 	return cnt;
 }
