@@ -141,14 +141,14 @@ static inline void update_sql_from_errno(preludedb_sql_t *sql, preludedb_error_t
  */
 int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_settings_t *settings) 
 {
-        *new = calloc(1, sizeof (**new));
+        *new = calloc(1, sizeof(**new));
         if ( ! *new )
                 return preludedb_error_from_errno(errno);
 
         if ( ! type ) {
                 type = preludedb_sql_settings_get_type(settings);
                 if ( ! type )
-                        return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING, "no 'type' specified");
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING, "No database type specified");
         }
         
         (*new)->type = strdup(type);
@@ -163,7 +163,7 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
         if ( ! (*new)->plugin ) {
                 free((*new)->type);
                 free(*new);
-                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN, "could not load sql plugin '%s'", type);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN, "Could not load sql plugin '%s'", type);
         }
 
         if ( preludedb_sql_settings_get_log(settings) )
@@ -217,7 +217,7 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
         sql->logfile = fopen(filename, "a");
         if ( ! sql->logfile )
                 return preludedb_error_verbose(prelude_error_code_from_errno(errno),
-                                               "could not open '%s' for writing: %s", sql->logfile, strerror(errno));
+                                               "Could not open '%s' for writing: %s", sql->logfile, strerror(errno));
         
         fd = fileno(sql->logfile);
         
@@ -681,7 +681,7 @@ void preludedb_sql_table_destroy(preludedb_sql_table_t *table)
 
 static int preludedb_sql_row_new(preludedb_sql_row_t **row, preludedb_sql_table_t *table, void *res)
 {
-        *row = malloc(sizeof (**row));
+        *row = malloc(sizeof(**row));
         if ( ! *row )
                 return preludedb_error_from_errno(errno);
 
@@ -701,7 +701,7 @@ static int preludedb_sql_row_new(preludedb_sql_row_t **row, preludedb_sql_table_
 static int preludedb_sql_field_new(preludedb_sql_field_t **field,
                                    preludedb_sql_row_t *row, int num, const char *value, size_t len)
 {
-        *field = malloc(sizeof (**field));
+        *field = malloc(sizeof(**field));
         if ( ! field )
                 return preludedb_error_from_errno(errno);
         
@@ -1295,7 +1295,7 @@ int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, 
         int ret;
         struct tm tm;
         
-        memset(&tm, 0, sizeof (tm));
+        memset(&tm, 0, sizeof(tm));
         
         ret = sscanf(time_buf, "%d-%d-%d %d:%d:%d",
                      &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
