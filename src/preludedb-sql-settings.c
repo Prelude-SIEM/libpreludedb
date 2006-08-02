@@ -52,7 +52,7 @@ int preludedb_sql_settings_new(preludedb_sql_settings_t **settings)
 {
         int ret;
 
-        *settings = malloc(sizeof (**settings));
+        *settings = malloc(sizeof(**settings));
         if ( ! *settings )
                 return prelude_error_from_errno(errno);
 
@@ -138,9 +138,8 @@ static int get_name(const char **str, char **name)
 
 static int get_value(const char **str, char **value)
 {
+        int escaped = 0, cnt;
 	char end_of_string = ' ';
-	int escaped = 0;
-	int cnt;
 	
 	*value = calloc(strlen(*str) + 1, 1);
 	if ( ! *value )
