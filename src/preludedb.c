@@ -534,7 +534,7 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
  *
  * Returns: the number of alert deleted on success, or a negative value if an error occur.
  */
-int preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size)
+ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size)
 {
 	return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, ident, size);
 }
@@ -549,7 +549,7 @@ int preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t si
  *
  * Returns: the number of alert deleted on success, or a negative value if an error occur.
  */
-int preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
+ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
         return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db->sql, result);
 }
@@ -581,7 +581,7 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
  *
  * Returns: the number of heartbeat deleted on success, or a negative value if an error occur.
  */
-int preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size)
+ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size)
 {
         return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, size);
 }
@@ -597,7 +597,7 @@ int preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size
  *
  * Returns: the number of heartbeat deleted on success, or a negative value if an error occur.
  */
-int preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
+ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
         return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db->sql, result);
 }
