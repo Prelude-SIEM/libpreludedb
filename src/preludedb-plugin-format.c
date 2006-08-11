@@ -90,6 +90,19 @@ void preludedb_plugin_format_set_delete_alert_func(preludedb_plugin_format_t *pl
 }
 
 
+void preludedb_plugin_format_set_delete_alert_from_list_func(preludedb_plugin_format_t *plugin,
+                                                             preludedb_plugin_format_delete_alert_from_list_func_t func)
+{
+        plugin->delete_alert_from_list = func;
+}
+
+
+void preludedb_plugin_format_set_delete_alert_from_result_idents_func(preludedb_plugin_format_t *plugin,
+                                                                      preludedb_plugin_format_delete_alert_from_result_idents_func_t func)
+{
+        plugin->delete_alert_from_result_idents = func;
+}
+
 
 void preludedb_plugin_format_set_delete_heartbeat_func(preludedb_plugin_format_t *plugin,
                                                        preludedb_plugin_format_delete_heartbeat_func_t func)
@@ -97,6 +110,19 @@ void preludedb_plugin_format_set_delete_heartbeat_func(preludedb_plugin_format_t
         plugin->delete_heartbeat = func;
 }
 
+
+void preludedb_plugin_format_set_delete_heartbeat_from_list_func(preludedb_plugin_format_t *plugin,
+                                                                 preludedb_plugin_format_delete_heartbeat_from_list_func_t func)
+{
+        plugin->delete_heartbeat_from_list = func;
+}
+
+
+void preludedb_plugin_format_set_delete_heartbeat_from_result_idents_func(preludedb_plugin_format_t *plugin,
+                                                                          preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t func)
+{
+        plugin->delete_heartbeat_from_result_idents = func;
+}
 
 
 void preludedb_plugin_format_set_insert_message_func(preludedb_plugin_format_t *plugin,
@@ -136,4 +162,92 @@ int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
                 return preludedb_error_from_errno(errno);
 
         return 0;
+}
+
+
+
+ssize_t _preludedb_plugin_format_delete_alert_from_list(preludedb_plugin_format_t *plugin,
+                                                        preludedb_sql_t *sql, uint64_t *idents, size_t size)
+{
+        size_t i;
+        int ret = 0;
+
+        if ( plugin->delete_alert_from_list )
+                return plugin->delete_alert_from_list(sql, idents, size);
+                
+        for ( i = 0; i < size; i++ ) {
+                ret = plugin->delete_alert(sql, idents[i]);
+                if ( ret < 0 )
+                        return ret;
+        }
+
+        return i;
+}
+
+
+
+ssize_t _preludedb_plugin_format_delete_alert_from_result_idents(preludedb_plugin_format_t *plugin,
+                                                                 preludedb_sql_t *sql, preludedb_result_idents_t *result) 
+{
+        int ret;
+        uint64_t ident;
+        size_t count = 0;
+        
+        if ( plugin->delete_alert_from_result_idents )
+                return plugin->delete_alert_from_result_idents(sql, result);
+        
+        while ( (ret = preludedb_result_idents_get_next(result, &ident)) ) {
+                
+                ret = plugin->delete_alert(sql, ident);
+                if ( ret < 0 )
+                        return ret;
+
+                count++;
+        }
+
+        return count;
+}
+
+         
+
+ssize_t _preludedb_plugin_format_delete_heartbeat_from_list(preludedb_plugin_format_t *plugin,
+                                                            preludedb_sql_t *sql, uint64_t *idents, size_t size)
+{
+        size_t i;
+        int ret = 0;
+        
+        if ( plugin->delete_heartbeat_from_list )
+                return plugin->delete_heartbeat_from_list(sql, idents, size);
+                
+        for ( i = 0; i < size; i++ ) {
+                ret = plugin->delete_heartbeat(sql, idents[i]);
+                if ( ret < 0 )
+                        return ret;
+        }
+
+        return i;
+}
+
+
+
+ssize_t _preludedb_plugin_format_delete_heartbeat_from_result_idents(preludedb_plugin_format_t *plugin,
+                                                                     preludedb_sql_t *sql, preludedb_result_idents_t *result) 
+{
+        int ret;
+        uint64_t ident;
+        size_t count = 0;
+        
+        if ( plugin->delete_heartbeat_from_result_idents )
+                return plugin->delete_heartbeat_from_result_idents(sql, result);
+        
+        while ( (ret = preludedb_result_idents_get_next(result, &ident)) ) {
+
+                ret = plugin->delete_heartbeat(sql, ident);
+                if ( ret < 0 )
+                        return ret;
+
+                count++;
+        }
+
+        return count;
 }

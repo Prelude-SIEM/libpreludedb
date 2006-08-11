@@ -423,7 +423,7 @@ preludedb_get_message_idents(preludedb_t *db,
 {
 	int ret;
 
-	*result = calloc(1, sizeof (**result));
+	*result = calloc(1, sizeof(**result));
 	if ( ! *result )
 		return preludedb_error_from_errno(errno);
 
@@ -524,6 +524,37 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 }
 
 
+/**
+ * preludedb_delete_alert_from_list:
+ * @db: Pointer to a db object.
+ * @idents: Pointer to an array of idents.
+ * @size: Size of @idents.
+ *
+ * Delete all alerts from ident stored within @idents.
+ *
+ * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ */
+int preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size)
+{
+	return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, ident, size);
+}
+
+
+/**
+ * preludedb_delete_alert_from_result_idents:
+ * @db: Pointer to a db object.
+ * @result: Pointer to an idents result object.
+ *
+ * Delete all alert from ident stored within @result.
+ *
+ * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ */
+int preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
+{
+        return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db->sql, result);
+}
+
+
 
 /**
  * preludedb_delete_heartbeat:
@@ -537,6 +568,38 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
 	return db->plugin->delete_heartbeat(db->sql, ident);
+}
+
+
+/**
+ * preludedb_delete_heartbeat_from_list:
+ * @db: Pointer to a db object.
+ * @idents: Pointer to an array of idents.
+ * @size: Size of @idents.
+ *
+ * Delete all heartbeat from ident stored within @idents.
+ *
+ * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ */
+int preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size)
+{
+        return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, size);
+}
+
+
+
+/**
+ * preludedb_delete_heartbeat_from_result_idents:
+ * @db: Pointer to a db object.
+ * @result: Pointer to an idents result object.
+ *
+ * Delete all heartbeat from ident stored within @result.
+ *
+ * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ */
+int preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
+{
+        return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db->sql, result);
 }
 
 

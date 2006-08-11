@@ -543,8 +543,13 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 	preludedb_plugin_format_set_get_alert_func(plugin, classic_get_alert);
 	preludedb_plugin_format_set_get_heartbeat_func(plugin, classic_get_heartbeat);
 	preludedb_plugin_format_set_delete_alert_func(plugin, classic_delete_alert);
-	preludedb_plugin_format_set_delete_heartbeat_func(plugin, classic_delete_heartbeat);
-	preludedb_plugin_format_set_insert_message_func(plugin, classic_insert);
+        preludedb_plugin_format_set_delete_alert_from_list_func(plugin, classic_delete_alert_from_list);
+        preludedb_plugin_format_set_delete_alert_from_result_idents_func(plugin, classic_delete_alert_from_result_idents);
+        preludedb_plugin_format_set_delete_heartbeat_func(plugin, classic_delete_heartbeat);
+        preludedb_plugin_format_set_delete_heartbeat_from_list_func(plugin, classic_delete_heartbeat_from_list);
+        preludedb_plugin_format_set_delete_heartbeat_from_result_idents_func(plugin, classic_delete_heartbeat_from_result_idents);
+
+        preludedb_plugin_format_set_insert_message_func(plugin, classic_insert);
 	preludedb_plugin_format_set_get_values_func(plugin, classic_get_values);
 	preludedb_plugin_format_set_get_next_values_func(plugin, classic_get_next_values);
 	preludedb_plugin_format_set_destroy_values_resource_func(plugin, classic_destroy_values_resource);

@@ -38,7 +38,11 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_get_alert_func_t get_alert;
         preludedb_plugin_format_get_heartbeat_func_t get_heartbeat;
         preludedb_plugin_format_delete_alert_func_t delete_alert;
+        preludedb_plugin_format_delete_alert_from_list_func_t delete_alert_from_list;
+        preludedb_plugin_format_delete_alert_from_result_idents_func_t delete_alert_from_result_idents;
         preludedb_plugin_format_delete_heartbeat_func_t delete_heartbeat;
+        preludedb_plugin_format_delete_heartbeat_from_list_func_t delete_heartbeat_from_list;
+        preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t delete_heartbeat_from_result_idents;
         preludedb_plugin_format_insert_message_func_t insert_message;
         preludedb_plugin_format_get_values_func_t get_values;
         preludedb_plugin_format_get_next_values_func_t get_next_values;

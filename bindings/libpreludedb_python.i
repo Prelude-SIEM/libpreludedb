@@ -189,6 +189,27 @@ void swig_python_raise_exception(int error, const char *strerror)
 };
 
 
+%typemap(in) (uint64_t *idents, size_t size) {
+	int i = 0;
+
+	if ( ! PyList_Check($input) ) {
+		PyErr_SetString(PyExc_TypeError,"not a list");
+    		return NULL;
+	}
+
+     	$2 = PyList_Size($input);
+    
+	$1 = malloc($2 * sizeof(uint64_t));
+	if ( !$1 )
+		return NULL;
+
+	for ( i = 0; i < $2; i++ )
+		$1[i] = (uint64_t) PyLong_AsUnsignedLongLong(PyList_GetItem($input, i));
+}
+
+%typemap(freearg) (uint64_t *idents, size_t size) {
+	free($1);
+}
 
 %pythoncode %{
 import prelude
