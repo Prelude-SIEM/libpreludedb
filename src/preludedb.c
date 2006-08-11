@@ -579,7 +579,7 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
  *
  * Delete all heartbeat from ident stored within @idents.
  *
- * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ * Returns: the number of heartbeat deleted on success, or a negative value if an error occur.
  */
 int preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size)
 {
@@ -595,7 +595,7 @@ int preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size
  *
  * Delete all heartbeat from ident stored within @result.
  *
- * Returns: the number of alert deleted on success, or a negative value if an error occur.
+ * Returns: the number of heartbeat deleted on success, or a negative value if an error occur.
  */
 int preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
