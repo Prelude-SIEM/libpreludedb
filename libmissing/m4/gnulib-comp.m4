@@ -19,6 +19,8 @@
 # any checks for libraries, header files, types and library functions.
 AC_DEFUN([gl_EARLY],
 [
+  m4_pattern_forbid([^gl_[A-Z]])dnl the gnulib macro namespace
+  m4_pattern_allow([^gl_ES$])dnl a valid locale name
   AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
@@ -41,7 +43,6 @@ AC_SUBST([LTALLOCA])
   gl_FUNC_MEMCHR
   gl_MINMAX
   gl_REGEX
-  gl_C_RESTRICT
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
   gt_TYPE_SSIZE_T
@@ -118,7 +119,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/minmax.m4
   m4/onceonly_2_57.m4
   m4/regex.m4
-  m4/restrict.m4
   m4/signed.m4
   m4/size_max.m4
   m4/snprintf.m4

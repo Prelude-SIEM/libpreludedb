@@ -118,9 +118,29 @@ preludedb_t *db, uint64_t ident, idmef_message_t **message
 preludedb_t *db, uint64_t ident
 </FUNCTION>
 <FUNCTION>
+<NAME>preludedb_delete_alert_from_list</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_t *db, uint64_t *idents, size_t size
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_delete_alert_from_result_idents</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_t *db, preludedb_result_idents_t *results
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_delete_heartbeat</NAME>
 <RETURNS>int </RETURNS>
 preludedb_t *db, uint64_t ident
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_delete_heartbeat_from_list</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_t *db, uint64_t *idents, size_t size
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_delete_heartbeat_from_result_idents</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_t *db, preludedb_result_idents_t *results
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_get_values</NAME>
@@ -156,7 +176,11 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_get_alert_func_t get_alert;
         preludedb_plugin_format_get_heartbeat_func_t get_heartbeat;
         preludedb_plugin_format_delete_alert_func_t delete_alert;
+        preludedb_plugin_format_delete_alert_from_list_func_t delete_alert_from_list;
+        preludedb_plugin_format_delete_alert_from_result_idents_func_t delete_alert_from_result_idents;
         preludedb_plugin_format_delete_heartbeat_func_t delete_heartbeat;
+        preludedb_plugin_format_delete_heartbeat_from_list_func_t delete_heartbeat_from_list;
+        preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t delete_heartbeat_from_result_idents;
         preludedb_plugin_format_insert_message_func_t insert_message;
         preludedb_plugin_format_get_values_func_t get_values;
         preludedb_plugin_format_get_next_values_func_t get_next_values;
@@ -217,9 +241,31 @@ preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message
 preludedb_sql_t *sql, uint64_t ident
 </USER_FUNCTION>
 <USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_alert_from_list_func_t</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_sql_t *sql, uint64_t *idents, size_t size
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_alert_from_result_idents_func_t</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_sql_t *sql,
+                                                                                  preludedb_result_idents_t *results
+</USER_FUNCTION>
+<USER_FUNCTION>
 <NAME>preludedb_plugin_format_delete_heartbeat_func_t</NAME>
 <RETURNS>int </RETURNS>
 preludedb_sql_t *sql, uint64_t ident
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_heartbeat_from_list_func_t</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_sql_t *sql, uint64_t *idents, size_t size
+</USER_FUNCTION>
+<USER_FUNCTION>
+<NAME>preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t</NAME>
+<RETURNS>ssize_t </RETURNS>
+preludedb_sql_t *sql,
+                                                                                      preludedb_result_idents_t *results
 </USER_FUNCTION>
 <USER_FUNCTION>
 <NAME>preludedb_plugin_format_insert_message_func_t</NAME>
@@ -288,9 +334,29 @@ preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_heartbeat_func_t 
 preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_alert_func_t func
 </FUNCTION>
 <FUNCTION>
+<NAME>preludedb_plugin_format_set_delete_alert_from_list_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_alert_from_list_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_format_set_delete_alert_from_result_idents_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_alert_from_result_idents_func_t func
+</FUNCTION>
+<FUNCTION>
 <NAME>preludedb_plugin_format_set_delete_heartbeat_func</NAME>
 <RETURNS>void </RETURNS>
 preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_heartbeat_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_format_set_delete_heartbeat_from_list_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_heartbeat_from_list_func_t func
+</FUNCTION>
+<FUNCTION>
+<NAME>preludedb_plugin_format_set_delete_heartbeat_from_result_idents_func</NAME>
+<RETURNS>void </RETURNS>
+preludedb_plugin_format_t *plugin,preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t func
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_plugin_format_set_insert_message_func</NAME>
@@ -319,7 +385,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.8.1"
+#define LIBPRELUDEDB_VERSION "0.9.9"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>

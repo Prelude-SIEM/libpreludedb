@@ -1,3 +1,17 @@
+* 2006-08-11, libpreludedb-0.9.9:
+
+	- Implement an idea from Lex van Roon <r3boot@r3blog.nl.eu.org> providing
+	  an alert/heartbeat deletion performance improvement in the order of 
+	  3000% (preludedb-admin already benefit from it, next Prewikka release 
+	  will benefit from it too).
+
+	- Fix --with-(perl|python|swig) detection path ordering.
+
+	- Verbose error reporting on logfile opening error.
+
+	- Various bug fixes.
+
+
 * 2006-07-03, libpreludedb-0.9.8.1:
 
 	- Bump database schema version (fix invalid database version error).
