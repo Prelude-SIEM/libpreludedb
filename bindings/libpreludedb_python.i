@@ -54,6 +54,9 @@ void swig_python_raise_exception(int error, const char *strerror)
 };
 
 
+%typemap(freearg) const char * "";
+
+
 %typemap(in, numinputs=0) idmef_value_t ***values (idmef_value_t **tmp) {
 	$1 = &tmp;
 };
