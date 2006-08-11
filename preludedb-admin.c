@@ -60,7 +60,7 @@ static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
 typedef struct {
         prelude_list_t list;
         double elapsed;
-        unsigned int processed;
+        size_t processed;
         const char *opname;
 } stat_item_t;
 
@@ -102,7 +102,7 @@ static void stat_dump_all(void)
         stat_item_t *stat;
         prelude_list_t *tmp;
         double total_elapsed = 0;
-        unsigned int total_processed = 0;
+        size_t total_processed = 0;
         
         prelude_list_for_each(&stat_list, tmp) {
                 stat = prelude_list_entry(tmp, stat_item_t, list);
@@ -111,9 +111,9 @@ static void stat_dump_all(void)
                 total_processed = stat->processed;
                 
                 if ( max_count )
-                        fprintf(stderr, "%u/%u", stat->processed, max_count);
+                        fprintf(stderr, "%lu/%u", stat->processed, max_count);
                 else
-                        fprintf(stderr, "%u", stat->processed);
+                        fprintf(stderr, "%lu", stat->processed);
 
                 fprintf(stderr, " '%s' events processed in %f seconds (%f seconds/events - %f %s/sec average).\n",
                         stat->opname, stat->elapsed / 1000000,
@@ -122,9 +122,9 @@ static void stat_dump_all(void)
         }
 
         if ( max_count )
-                fprintf(stderr, "%u/%u", total_processed, max_count);
+                fprintf(stderr, "%lu/%u", total_processed, max_count);
         else
-                fprintf(stderr, "%u", total_processed);
+                fprintf(stderr, "%lu", total_processed);
         
         fprintf(stderr, " events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
                 total_elapsed / 1000000, 
@@ -136,7 +136,7 @@ static void stat_dump_all(void)
 
 
 
-static void stat_end(stat_item_t *stat, unsigned int count)
+static void stat_end(stat_item_t *stat, size_t count)
 {
         gettimeofday(&end, NULL);
         stat->processed += count;
@@ -205,7 +205,7 @@ static void handle_signal(int signo)
 }
 
 
-static int db_error(preludedb_t *db, int ret, const char *fmt, ...)
+static int db_error(preludedb_t *db, ssize_t ret, const char *fmt, ...)
 {
         va_list ap;
         
@@ -215,7 +215,7 @@ static int db_error(preludedb_t *db, int ret, const char *fmt, ...)
         va_start(ap, fmt);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
-
+        
         fprintf(stderr, ": %s.\n", preludedb_strerror(ret));
         
         return ret;
@@ -481,10 +481,12 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         stat_item_t *stat_fetch, stat_item_t *stat_insert, stat_item_t *stat_delete)
 {
         int ret = 0;
+        ssize_t count;
         uint64_t ident;
         idmef_message_t *msg;
-        unsigned int dst_event_no = 0, delete_index = 0;
-        uint64_t delete_tbl[1024];
+        uint64_t delete_tbl[2];
+        size_t delete_index = 0;
+        unsigned int dst_event_no = 0;
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
                                 
@@ -509,15 +511,15 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         db_error(dst, ret, "Error inserting message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
-
+                
                 delete_tbl[delete_index++] = ident;
 
                 if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
                      delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
-
-                        stat_compute(stat_delete, ret = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), ret);
-                        if ( ret < 0 ) {
-                                db_error(dst, ret, "Error deleting message");
+                        
+                        stat_compute(stat_delete, count = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), count);
+                        if ( count < 0 ) {
+                                db_error(dst, count, "Error deleting message");
                                 continue;
                         }
                         
@@ -527,10 +529,14 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 flush_transaction_if_needed(dst, &dst_event_no);
         }
 
-        stat_compute(stat_delete, ret = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), ret);
-        if ( ret < 0 )
-                db_error(dst, ret, "Error deleting message");
-                
+        if ( delete_index ) {
+                stat_compute(stat_delete, count = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), count);
+                if ( count < 0 ) {
+                        db_error(dst, count, "Error deleting message");
+                        return -1;
+                }
+        }
+        
         return ret;
 }
 
