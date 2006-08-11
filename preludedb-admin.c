@@ -111,9 +111,9 @@ static void stat_dump_all(void)
                 total_processed = stat->processed;
                 
                 if ( max_count )
-                        fprintf(stderr, "%lu/%u", stat->processed, max_count);
+                        fprintf(stderr, "%" PRELUDE_PRIu64 "/%" PRELUDE_PRIu64, (uint64_t) stat->processed, (uint64_t) max_count);
                 else
-                        fprintf(stderr, "%lu", stat->processed);
+                        fprintf(stderr, "%" PRELUDE_PRIu64, (uint64_t) stat->processed);
 
                 fprintf(stderr, " '%s' events processed in %f seconds (%f seconds/events - %f %s/sec average).\n",
                         stat->opname, stat->elapsed / 1000000,
@@ -122,9 +122,9 @@ static void stat_dump_all(void)
         }
 
         if ( max_count )
-                fprintf(stderr, "%lu/%u", total_processed, max_count);
+                fprintf(stderr, "%" PRELUDE_PRIu64 "/%" PRELUDE_PRIu64, (uint64_t) total_processed, (uint64_t) max_count);
         else
-                fprintf(stderr, "%lu", total_processed);
+                fprintf(stderr, "%" PRELUDE_PRIu64, (uint64_t) total_processed);
         
         fprintf(stderr, " events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
                 total_elapsed / 1000000, 
