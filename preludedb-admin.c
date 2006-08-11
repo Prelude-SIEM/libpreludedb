@@ -47,6 +47,8 @@
 static sig_atomic_t stop_processing = 0;
 static const char *query_logging = NULL;
 static prelude_bool_t have_query_logging = FALSE;
+
+static unsigned int limit = -1, offset = -1;
 static unsigned int max_count = 0, cur_count = 0, start_offset = 0;
 
 static idmef_criteria_t *alert_criteria = NULL;
@@ -55,22 +57,104 @@ static idmef_criteria_t *heartbeat_criteria = NULL;
 static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
 
 
+typedef struct {
+        prelude_list_t list;
+        double elapsed;
+        unsigned int processed;
+        const char *opname;
+} stat_item_t;
 
-/*
- * Global statistics
- */
-static double global_elapsed1 = 0;
-static double global_elapsed2 = 0;
-static struct timeval start1, end1, start2, end2;
-static const char *global_stats1 = NULL, *global_stats2 = NULL;
 
 
 /*
  * Runtime statistics.
  */
+static PRELUDE_LIST(stat_list);
+static struct timeval start, end;
 static sig_atomic_t dump_stat = FALSE;
-static unsigned int stats_processed = 0;
 
+
+
+/*
+ *
+ */
+#define stat_compute(stat, op, count) stat_start(stat); op; stat_end(stat, count)
+
+
+static stat_item_t *stat_item_new(const char *opname)
+{
+        stat_item_t *st;
+
+        st = calloc(1, sizeof(*st));
+        if ( ! st )
+                return NULL;
+
+        st->opname = opname;
+        prelude_list_add_tail(&stat_list, &st->list);
+        
+        return st;
+}
+
+
+
+static void stat_dump_all(void)
+{
+        stat_item_t *stat;
+        prelude_list_t *tmp;
+        double total_elapsed = 0;
+        unsigned int total_processed = 0;
+        
+        prelude_list_for_each(&stat_list, tmp) {
+                stat = prelude_list_entry(tmp, stat_item_t, list);
+                
+                total_elapsed += stat->elapsed;
+                total_processed = stat->processed;
+                
+                if ( max_count )
+                        fprintf(stderr, "%u/%u", stat->processed, max_count);
+                else
+                        fprintf(stderr, "%u", stat->processed);
+
+                fprintf(stderr, " '%s' events processed in %f seconds (%f seconds/events - %f %s/sec average).\n",
+                        stat->opname, stat->elapsed / 1000000,
+                        (stat->elapsed / stat->processed) / 1000000,
+                        stat->processed / (stat->elapsed / 1000000), stat->opname);
+        }
+
+        if ( max_count )
+                fprintf(stderr, "%u/%u", total_processed, max_count);
+        else
+                fprintf(stderr, "%u", total_processed);
+        
+        fprintf(stderr, " events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
+                total_elapsed / 1000000, 
+                (total_elapsed / total_processed) / 1000000,
+                total_processed / (total_elapsed / 1000000)
+                );
+}
+
+
+
+
+static void stat_end(stat_item_t *stat, unsigned int count)
+{
+        gettimeofday(&end, NULL);
+        stat->processed += count;
+                
+        stat->elapsed += (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+                
+        if ( ! dump_stat )
+                return;
+
+        stat_dump_all();
+        dump_stat = FALSE;
+}
+
+
+static void stat_start(stat_item_t *stat)
+{
+        gettimeofday(&start, NULL);
+}
 
 
 
@@ -87,51 +171,13 @@ static void free_global(void)
 
 static void flush_transaction_if_needed(preludedb_t *db, unsigned int *event_no)
 {
-        if ( events_per_transaction && (*event_no)++ == events_per_transaction ) {
+        if ( event_no && events_per_transaction && (*event_no)++ >= events_per_transaction ) {
                 preludedb_transaction_end(db);
                 preludedb_transaction_start(db);
                 *event_no = 0;
         }
 }
 
-
-
-static void dump_generic_statistics(const char *stats1, const char *stats2)
-{
-        double elapsed1 = 0, elapsed2 = 0;
-        
-        stats_processed++;
-
-        if ( stats1 ) {
-                global_stats1 = stats1;
-                elapsed1 = (end1.tv_sec * 1000000 + end1.tv_usec) - (start1.tv_sec * 1000000 + start1.tv_usec);
-                global_elapsed1 += elapsed1;
-        }
-        
-        if ( stats2 ) {
-                global_stats2 = stats2;
-                elapsed2 = (end2.tv_sec * 1000000 + end2.tv_usec) - (start2.tv_sec * 1000000 + start2.tv_usec);
-                global_elapsed2 += elapsed2;
-        }
-        
-        if ( ! dump_stat )
-                return;
-        
-        fprintf(stderr, "Number of events processed: %u", stats_processed);
-        if ( max_count )
-                fprintf(stderr, "/%u\n", max_count);
-        else
-                fprintf(stderr, "\n");
-        
-        if ( stats1 )
-                fprintf(stderr, "Average time to %s an event: %f.\n", stats1, elapsed1 / 1000000);
-
-        if ( stats2 )
-                fprintf(stderr, "Average time to %s an event: %f.\n", stats2, elapsed2 / 1000000);
-        
-        fprintf(stderr, "Total time to process an event: %f.\n", (elapsed1 + elapsed2) / 1000000);
-        dump_stat = FALSE;
-}
 
 
 static void handle_stats_signal(int signo)
@@ -216,14 +262,14 @@ static int set_query_logging(prelude_option_t *opt, const char *optarg, prelude_
 
 static int set_count(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
-        max_count = atoi(optarg);
+        limit = max_count = atoi(optarg);
         return 0;
 }
 
 
 static int set_offset(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
-        start_offset = atoi(optarg);
+        offset = start_offset = atoi(optarg);
         return 0;
 }
 
@@ -409,15 +455,36 @@ static int db_new_from_string(preludedb_t **db, const char *str)
 
 
 
+static int do_delete(preludedb_t *db, preludedb_result_idents_t *idents,
+                     ssize_t (*dfunc)(preludedb_t *db, preludedb_result_idents_t *idents),
+                     stat_item_t *stat_delete)
+{
+        ssize_t ret;
+
+        stat_compute(stat_delete, ret = dfunc(db, idents), ret);        
+        if ( ret < 0 ) {
+                ret = db_error(db, ret, "retrieving alert ident failed");
+                return ret;
+        }
+        
+        flush_transaction_if_needed(db, NULL);
+        
+        return 0;
+}
+
+
+
 static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         preludedb_result_idents_t *idents,
-                        int (*delete_message)(preludedb_t *db, uint64_t ident),
-                        int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **msg))
+                        int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **msg),
+                        ssize_t (*delete)(preludedb_t *db, uint64_t *idents, size_t size),
+                        stat_item_t *stat_fetch, stat_item_t *stat_insert, stat_item_t *stat_delete)
 {
         int ret = 0;
         uint64_t ident;
         idmef_message_t *msg;
-        unsigned int src_event_no = 0, dst_event_no = 0;
+        unsigned int dst_event_no = 0, delete_index = 0;
+        uint64_t delete_tbl[1024];
         
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
                                 
@@ -429,39 +496,41 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 if ( cur_count++ >= max_count && max_count )
                         return 0;
 
-                gettimeofday(&start1, NULL);
-                
-                ret = get_message(src, ident, &msg);
+                stat_compute(stat_fetch, ret = get_message(src, ident, &msg), 1);
                 if ( ret < 0 ) {
                         db_error(src, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
 
-                gettimeofday(&end1, NULL);
-                
-                gettimeofday(&start2, NULL);
-                ret = preludedb_insert_message(dst, msg);
-                gettimeofday(&end2, NULL);
-                
+                stat_compute(stat_insert, ret = preludedb_insert_message(dst, msg), 1);                
                 idmef_message_destroy(msg);
                 
                 if ( ret < 0 ) {
                         db_error(dst, ret, "Error inserting message %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
-                
-                if ( delete_message ) {
-                        ret = delete_message(src, ident);
-                        if ( ret < 0 )
-                                db_error(src, ret, "error deleting message %" PRELUDE_PRIu64 "", ident);
 
-                        flush_transaction_if_needed(src, &src_event_no);
+                delete_tbl[delete_index++] = ident;
+
+                if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
+                     delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
+
+                        stat_compute(stat_delete, ret = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), ret);
+                        if ( ret < 0 ) {
+                                db_error(dst, ret, "Error deleting message");
+                                continue;
+                        }
+                        
+                        delete_index = 0;
                 }
                 
                 flush_transaction_if_needed(dst, &dst_event_no);
-                dump_generic_statistics("retrieve", "insert");
         }
-        
+
+        stat_compute(stat_delete, ret = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), ret);
+        if ( ret < 0 )
+                db_error(dst, ret, "Error deleting message");
+                
         return ret;
 }
 
@@ -472,6 +541,9 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         int ret, idx;
         preludedb_t *src, *dst;
         preludedb_result_idents_t *idents;
+        stat_item_t *stat_delete = NULL;
+        stat_item_t *stat_fetch = stat_item_new("fetch");
+        stat_item_t *stat_insert = stat_item_new("insert");
         
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc < 3 ) {
@@ -487,30 +559,37 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
 	if ( ret < 0 )
 		return ret;
         
-        ret = preludedb_get_alert_idents(src, alert_criteria, -1, -1, 0, &idents);        
+        ret = preludedb_get_alert_idents(src, alert_criteria, limit, offset, 0, &idents);        
         if ( ret < 0 )
                 return db_error(src, ret, "retrieving alert idents list failed");
-
+        
         if ( events_per_transaction > 1 ) {
                 preludedb_transaction_start(src);
                 preludedb_transaction_start(dst);
         }
 
+        if ( delete_copied )
+                stat_delete = stat_item_new("delete");
+        
         if ( ret > 0 ) {
-                ret = copy_iterate(src, dst, idents, delete_copied ?
-                                   preludedb_delete_alert : NULL, preludedb_get_alert);
+                ret = copy_iterate(src, dst, idents, preludedb_get_alert,
+                                   (delete_copied) ? preludedb_delete_alert_from_list : NULL,
+                                   stat_fetch, stat_insert, stat_delete);
                 preludedb_result_idents_destroy(idents);
+                if ( ret < 0 )
+                        goto err;
         }
         
-        ret = preludedb_get_heartbeat_idents(src, heartbeat_criteria, -1, -1, 0, &idents);
+        ret = preludedb_get_heartbeat_idents(src, heartbeat_criteria, limit, offset, 0, &idents);
 	if ( ret < 0 ) {
                 ret = db_error(src, ret, "retrieving heartbeat idents list failed");
                 goto err;
         }
         
         if ( ret > 0 ) {
-                ret = copy_iterate(src, dst, idents, delete_copied ?
-                                   preludedb_delete_heartbeat : NULL, preludedb_get_heartbeat);
+                ret = copy_iterate(src, dst, idents, preludedb_get_heartbeat,
+                                   (delete_copied) ? preludedb_delete_heartbeat_from_list : NULL,
+                                   stat_fetch, stat_insert, stat_delete);
                 preludedb_result_idents_destroy(idents);
         }
 
@@ -545,43 +624,13 @@ static int cmd_move(int argc, char **argv)
 }
 
 
-static int drop_iterate(preludedb_t *db, preludedb_result_idents_t *idents,
-                        int (*delete_message)(preludedb_t *db, uint64_t ident))
-{
-        int ret = 0;
-        uint64_t ident;
-        unsigned int event_no = 0;
-        
-        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                
-                if ( start_offset ) {
-                        start_offset--;
-                        continue;
-                }
-
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
-
-                gettimeofday(&start1, NULL);
-                ret = delete_message(db, ident);
-                gettimeofday(&end1, NULL);
-                
-                if ( ret < 0 ) 
-                        db_error(db, ret, "error deleting message %" PRELUDE_PRIu64 "", ident);
-                
-                flush_transaction_if_needed(db, &event_no);
-                dump_generic_statistics("delete", NULL);
-        }
-
-        return ret;
-}
-
 
 static int cmd_delete(int argc, char **argv)
 {
         int ret, idx;
         preludedb_t *db;
         preludedb_result_idents_t *idents;
+        stat_item_t *stat_delete = stat_item_new("delete");
 
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc != 2 ) {
@@ -600,30 +649,32 @@ static int cmd_delete(int argc, char **argv)
 
         if ( events_per_transaction > 1 )
                 preludedb_transaction_start(db);
-        
+
         if ( alert_criteria ) {
-                ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
+                ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
                 if ( ret < 0 ) {
                         ret = db_error(db, ret, "retrieving alert ident failed");
                         goto err;
                 }
                 
                 if ( ret > 0 ) {
-                        drop_iterate(db, idents, preludedb_delete_alert);
-                        preludedb_result_idents_destroy(idents);
+                        ret = do_delete(db, idents, preludedb_delete_alert_from_result_idents, stat_delete);
+                        if ( ret < 0 )
+                                goto err;
                 }
         }
 
         if ( heartbeat_criteria ) {
-                ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
+                ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
                 if ( ret < 0 ) {
                         ret = db_error(db, ret, "retrieving heartbeat ident failed");
                         goto err;
                 }
                 
                 if ( ret > 0 ) {
-                        drop_iterate(db, idents, preludedb_delete_heartbeat);                        
-                        preludedb_result_idents_destroy(idents);
+                        ret = do_delete(db, idents, preludedb_delete_heartbeat_from_result_idents, stat_delete);
+                        if ( ret < 0 )
+                                goto err;
                 }
         }
 
@@ -655,7 +706,8 @@ static int save_msg(prelude_msgbuf_t *msgbuf, prelude_msg_t *msg)
 
 
 static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *idents, prelude_msgbuf_t *msgbuf,
-                                int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **out))
+                                int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **out),
+                                stat_item_t *stat_fetch, stat_item_t *stat_save)
 {
         int ret = 0;
         uint64_t ident;
@@ -670,30 +722,20 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
 
                 if ( cur_count++ >= max_count && max_count )
                         return 0;
-                
-                gettimeofday(&start1, NULL);
-                
-                ret = get_message(db, ident, &message);
+                                
+                stat_compute(stat_fetch, ret = get_message(db, ident, &message), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
-
-                gettimeofday(&end1, NULL);
-
-                gettimeofday(&start2, NULL);
-                ret = idmef_message_write(message, msgbuf);
-                prelude_msgbuf_mark_end(msgbuf);
-                gettimeofday(&end2, NULL);
                 
+                stat_compute(stat_save, ret = idmef_message_write(message, msgbuf); prelude_msgbuf_mark_end(msgbuf), 1);
                 idmef_message_destroy(message);
                 
                 if ( ret < 0 ) {
                         prelude_perror(ret, "Error writing message %" PRELUDE_PRIu64 " to disk", ident);
                         continue;
                 }
-
-                dump_generic_statistics("retrieve", "save");
         }
 
         return 0;
@@ -709,6 +751,8 @@ static int cmd_save(int argc, char **argv)
         FILE *fd = stdout;
         prelude_msgbuf_t *msgbuf;
         preludedb_result_idents_t *idents;
+        stat_item_t *stat_fetch = stat_item_new("fetch");
+        stat_item_t *stat_save = stat_item_new("save");
 
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc < 2 ) {
@@ -741,21 +785,21 @@ static int cmd_save(int argc, char **argv)
         prelude_msgbuf_set_data(msgbuf, io);
         prelude_msgbuf_set_callback(msgbuf, save_msg);
                 
-        ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
+        ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
 	if ( ret < 0 )
                 return ret;
 
         if ( ret > 0 ) {
-                save_iterate_message(db, idents, msgbuf, preludedb_get_alert);
+                save_iterate_message(db, idents, msgbuf, preludedb_get_alert, stat_fetch, stat_save);
                 preludedb_result_idents_destroy(idents);
         }
         
-        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
+        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
 	if ( ret < 0 )
 		return ret;
 
         if ( ret > 0 ) {
-                save_iterate_message(db, idents, msgbuf, preludedb_get_heartbeat);
+                save_iterate_message(db, idents, msgbuf, preludedb_get_heartbeat, stat_fetch, stat_save);
                 preludedb_result_idents_destroy(idents);
         }
         
@@ -780,6 +824,8 @@ static int cmd_load(int argc, char **argv)
         prelude_msg_t *msg;
         idmef_message_t *idmef;
         unsigned int event_no = 0;
+        stat_item_t *stat_fetch = stat_item_new("fetch");
+        stat_item_t *stat_insert = stat_item_new("insert");
         
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc < 2 ) {
@@ -840,29 +886,22 @@ static int cmd_load(int argc, char **argv)
                         break;
                 }
 
-                gettimeofday(&start1, NULL);
-                
-                ret = idmef_message_read(idmef, msg);
+                stat_compute(stat_fetch, ret = idmef_message_read(idmef, msg), 1);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error decoding IDMEF message: %s.\n", prelude_strerror(ret));
                         break;
                 }
 
-                gettimeofday(&end1, NULL);
-
-                gettimeofday(&start2, NULL);
-                ret = preludedb_insert_message(db, idmef);
+                stat_compute(stat_insert, ret = preludedb_insert_message(db, idmef), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "error inserting IDMEF message");
                         break;
                 }
-                gettimeofday(&end2, NULL);
                 
                 idmef_message_destroy(idmef);
                 prelude_msg_destroy(msg);
 
                 flush_transaction_if_needed(db, &event_no);
-                dump_generic_statistics("read", "insert");
         }
 
         if ( events_per_transaction > 1 ) {
@@ -884,7 +923,8 @@ static int cmd_load(int argc, char **argv)
 
 
 static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *idents, prelude_io_t *io,
-                                 int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **idmef))
+                                 int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **idmef),
+                                 stat_item_t *stat_fetch, stat_item_t *stat_print)
 {
         int ret = 0;
         uint64_t ident;
@@ -900,28 +940,19 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
                 if ( cur_count++ >= max_count && max_count )
                         return 0;
 
-                gettimeofday(&start1, NULL);
-
-                ret = get_message(db, ident, &idmef);
+                stat_compute(stat_fetch, ret = get_message(db, ident, &idmef), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
                 
-                gettimeofday(&end1, NULL);
-
-                gettimeofday(&start2, NULL);
-                idmef_message_print(idmef, io);
-                gettimeofday(&end2, NULL);
-                
+                stat_compute(stat_print, idmef_message_print(idmef, io), 1);                
                 idmef_message_destroy(idmef);
                 
                 if ( ret < 0 ) {
                         prelude_perror(ret, "Error writing message %" PRELUDE_PRIu64 " to disk", ident);
                         continue;
                 }
-
-                dump_generic_statistics("retrieve", "print");
         }
 
         return ret;
@@ -936,7 +967,9 @@ static int cmd_print(int argc, char **argv)
         preludedb_t *db;
         prelude_io_t *io;
         preludedb_result_idents_t *idents;
-
+        stat_item_t *stat_fetch = stat_item_new("fetch");
+        stat_item_t *stat_print = stat_item_new("print");
+        
         idx = setup_generic_options(&argc, argv);        
         if ( idx < 0 || argc < 2 ) {
                 cmd_print_help();
@@ -962,21 +995,21 @@ static int cmd_print(int argc, char **argv)
 
         prelude_io_set_file_io(io, fd);
 
-        ret = preludedb_get_alert_idents(db, alert_criteria, -1, -1, 0, &idents);
+        ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
 	if ( ret < 0 )
                 return db_error(db, ret, "retrieving alert ident failed");
         
         if ( ret > 0 ) {
-                print_iterate_message(db, idents, io, preludedb_get_alert);
+                print_iterate_message(db, idents, io, preludedb_get_alert, stat_fetch, stat_print);
                 preludedb_result_idents_destroy(idents);
         }
         
-        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, -1, -1, 0, &idents);
+        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
 	if ( ret < 0 )
                 return db_error(db, ret, "retrieving heartbeat ident failed");
 
         if ( ret > 0 ) {
-                print_iterate_message(db, idents, io, preludedb_get_heartbeat);
+                print_iterate_message(db, idents, io, preludedb_get_heartbeat, stat_fetch, stat_print);
                 preludedb_result_idents_destroy(idents);
         }
 
@@ -987,33 +1020,6 @@ static int cmd_print(int argc, char **argv)
         preludedb_destroy(db);
 
         return ret;
-}
-
-
-
-static void dump_stats(void)
-{
-        double global_elapsed = global_elapsed1 + global_elapsed2;
-
-        if ( global_stats1 ) {
-                fprintf(stderr, "%u '%s' in %f seconds (%f seconds/events - %f %s/sec average).\n",
-                        stats_processed, global_stats1, global_elapsed1 / 1000000, 
-                        (global_elapsed1 / stats_processed) / 1000000,
-                        stats_processed / (global_elapsed1 / 1000000), global_stats1);
-        }
-        
-        if ( global_stats2 ) {
-                fprintf(stderr, "%u '%s' in %f seconds (%f seconds/events - %f %s/sec average).\n",
-                        stats_processed, global_stats2, global_elapsed2 / 1000000, 
-                        (global_elapsed2 / stats_processed) / 1000000,
-                        stats_processed / (global_elapsed2 / 1000000), global_stats2);
-        }
-        
-        fprintf(stderr, "%u events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
-                stats_processed, global_elapsed / 1000000, 
-                (global_elapsed / stats_processed) / 1000000,
-                stats_processed / (global_elapsed / 1000000)
-                );
 }
 
 
@@ -1060,7 +1066,7 @@ int main(int argc, char **argv)
                         fprintf(stderr, "Interrupted by signal at transaction %u. Use --offset %u to resume operation.\n",
                                 cur_count, cur_count);
 
-                dump_stats();
+                stat_dump_all();
 
                 free_global();
                 preludedb_deinit();
