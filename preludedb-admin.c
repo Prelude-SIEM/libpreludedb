@@ -1052,13 +1052,15 @@ int main(int argc, char **argv)
         signal(SIGQUIT, handle_stats_signal);
         
 	ret = preludedb_init();
-	if ( ret < 0 )
-		return ret;
+        if ( ret < 0 ) {
+                prelude_perror(ret, "error initializing libpreludedb");
+                return ret;
+        }
 
-	if ( argc < 2 ) {
+        if ( argc < 2 ) {
                 print_help(argv);
                 return -1;
-	}
+        }
         
 	for ( i = 0; i < sizeof(commands) / sizeof(*commands); i++ ) {
 		if ( strcmp(argv[1], commands[i].name) != 0 )
