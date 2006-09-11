@@ -17,7 +17,12 @@ endif
 
 DLOPENED_OBJS=$(MYSQL_OBJS) $(PGSQL_OBJS) $(SQLITE3_OBJS) -dlopen $(top_builddir)/plugins/format/classic/classic.la
 
-libpreludedb_la_LDFLAGS = @LIBPRELUDE_LDFLAGS@ -no-undefined -version-info @libpreludedb_soname@ #$(DLOPENED_OBJS)
+libpreludedb_la_LDFLAGS = @LIBPRELUDE_LDFLAGS@ \
+			  -no-undefined \
+			  -version-info @libpreludedb_soname@ \
+			  -export-symbols-regex "^preludedb_" \
+			  #$(DLOPENED_OBJS)
+
 libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@ ../libmissing/libmissing.la
 
 libpreludedb_la_SOURCES =		\
