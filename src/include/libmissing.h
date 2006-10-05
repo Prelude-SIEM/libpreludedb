@@ -27,15 +27,6 @@
 #include "config.h"
 
 #include "gettext.h"
-
-#if HAVE_WCHAR_H && HAVE_WCTYPE_H
-# include "mbchar.h"
-#endif
-
-#if HAVE_MBRTOWC
-# include "mbuiter.h"
-#endif
-
 #include "minmax.h"
 #include "regex.h"
 #include "size_max.h"
@@ -48,10 +39,14 @@
 #include "time_r.h"
 #include "vasnprintf.h"
 #include "vsnprintf.h"
+#include "wcwidth.h"
 #include "xsize.h"
-#include <alloca.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+
+#if HAVE_WCHAR_H
+# include "mbchar.h"
+#endif
+#if HAVE_MBRTOWC
+# include "mbuiter.h"
+#endif
 
 #endif

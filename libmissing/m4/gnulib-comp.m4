@@ -31,6 +31,8 @@ AC_DEFUN([gl_EARLY],
 AC_DEFUN([gl_INIT],
 [
   AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
+  gl_cond_libtool=true
+  gl_source_base='libmissing'
 changequote(,)dnl
 LTALLOCA=`echo "$ALLOCA" | sed 's/\.[^.]* /.lo /g;s/\.[^.]*$/.lo/'`
 changequote([, ])dnl
@@ -47,6 +49,7 @@ AC_SUBST([LTALLOCA])
   gl_FUNC_SNPRINTF
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
+  gl_STDINT_H
   gl_STRCASE
   gl_FUNC_STRDUP
   gl_FUNC_STRNDUP
@@ -85,6 +88,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/snprintf.c
   lib/snprintf.h
   lib/stdbool_.h
+  lib/stdint_.h
   lib/strcase.h
   lib/strcasecmp.c
   lib/strdup.c
@@ -104,6 +108,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vsnprintf.h
   lib/wcwidth.h
   lib/xsize.h
+  m4/absolute-header.m4
   m4/alloca.m4
   m4/codeset.m4
   m4/eoverflow.m4
@@ -124,6 +129,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/snprintf.m4
   m4/ssize_t.m4
   m4/stdbool.m4
+  m4/stdint.m4
   m4/stdint_h.m4
   m4/strcase.m4
   m4/strdup.m4

@@ -16,9 +16,7 @@
    with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
+#include <config.h>
 
 #include "snprintf.h"
 
@@ -45,11 +43,12 @@ snprintf (char *str, size_t size, const char *format, ...)
 {
   char *output;
   size_t len;
+  size_t lenbuf = size;
   va_list args;
 
   va_start (args, format);
-  len = size;
-  output = vasnprintf (str, &len, format, args);
+  output = vasnprintf (str, &lenbuf, format, args);
+  len = lenbuf;
   va_end (args);
 
   if (!output)
@@ -59,8 +58,9 @@ snprintf (char *str, size_t size, const char *format, ...)
     {
       if (size)
 	{
-	  memcpy (str, output, size - 1);
-	  str[size - 1] = '\0';
+	  size_t pruned_len = (len < size ? len : size - 1);
+	  memcpy (str, output, pruned_len);
+	  str[pruned_len] = '\0';
 	}
 
       free (output);
