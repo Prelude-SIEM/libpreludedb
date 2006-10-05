@@ -91,13 +91,13 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident);
 
 ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size_t size);
 
-ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results);
+ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result);
          
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident);
 
 ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size);
 
-ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results);         
+ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result);
 
 int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selection,
 			 idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
