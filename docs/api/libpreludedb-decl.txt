@@ -125,7 +125,7 @@ preludedb_t *db, uint64_t *idents, size_t size
 <FUNCTION>
 <NAME>preludedb_delete_alert_from_result_idents</NAME>
 <RETURNS>ssize_t </RETURNS>
-preludedb_t *db, preludedb_result_idents_t *results
+preludedb_t *db, preludedb_result_idents_t *result
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_delete_heartbeat</NAME>
@@ -140,7 +140,7 @@ preludedb_t *db, uint64_t *idents, size_t size
 <FUNCTION>
 <NAME>preludedb_delete_heartbeat_from_result_idents</NAME>
 <RETURNS>ssize_t </RETURNS>
-preludedb_t *db, preludedb_result_idents_t *results
+preludedb_t *db, preludedb_result_idents_t *result
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_get_values</NAME>
@@ -385,7 +385,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.9"
+#define LIBPRELUDEDB_VERSION "0.9.10"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>

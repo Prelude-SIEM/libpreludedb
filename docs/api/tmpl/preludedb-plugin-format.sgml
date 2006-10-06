@@ -206,6 +206,84 @@ preludedb-plugin-format
 @Returns: 
 
 
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_alert_from_list_func_t ##### -->
+<para>
+
+</para>
+
+@sql: 
+@idents: 
+@size: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_alert_from_result_idents_func_t ##### -->
+<para>
+
+</para>
+
+@sql: 
+@results: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_heartbeat_from_list_func_t ##### -->
+<para>
+
+</para>
+
+@sql: 
+@idents: 
+@size: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t ##### -->
+<para>
+
+</para>
+
+@sql: 
+@results: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_alert_from_list_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_alert_from_result_idents_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_heartbeat_from_list_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
+<!-- ##### FUNCTION preludedb_plugin_format_set_delete_heartbeat_from_result_idents_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+
 <!-- ##### FUNCTION preludedb_plugin_format_set_check_schema_version_func ##### -->
 <para>
 

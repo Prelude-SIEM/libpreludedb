@@ -252,6 +252,48 @@ preludedb
 @Returns: 
 
 
+<!-- ##### FUNCTION preludedb_delete_alert_from_list ##### -->
+<para>
+
+</para>
+
+@db: 
+@idents: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_delete_alert_from_result_idents ##### -->
+<para>
+
+</para>
+
+@db: 
+@result: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_delete_heartbeat_from_list ##### -->
+<para>
+
+</para>
+
+@db: 
+@idents: 
+@size: 
+@Returns: 
+
+
+<!-- ##### FUNCTION preludedb_delete_heartbeat_from_result_idents ##### -->
+<para>
+
+</para>
+
+@db: 
+@result: 
+@Returns: 
+
+
 <!-- ##### FUNCTION preludedb_get_values ##### -->
 <para>
 

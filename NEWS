@@ -1,3 +1,12 @@
+* 2006-10-06, libpreludedb-0.9.10:
+
+	- Fix PostgreSQL schema update version 5.
+
+	- Only export symbol starting with preludedb_.
+
+	- Verbose error reporting in case of libpreludedb initialization failure.
+
+
 * 2006-08-11, libpreludedb-0.9.9:
 
 	- Implement an idea from Lex van Roon <r3boot@r3blog.nl.eu.org> providing
