@@ -217,7 +217,7 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
         sql->logfile = fopen(filename, "a");
         if ( ! sql->logfile )
                 return preludedb_error_verbose(prelude_error_code_from_errno(errno),
-                                               "Could not open '%s' for writing: %s", sql->logfile, strerror(errno));
+                                               "Could not open '%s' for writing: %s", filename, strerror(errno));
         
         fd = fileno(sql->logfile);
         
