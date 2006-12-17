@@ -26,27 +26,10 @@
 
 #include "config.h"
 
-#include "gettext.h"
-#include "minmax.h"
-#include "regex.h"
-#include "size_max.h"
 #include "snprintf.h"
-#include "strcase.h"
 #include "strdup.h"
 #include "strndup.h"
-#include "strnlen.h"
-#include "strnlen1.h"
 #include "time_r.h"
-#include "vasnprintf.h"
 #include "vsnprintf.h"
-#include "wcwidth.h"
-#include "xsize.h"
-
-#if HAVE_WCHAR_H
-# include "mbchar.h"
-#endif
-#if HAVE_MBRTOWC
-# include "mbuiter.h"
-#endif
 
 #endif
