@@ -134,6 +134,21 @@ void swig_python_raise_exception(int error, const char *strerror)
 };
 
 
+%typemap(out) ssize_t {
+	if ( $1 < 0 ) {
+		swig_python_raise_exception($1, NULL);
+		return NULL;
+	}
+
+	/*
+	 * swig workaround: we want to access ret from some argout typemap when ret can
+	 * contain the number of results for example, but the C result is not reachable
+	 * from argout
+	 */
+	$result = PyLong_FromLongLong($1);
+};
+
+
 %typemap(argout) uint64_t *ident {
 	if ( PyInt_AsLong($result) == 0 ) {
 		$result = Py_None;
