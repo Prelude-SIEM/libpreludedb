@@ -29,9 +29,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
-#include <time.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <sys/types.h>
 
 #include <mysql.h>

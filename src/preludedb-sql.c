@@ -32,12 +32,20 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
-#include <sys/time.h>
-#include <time.h>
-#include <inttypes.h>
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
 
 #include <libprelude/prelude-list.h>
 #include <libprelude/prelude-linked-object.h>
