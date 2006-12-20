@@ -52,6 +52,29 @@ if test "x$datadir" = "x\${prefix}/share"; then
 fi
 
 
+dnl **********************************************************
+dnl * Check for platform specific flags                      *
+dnl **********************************************************
+AC_MSG_CHECKING(for platform-specific compiler flags)
+
+case "$host_os" in
+ darwin*)
+        #
+        # It may be called "cc", but it's really a GCC derivative
+        # with a problematic special precompiler and precompiled
+        # headers; turn off the special precompiler, as some
+        # apparently-legal code won't compile with its precompiled
+        # headers.
+        #
+        AC_MSG_RESULT(Darwin: adding -no-cpp-precomp)
+	AX_CFLAGS_GCC_OPTION(-no-cpp-precomp)
+        ;;
+ *)
+        AC_MSG_RESULT(none needed)
+        ;;
+esac
+
+
 dnl **************************************************
 dnl * Check for missing function replacement         *
 dnl **************************************************
@@ -295,6 +318,12 @@ dnl * Check for GTK-DOC                              *
 dnl **************************************************
 
 GTK_DOC_CHECK(1.0)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+
 
 db_plugin_dir=$libdir/libpreludedb/plugins
 sql_plugin_dir=$db_plugin_dir/sql
