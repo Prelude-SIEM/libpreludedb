@@ -540,15 +540,16 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 
         if ( ret < 0 ) {
                 update_sql_from_errno(sql, ret);
-
-                if ( ! original_error )
-                        ret = preludedb_error(PRELUDEDB_ERROR_QUERY);
-                else {
-                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s", original_error);
-                        free(original_error);
-                }
+                
+                if ( original_error )
+                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s\nROLLBACK failed: %s", original_error, preludedb_strerror(ret));
+                else
+                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "ROLLBACK failed: %s", preludedb_strerror(ret));
         }
-        
+
+        if ( original_error )
+                free(original_error);
+                        
         return ret;
 }
 
