@@ -351,11 +351,9 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
 int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table,
                                 const char *format, ...)
 {
+        int ret;
         va_list ap;
         prelude_string_t *query;
-        int ret;
-
-        assert_connected(sql);
 
         ret = prelude_string_new(&query);
         if ( ret < 0 )
@@ -364,6 +362,7 @@ int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **ta
         va_start(ap, format);
         ret = prelude_string_vprintf(query, format, ap);
         va_end(ap);
+        
         if ( ret < 0 )
                 goto error;
 
@@ -392,11 +391,9 @@ int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **ta
 int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fields,
                          const char *format, ...)
 {
+        int ret;
         va_list ap;
         prelude_string_t *query;
-        int ret;
-
-        assert_connected(sql);
 
         ret = prelude_string_new(&query);
         if ( ret < 0 )
@@ -417,8 +414,6 @@ int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fi
                 goto error;
 
         ret = preludedb_sql_query(sql, prelude_string_get_string(query), NULL);
-        if ( ret < 0 )
-                update_sql_from_errno(sql, ret);
 
  error:
         prelude_string_destroy(query);
@@ -453,17 +448,11 @@ int _preludedb_sql_transaction_start(preludedb_sql_t *sql)
         if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )                
                 return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
         
-        assert_connected(sql);
-
         ret = preludedb_sql_query(sql, "BEGIN", NULL);
-        if ( ret < 0 ) {
-                update_sql_from_errno(sql, ret);
-                return ret;
-        }
-        
-        sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
+        if ( ret == 0 )
+                sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
 
-        return 0;
+        return ret;
 }
 
 
@@ -496,9 +485,6 @@ int _preludedb_sql_transaction_end(preludedb_sql_t *sql)
         ret = preludedb_sql_query(sql, "COMMIT", NULL);
 
         sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
-
-        if ( ret < 0 )
-                update_sql_from_errno(sql, ret);
 
         return ret;
 }
@@ -538,9 +524,7 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
         ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
         sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
 
-        if ( ret < 0 ) {
-                update_sql_from_errno(sql, ret);
-                
+        if ( ret < 0 ) {                
                 if ( original_error )
                         ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s\nROLLBACK failed: %s", original_error, preludedb_strerror(ret));
                 else
@@ -605,8 +589,6 @@ int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t in
  */
 int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output) 
 {
-        assert_connected(sql);
-
         if ( ! input ) {
                 *output = strdup("NULL");
                 return *output ? 0 : preludedb_error_from_errno(errno);
