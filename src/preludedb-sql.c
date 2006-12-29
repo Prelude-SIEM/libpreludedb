@@ -523,7 +523,7 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 
         if ( original_error && ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) {
                 ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s. No ROLLBACK possible due to connection closure", 
-                                              original_error, preludedb_strerror(ret));
+                                              original_error);
                 free(original_error);
                 return ret;
         }
@@ -564,7 +564,7 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 
 
 /**
- * preludedb_sql_escape:
+ * preludedb_sql_escape_fast:
  * @sql: Pointer to a sql object.
  * @input: Buffer to escape
  * @input_size: Buffer size.
