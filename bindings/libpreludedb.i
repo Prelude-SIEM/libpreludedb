@@ -25,7 +25,6 @@
 #include <libprelude/prelude.h>
 #include <libprelude/idmef.h>
 
-#include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 #include "preludedb-path-selection.h"
@@ -102,8 +101,6 @@ typedef enum {
 %include "preludedb-sql-settings.h"
 %include "preludedb-sql.h"
 %include "preludedb.h"
+%include "preludedb-error.h"
 %include "preludedb-version.h"
 %include "preludedb-path-selection.h"
-
-prelude_bool_t preludedb_error_check(preludedb_error_t error, preludedb_error_code_t code);
-const char *preludedb_strerror(preludedb_error_t error);
