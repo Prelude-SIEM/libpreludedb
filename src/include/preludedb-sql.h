@@ -33,12 +33,6 @@
 #define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE 128
 
 typedef enum {
-	PRELUDEDB_SQL_STATUS_DISCONNECTED = 0,
-	PRELUDEDB_SQL_STATUS_CONNECTED =    1,
-	PRELUDEDB_SQL_STATUS_TRANSACTION =  2
-} preludedb_sql_status_t;
-
-typedef enum {
 	PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR,
 	PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH,
 	PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY,
@@ -47,7 +41,7 @@ typedef enum {
 	PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR,
 	PRELUDEDB_SQL_TIME_CONSTRAINT_MIN,
 	PRELUDEDB_SQL_TIME_CONSTRAINT_SEC
-}	preludedb_sql_time_constraint_type_t;
+} preludedb_sql_time_constraint_type_t;
 
 typedef struct preludedb_sql preludedb_sql_t;
 

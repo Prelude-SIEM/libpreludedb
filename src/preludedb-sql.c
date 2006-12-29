@@ -62,14 +62,20 @@
 #include "preludedb.h"
 
 
+typedef enum {
+	PRELUDEDB_SQL_STATUS_CONNECTED    = 0x01,
+	PRELUDEDB_SQL_STATUS_TRANSACTION  = 0x02
+} preludedb_sql_status_t;
 
-#define assert_connected(sql)                                   \
-        if ( sql->status < PRELUDEDB_SQL_STATUS_CONNECTED ) {   \
-                int __ret;                                      \
-                                                                \
-                __ret = preludedb_sql_connect(sql);             \
-                if ( __ret < 0 )                                \
-                        return __ret;                           \
+
+
+#define assert_connected(sql)                                     \
+        if ( ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) { \
+                int __ret;                                        \
+                                                                  \
+                __ret = preludedb_sql_connect(sql);               \
+                if ( __ret < 0 )                                  \
+                        return __ret;                             \
         }
 
 
@@ -117,21 +123,12 @@ extern prelude_list_t _sql_plugin_list;
 
 
 
-static void preludedb_sql_disconnect(preludedb_sql_t *sql)
-{
-        _preludedb_plugin_sql_close(sql->plugin, sql->session);
-
-        sql->status = PRELUDEDB_SQL_STATUS_DISCONNECTED;
-        sql->session = NULL;
-}
-
-
-
-
 static inline void update_sql_from_errno(preludedb_sql_t *sql, preludedb_error_t error)
 {
-        if ( preludedb_error_check(error, PRELUDEDB_ERROR_CONNECTION) )
-                preludedb_sql_disconnect(sql);
+        if ( preludedb_error_check(error, PRELUDEDB_ERROR_CONNECTION) ) {
+                _preludedb_plugin_sql_close(sql->plugin, sql->session);                
+                sql->status &= ~PRELUDEDB_SQL_STATUS_CONNECTED;
+        }
 }
 
 
@@ -190,7 +187,7 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
  */
 void preludedb_sql_destroy(preludedb_sql_t *sql)
 {
-        if ( sql->status >= PRELUDEDB_SQL_STATUS_CONNECTED )
+        if ( sql->status & PRELUDEDB_SQL_STATUS_CONNECTED )
                 _preludedb_plugin_sql_close(sql->plugin, sql->session);
 
         if ( sql->logfile )
@@ -445,14 +442,16 @@ int _preludedb_sql_transaction_start(preludedb_sql_t *sql)
 {
         int ret;
                 
-        if ( sql->status == PRELUDEDB_SQL_STATUS_TRANSACTION )                
+        if ( sql->status & PRELUDEDB_SQL_STATUS_TRANSACTION )                
                 return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
         
         ret = preludedb_sql_query(sql, "BEGIN", NULL);
-        if ( ret == 0 )
-                sql->status = PRELUDEDB_SQL_STATUS_TRANSACTION;
+        if ( ret < 0 )
+                return ret;
+        
+        sql->status |= PRELUDEDB_SQL_STATUS_TRANSACTION;
 
-        return ret;
+        return 0;
 }
 
 
@@ -479,12 +478,11 @@ int _preludedb_sql_transaction_end(preludedb_sql_t *sql)
 {
         int ret;
 
-        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )                
+        if ( ! (sql->status & PRELUDEDB_SQL_STATUS_TRANSACTION) )                
                 return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
         
         ret = preludedb_sql_query(sql, "COMMIT", NULL);
-
-        sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
+        sql->status &= ~PRELUDEDB_SQL_STATUS_TRANSACTION;
 
         return ret;
 }
@@ -515,18 +513,25 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
         int ret;
         char *original_error = NULL;
         
-        if ( sql->status != PRELUDEDB_SQL_STATUS_TRANSACTION )
+        if ( ! (sql->status & PRELUDEDB_SQL_STATUS_TRANSACTION) )
                 return preludedb_error(PRELUDEDB_ERROR_NOT_IN_TRANSACTION);
-        
+
         if ( _prelude_thread_get_error() ) 
                 original_error = strdup(_prelude_thread_get_error());
+
+        sql->status &= ~PRELUDEDB_SQL_STATUS_TRANSACTION;
+
+        if ( original_error && ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) {
+                ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s. No ROLLBACK possible due to connection closure", 
+                                              original_error, preludedb_strerror(ret));
+                free(original_error);
+                return ret;
+        }
         
         ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
-        sql->status = PRELUDEDB_SQL_STATUS_CONNECTED;
-
         if ( ret < 0 ) {                
                 if ( original_error )
-                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s\nROLLBACK failed: %s", original_error, preludedb_strerror(ret));
+                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s.\nROLLBACK failed: %s", original_error, preludedb_strerror(ret));
                 else
                         ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "ROLLBACK failed: %s", preludedb_strerror(ret));
         }
@@ -784,8 +789,8 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
  */
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row)
 {
-        void *res;
         int ret;
+        void *res;
 
         ret = _preludedb_plugin_sql_fetch_row(table->sql->plugin, table->sql->session, table->res, &res);
         if ( ret < 0 ) {
