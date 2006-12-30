@@ -112,7 +112,6 @@ prelude_error_from_errno
 <SECTION>
 <FILE>preludedb-sql</FILE>
 PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE
-preludedb_sql_status_t
 preludedb_sql_time_constraint_type_t
 preludedb_sql_t
 preludedb_sql_table_t

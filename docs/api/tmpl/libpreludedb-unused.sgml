@@ -158,3 +158,12 @@
 @operator: 
 @Returns: 
 
+<!-- ##### ENUM preludedb_sql_status_t ##### -->
+<para>
+
+</para>
+
+@PRELUDEDB_SQL_STATUS_DISCONNECTED: 
+@PRELUDEDB_SQL_STATUS_CONNECTED: 
+@PRELUDEDB_SQL_STATUS_TRANSACTION: 
+

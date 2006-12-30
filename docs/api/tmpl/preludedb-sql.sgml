@@ -24,15 +24,6 @@ preludedb-sql
 
 
 
-<!-- ##### ENUM preludedb_sql_status_t ##### -->
-<para>
-
-</para>
-
-@PRELUDEDB_SQL_STATUS_DISCONNECTED: 
-@PRELUDEDB_SQL_STATUS_CONNECTED: 
-@PRELUDEDB_SQL_STATUS_TRANSACTION: 
-
 <!-- ##### ENUM preludedb_sql_time_constraint_type_t ##### -->
 <para>
 

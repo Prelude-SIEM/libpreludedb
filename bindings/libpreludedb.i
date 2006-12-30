@@ -21,6 +21,8 @@
 *
 *****/
 
+#define inline 
+
 %{
 #include <libprelude/prelude.h>
 #include <libprelude/idmef.h>
@@ -47,6 +49,7 @@ typedef unsigned int uint32_t;
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 
+%ignore preludedb_error_t;
 typedef signed int preludedb_error_t;
 
 typedef enum { 
