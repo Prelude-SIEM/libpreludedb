@@ -53,7 +53,7 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
- #define mysql_field_count mysql_num_fields
+# define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
 
 
