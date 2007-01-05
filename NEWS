@@ -1,3 +1,19 @@
+* 2006-01-05, libpreludedb-0.9.11.1:
+        
+        - Prevent binding generation error when using old SWIG version.
+        
+        - Generate bindings for the error handling API.
+        
+        - Small Perl/Python detection improvement. Fix #182. 
+        
+        - Fix bindings compilation when using make -j.
+        
+        - New configure --with-perl-installdirs flags: might be used to override 
+          default site perl installation.
+
+        - Various bug fixes.
+        
+
 * 2006-12-20, libpreludedb-0.9.11:
 
         - Avoid using GNU sed extension when generating postgresql/sqlite schema.
