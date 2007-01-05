@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2004-2006 Free Software Foundation, Inc.
+# Copyright (C) 2004-2007 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -40,17 +40,43 @@ AC_DEFUN([gl_INIT],
   gl_cond_libtool=true
   gl_source_base='libmissing'
   gl_FUNC_ALLOCA
+    AC_DEFINE([GNULIB_ALLOCA_OPT], [1],
+      [Define to 1 when using the gnulib module alloca-opt.])
   dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
+    AC_DEFINE([GNULIB_EXTENSIONS], [1],
+      [Define to 1 when using the gnulib module extensions.])
   gl_MINMAX
+    AC_DEFINE([GNULIB_MINMAX], [1],
+      [Define to 1 when using the gnulib module minmax.])
   gl_SIZE_MAX
+    AC_DEFINE([GNULIB_SIZE_MAX], [1],
+      [Define to 1 when using the gnulib module size_max.])
   gl_FUNC_SNPRINTF
+    AC_DEFINE([GNULIB_SNPRINTF], [1],
+      [Define to 1 when using the gnulib module snprintf.])
   gl_FUNC_STRDUP
+    AC_DEFINE([GNULIB_STRDUP], [1],
+      [Define to 1 when using the gnulib module strdup.])
   gl_FUNC_STRNDUP
+    AC_DEFINE([GNULIB_STRNDUP], [1],
+      [Define to 1 when using the gnulib module strndup.])
   gl_FUNC_STRNLEN
+    AC_DEFINE([GNULIB_STRNLEN], [1],
+      [Define to 1 when using the gnulib module strnlen.])
   gl_TIME_R
+    AC_DEFINE([GNULIB_TIME_R], [1],
+      [Define to 1 when using the gnulib module time_r.])
   gl_FUNC_VASNPRINTF
+    AC_DEFINE([GNULIB_VASNPRINTF], [1],
+      [Define to 1 when using the gnulib module vasnprintf.])
   gl_FUNC_VSNPRINTF
+    AC_DEFINE([GNULIB_VSNPRINTF], [1],
+      [Define to 1 when using the gnulib module vsnprintf.])
   gl_XSIZE
+    AC_DEFINE([GNULIB_XSIZE], [1],
+      [Define to 1 when using the gnulib module xsize.])
+    AC_DEFINE([GNULIB_DUMMY], [1],
+      [Define to 1 when using the gnulib module dummy.])
   m4_popdef([AC_LIBSOURCES])
   m4_popdef([AC_REPLACE_FUNCS])
   m4_popdef([AC_LIBOBJ])
