@@ -1,4 +1,9 @@
-* 2006-01-05, libpreludedb-0.9.11.1:
+* 2007-01-08, libpreludedb-0.9.11.2:
+
+        - Fix make installation error when Perl bindings are disabled.
+        
+        
+* 2007-01-05, libpreludedb-0.9.11.1:
         
         - Prevent binding generation error when using old SWIG version.
         
