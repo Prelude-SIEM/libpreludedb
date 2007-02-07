@@ -40,43 +40,20 @@ AC_DEFUN([gl_INIT],
   gl_cond_libtool=true
   gl_source_base='libmissing'
   gl_FUNC_ALLOCA
-    AC_DEFINE([GNULIB_ALLOCA_OPT], [1],
-      [Define to 1 when using the gnulib module alloca-opt.])
-  dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
-    AC_DEFINE([GNULIB_EXTENSIONS], [1],
-      [Define to 1 when using the gnulib module extensions.])
   gl_MINMAX
-    AC_DEFINE([GNULIB_MINMAX], [1],
-      [Define to 1 when using the gnulib module minmax.])
   gl_SIZE_MAX
-    AC_DEFINE([GNULIB_SIZE_MAX], [1],
-      [Define to 1 when using the gnulib module size_max.])
   gl_FUNC_SNPRINTF
-    AC_DEFINE([GNULIB_SNPRINTF], [1],
-      [Define to 1 when using the gnulib module snprintf.])
   gl_FUNC_STRDUP
-    AC_DEFINE([GNULIB_STRDUP], [1],
-      [Define to 1 when using the gnulib module strdup.])
+  gl_STRING_MODULE_INDICATOR([strdup])
+  gl_HEADER_STRING_H
   gl_FUNC_STRNDUP
-    AC_DEFINE([GNULIB_STRNDUP], [1],
-      [Define to 1 when using the gnulib module strndup.])
+  gl_STRING_MODULE_INDICATOR([strndup])
   gl_FUNC_STRNLEN
-    AC_DEFINE([GNULIB_STRNLEN], [1],
-      [Define to 1 when using the gnulib module strnlen.])
+  gl_STRING_MODULE_INDICATOR([strnlen])
   gl_TIME_R
-    AC_DEFINE([GNULIB_TIME_R], [1],
-      [Define to 1 when using the gnulib module time_r.])
   gl_FUNC_VASNPRINTF
-    AC_DEFINE([GNULIB_VASNPRINTF], [1],
-      [Define to 1 when using the gnulib module vasnprintf.])
   gl_FUNC_VSNPRINTF
-    AC_DEFINE([GNULIB_VSNPRINTF], [1],
-      [Define to 1 when using the gnulib module vsnprintf.])
   gl_XSIZE
-    AC_DEFINE([GNULIB_XSIZE], [1],
-      [Define to 1 when using the gnulib module xsize.])
-    AC_DEFINE([GNULIB_DUMMY], [1],
-      [Define to 1 when using the gnulib module dummy.])
   m4_popdef([AC_LIBSOURCES])
   m4_popdef([AC_REPLACE_FUNCS])
   m4_popdef([AC_LIBOBJ])
@@ -126,11 +103,9 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/snprintf.c
   lib/snprintf.h
   lib/strdup.c
-  lib/strdup.h
+  lib/string_.h
   lib/strndup.c
-  lib/strndup.h
   lib/strnlen.c
-  lib/strnlen.h
   lib/time_r.c
   lib/time_r.h
   lib/vasnprintf.c
@@ -138,9 +113,11 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vsnprintf.c
   lib/vsnprintf.h
   lib/xsize.h
+  m4/absolute-header.m4
   m4/alloca.m4
   m4/eoverflow.m4
   m4/extensions.m4
+  m4/gnulib-common.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
   m4/longdouble.m4
@@ -151,6 +128,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/snprintf.m4
   m4/stdint_h.m4
   m4/strdup.m4
+  m4/string_h.m4
   m4/strndup.m4
   m4/strnlen.m4
   m4/time_r.m4
