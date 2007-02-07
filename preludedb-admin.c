@@ -512,25 +512,27 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         continue;
                 }
                 
-                delete_tbl[delete_index++] = ident;
+                if ( delete ) {
+                        delete_tbl[delete_index++] = ident;
 
-                if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
-                     delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
+                        if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
+                              delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
                         
-                        stat_compute(stat_delete, count = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), count);
-                        if ( count < 0 ) {
-                                db_error(dst, count, "Error deleting message");
-                                continue;
+                                stat_compute(stat_delete, count = delete(src, delete_tbl, delete_index), count);
+                                if ( count < 0 ) {
+                                        db_error(dst, count, "Error deleting message");
+                                        continue;
+                                }
+                        
+                                delete_index = 0;
                         }
-                        
-                        delete_index = 0;
                 }
                 
                 flush_transaction_if_needed(dst, &dst_event_no);
         }
 
         if ( delete_index ) {
-                stat_compute(stat_delete, count = preludedb_delete_alert_from_list(src, delete_tbl, delete_index), count);
+                stat_compute(stat_delete, count = delete(src, delete_tbl, delete_index), count);
                 if ( count < 0 ) {
                         db_error(dst, count, "Error deleting message");
                         return -1;
