@@ -1,3 +1,10 @@
+* 2007-02-07, libpreludedb-0.9.11.3:
+	
+	- Fix invalide free() in the SQLite plugin.
+
+	- Fix preludedb-admin copy/move operations.
+
+
 * 2007-01-08, libpreludedb-0.9.11.2:
 
         - Fix make installation error when Perl bindings are disabled.
