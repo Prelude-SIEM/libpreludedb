@@ -1,4 +1,4 @@
-AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing @defined@ @SQLITE3_CFLAGS@
+AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing @defined@ @SQLITE3_CFLAGS@
 sqlite3_la_LDFLAGS = -module -avoid-version @LIBPRELUDE_LDFLAGS@
 
 if HAVE_SQLITE3
