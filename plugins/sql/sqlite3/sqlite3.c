@@ -248,11 +248,13 @@ static void sql_resource_destroy(void *session, void *res)
                                
                 for ( i = 0; i < resource->ncolumn; i++ ) {
                         field = &row->fields[i];
-                        free(field->data);
+               
+                        if ( field->data )
+                                free(field->data);
                 }
                 
                 free(row->fields);
-                                
+                
                 prelude_list_del(&row->list);
                 free(row);
         }
