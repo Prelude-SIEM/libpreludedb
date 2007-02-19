@@ -32,11 +32,13 @@ void swig_python_raise_exception(int error, const char *strerror)
         exception_class = PyObject_GetAttrString(module, "PreludeDBError");
         exception = PyObject_CallFunction(exception_class, "is", error, strerror);
 
-        PyErr_SetObject(exception_class, exception);
+        if ( exception ) {
+                PyErr_SetObject(exception_class, exception);
+                Py_DECREF(exception);
+        }
 
         Py_DECREF(module);
         Py_DECREF(exception_class);
-        Py_DECREF(exception);
 }
 %}
 
