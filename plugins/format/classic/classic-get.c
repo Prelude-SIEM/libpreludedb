@@ -497,11 +497,11 @@ static int get_process(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = parent_new_child(parent, &process);
 	if ( ret < 0 )
-		return ret;
+		goto error;
 
 	ret = get_string(sql, row, 0, process, idmef_process_new_ident);
 	if ( ret < 0 )
@@ -586,11 +586,11 @@ static int get_web_service(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_service_new_web_service(service, &web_service);
 	if ( ret < 0 )
-		return ret;
+		goto error;
 
 	ret = get_string(sql, row, 0, web_service, idmef_web_service_new_url);
 	if ( ret < 0 )
@@ -634,11 +634,11 @@ static int get_snmp_service(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_service_new_snmp_service(service, &snmp_service);
 	if ( ret < 0 )
-		return ret;
+		goto error;
 
 	ret = get_string(sql, row, 0, snmp_service, idmef_snmp_service_new_oid);
 	if ( ret < 0 )
@@ -698,7 +698,7 @@ static int get_service(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = parent_new_child(parent, &service);
 	if ( ret < 0 )
@@ -828,7 +828,7 @@ static int get_node(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = parent_new_child(parent, &node);
 	if ( ret < 0 )
@@ -995,7 +995,7 @@ static int get_confidence(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_assessment_new_confidence(assessment, &confidence);
 	if ( ret < 0 )
@@ -1032,7 +1032,7 @@ static int get_impact(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_assessment_new_impact(assessment, &impact);
 	if ( ret < 0 )
@@ -1257,7 +1257,7 @@ static int get_inode(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_file_new_inode(file, &inode);
 	if ( ret < 0 )
@@ -1876,7 +1876,7 @@ static int get_tool_alert(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_alert_new_tool_alert(alert, &tool_alert);
 	if ( ret < 0 )
@@ -1918,7 +1918,7 @@ static int get_correlation_alert(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_alert_new_correlation_alert(alert, &correlation_alert);
 	if ( ret < 0 )
@@ -1961,7 +1961,7 @@ static int get_overflow_alert(preludedb_sql_t *sql,
 
 	ret = preludedb_sql_table_fetch_row(table, &row);
 	if ( ret <= 0 )
-		return ret;
+		goto error;
 
 	ret = idmef_alert_new_overflow_alert(alert, &overflow_alert);
 	if ( ret < 0 )
