@@ -574,9 +574,9 @@ static int insert_web_service_arg(preludedb_sql_t *sql,
 				   "_parent_type, _message_ident, _parent0_index, _index, arg",
 				   "'%c', %" PRELUDE_PRIu64 ", %d, %d, %s",
 				   parent_type, message_ident, parent_index, arg_index,
-				   arg);
+				   tmp);
 
-	free(arg);
+	free(tmp);
 
 	return ret;
 }
@@ -791,7 +791,7 @@ static int insert_linkage(preludedb_sql_t *sql, uint64_t message_ident, int targ
 
         ret = preludedb_sql_insert(sql, "Prelude_Linkage",
 				   "_message_ident, _parent0_index, _parent1_index, _index, category, name, path",
-				   "%" PRELUDE_PRIu64 ", %d, %d, %s, %s, %s",
+				   "%" PRELUDE_PRIu64 ", %d, %d, %d, %s, %s, %s",
 				   message_ident, target_index, file_index, index,
 				   category, name, path);
 
