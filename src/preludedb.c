@@ -446,7 +446,7 @@ preludedb_get_message_idents(preludedb_t *db,
  * @order: Result order.
  * @result: Idents result.
  *
- * Returns: 1 if there are any results, 0 if there is no result, or negative value if an error occur.
+ * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_alert_idents(preludedb_t *db,
 			       idmef_criteria_t *criteria, int limit, int offset,
@@ -467,7 +467,7 @@ int preludedb_get_alert_idents(preludedb_t *db,
  * @order: Result order.
  * @result: Idents result.
  *
- * Returns: 1 if there are any results, 0 if there is no result , or negative value if an error occur.
+ * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_heartbeat_idents(preludedb_t *db,
 				   idmef_criteria_t *criteria, int limit, int offset,
