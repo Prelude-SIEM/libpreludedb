@@ -49,7 +49,7 @@ static const char *query_logging = NULL;
 static prelude_bool_t have_query_logging = FALSE;
 
 static unsigned int limit = -1, offset = -1;
-static unsigned int max_count = 0, cur_count = 0, start_offset = 0;
+static uint64_t max_count = 0, cur_count = 0, start_offset = 0;
 
 static idmef_criteria_t *alert_criteria = NULL;
 static idmef_criteria_t *heartbeat_criteria = NULL;
@@ -430,7 +430,7 @@ static int db_new_from_string(preludedb_t **db, const char *str)
 	ret = preludedb_sql_settings_new_from_string(&sql_settings, str);
 	if ( ret < 0 ) {
                 fprintf(stderr, "Error loading database settings: %s.\n", preludedb_strerror(ret));
-		return ret;
+                return ret;
         }
         
 	ret = preludedb_sql_new(&sql, NULL, sql_settings);
@@ -509,7 +509,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 
                 if ( ret < 0 ) {
                         db_error(dst, ret, "Error inserting message %" PRELUDE_PRIu64 "", ident);
-                        continue;
+                        return ret;
                 }
                 
                 if ( delete ) {
@@ -823,57 +823,20 @@ static int cmd_save(int argc, char **argv)
 
 
 
-static int cmd_load(int argc, char **argv)
+static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_fetch, stat_item_t *stat_insert)
 {
-        int ret, idx;
-        FILE *fd = stdin;
-        preludedb_t *db;
-        prelude_io_t *io;
+        int ret = 0;
         prelude_msg_t *msg;
         idmef_message_t *idmef;
         unsigned int event_no = 0;
-        stat_item_t *stat_fetch = stat_item_new("fetch");
-        stat_item_t *stat_insert = stat_item_new("insert");
         
-        idx = setup_generic_options(&argc, argv);
-        if ( idx < 0 || argc < 2 ) {
-                cmd_load_help();
-                exit(1);
-        }
-
-        ret = db_new_from_string(&db, argv[idx]);
-	if ( ret < 0 )
-		return ret;
-        
-        if ( argc > 2 && *argv[idx + 1] != '-' ) {
-                
-                fd = fopen(argv[idx + 1], "r");
-                if ( ! fd ) {
-                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx + 1], strerror(errno));
-                        return -1;
-                }
-        }
-        
-        ret = prelude_io_new(&io);
-        if ( ret < 0 )
-                return ret;
-
-        prelude_io_set_file_io(io, fd);
-
-        if ( events_per_transaction > 1 )
-                preludedb_transaction_start(db);
-         
         while ( ! stop_processing ) {                
                 msg = NULL;
 
                 ret = prelude_msg_read(&msg, io);                
                 if ( ret < 0 ) {
-                        if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF ) {
+                        if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF )
                                 ret = 0;
-                                break;
-                        }
-                        
-                        fprintf(stderr, "error reading message: %s.\n", prelude_strerror(ret));
                         break;
                 }
                                 
@@ -882,7 +845,6 @@ static int cmd_load(int argc, char **argv)
                         continue;
                 }
 
-                
                 if ( cur_count++ >= max_count && max_count ) {
                         prelude_msg_destroy(msg);
                         break;
@@ -911,6 +873,58 @@ static int cmd_load(int argc, char **argv)
 
                 flush_transaction_if_needed(db, &event_no);
         }
+        
+        return ret;   
+}
+
+
+static int cmd_load(int argc, char **argv)
+{
+        int ret, idx;
+        FILE *fd = stdin;
+        preludedb_t *db;
+        prelude_io_t *io;
+        stat_item_t *stat_fetch = stat_item_new("fetch");
+        stat_item_t *stat_insert = stat_item_new("insert");
+        
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 2 ) {
+                cmd_load_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx++]);
+	if ( ret < 0 )
+		return ret;
+        
+        ret = prelude_io_new(&io);
+        if ( ret < 0 )
+                return ret;
+
+        if ( events_per_transaction > 1 )
+                preludedb_transaction_start(db);
+
+        while ( idx < argc ) {
+        
+                fd = (strcmp(argv[idx], "-") == 0) ? stdin : fopen(argv[idx], "r");                
+                if ( ! fd ) {
+                        fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx], strerror(errno));
+                        return -1;
+                }
+                
+                prelude_io_set_file_io(io, fd);
+                
+                ret = load_from_file(db, io, stat_fetch, stat_insert);
+                if ( ret < 0 ) {
+                        fprintf(stderr, "error reading reading '%s': %s.\n", argv[idx], prelude_strerror(ret));
+                        break;
+                }
+                         
+                if ( fd != stdin )
+                        prelude_io_close(io);
+                
+                idx++;
+        }
 
         if ( events_per_transaction > 1 ) {
                 if ( ret < 0 )
@@ -918,9 +932,6 @@ static int cmd_load(int argc, char **argv)
                 else
                         preludedb_transaction_end(db);
         }
-               
-        if ( fd != stdin )
-                prelude_io_close(io);
         
         prelude_io_destroy(io);
         preludedb_destroy(db);
@@ -1069,14 +1080,12 @@ int main(int argc, char **argv)
                         continue;
                 
                 ret = commands[i].run(--argc, &argv[1]);
-                if ( ret < 0 )                        
-                        return ret;
-                
-                if ( stop_processing )
-                        fprintf(stderr, "Interrupted by signal at transaction %u. Use --offset %u to resume operation.\n",
-                                cur_count, cur_count);
+                if ( (ret < 0 || stop_processing) && cur_count > 0 ) 
+                        fprintf(stderr, "%s at transaction %" PRELUDE_PRIu64 ". Use --offset %" PRELUDE_PRIu64 " to resume operation.\n",
+                                (ret < 0) ? "Error"  : "Interrupted by signal", cur_count, (offset == -1) ? cur_count : cur_count + offset);
 
-                stat_dump_all();
+                if ( cur_count > 0 || ret == 0 )
+                        stat_dump_all();
 
                 free_global();
                 preludedb_deinit();
