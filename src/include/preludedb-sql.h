@@ -30,6 +30,19 @@
  extern "C" {
 #endif
 
+#ifndef __attribute__
+/* This feature is available in gcc versions 2.5 and later.  */
+# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
+#  define __attribute__(Spec) /* empty */
+# endif
+/* The __-protected variants of `format' and `printf' attributes
+   are accepted by gcc versions 2.6.4 (effectively 2.7) and later.  */
+# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#  define __format__ format
+#  define __printf__ printf
+# endif
+#endif
+
 #define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE 128
 
 typedef enum {
@@ -43,6 +56,7 @@ typedef enum {
 	PRELUDEDB_SQL_TIME_CONSTRAINT_SEC
 } preludedb_sql_time_constraint_type_t;
 
+		
 typedef struct preludedb_sql preludedb_sql_t;
 
 typedef struct preludedb_sql_table preludedb_sql_table_t;
@@ -57,9 +71,12 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
 void preludedb_sql_disable_query_logging(preludedb_sql_t *sql);
 
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table);
-int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table, const char *format, ...);
 
-int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fields, const char *format, ...);
+int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table, const char *format, ...)
+                                __attribute__ ((__format__ (__printf__, 3, 4)));
+
+int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fields, const char *format, ...)
+                         __attribute__ ((__format__ (__printf__, 4, 5)));
 
 int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int offset, prelude_string_t *output);
 
