@@ -292,7 +292,7 @@ static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t 
  *
  * Execute a SQL query.
  *
- * Returns: 1 if the query returns results, 0 if it does not, or negative value if an error occur.
+ * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
@@ -328,7 +328,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
                 return ret;
         }
 
-        return 1;
+        return preludedb_sql_table_get_row_count(*table);
 }
 
 
@@ -985,24 +985,43 @@ static int build_criterion_fixed_sql_time_value(preludedb_sql_t *sql,
 static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char **output)
 {
         int ret;
+        size_t i, len;
         const char *input;
+        idmef_data_t *data;
         prelude_string_t *outbuf;
         const prelude_string_t *string;
         prelude_bool_t escape_next = FALSE;
         
-        string = idmef_value_get_string(value);
-        if ( ! string )
-                return -1;
+        if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_DATA ) {
+                data = idmef_value_get_data(value);
+                if ( ! data )
+                        return -1;
+                        
+                input = idmef_data_get_data(data);
+                if ( ! input )
+                        return -1;
+                        
+                len = idmef_data_get_len(data);
+        }
+        
+        else {
+                string = idmef_value_get_string(value);
+                if ( ! string )
+                        return -1;
 
-        input = prelude_string_get_string(string);
-        if ( ! input )
-                return -1;
-
+                input = prelude_string_get_string(string);
+                if ( ! input )
+                        return -1;
+        
+                len = prelude_string_get_len(string);
+        }
+        
         ret = prelude_string_new(&outbuf);
         if ( ret < 0 )
                 return ret;
         
-        while ( *input ) {
+        for ( i = 0; i < len; i++ ) {
+        
                 /*
                  * Always escape %, since these are SQL specific.
                  */
