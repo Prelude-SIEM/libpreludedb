@@ -206,7 +206,7 @@ idmef_path_t *preludedb_selected_path_get_path(preludedb_selected_path_t *select
 
 
 
-int preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path)
+preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path)
 {
 	return selected_path->flags;
 }
