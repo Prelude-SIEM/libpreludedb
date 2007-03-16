@@ -29,6 +29,7 @@
 #include "preludedb-plugin-sql.h"
 
 
+#define PRELUDEDB_ENOTSUP(x) preludedb_error_verbose(prelude_error_code_from_errno(ENOTSUP), "Database backend does not support '%s' operation", x)
 
 struct preludedb_plugin_sql {
         PRELUDE_PLUGIN_GENERIC;
@@ -247,6 +248,9 @@ void preludedb_plugin_sql_set_fetch_row_func(preludedb_plugin_sql_t *plugin, pre
 
 int _preludedb_plugin_sql_fetch_row(preludedb_plugin_sql_t *plugin, void *session, void *resource, void **row)
 {
+        if ( ! plugin->fetch_row )
+                PRELUDEDB_ENOTSUP("fetch_row");
+                
         return plugin->fetch_row(session, resource, row);
 }
 
@@ -261,6 +265,9 @@ int _preludedb_plugin_sql_fetch_field(preludedb_plugin_sql_t *plugin,
                                       void *session, void *resource, void *row,
                                       unsigned int column_num, const char **value, size_t *len)
 {
+        if ( ! plugin->fetch_field ) 
+                return PRELUDEDB_ENOTSUP("fetch_field");
+                
         return plugin->fetch_field(session, resource, row, column_num, value, len);
 }
 
@@ -277,6 +284,9 @@ int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *p
                                                        preludedb_sql_time_constraint_type_t type,
                                                        idmef_criterion_operator_t operator, int value, int gmt_offset)
 {
+        if ( ! plugin->build_time_constraint_string ) 
+                return PRELUDEDB_ENOTSUP("build_time_constraint_string");
+                
         return plugin->build_time_constraint_string(output, field, type, operator, value, gmt_offset);
 }
 
@@ -292,6 +302,9 @@ void preludedb_plugin_sql_set_build_time_interval_string_func(preludedb_plugin_s
 int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin,
                                                      preludedb_sql_time_constraint_type_t type, int value, char *buf, size_t size)
 {
+        if ( ! plugin->build_time_interval_string )
+                return PRELUDEDB_ENOTSUP("build_time_interval_string");
+                
         return plugin->build_time_interval_string(type, value, buf, size);
 }
 
@@ -306,6 +319,9 @@ void preludedb_plugin_sql_set_build_limit_offset_string_func(preludedb_plugin_sq
 int _preludedb_plugin_sql_build_limit_offset_string(preludedb_plugin_sql_t *plugin,
                                                     void *session, int limit, int offset, prelude_string_t *output)
 {
+        if ( ! plugin->build_limit_offset_string ) 
+                return PRELUDEDB_ENOTSUP("build_limit_offset_string");
+                
         return plugin->build_limit_offset_string(session, limit, offset, output);
 }
 
@@ -321,6 +337,9 @@ int _preludedb_plugin_sql_build_constraint_string(preludedb_plugin_sql_t *plugin
                                                   prelude_string_t *out, const char *field,
                                                   idmef_criterion_operator_t operator, const char *value)
 {
+        if ( ! plugin->build_constraint_string )
+                return PRELUDEDB_ENOTSUP("build_constraint_string");
+                
         return plugin->build_constraint_string(out, field, operator, value);
 }
 
