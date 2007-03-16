@@ -42,6 +42,104 @@ void swig_python_raise_exception(int error, const char *strerror)
 }
 %}
 
+%typemap(in, numinputs=0) preludedb_result_values_t **result2 ($*1_type tmp) {
+        $1 = ($1_ltype) &tmp;
+};
+
+
+%typemap(in) preludedb_result_values_t ** {
+        if ( $input == Py_None )
+                return NULL;
+
+        if ( SWIG_ConvertPtr($input, (void **)&arg$argnum, $1_descriptor, SWIG_POINTER_EXCEPTION|0) )
+                return NULL;
+}
+
+%typemap(argout) preludedb_result_values_t **result2 {
+	long size;
+
+	size = PyInt_AsLong($result);
+	if ( size < 0 ) {
+		swig_python_raise_exception(size, NULL);
+		$result = NULL;
+
+	} else if ( size == 0 ) {
+		$result = Py_None;
+		Py_INCREF(Py_None);
+
+	} else {
+	        PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
+
+		$result = PyTuple_New(2);
+                PyTuple_SetItem($result, 0, s);
+                PyTuple_SetItem($result, 1, PyInt_FromLong(size));
+	}
+};
+
+
+%inline %{
+int preludedb_get_values2(preludedb_t *db, preludedb_path_selection_t *path_selection,
+                         idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
+                         preludedb_result_values_t **result2) 
+{
+        return preludedb_get_values(db, path_selection, criteria, distinct, limit, offset, result2);
+}
+%}
+
+
+%typemap(in, numinputs=0) preludedb_result_idents_t **result2 ($*1_type tmp) {
+        $1 = ($1_ltype) &tmp;
+};
+
+
+%typemap(in) preludedb_result_idents_t ** {
+        if ( $input == Py_None )
+                return NULL;
+
+        if ( SWIG_ConvertPtr($input, (void **)&arg$argnum, $1_descriptor, SWIG_POINTER_EXCEPTION|0) )
+                return NULL;
+}
+
+%typemap(argout) preludedb_result_idents_t **result2 {
+	long size;
+
+	size = PyInt_AsLong($result);
+	if ( size < 0 ) {
+		swig_python_raise_exception(size, NULL);
+		$result = NULL;
+
+	} else if ( size == 0 ) {
+		$result = Py_None;
+		Py_INCREF(Py_None);
+
+	} else {
+	        PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
+
+		$result = PyTuple_New(2);
+                PyTuple_SetItem($result, 0, s);
+                PyTuple_SetItem($result, 1, PyInt_FromLong(size));
+	}
+};
+
+
+%inline %{
+int preludedb_get_alert_idents2(preludedb_t *db, idmef_criteria_t *criteria,
+                               int limit, int offset,
+                               preludedb_result_idents_order_t order,
+                               preludedb_result_idents_t **result2) 
+{
+        return preludedb_get_alert_idents(db, criteria, limit, offset, order, result2);
+}
+
+int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
+                                   int limit, int offset,
+                                   preludedb_result_idents_order_t order,
+                                   preludedb_result_idents_t **result2) 
+{
+        return preludedb_get_heartbeat_idents(db, criteria, limit, offset, order, result2);
+}
+%}
+
 
 %typemap(in) const char * {
         if ( $input == Py_None )
@@ -62,6 +160,7 @@ void swig_python_raise_exception(int error, const char *strerror)
 %typemap(in, numinputs=0) idmef_value_t ***values (idmef_value_t **tmp) {
 	$1 = &tmp;
 };
+
 
 %typemap(argout) idmef_value_t ***values {
 	long size;
@@ -90,6 +189,7 @@ void swig_python_raise_exception(int error, const char *strerror)
 		free(values);
 	}
 };
+
 
 
 %typemap(in, numinputs=0) SWIGTYPE **OUTPARAM ($*1_type tmp) {
@@ -230,6 +330,8 @@ void swig_python_raise_exception(int error, const char *strerror)
 %typemap(freearg) (uint64_t *idents, size_t size) {
 	free($1);
 }
+
+
 
 %pythoncode %{
 import prelude
