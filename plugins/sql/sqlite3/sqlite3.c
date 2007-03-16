@@ -484,6 +484,9 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
         if ( ! value )
                 value = "";
 
+        if ( operator & IDMEF_CRITERION_OPERATOR_NOCASE )
+                return prelude_string_sprintf(out, "lower(%s) %s lower(%s)", field, op_str, value);
+                
         return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
 }
 
