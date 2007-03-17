@@ -354,7 +354,8 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 	const char *char_val;
 	unsigned int retrieved = 1;
 	int ret;
-
+        prelude_bool_t multiple_time_field = FALSE;
+        
 	flags = preludedb_selected_path_get_flags(selected);
 	path = preludedb_selected_path_get_path(selected);
 	type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
@@ -363,9 +364,14 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 	if ( ret < 0 )
 		return ret;
 
+        if ( type == IDMEF_VALUE_TYPE_TIME && 
+             ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+			 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) )
+		multiple_time_field = TRUE;
+		
 	if ( ret == 0 ) {
 		*value = NULL;
-		return 1;
+		return (multiple_time_field) ? 3 : 1;
 	}
 
 	char_val = preludedb_sql_field_get_value(field);
@@ -389,11 +395,9 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 	case IDMEF_VALUE_TYPE_TIME: {
                 uint32_t usec = 0;
 		int32_t gmtoff = 0;
-		
 		idmef_time_t *time;
 
-		if ( ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-				 PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) ) {
+		if ( multiple_time_field ) {
 			preludedb_sql_field_t *gmtoff_field, *usec_field;
 
 			ret = preludedb_sql_row_fetch_field(row, cnt + 1, &gmtoff_field);
