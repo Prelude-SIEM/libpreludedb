@@ -385,7 +385,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.11"
+#define LIBPRELUDEDB_VERSION "0.9.12"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
@@ -437,7 +437,7 @@ preludedb_selected_path_t *selected_path
 </FUNCTION>
 <FUNCTION>
 <NAME>preludedb_selected_path_get_flags</NAME>
-<RETURNS>int </RETURNS>
+<RETURNS>preludedb_selected_path_flags_t </RETURNS>
 preludedb_selected_path_t *selected_path
 </FUNCTION>
 <FUNCTION>

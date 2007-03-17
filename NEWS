@@ -1,6 +1,29 @@
+* 2007-03-17, libpreludedb-0.9.12:
+
+        - [sqlite3] Provide case-insensitive regex. 
+
+        - [preludedb-admin] Loading of multiple file and improved reporting. 
+
+        - Provide substring match for AdditionalData value. 
+
+        - Fix insertion issue for ProcessArg and File Linkage. 
+        
+        - Fix a bug when retrieving an empty time field (following retrieved fields 
+          where not the one expected).
+                
+        - When a given SQL function is not implemented by the driver, return a detailed 
+          error message with information concerning the missing function. 
+                   
+        - Implement Python only get_values, get_heartbeat_idents, get_alert_idents. 
+          Return the number of rows as well as the rows in a tupple. 
+                 
+        - Make sure we have an exception to process: fix a crash with Python bindings 
+          upon signal reception. Fix #200. 
+        
+        
 * 2007-02-07, libpreludedb-0.9.11.3:
 	
-	- Fix invalide free() in the SQLite plugin.
+	- Fix invalid free() in the SQLite plugin.
 
 	- Fix preludedb-admin copy/move operations.
 
