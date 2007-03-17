@@ -11,12 +11,12 @@ sed \
         -e 's/ SMALLINT / INT4 /g' \
 	-e 's/ BIGINT UNSIGNED / NUMERIC(20) /g' \
 	-e 's/ BIGINT / INT8 /g' \
-	-e 's/ INT\(EGER\)\? UNSIGNED / INT8 /g' \
-	-e 's/ INT\(EGER\)\? / INT4 /g' \
+	-e 's/ INT\(EGER\)\{0,1\} UNSIGNED / INT8 /g' \
+	-e 's/ INT\(EGER\)\{0,1\} / INT4 /g' \
 	-e 's/DATETIME/TIMESTAMP/' \
 	-e 's/TYPE=InnoDB//' \
 	-e "s/\"\([^\"]*\)\"/'\1'/g" \
 	-e 's/\_parent_type ENUM(\(.*\))/_parent_type VARCHAR(1) CHECK \(_parent_type IN \(\1\)\)/' \
 	-e 's/\(.*\) ENUM(\(.*\))/\1 VARCHAR(32) CHECK \(\1 IN \(\2\)\)/' \
-	-e 's/\([[:lower:]_]\+\)([0-9]\+)/\1/g' \
+	-e 's/\([[:lower:]_]\{1,\}\)([0-9]\{1,\})/\1/g' \
 	$1 
