@@ -40,9 +40,10 @@ AC_DEFUN([gl_INIT],
   gl_cond_libtool=true
   gl_source_base='libmissing'
   gl_FUNC_ALLOCA
-  gl_MINMAX
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
+  gl_STDIO_MODULE_INDICATOR([snprintf])
+  gl_STDIO_H
   gl_FUNC_STRDUP
   gl_STRING_MODULE_INDICATOR([strdup])
   gl_HEADER_STRING_H
@@ -50,9 +51,11 @@ AC_DEFUN([gl_INIT],
   gl_STRING_MODULE_INDICATOR([strndup])
   gl_FUNC_STRNLEN
   gl_STRING_MODULE_INDICATOR([strnlen])
+  gl_HEADER_TIME_H
   gl_TIME_R
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
+  gl_STDIO_MODULE_INDICATOR([vsnprintf])
   gl_XSIZE
   m4_popdef([AC_LIBSOURCES])
   m4_popdef([AC_REPLACE_FUNCS])
@@ -91,27 +94,26 @@ AC_DEFUN([gl_LIBSOURCES],
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/link-warning.h
   lib/alloca_.h
   lib/asnprintf.c
   lib/dummy.c
-  lib/minmax.h
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
   lib/printf-parse.h
   lib/size_max.h
   lib/snprintf.c
-  lib/snprintf.h
+  lib/stdio_.h
   lib/strdup.c
   lib/string_.h
   lib/strndup.c
   lib/strnlen.c
+  lib/time_.h
   lib/time_r.c
-  lib/time_r.h
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/vsnprintf.c
-  lib/vsnprintf.h
   lib/xsize.h
   m4/absolute-header.m4
   m4/alloca.m4
@@ -122,15 +124,16 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/inttypes_h.m4
   m4/longdouble.m4
   m4/longlong.m4
-  m4/minmax.m4
   m4/onceonly_2_57.m4
   m4/size_max.m4
   m4/snprintf.m4
   m4/stdint_h.m4
+  m4/stdio_h.m4
   m4/strdup.m4
   m4/string_h.m4
   m4/strndup.m4
   m4/strnlen.m4
+  m4/time_h.m4
   m4/time_r.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4

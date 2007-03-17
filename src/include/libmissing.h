@@ -27,8 +27,7 @@
 #include "config.h"
 
 #include <string.h>
-#include "snprintf.h"
-#include "time_r.h"
-#include "vsnprintf.h"
+#include <stdio.h>
+#include <time.h>
 
 #endif
