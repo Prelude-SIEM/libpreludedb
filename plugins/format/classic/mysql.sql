@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.5');
+INSERT INTO _format (name, version) VALUES('classic', '14.6');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS Prelude_Alertident;
 
 CREATE TABLE Prelude_Alertident (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _index TINYINT NOT NULL,
+ _index INTEGER NOT NULL,
  _parent_type ENUM('T','C') NOT NULL, # T=ToolAlert C=CorrelationAlert
  alertident VARCHAR(255) NOT NULL,
  analyzerid VARCHAR(255) NULL,
@@ -123,7 +123,7 @@ DROP TABLE IF EXISTS Prelude_Source;
 
 CREATE TABLE Prelude_Source (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _index TINYINT NOT NULL,
+ _index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  spoofed ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL,
@@ -136,7 +136,7 @@ DROP TABLE IF EXISTS Prelude_Target;
 
 CREATE TABLE Prelude_Target (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _index TINYINT NOT NULL,
+ _index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  decoy ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL,
@@ -149,7 +149,7 @@ DROP TABLE IF EXISTS Prelude_File;
 
 CREATE TABLE Prelude_File (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _index TINYINT NOT NULL,
  ident VARCHAR(255) NULL,
  path VARCHAR(255) NOT NULL,
@@ -174,7 +174,7 @@ DROP TABLE IF EXISTS Prelude_FileAccess;
 
 CREATE TABLE Prelude_FileAccess (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
@@ -186,7 +186,7 @@ DROP TABLE IF EXISTS Prelude_FileAccess_Permission;
 
 CREATE TABLE Prelude_FileAccess_Permission (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _parent2_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
@@ -200,7 +200,7 @@ DROP TABLE IF EXISTS Prelude_Linkage;
 
 CREATE TABLE Prelude_Linkage (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
  category ENUM("hard-link","mount-point","reparse-point","shortcut","stream","symbolic-link") NOT NULL,
@@ -215,7 +215,7 @@ DROP TABLE IF EXISTS Prelude_Inode;
 
 CREATE TABLE Prelude_Inode (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  change_time DATETIME NULL,
  change_time_gmtoff INTEGER NULL, 
@@ -233,10 +233,10 @@ DROP TABLE IF EXISTS Prelude_Checksum;
 
 CREATE TABLE Prelude_Checksum (
  _message_ident BIGINT UNSIGNED NOT NULL,
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
- algorithm ENUM("md4", "md5", "sha1", "sha2-256", "sha2-384", "sha2-512", "crc-32", "haval", "tiger", "gost") NOT NULL,
+ algorithm ENUM("MD4", "MD5", "SHA1", "SHA2-256", "SHA2-384", "SHA2-512", "CRC-32", "Haval", "Tiger", "Gost") NOT NULL,
  value VARCHAR(255) NOT NULL,
  checksum_key VARCHAR(255) NULL, # key is a reserved word
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
@@ -349,7 +349,7 @@ DROP TABLE IF EXISTS Prelude_Node;
 CREATE TABLE Prelude_Node (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  category ENUM("unknown","ads","afs","coda","dfs","dns","hosts","kerberos","nds","nis","nisplus","nt","wfw") NULL,
  location VARCHAR(255) NULL,
@@ -367,7 +367,7 @@ DROP TABLE IF EXISTS Prelude_Address;
 CREATE TABLE Prelude_Address (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyser T=Target S=Source H=Heartbeat
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _index TINYINT NOT NULL,
  ident VARCHAR(255) NULL,
  category ENUM("unknown","atm","e-mail","lotus-notes","mac","sna","vm","ipv4-addr","ipv4-addr-hex","ipv4-net","ipv4-net-mask","ipv6-addr","ipv6-addr-hex","ipv6-net","ipv6-net-mask") NOT NULL,
@@ -387,7 +387,7 @@ DROP TABLE IF EXISTS Prelude_User;
 CREATE TABLE Prelude_User (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  category ENUM("unknown","application","os-device") NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
@@ -400,7 +400,7 @@ DROP TABLE IF EXISTS Prelude_UserId;
 CREATE TABLE Prelude_UserId (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T', 'F') NOT NULL, # T=Target User S=Source User F=File Access 
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _parent1_index TINYINT NOT NULL,
  _parent2_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
@@ -419,7 +419,7 @@ DROP TABLE IF EXISTS Prelude_Process;
 CREATE TABLE Prelude_Process (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyzer T=Target S=Source H=Heartbeat
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  name VARCHAR(255) NOT NULL,
  pid INTEGER UNSIGNED NULL,
@@ -434,7 +434,7 @@ DROP TABLE IF EXISTS Prelude_ProcessArg;
 CREATE TABLE Prelude_ProcessArg (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL DEFAULT 'A', # A=Analyser T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _index TINYINT NOT NULL,
  arg VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
@@ -447,7 +447,7 @@ DROP TABLE IF EXISTS Prelude_ProcessEnv;
 CREATE TABLE Prelude_ProcessEnv (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('A','H','S','T') NOT NULL, # A=Analyser T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _index TINYINT NOT NULL,
  env VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
@@ -460,7 +460,7 @@ DROP TABLE IF EXISTS Prelude_Service;
 CREATE TABLE Prelude_Service (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent0_index BIGINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  ident VARCHAR(255) NULL,
  ip_version TINYINT UNSIGNED NULL,
  name VARCHAR(255) NULL,
@@ -482,7 +482,7 @@ DROP TABLE IF EXISTS Prelude_WebService;
 CREATE TABLE Prelude_WebService (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  url VARCHAR(255) NOT NULL,
  cgi VARCHAR(255) NULL,
  http_method VARCHAR(255) NULL,
@@ -496,7 +496,7 @@ DROP TABLE IF EXISTS Prelude_WebServiceArg;
 CREATE TABLE Prelude_WebServiceArg (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  _index TINYINT NOT NULL,
  arg VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
@@ -509,7 +509,7 @@ DROP TABLE IF EXISTS Prelude_SnmpService;
 CREATE TABLE Prelude_SnmpService (
  _message_ident BIGINT UNSIGNED NOT NULL,
  _parent_type ENUM('S','T') NOT NULL, # T=Target S=Source
- _parent0_index TINYINT NOT NULL,
+ _parent0_index SMALLINT NOT NULL,
  snmp_oid VARCHAR(255) NULL, # oid is a reserved word in PostgreSQL 
  message_processing_model INTEGER UNSIGNED NULL,
  security_model INTEGER UNSIGNED NULL,
