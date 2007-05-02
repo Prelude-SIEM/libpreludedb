@@ -5,10 +5,10 @@ sed \
 	-e 's/BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT/BIGSERIAL PRIMARY KEY/' \
 	-e 's/DROP TABLE IF EXISTS/DROP TABLE/' \
 	-e 's/BLOB/BYTEA/' \
-        -e 's/ TINYINT UNSIGNED / INT4 /g' \
+        -e 's/ TINYINT UNSIGNED / INT2 /g' \
         -e 's/ TINYINT / INT2 /g' \
-        -e 's/ SMALLINT UNSIGNED / INT8 /g' \
-        -e 's/ SMALLINT / INT4 /g' \
+        -e 's/ SMALLINT UNSIGNED / INT4 /g' \
+        -e 's/ SMALLINT / INT2 /g' \
 	-e 's/ BIGINT UNSIGNED / NUMERIC(20) /g' \
 	-e 's/ BIGINT / INT8 /g' \
 	-e 's/ INT\(EGER\)\{0,1\} UNSIGNED / INT8 /g' \
