@@ -11,8 +11,8 @@ ALTER TABLE Prelude_Alertident RENAME temp_useless_column to _index;
 
 ALTER TABLE Prelude_Service ADD COLUMN temp_useless_column INT2;
 UPDATE Prelude_Service SET temp_useless_column = CAST(_parent0_index AS INT2);
-ALTER TABLE Prelude_Service DROP COLUMN _index;
-ALTER TABLE Prelude_Service RENAME temp_useless_column to _index;
+ALTER TABLE Prelude_Service DROP COLUMN _parent0_index;
+ALTER TABLE Prelude_Service RENAME temp_useless_column to _parent0_index;
 
 ALTER TABLE Prelude_Service ADD COLUMN temp_useless_column INT2;
 UPDATE Prelude_Service SET temp_useless_column = CAST(ip_version AS INT2);
