@@ -9,7 +9,7 @@ sed \
         -e 's/ TINYINT / INT2 /g' \
         -e 's/ SMALLINT UNSIGNED / INT4 /g' \
         -e 's/ SMALLINT / INT2 /g' \
-	-e 's/ BIGINT UNSIGNED / NUMERIC(20) /g' \
+	-e 's/ BIGINT UNSIGNED / INT8 /g' \
 	-e 's/ BIGINT / INT8 /g' \
 	-e 's/ INT\(EGER\)\{0,1\} UNSIGNED / INT8 /g' \
 	-e 's/ INT\(EGER\)\{0,1\} / INT4 /g' \
