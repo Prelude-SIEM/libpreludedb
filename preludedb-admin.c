@@ -51,8 +51,7 @@ static prelude_bool_t have_query_logging = FALSE;
 static unsigned int limit = -1, offset = -1;
 static uint64_t max_count = 0, cur_count = 0, start_offset = 0;
 
-static idmef_criteria_t *alert_criteria = NULL;
-static idmef_criteria_t *heartbeat_criteria = NULL;
+static idmef_criteria_t *criteria = NULL;
 
 static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
 
@@ -78,6 +77,15 @@ static sig_atomic_t dump_stat = FALSE;
 /*
  *
  */
+ssize_t (*delete_message_from_result_idents)(preludedb_t *db, preludedb_result_idents_t *result) = NULL;
+ssize_t (*delete_message_from_list)(preludedb_t *db, uint64_t *idents, size_t size) = NULL;
+int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **message) = NULL;
+int (*get_message_idents)(preludedb_t *db, idmef_criteria_t *criteria,
+                          int limit, int offset,
+                          preludedb_result_idents_order_t order,
+                          preludedb_result_idents_t **result) = NULL;
+
+
 #define stat_compute(stat, op, count) stat_start(stat); op; stat_end(stat, count)
 
 
@@ -91,7 +99,7 @@ static stat_item_t *stat_item_new(const char *opname)
 
         st->opname = opname;
         prelude_list_add_tail(&stat_list, &st->list);
-        
+
         return st;
 }
 
@@ -103,13 +111,13 @@ static void stat_dump_all(void)
         prelude_list_t *tmp;
         double total_elapsed = 0;
         size_t total_processed = 0;
-        
+
         prelude_list_for_each(&stat_list, tmp) {
                 stat = prelude_list_entry(tmp, stat_item_t, list);
-                
+
                 total_elapsed += stat->elapsed;
                 total_processed = stat->processed;
-                
+
                 if ( max_count )
                         fprintf(stderr, "%" PRELUDE_PRIu64 "/%" PRELUDE_PRIu64, (uint64_t) stat->processed, (uint64_t) max_count);
                 else
@@ -125,9 +133,9 @@ static void stat_dump_all(void)
                 fprintf(stderr, "%" PRELUDE_PRIu64 "/%" PRELUDE_PRIu64, (uint64_t) total_processed, (uint64_t) max_count);
         else
                 fprintf(stderr, "%" PRELUDE_PRIu64, (uint64_t) total_processed);
-        
+
         fprintf(stderr, " events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
-                total_elapsed / 1000000, 
+                total_elapsed / 1000000,
                 (total_elapsed / total_processed) / 1000000,
                 total_processed / (total_elapsed / 1000000)
                 );
@@ -140,9 +148,9 @@ static void stat_end(stat_item_t *stat, size_t count)
 {
         gettimeofday(&end, NULL);
         stat->processed += count;
-                
+
         stat->elapsed += (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
-                
+
         if ( ! dump_stat )
                 return;
 
@@ -159,12 +167,9 @@ static void stat_start(stat_item_t *stat)
 
 
 static void free_global(void)
-{        
-        if ( alert_criteria )
-                idmef_criteria_destroy(alert_criteria);
-        
-        if ( heartbeat_criteria )
-                idmef_criteria_destroy(heartbeat_criteria);
+{
+        if ( criteria )
+                idmef_criteria_destroy(criteria);
 }
 
 
@@ -199,7 +204,7 @@ static void handle_signal(int signo)
          * re-establish signal handler
          */
         signal(signo, handle_signal);
-        
+
         write(STDERR_FILENO, buf, sizeof(buf));
         stop_processing = TRUE;
 }
@@ -208,41 +213,28 @@ static void handle_signal(int signo)
 static int db_error(preludedb_t *db, ssize_t ret, const char *fmt, ...)
 {
         va_list ap;
-        
+
         if ( ret == 0 )
                 return ret;
-        
+
         va_start(ap, fmt);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
-        
+
         fprintf(stderr, ": %s.\n", preludedb_strerror(ret));
-        
-        return ret;
-}
-
-
-
-static int set_alert_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
-{
-        int ret;
-        
-        ret = idmef_criteria_new_from_string(&alert_criteria, optarg);
-        if ( ret < 0 )
-                prelude_perror(ret, "could not load alert criteria");
 
         return ret;
 }
 
 
 
-static int set_heartbeat_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+static int set_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
         int ret;
-        
-        ret = idmef_criteria_new_from_string(&heartbeat_criteria, optarg);
+
+        ret = idmef_criteria_new_from_string(&criteria, optarg);
         if ( ret < 0 )
-                prelude_perror(ret, "could not load heartbeat criteria");
+                prelude_perror(ret, "could not load criteria");
 
         return ret;
 }
@@ -252,7 +244,7 @@ static int set_heartbeat_criteria(prelude_option_t *opt, const char *optarg, pre
 static int set_query_logging(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
         have_query_logging = TRUE;
-        
+
         if ( optarg && strcmp(optarg, "-") != 0 )
                 query_logging = strdup(optarg);
 
@@ -295,13 +287,12 @@ static void cmd_generic_help(void)
         fprintf(stderr, "  name\t: Name of the database.\n");
         fprintf(stderr, "  user\t: User to access the database.\n");
         fprintf(stderr, "  pass\t: Password to access the database.\n\n");
-        
-        fprintf(stderr, "Valid options:\n");       
+
+        fprintf(stderr, "Valid options:\n");
         fprintf(stderr, "  --offset <offset>               : Skip processing until 'offset' events.\n");
         fprintf(stderr, "  --count <count>                 : Process at most count events.\n");
         fprintf(stderr, "  --query-logging [filename]      : Log SQL query to the specified file.\n");
-        fprintf(stderr, "  --alert-criteria <criteria>     : Only process alert matching criteria.\n");
-        fprintf(stderr, "  --heartbeat-criteria <criteria> : Only process heartbeat matching criteria.\n");
+        fprintf(stderr, "  --criteria <criteria>           : Only process alert matching criteria.\n");
         fprintf(stderr, "  --events-per-transaction        : Maximum number of event to process per transaction (default %d).\n",
                 events_per_transaction);
 }
@@ -310,8 +301,8 @@ static void cmd_generic_help(void)
 
 static void cmd_delete_help(void)
 {
-        fprintf(stderr, "Usage  : delete <database> [options]\n");
-        fprintf(stderr, "Example: preludedb-admin delete \"type=mysql name=dbname user=prelude\"\n\n");
+        fprintf(stderr, "Usage  : delete <alert|heartbeat> <database> [options]\n");
+        fprintf(stderr, "Example: preludedb-admin delete alert \"type=mysql name=dbname user=prelude\"\n\n");
 
         fprintf(stderr, "Delete messages from <database>.\n\n");
 
@@ -322,12 +313,12 @@ static void cmd_delete_help(void)
 
 static void cmd_save_help(void)
 {
-        fprintf(stderr, "Usage  : save <database> [filename] [options]\n");
-        fprintf(stderr, "Example: preludedb-admin save \"type=mysql name=dbname user=prelude\" outputfile\n\n");
-        
+        fprintf(stderr, "Usage  : save <alert|heartbeat> <database> [filename] [options]\n");
+        fprintf(stderr, "Example: preludedb-admin save alert \"type=mysql name=dbname user=prelude\" outputfile\n\n");
+
         fprintf(stderr, "Save messages from <database> into [filename].\n");
         fprintf(stderr, "If no filename argument is provided, data will be written to standard output.\n\n");
-        
+
         cmd_generic_help();
 }
 
@@ -340,18 +331,18 @@ static void cmd_load_help(void)
 
         fprintf(stderr, "Load messages from [filename] into <database>.\n");
         fprintf(stderr, "If no filename argument is provided, data will be read from standard input.\n\n");
-        
+
         cmd_generic_help();
 }
 
 
 static void cmd_copy_move_help(prelude_bool_t delete_copied)
 {
-        fprintf(stderr, "Usage  : %s <database1> <database2> [options]\n", delete_copied ? "move" : "copy");
-        fprintf(stderr, "Example: preludedb-admin %s \"type=mysql name=dbname user=prelude\" \"type=pgsql name=dbname user=prelude\"\n\n", delete_copied ? "move" : "copy");
-        
+        fprintf(stderr, "Usage  : %s <alert|heartbeat> <database1> <database2> [options]\n", delete_copied ? "move" : "copy");
+        fprintf(stderr, "Example: preludedb-admin %s alert \"type=mysql name=dbname user=prelude\" \"type=pgsql name=dbname user=prelude\"\n\n", delete_copied ? "move" : "copy");
+
         fprintf(stderr, "%s messages from <database1> to <database2>.\n\n", delete_copied ? "Move" : "Copy");
-        
+
         cmd_generic_help();
 }
 
@@ -359,12 +350,12 @@ static void cmd_copy_move_help(prelude_bool_t delete_copied)
 
 static void cmd_print_help(void)
 {
-        fprintf(stderr, "Usage  : print <database> [filename] [options]\n");
+        fprintf(stderr, "Usage  : print <alert|heartbeat> <database> [filename] [options]\n");
         fprintf(stderr, "Example: preludedb-admin print \"type=mysql name=dbname user=prelude\"\n\n");
-        
+
         fprintf(stderr, "Retrieve and print message from <database>.\n");
         fprintf(stderr, "Data will be written to [filename] if provided.\n\n");
-        
+
         cmd_generic_help();
 }
 
@@ -372,11 +363,12 @@ static void cmd_print_help(void)
 
 static void print_help(char **argv)
 {
-        fprintf(stderr, "Usage: %s <copy|delete|load|print|save> <arguments>\n\n", argv[0]);
-        
+        fprintf(stderr, "Usage: %s <copy|delete|load|move|print|save> <arguments>\n\n", argv[0]);
+
         fprintf(stderr, "\tcopy   - Make a copy of a Prelude database to another database.\n");
         fprintf(stderr, "\tdelete - Delete content of a Prelude database.\n");
         fprintf(stderr, "\tload   - Load a Prelude database from a file.\n");
+        fprintf(stderr, "\tmove   - Move content of a Prelude database to another database.\n");
         fprintf(stderr, "\tprint  - Print message from a Prelude database.\n");
         fprintf(stderr, "\tsave   - Save a Prelude database to a file.\n\n");
 }
@@ -389,35 +381,57 @@ static int setup_generic_options(int *argc, char **argv)
 {
         int ret;
         prelude_string_t *err;
-        
+
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "offset",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_offset, NULL);
-         
+
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "count",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_count, NULL);
-        
+
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "query-logging",
                            NULL, PRELUDE_OPTION_ARGUMENT_OPTIONAL, set_query_logging, NULL);
-        
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "heartbeat-criteria",
-                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_heartbeat_criteria, NULL);
-                
-        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "alert-criteria",
-                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_alert_criteria, NULL);
-        
+
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "criteria",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_criteria, NULL);
+
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "events-per-transaction",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_events_per_transaction, NULL);
 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 'h', "help",
                            NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_help, NULL);
-        
+
         ret = prelude_option_read(NULL, NULL, argc, argv, &err, NULL);
         if ( ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_EOF )
                 fprintf(stderr, "Option error: %s.\n", prelude_strerror(ret));
         else
                 *argc -= (ret - 1);
-        
+
         return ret;
+}
+
+
+static int setup_message_type(const char *type)
+{
+        if ( strcmp(type, "alert") == 0 ) {
+                get_message = preludedb_get_alert;
+                get_message_idents = preludedb_get_alert_idents;
+                delete_message_from_list = preludedb_delete_alert_from_list;
+                delete_message_from_result_idents = preludedb_delete_alert_from_result_idents;
+        }
+
+        else if ( strcmp(type, "heartbeat") == 0 ) {
+                get_message = preludedb_get_heartbeat;
+                get_message_idents = preludedb_get_heartbeat_idents;
+                delete_message_from_list = preludedb_delete_heartbeat_from_list;
+                delete_message_from_result_idents = preludedb_delete_heartbeat_from_result_idents;
+        }
+
+        else {
+                fprintf(stderr, "Invalid IDMEF message type: '%s'.\n", type);
+                return -1;
+        }
+
+        return 0;
 }
 
 
@@ -425,32 +439,32 @@ static int db_new_from_string(preludedb_t **db, const char *str)
 {
         int ret;
         preludedb_sql_t *sql;
-	preludedb_sql_settings_t *sql_settings;
-        
-	ret = preludedb_sql_settings_new_from_string(&sql_settings, str);
-	if ( ret < 0 ) {
+        preludedb_sql_settings_t *sql_settings;
+
+        ret = preludedb_sql_settings_new_from_string(&sql_settings, str);
+        if ( ret < 0 ) {
                 fprintf(stderr, "Error loading database settings: %s.\n", preludedb_strerror(ret));
                 return ret;
         }
-        
-	ret = preludedb_sql_new(&sql, NULL, sql_settings);
-	if ( ret < 0 ) {
+
+        ret = preludedb_sql_new(&sql, NULL, sql_settings);
+        if ( ret < 0 ) {
                 fprintf(stderr, "Error creating database interface: %s.\n", preludedb_strerror(ret));
                 preludedb_sql_settings_destroy(sql_settings);
                 return ret;
         }
-        
-	ret = preludedb_new(db, sql, NULL, NULL, 0);
-	if ( ret < 0 ) {
+
+        ret = preludedb_new(db, sql, NULL, NULL, 0);
+        if ( ret < 0 ) {
                 fprintf(stderr, "could not initialize database '%s': %s\n", str, preludedb_strerror(ret));
-		preludedb_sql_destroy(sql);
-		return ret;
-	}
+                preludedb_sql_destroy(sql);
+                return ret;
+        }
 
         if ( have_query_logging )
                 preludedb_sql_enable_query_logging(sql, query_logging);
-        
-	return 0;
+
+        return 0;
 }
 
 
@@ -461,14 +475,14 @@ static int do_delete(preludedb_t *db, preludedb_result_idents_t *idents,
 {
         ssize_t ret;
 
-        stat_compute(stat_delete, ret = dfunc(db, idents), ret);        
+        stat_compute(stat_delete, ret = dfunc(db, idents), ret);
         if ( ret < 0 ) {
                 ret = db_error(db, ret, "retrieving alert ident failed");
                 return ret;
         }
-        
+
         flush_transaction_if_needed(db, NULL);
-        
+
         return 0;
 }
 
@@ -487,16 +501,8 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
         uint64_t delete_tbl[2];
         size_t delete_index = 0;
         unsigned int dst_event_no = 0;
-        
+
         while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                                
-                if ( start_offset ) {
-                        start_offset--;
-                        continue;
-                }
-                
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
 
                 stat_compute(stat_fetch, ret = get_message(src, ident, &msg), 1);
                 if ( ret < 0 ) {
@@ -504,30 +510,30 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         continue;
                 }
 
-                stat_compute(stat_insert, ret = preludedb_insert_message(dst, msg), 1);                
+                stat_compute(stat_insert, ret = preludedb_insert_message(dst, msg), 1);
                 idmef_message_destroy(msg);
-                
+
                 if ( ret < 0 ) {
                         db_error(dst, ret, "Error inserting message %" PRELUDE_PRIu64 "", ident);
                         return ret;
                 }
-                
+
                 if ( delete ) {
                         delete_tbl[delete_index++] = ident;
 
                         if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
                               delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
-                        
+
                                 stat_compute(stat_delete, count = delete(src, delete_tbl, delete_index), count);
                                 if ( count < 0 ) {
                                         db_error(dst, count, "Error deleting message");
                                         continue;
                                 }
-                        
+
                                 delete_index = 0;
                         }
                 }
-                
+
                 flush_transaction_if_needed(dst, &dst_event_no);
         }
 
@@ -538,7 +544,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         return -1;
                 }
         }
-        
+
         return ret;
 }
 
@@ -552,25 +558,31 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         stat_item_t *stat_delete = NULL;
         stat_item_t *stat_fetch = stat_item_new("fetch");
         stat_item_t *stat_insert = stat_item_new("insert");
-        
+
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc < 3 ) {
                 cmd_copy_move_help(delete_copied);
                 exit(1);
         }
-        
-	ret = db_new_from_string(&src, argv[idx]);
-	if ( ret < 0 )
-		return ret;
-        
-	ret = db_new_from_string(&dst, argv[idx + 1]);
-	if ( ret < 0 )
-		return ret;
-        
-        ret = preludedb_get_alert_idents(src, alert_criteria, limit, offset, 0, &idents);        
+
+        ret = setup_message_type(argv[idx++]);
+        if ( ret < 0 ) {
+                cmd_copy_move_help(delete_copied);
+                exit(1);
+        }
+
+        ret = db_new_from_string(&src, argv[idx]);
+        if ( ret < 0 )
+                return ret;
+
+        ret = db_new_from_string(&dst, argv[idx + 1]);
+        if ( ret < 0 )
+                return ret;
+
+        ret = get_message_idents(src, criteria, limit, offset, 0, &idents);
         if ( ret < 0 )
                 return db_error(src, ret, "retrieving alert idents list failed");
-        
+
         if ( events_per_transaction > 1 ) {
                 preludedb_transaction_start(src);
                 preludedb_transaction_start(dst);
@@ -578,27 +590,14 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
 
         if ( delete_copied )
                 stat_delete = stat_item_new("delete");
-        
+
         if ( ret > 0 ) {
-                ret = copy_iterate(src, dst, idents, preludedb_get_alert,
-                                   (delete_copied) ? preludedb_delete_alert_from_list : NULL,
+                ret = copy_iterate(src, dst, idents, get_message,
+                                   (delete_copied) ? delete_message_from_list : NULL,
                                    stat_fetch, stat_insert, stat_delete);
                 preludedb_result_idents_destroy(idents);
                 if ( ret < 0 )
                         goto err;
-        }
-        
-        ret = preludedb_get_heartbeat_idents(src, heartbeat_criteria, limit, offset, 0, &idents);
-	if ( ret < 0 ) {
-                ret = db_error(src, ret, "retrieving heartbeat idents list failed");
-                goto err;
-        }
-        
-        if ( ret > 0 ) {
-                ret = copy_iterate(src, dst, idents, preludedb_get_heartbeat,
-                                   (delete_copied) ? preludedb_delete_heartbeat_from_list : NULL,
-                                   stat_fetch, stat_insert, stat_delete);
-                preludedb_result_idents_destroy(idents);
         }
 
  err:
@@ -611,11 +610,11 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
                         preludedb_transaction_end(dst);
                 }
         }
-        
+
         preludedb_destroy(src);
         preludedb_destroy(dst);
-        
-	return ret;
+
+        return ret;
 }
 
 
@@ -641,49 +640,39 @@ static int cmd_delete(int argc, char **argv)
         stat_item_t *stat_delete = stat_item_new("delete");
 
         idx = setup_generic_options(&argc, argv);
-        if ( idx < 0 || argc != 2 ) {
+        if ( idx < 0 || argc != 3 ) {
                 cmd_delete_help();
                 exit(1);
         }
 
-        if ( ! alert_criteria && ! heartbeat_criteria ) {
-                fprintf(stderr, "No alert or heartbeat criteria provided for deletion.\n");
+        ret = setup_message_type(argv[idx++]);
+        if ( ret < 0 ) {
+                cmd_delete_help();
+                exit(1);
+        }
+
+        if ( ! criteria ) {
+                fprintf(stderr, "No criteria provided for deletion.\n");
                 return -1;
         }
-        
-	ret = db_new_from_string(&db, argv[idx]);
-	if ( ret < 0 )
-		return ret;
+
+        ret = db_new_from_string(&db, argv[idx]);
+        if ( ret < 0 )
+                return ret;
 
         if ( events_per_transaction > 1 )
                 preludedb_transaction_start(db);
 
-        if ( alert_criteria ) {
-                ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
-                if ( ret < 0 ) {
-                        ret = db_error(db, ret, "retrieving alert ident failed");
-                        goto err;
-                }
-                
-                if ( ret > 0 ) {
-                        ret = do_delete(db, idents, preludedb_delete_alert_from_result_idents, stat_delete);
-                        if ( ret < 0 )
-                                goto err;
-                }
+        ret = get_message_idents(db, criteria, limit, offset, 0, &idents);
+        if ( ret < 0 ) {
+                ret = db_error(db, ret, "retrieving alert ident failed");
+                goto err;
         }
 
-        if ( heartbeat_criteria ) {
-                ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
-                if ( ret < 0 ) {
-                        ret = db_error(db, ret, "retrieving heartbeat ident failed");
+        if ( ret > 0 ) {
+                ret = do_delete(db, idents, delete_message_from_result_idents, stat_delete);
+                if ( ret < 0 )
                         goto err;
-                }
-                
-                if ( ret > 0 ) {
-                        ret = do_delete(db, idents, preludedb_delete_heartbeat_from_result_idents, stat_delete);
-                        if ( ret < 0 )
-                                goto err;
-                }
         }
 
  err:
@@ -693,7 +682,7 @@ static int cmd_delete(int argc, char **argv)
                 else
                         preludedb_transaction_end(db);
         }
-        
+
         preludedb_destroy(db);
         return ret;
 }
@@ -720,26 +709,18 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
         int ret = 0;
         uint64_t ident;
         idmef_message_t *message;
-        
-	while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                
-                if ( start_offset ) {
-                        start_offset--;
-                        continue;
-                }
 
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
-                                
+        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+
                 stat_compute(stat_fetch, ret = get_message(db, ident, &message), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
-                
+
                 stat_compute(stat_save, ret = idmef_message_write(message, msgbuf); prelude_msgbuf_mark_end(msgbuf), 1);
                 idmef_message_destroy(message);
-                
+
                 if ( ret < 0 ) {
                         prelude_perror(ret, "Error writing message %" PRELUDE_PRIu64 " to disk", ident);
                         continue;
@@ -763,23 +744,29 @@ static int cmd_save(int argc, char **argv)
         stat_item_t *stat_save = stat_item_new("save");
 
         idx = setup_generic_options(&argc, argv);
-        if ( idx < 0 || argc < 2 ) {
+        if ( idx < 0 || argc < 3 ) {
                 cmd_save_help();
                 exit(1);
         }
-        
-        ret = db_new_from_string(&db, argv[idx]);
-	if ( ret < 0 )
-		return ret;
 
-        if ( argc > 2 && *argv[idx + 1] != '-' ) {
+        ret = setup_message_type(argv[idx++]);
+        if ( ret < 0 ) {
+                cmd_save_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx]);
+        if ( ret < 0 )
+                return ret;
+
+        if ( argc > 3 && *argv[idx + 1] != '-' ) {
                 fd = fopen(argv[idx + 1], "w");
                 if ( ! fd ) {
                         fprintf(stderr, "could not open '%s' for writing: %s.\n", argv[idx + 1], strerror(errno));
                         return -1;
                 }
         }
-        
+
         ret = prelude_io_new(&io);
         if ( ret < 0 )
                 return ret;
@@ -792,32 +779,23 @@ static int cmd_save(int argc, char **argv)
 
         prelude_msgbuf_set_data(msgbuf, io);
         prelude_msgbuf_set_callback(msgbuf, save_msg);
-                
-        ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
-	if ( ret < 0 )
+
+        ret = get_message_idents(db, criteria, limit, offset, 0, &idents);
+        if ( ret < 0 )
                 return ret;
 
         if ( ret > 0 ) {
-                save_iterate_message(db, idents, msgbuf, preludedb_get_alert, stat_fetch, stat_save);
+                save_iterate_message(db, idents, msgbuf, get_message, stat_fetch, stat_save);
                 preludedb_result_idents_destroy(idents);
         }
-        
-        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
-	if ( ret < 0 )
-		return ret;
 
-        if ( ret > 0 ) {
-                save_iterate_message(db, idents, msgbuf, preludedb_get_heartbeat, stat_fetch, stat_save);
-                preludedb_result_idents_destroy(idents);
-        }
-        
         prelude_msgbuf_destroy(msgbuf);
 
         if ( fd != stdout )
                 prelude_io_close(io);
-        
+
         preludedb_destroy(db);
-        
+
         return ret;
 }
 
@@ -829,19 +807,20 @@ static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_f
         prelude_msg_t *msg;
         idmef_message_t *idmef;
         unsigned int event_no = 0;
-        
-        while ( ! stop_processing ) {                
+
+        while ( ! stop_processing ) {
                 msg = NULL;
 
-                ret = prelude_msg_read(&msg, io);                
+                ret = prelude_msg_read(&msg, io);
                 if ( ret < 0 ) {
                         if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF )
                                 ret = 0;
                         break;
                 }
-                                
+
                 if ( start_offset ) {
                         start_offset--;
+                        prelude_msg_destroy(msg);
                         continue;
                 }
 
@@ -862,41 +841,51 @@ static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_f
                         break;
                 }
 
+                if ( criteria) {
+                        ret = idmef_criteria_match(criteria, idmef);
+                        if ( ret != 0 ) {
+                                idmef_message_destroy(idmef);
+                                prelude_msg_destroy(msg);
+                                continue;
+                        }
+                }
+
                 stat_compute(stat_insert, ret = preludedb_insert_message(db, idmef), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "error inserting IDMEF message");
                         break;
                 }
-                
+
                 idmef_message_destroy(idmef);
                 prelude_msg_destroy(msg);
 
                 flush_transaction_if_needed(db, &event_no);
         }
-        
-        return ret;   
+
+        return ret;
 }
 
 
 static int cmd_load(int argc, char **argv)
 {
-        int ret, idx;
         FILE *fd = stdin;
         preludedb_t *db;
         prelude_io_t *io;
+        int ret, idx, argc2;
         stat_item_t *stat_fetch = stat_item_new("fetch");
         stat_item_t *stat_insert = stat_item_new("insert");
-        
-        idx = setup_generic_options(&argc, argv);
+
+        argc2 = argc;
+        idx = setup_generic_options(&argc2, argv);
         if ( idx < 0 || argc < 2 ) {
                 cmd_load_help();
                 exit(1);
         }
 
         ret = db_new_from_string(&db, argv[idx++]);
-	if ( ret < 0 )
-		return ret;
-        
+        if ( ret < 0 )
+                return ret;
+
         ret = prelude_io_new(&io);
         if ( ret < 0 )
                 return ret;
@@ -905,24 +894,24 @@ static int cmd_load(int argc, char **argv)
                 preludedb_transaction_start(db);
 
         while ( idx < argc ) {
-        
-                fd = (strcmp(argv[idx], "-") == 0) ? stdin : fopen(argv[idx], "r");                
+
+                fd = (strcmp(argv[idx], "-") == 0) ? stdin : fopen(argv[idx], "r");
                 if ( ! fd ) {
                         fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx], strerror(errno));
                         return -1;
                 }
-                
+
                 prelude_io_set_file_io(io, fd);
-                
+
                 ret = load_from_file(db, io, stat_fetch, stat_insert);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error reading reading '%s': %s.\n", argv[idx], prelude_strerror(ret));
                         break;
                 }
-                         
+
                 if ( fd != stdin )
                         prelude_io_close(io);
-                
+
                 idx++;
         }
 
@@ -932,7 +921,7 @@ static int cmd_load(int argc, char **argv)
                 else
                         preludedb_transaction_end(db);
         }
-        
+
         prelude_io_destroy(io);
         preludedb_destroy(db);
 
@@ -948,26 +937,18 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
         int ret = 0;
         uint64_t ident;
         idmef_message_t *idmef;
-        
-	while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
-                                
-                if ( start_offset ) {
-                        start_offset--;
-                        continue;
-                }
 
-                if ( cur_count++ >= max_count && max_count )
-                        return 0;
+        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
 
                 stat_compute(stat_fetch, ret = get_message(db, ident, &idmef), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
                         continue;
                 }
-                
-                stat_compute(stat_print, idmef_message_print(idmef, io), 1);                
+
+                stat_compute(stat_print, idmef_message_print(idmef, io), 1);
                 idmef_message_destroy(idmef);
-                
+
                 if ( ret < 0 ) {
                         prelude_perror(ret, "Error writing message %" PRELUDE_PRIu64 " to disk", ident);
                         continue;
@@ -988,53 +969,50 @@ static int cmd_print(int argc, char **argv)
         preludedb_result_idents_t *idents;
         stat_item_t *stat_fetch = stat_item_new("fetch");
         stat_item_t *stat_print = stat_item_new("print");
-        
-        idx = setup_generic_options(&argc, argv);        
-        if ( idx < 0 || argc < 2 ) {
+
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 3 ) {
                 cmd_print_help();
                 exit(1);
         }
-        
-        ret = db_new_from_string(&db, argv[idx]);
-	if ( ret < 0 )
-		return ret;
 
-        if ( argc > 2 && *argv[idx + 1] != '-' ) {
-                                
+        ret = setup_message_type(argv[idx++]);
+        if ( ret < 0 ) {
+                cmd_print_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx]);
+        if ( ret < 0 )
+                return ret;
+
+        if ( argc > 3 && *argv[idx + 1] != '-' ) {
+
                 fd = fopen(argv[idx + 1], "w");
                 if ( ! fd ) {
                         fprintf(stderr, "could not open '%s' for reading: %s.\n", argv[idx + 1], strerror(errno));
                         return -1;
                 }
         }
-        
+
         ret = prelude_io_new(&io);
         if ( ret < 0 )
                 return ret;
 
         prelude_io_set_file_io(io, fd);
 
-        ret = preludedb_get_alert_idents(db, alert_criteria, limit, offset, 0, &idents);
-	if ( ret < 0 )
+        ret = get_message_idents(db, criteria, limit, offset, 0, &idents);
+        if ( ret < 0 )
                 return db_error(db, ret, "retrieving alert ident failed");
-        
-        if ( ret > 0 ) {
-                print_iterate_message(db, idents, io, preludedb_get_alert, stat_fetch, stat_print);
-                preludedb_result_idents_destroy(idents);
-        }
-        
-        ret = preludedb_get_heartbeat_idents(db, heartbeat_criteria, limit, offset, 0, &idents);
-	if ( ret < 0 )
-                return db_error(db, ret, "retrieving heartbeat ident failed");
 
         if ( ret > 0 ) {
-                print_iterate_message(db, idents, io, preludedb_get_heartbeat, stat_fetch, stat_print);
+                print_iterate_message(db, idents, io, get_message, stat_fetch, stat_print);
                 preludedb_result_idents_destroy(idents);
         }
 
         if ( fd != stdout )
                 prelude_io_close(io);
-        
+
         prelude_io_destroy(io);
         preludedb_destroy(db);
 
@@ -1045,13 +1023,13 @@ static int cmd_print(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-	int ret;
+        int ret;
         size_t i;
         const struct {
                 char *name;
                 int (*run)(int argc, char **argv);
         } commands[] = {
-		{ "copy", cmd_copy     },
+                { "copy", cmd_copy     },
                 { "delete", cmd_delete },
                 { "load", cmd_load     },
                 { "move", cmd_move     },
@@ -1063,8 +1041,8 @@ int main(int argc, char **argv)
         signal(SIGTERM, handle_signal);
         signal(SIGUSR1, handle_stats_signal);
         signal(SIGQUIT, handle_stats_signal);
-        
-	ret = preludedb_init();
+
+        ret = preludedb_init();
         if ( ret < 0 ) {
                 prelude_perror(ret, "error initializing libpreludedb");
                 return ret;
@@ -1074,13 +1052,14 @@ int main(int argc, char **argv)
                 print_help(argv);
                 return -1;
         }
-        
-	for ( i = 0; i < sizeof(commands) / sizeof(*commands); i++ ) {
-		if ( strcmp(argv[1], commands[i].name) != 0 )
+
+        for ( i = 0; i < sizeof(commands) / sizeof(*commands); i++ ) {
+                if ( strcmp(argv[1], commands[i].name) != 0 )
                         continue;
-                
+
                 ret = commands[i].run(--argc, &argv[1]);
-                if ( (ret < 0 || stop_processing) && cur_count > 0 ) 
+
+                if ( (ret < 0 || stop_processing) && cur_count > 0 )
                         fprintf(stderr, "%s at transaction %" PRELUDE_PRIu64 ". Use --offset %" PRELUDE_PRIu64 " to resume operation.\n",
                                 (ret < 0) ? "Error"  : "Interrupted by signal", cur_count, (offset == -1) ? cur_count : cur_count + offset);
 
@@ -1089,11 +1068,11 @@ int main(int argc, char **argv)
 
                 free_global();
                 preludedb_deinit();
-                
+
                 return ret;
         }
-        
-	fprintf(stderr, "Unknown command: %s.\n", argv[1]);
+
+        fprintf(stderr, "Unknown command: %s.\n", argv[1]);
         print_help(argv);
 
         free_global();
