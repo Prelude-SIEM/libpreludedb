@@ -1,6 +1,6 @@
 BEGIN;
 
-UPDATE _format SET version="14.5";
+UPDATE _format SET version='14.5';
 ALTER TABLE Prelude_SnmpService RENAME TO Prelude_SnmpServiceOld;
 
 CREATE TABLE Prelude_SnmpService (
