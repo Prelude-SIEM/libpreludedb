@@ -36,16 +36,16 @@
  extern "C" {
 #endif
 
-         
+
 typedef struct preludedb preludedb_t;
 
 typedef struct preludedb_result_idents preludedb_result_idents_t;
 typedef struct preludedb_result_values preludedb_result_values_t;
 
 typedef enum {
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE = 0,
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC = 1,
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC = 2
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE = 0,
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC = 1,
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC = 2
 } preludedb_result_idents_order_t;
 
 
@@ -76,13 +76,13 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message);
 
 int preludedb_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
-			       int limit, int offset,
-			       preludedb_result_idents_order_t order,
-			       preludedb_result_idents_t **result);
+                               int limit, int offset,
+                               preludedb_result_idents_order_t order,
+                               preludedb_result_idents_t **result);
 int preludedb_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
-				   int limit, int offset,
-				   preludedb_result_idents_order_t order,
-				   preludedb_result_idents_t **result);
+                                   int limit, int offset,
+                                   preludedb_result_idents_order_t order,
+                                   preludedb_result_idents_t **result);
 
 int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message);
@@ -92,7 +92,7 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident);
 ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size_t size);
 
 ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result);
-         
+
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident);
 
 ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size);
@@ -100,18 +100,18 @@ ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, 
 ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result);
 
 int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selection,
-			 idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
-			 preludedb_result_values_t **result);
+                         idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
+                         preludedb_result_values_t **result);
 
 
 int preludedb_transaction_start(preludedb_t *db);
-         
+
 
 int preludedb_transaction_end(preludedb_t *db);
-         
+
 
 int preludedb_transaction_abort(preludedb_t *db);
-         
+
 
 #ifdef __cplusplus
   }

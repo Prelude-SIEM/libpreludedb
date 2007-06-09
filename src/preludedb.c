@@ -45,20 +45,20 @@
 
 
 struct preludedb {
-	char *format_version;
-	preludedb_sql_t *sql;
-	preludedb_plugin_format_t *plugin;
+        char *format_version;
+        preludedb_sql_t *sql;
+        preludedb_plugin_format_t *plugin;
 };
 
 struct preludedb_result_idents {
-	preludedb_t *db;
-	void *res;
+        preludedb_t *db;
+        void *res;
 };
 
 struct preludedb_result_values {
-	preludedb_t *db;
-	preludedb_path_selection_t *selection;
-	void *res;
+        preludedb_t *db;
+        preludedb_path_selection_t *selection;
+        void *res;
 };
 
 
@@ -80,36 +80,36 @@ static PRELUDE_LIST(plugin_format_list);
 
 int preludedb_init(void)
 {
-	int ret;
+        int ret;
 
-	if ( libpreludedb_refcount++ > 0 )
-		return 0;
-        
-	ret = prelude_init(NULL, NULL);
-	if ( ret < 0 )
-		return ret;
+        if ( libpreludedb_refcount++ > 0 )
+                return 0;
 
-	ret = access(FORMAT_PLUGIN_DIR, F_OK);
-	if ( ret < 0 )
+        ret = prelude_init(NULL, NULL);
+        if ( ret < 0 )
+                return ret;
+
+        ret = access(FORMAT_PLUGIN_DIR, F_OK);
+        if ( ret < 0 )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
                                                "could not access format plugin directory '%s'", FORMAT_PLUGIN_DIR);
-        
-	ret = prelude_plugin_load_from_dir(&plugin_format_list, FORMAT_PLUGIN_DIR,
-                                           PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
-	if ( ret < 0 )
-		return ret;
 
-	ret = access(SQL_PLUGIN_DIR, F_OK);
-	if ( ret < 0 )
+        ret = prelude_plugin_load_from_dir(&plugin_format_list, FORMAT_PLUGIN_DIR,
+                                           PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
+        if ( ret < 0 )
+                return ret;
+
+        ret = access(SQL_PLUGIN_DIR, F_OK);
+        if ( ret < 0 )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN,
                                                "could not access sql plugin directory '%s'", SQL_PLUGIN_DIR);
 
-	ret = prelude_plugin_load_from_dir(&_sql_plugin_list, SQL_PLUGIN_DIR,
+        ret = prelude_plugin_load_from_dir(&_sql_plugin_list, SQL_PLUGIN_DIR,
                                            PRELUDEDB_PLUGIN_SYMBOL, NULL, NULL, NULL);
-	if ( ret < 0 )
-		return ret;
+        if ( ret < 0 )
+                return ret;
 
-	return 0;
+        return 0;
 }
 
 
@@ -118,68 +118,68 @@ void preludedb_deinit(void)
 {
         prelude_list_t *iter;
         prelude_plugin_generic_t *pl;
-        
-	if ( --libpreludedb_refcount > 0 )
-		return;
-                
+
+        if ( --libpreludedb_refcount > 0 )
+                return;
+
         iter = NULL;
         while ( (pl = prelude_plugin_get_next(&_sql_plugin_list, &iter)) ) {
                 prelude_plugin_unload(pl);
                 free(pl);
         }
-        
+
         iter = NULL;
         while ( (pl = prelude_plugin_get_next(&plugin_format_list, &iter)) ) {
                 prelude_plugin_unload(pl);
                 free(pl);
         }
-        
-	prelude_deinit();
+
+        prelude_deinit();
 }
 
 
 
 static int preludedb_autodetect_format(preludedb_t *db)
 {
-	preludedb_sql_table_t *table;
-	preludedb_sql_row_t *row;
-	preludedb_sql_field_t *format_name;
-	preludedb_sql_field_t *format_version;
-	int ret;
+        preludedb_sql_table_t *table;
+        preludedb_sql_row_t *row;
+        preludedb_sql_field_t *format_name;
+        preludedb_sql_field_t *format_version;
+        int ret;
 
-	ret = preludedb_sql_query(db->sql, "SELECT name, version from _format", &table);
-	if ( ret <= 0 )
-		return (ret < 0) ? ret : -1;
+        ret = preludedb_sql_query(db->sql, "SELECT name, version from _format", &table);
+        if ( ret <= 0 )
+                return (ret < 0) ? ret : -1;
 
-	ret = preludedb_sql_table_fetch_row(table, &row);
-	if ( ret < 0 )
-		goto error;
+        ret = preludedb_sql_table_fetch_row(table, &row);
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_sql_row_fetch_field(row, 0, &format_name);
-	if ( ret < 0 )
-		goto error;
+        ret = preludedb_sql_row_fetch_field(row, 0, &format_name);
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_set_format(db, preludedb_sql_field_get_value(format_name));
-	if ( ret < 0 )
-		goto error;
+        ret = preludedb_set_format(db, preludedb_sql_field_get_value(format_name));
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_sql_row_fetch_field(row, 1, &format_version);
-	if ( ret < 0 )
-		goto error;
+        ret = preludedb_sql_row_fetch_field(row, 1, &format_version);
+        if ( ret < 0 )
+                goto error;
 
-	ret = db->plugin->check_schema_version(preludedb_sql_field_get_value(format_version));
-	if ( ret < 0 )
-		goto error;
+        ret = db->plugin->check_schema_version(preludedb_sql_field_get_value(format_version));
+        if ( ret < 0 )
+                goto error;
 
-	db->format_version = strdup(preludedb_sql_field_get_value(format_version));
-	if ( ! db->format_version )
-		ret = prelude_error_from_errno(errno);
+        db->format_version = strdup(preludedb_sql_field_get_value(format_version));
+        if ( ! db->format_version )
+                ret = prelude_error_from_errno(errno);
 
  error:
-	preludedb_sql_table_destroy(table);
+        preludedb_sql_table_destroy(table);
 
-	return ret;	
-	
+        return ret;
+
 }
 
 
@@ -191,41 +191,41 @@ static int preludedb_autodetect_format(preludedb_t *db)
  * @format_name: Format name of the underlying database, if NULL the format will be automatically detected
  * @errbuf: Buffer that will be set to an error message if an error occur.
  * @size: size of @errbuf.
- * 
+ *
  * This function initialize the @db object and detect the format of the underlying database if no format name
  * is given.
- * 
+ *
  * Returns: 0 on success or a negative value if an error occur.
  */
 int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size)
 {
-	int ret;
-        
-	*db = calloc(1, sizeof (**db));
-	if ( ! *db ) {
-		ret = preludedb_error_from_errno(errno);
-		snprintf(errbuf, size, "%s", preludedb_strerror(ret));
-		return ret;
-	}
+        int ret;
 
-	(*db)->sql = sql;
+        *db = calloc(1, sizeof (**db));
+        if ( ! *db ) {
+                ret = preludedb_error_from_errno(errno);
+                snprintf(errbuf, size, "%s", preludedb_strerror(ret));
+                return ret;
+        }
 
-	if ( format_name )
-		ret = preludedb_set_format(*db, format_name);
-	else
-		ret = preludedb_autodetect_format(*db);
+        (*db)->sql = sql;
 
-	if ( ret < 0 ) {
+        if ( format_name )
+                ret = preludedb_set_format(*db, format_name);
+        else
+                ret = preludedb_autodetect_format(*db);
+
+        if ( ret < 0 ) {
                 if ( errbuf )
                         preludedb_get_error(*db, ret, errbuf, size);
 
-		if ( (*db)->format_version )
-			free((*db)->format_version);
+                if ( (*db)->format_version )
+                        free((*db)->format_version);
 
                 free(*db);
-	}
+        }
 
-	return ret;
+        return ret;
 }
 
 
@@ -238,9 +238,9 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
  */
 void preludedb_destroy(preludedb_t *db)
 {
-	preludedb_sql_destroy(db->sql);
-	free(db->format_version);
-	free(db);
+        preludedb_sql_destroy(db->sql);
+        free(db->format_version);
+        free(db);
 }
 
 
@@ -253,7 +253,7 @@ void preludedb_destroy(preludedb_t *db)
  */
 const char *preludedb_get_format_name(preludedb_t *db)
 {
-	return prelude_plugin_get_name(db->plugin);
+        return prelude_plugin_get_name(db->plugin);
 }
 
 
@@ -266,7 +266,7 @@ const char *preludedb_get_format_name(preludedb_t *db)
  */
 const char *preludedb_get_format_version(preludedb_t *db)
 {
-	return db->format_version;
+        return db->format_version;
 }
 
 
@@ -282,12 +282,12 @@ const char *preludedb_get_format_version(preludedb_t *db)
  */
 int preludedb_set_format(preludedb_t *db, const char *format_name)
 {
-	db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&plugin_format_list, format_name);
-	if ( ! db->plugin )
-		return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
+        db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&plugin_format_list, format_name);
+        if ( ! db->plugin )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
                                                "could not find format plugin '%s'", format_name);
-	
-	return 0;
+
+        return 0;
 }
 
 
@@ -295,12 +295,12 @@ int preludedb_set_format(preludedb_t *db, const char *format_name)
 /**
  * preludedb_get_sql:
  * @db: Pointer to a db object.
- * 
+ *
  * Returns: a pointer to the underlying sql object.
  */
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 {
-	return db->sql;
+        return db->sql;
 }
 
 
@@ -319,16 +319,16 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
  */
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size)
 {
-	int ret;
+        int ret;
         preludedb_error_t tmp;
 
         tmp = preludedb_error(prelude_error_get_code(error));
-        
+
         ret = snprintf(errbuf, size, "%s: %s", preludedb_strerror(tmp), preludedb_strerror(error));
         if ( ret < 0 || ret >= size )
                 return NULL;
-        
-	return errbuf;
+
+        return errbuf;
 }
 
 
@@ -339,12 +339,12 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
  * @message: Pointer to an IDMEF message.
  *
  * Insert an IDMEF message into the database.
- * 
+ *
  * Returns: 0 on success, or a negative value if an error occur.
  */
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 {
-	return db->plugin->insert_message(db->sql, message);
+        return db->plugin->insert_message(db->sql, message);
 }
 
 
@@ -357,8 +357,8 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
  */
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 {
-	result->db->plugin->destroy_message_idents_resource(result->res);
-	free(result);
+        result->db->plugin->destroy_message_idents_resource(result->res);
+        free(result);
 }
 
 
@@ -366,7 +366,7 @@ void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
  * preludedb_result_idents_get_next:
  * @result: Pointer to an idents result object.
  * @ident: Pointer to an ident where the next ident will be stored.
- * 
+ *
  * Retrieve the next ident from the idents result object.
  *
  * Returns: 1 if an ident is available, 0 if there is no more idents available or
@@ -374,7 +374,7 @@ void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
  */
 int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident)
 {
-	return result->db->plugin->get_next_message_ident(result->res, ident);
+        return result->db->plugin->get_next_message_ident(result->res, ident);
 }
 
 
@@ -386,8 +386,8 @@ int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t
  */
 void preludedb_result_values_destroy(preludedb_result_values_t *result)
 {
-	result->db->plugin->destroy_values_resource(result->res);
-	free(result);
+        result->db->plugin->destroy_values_resource(result->res);
+        free(result);
 }
 
 
@@ -396,7 +396,7 @@ void preludedb_result_values_destroy(preludedb_result_values_t *result)
  * preludedb_result_values_get_next:
  * @result: Pointer to a values result object.
  * @values: Pointer to a values array where the next row of values will be stored.
- * 
+ *
  * Retrieve the next values row from the values result object.
  *
  * Returns: the number of returned values, 0 if there are no values or a negative value if an
@@ -404,35 +404,35 @@ void preludedb_result_values_destroy(preludedb_result_values_t *result)
  */
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values)
 {
-	return result->db->plugin->get_next_values(result->res, result->selection, values);
+        return result->db->plugin->get_next_values(result->res, result->selection, values);
 }
 
 
 
 static int
 preludedb_get_message_idents(preludedb_t *db,
-			     idmef_criteria_t *criteria,
-			     int (*get_idents)(preludedb_sql_t *sql, idmef_criteria_t *criteria,
-					       int limit, int offset,
-					       preludedb_result_idents_order_t order,
-					       void **res),
-			     int limit, int offset,
-			     preludedb_result_idents_order_t order,
-			     preludedb_result_idents_t **result)
+                             idmef_criteria_t *criteria,
+                             int (*get_idents)(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                                               int limit, int offset,
+                                               preludedb_result_idents_order_t order,
+                                               void **res),
+                             int limit, int offset,
+                             preludedb_result_idents_order_t order,
+                             preludedb_result_idents_t **result)
 {
-	int ret;
+        int ret;
 
-	*result = calloc(1, sizeof(**result));
-	if ( ! *result )
-		return preludedb_error_from_errno(errno);
+        *result = calloc(1, sizeof(**result));
+        if ( ! *result )
+                return preludedb_error_from_errno(errno);
 
-	(*result)->db = db;
+        (*result)->db = db;
 
-	ret = get_idents(db->sql, criteria, limit, offset, order, &(*result)->res);
-	if ( ret <= 0 )
-		free(*result);
+        ret = get_idents(db->sql, criteria, limit, offset, order, &(*result)->res);
+        if ( ret <= 0 )
+                free(*result);
 
-	return ret;
+        return ret;
 }
 
 
@@ -449,11 +449,11 @@ preludedb_get_message_idents(preludedb_t *db,
  * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_alert_idents(preludedb_t *db,
-			       idmef_criteria_t *criteria, int limit, int offset,
-			       preludedb_result_idents_order_t order,
-			       preludedb_result_idents_t **result)
+                               idmef_criteria_t *criteria, int limit, int offset,
+                               preludedb_result_idents_order_t order,
+                               preludedb_result_idents_t **result)
 {
-	return preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
+        return preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
 }
 
 
@@ -470,11 +470,11 @@ int preludedb_get_alert_idents(preludedb_t *db,
  * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_heartbeat_idents(preludedb_t *db,
-				   idmef_criteria_t *criteria, int limit, int offset,
-				   preludedb_result_idents_order_t order,
-				   preludedb_result_idents_t **result)
+                                   idmef_criteria_t *criteria, int limit, int offset,
+                                   preludedb_result_idents_order_t order,
+                                   preludedb_result_idents_t **result)
 {
-	return preludedb_get_message_idents(db, criteria, db->plugin->get_heartbeat_idents, limit, offset, order, result);
+        return preludedb_get_message_idents(db, criteria, db->plugin->get_heartbeat_idents, limit, offset, order, result);
 }
 
 
@@ -489,7 +489,7 @@ int preludedb_get_heartbeat_idents(preludedb_t *db,
  */
 int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
-	return db->plugin->get_alert(db->sql, ident, message);
+        return db->plugin->get_alert(db->sql, ident, message);
 }
 
 
@@ -504,7 +504,7 @@ int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **messa
  */
 int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
-	return db->plugin->get_heartbeat(db->sql, ident, message);
+        return db->plugin->get_heartbeat(db->sql, ident, message);
 }
 
 
@@ -519,7 +519,7 @@ int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **m
  */
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 {
-	return db->plugin->delete_alert(db->sql, ident);
+        return db->plugin->delete_alert(db->sql, ident);
 }
 
 
@@ -537,8 +537,8 @@ ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_
 {
         if ( size == 0 )
                 return 0;
-        
-	return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, ident, size);
+
+        return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, ident, size);
 }
 
 
@@ -552,7 +552,7 @@ ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_
  * Returns: the number of alert deleted on success, or a negative value if an error occur.
  */
 ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
-{        
+{
         return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db->sql, result);
 }
 
@@ -569,7 +569,7 @@ ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_res
  */
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
-	return db->plugin->delete_heartbeat(db->sql, ident);
+        return db->plugin->delete_heartbeat(db->sql, ident);
 }
 
 
@@ -587,7 +587,7 @@ ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, 
 {
         if ( size == 0 )
                 return 0;
-        
+
         return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, size);
 }
 
@@ -622,26 +622,26 @@ ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb
  * Returns: the number of result or a negative value if an error occured.
  */
 int preludedb_get_values(preludedb_t *db,
-			 preludedb_path_selection_t *path_selection,
-			 idmef_criteria_t *criteria,
-			 prelude_bool_t distinct,
-			 int limit, int offset,
-			 preludedb_result_values_t **result)
+                         preludedb_path_selection_t *path_selection,
+                         idmef_criteria_t *criteria,
+                         prelude_bool_t distinct,
+                         int limit, int offset,
+                         preludedb_result_values_t **result)
 {
-	int ret;
+        int ret;
 
-	*result = calloc(1, sizeof (**result));
-	if ( ! *result )
-		return preludedb_error_from_errno(errno);
+        *result = calloc(1, sizeof (**result));
+        if ( ! *result )
+                return preludedb_error_from_errno(errno);
 
-	(*result)->db = db;
-	(*result)->selection = path_selection;
+        (*result)->db = db;
+        (*result)->selection = path_selection;
 
-	ret = db->plugin->get_values(db->sql, path_selection, criteria, distinct, limit, offset, &(*result)->res);
-	if ( ret <= 0 )
-		free(*result);
+        ret = db->plugin->get_values(db->sql, path_selection, criteria, distinct, limit, offset, &(*result)->res);
+        if ( ret <= 0 )
+                free(*result);
 
-	return ret;
+        return ret;
 }
 
 
@@ -659,11 +659,11 @@ int preludedb_get_values(preludedb_t *db,
 int preludedb_transaction_start(preludedb_t *db)
 {
         int ret;
-        
+
         ret = _preludedb_sql_transaction_start(db->sql);
         if ( ret < 0 )
                 return ret;
-        
+
         _preludedb_sql_disable_internal_transaction(db->sql);
 
         return ret;
@@ -684,13 +684,13 @@ int preludedb_transaction_start(preludedb_t *db)
 int preludedb_transaction_end(preludedb_t *db)
 {
         int ret;
-        
+
         ret = _preludedb_sql_transaction_end(db->sql);
         _preludedb_sql_enable_internal_transaction(db->sql);
 
         if ( ret < 0 )
                 return ret;
-        
+
         return ret;
 }
 
@@ -709,12 +709,12 @@ int preludedb_transaction_end(preludedb_t *db)
 int preludedb_transaction_abort(preludedb_t *db)
 {
         int ret;
-        
+
         ret = _preludedb_sql_transaction_abort(db->sql);
         _preludedb_sql_enable_internal_transaction(db->sql);
 
         if ( ret < 0 )
                 return ret;
-        
+
         return ret;
 }
