@@ -1,0 +1,93 @@
+.TH Prelude "1" "June 2007" "preludedb-admin" "User Commands"
+.SH NAME
+preludedb-admin \- tool to copy, move, delete, save or restore a prelude database
+.SH SYNOPSIS
+.B preludedb-admin
+\fIcopy|move|delete|load|save\fR \fIarguments\fR
+.SH DESCRIPTION
+.\" Add any additional description here
+.PP
+preludedb-admin can be used to copy, move, delete, save or restore a prelude
+database, partly or in whole, while preserving IDMEF data consistency.
+.PP
+Mandatory arguments
+.TP
+\fBcopy\fR
+Make a copy of a Prelude database to another database.
+.TP
+\fBdelete\fR
+Delete content of a Prelude database.
+.TP
+\fBload\fR
+Load a Prelude database from a file.
+.TP
+\fBmove\fR
+Move content of a Prelude database to another database.
+.TP
+\fBsave\fR
+Save a Prelude database to a file.
+.PP
+Running a command without providing arguments will display a detailed help.
+.SH EXAMPLES
+Obtaining help on a specific command:
+
+.RS
+.nf
+# preludedb-admin save
+Usage  : save <alert|heartbeat> <database> <filename> [options]
+Example: preludedb-admin save alert "type=mysql name=dbname user=prelude" outputfile
+
+Save messages from <database> into [filename].
+If no filename argument is provided, data will be written to standard output.
+
+Database arguments:
+  type  : Type of database (mysql/pgsql).
+  name  : Name of the database.
+  user  : User to access the database.
+  pass  : Password to access the database.
+
+Valid options:
+  --offset <offset>               : Skip processing until 'offset' events.
+  --count <count>                 : Process at most count events.
+  --query-logging [filename]      : Log SQL query to the specified file.
+  --alert-criteria <criteria>     : Only process alert matching criteria.
+  --heartbeat-criteria <criteria> : Only process heartbeat matching criteria.
+  --events-per-transaction        : Maximum number of event to process per transaction (default 1000).
+.fi
+.RE
+
+Preludedb-admin can be useful to delete events from a prelude database :
+
+.RS
+.nf
+preludedb-admin delete alert --alert-criteria <criteria> "type=<mysql> name=<dbname> user=<prelude-user> pass=<pass>"
+.fi
+.RE
+
+where \fIcriteria\fR is an IDMEF criteria :
+
+.RS
+.nf
+preludedb-admin delete alert --alert-criteria "alert.classification.text == 'UDP packet dropped'" "type=mysql name=prelude user=prelude-user pass=prelude-pass"
+.fi
+.RE
+
+This will delete all event with the classification text "UDP packet dropped" from the database.
+.SH SEE ALSO
+The Prelude Handbook: \fIhttps://trac.prelude-ids.org/wiki/PreludeHandbook\fR
+.P
+Prelude homepage: \fIhttp://www.prelude-ids.com/\fR
+.P
+Creating filter using IDMEF Criteria: \fIhttps://trac.prelude-ids.org/wiki/IDMEFCriteria\fR
+.P
+Prelude IDMEF Path: \fIhttps://trac.prelude-ids.org/wiki/IDMEFPath\fR
+.SH BUGS
+To report a bug, please visit \fIhttps://trac.prelude-ids.org/\fR
+.SH AUTHOR
+This manpage was Written by Pierre Chifflier.
+.SH COPYRIGHT
+Copyright \(co 2006 PreludeIDS Technologies.
+.br
+This is free software.  You may redistribute copies of it under the terms of
+the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.

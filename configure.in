@@ -398,6 +398,7 @@ plugins/format/classic/include/Makefile
 
 docs/Makefile
 docs/api/Makefile
+docs/manpages/Makefile
 
 bindings/Makefile
 bindings/perl/Makefile.PL
