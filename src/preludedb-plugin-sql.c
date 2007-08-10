@@ -1,12 +1,12 @@
 /*****
 *
-* Copyright (C) 2005 PreludeIDS Technologies. All Rights Reserved.
+* Copyright (C) 2005,2006,2007 PreludeIDS Technologies. All Rights Reserved.
 * Author: Yoann Vandoorselaere <yoann.v@prelude-ids.com>
 *
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -58,7 +58,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_build_constraint_string_func_t build_constraint_string;
         preludedb_plugin_sql_get_operator_string_func_t get_operator_string;
         preludedb_plugin_sql_build_timestamp_string_func_t build_timestamp_string;
-                
+
 };
 
 
@@ -111,7 +111,7 @@ int _preludedb_plugin_sql_escape(preludedb_plugin_sql_t *plugin, void *session, 
 {
         if ( ! plugin->escape )
                 return _preludedb_plugin_sql_escape_binary(plugin, session, (const unsigned char *) input, input_size, output);
-                
+
         return plugin->escape(session, input, input_size, output);
 }
 
@@ -126,23 +126,23 @@ int _preludedb_plugin_sql_escape_binary(preludedb_plugin_sql_t *plugin, void *se
                                         const unsigned char *input, size_t input_size, char **output)
 {
         size_t outsize;
-        
-        if ( plugin->escape_binary ) 
+
+        if ( plugin->escape_binary )
                 return plugin->escape_binary(session, input, input_size, output);
 
         outsize = (input_size * 2) + 4;
         if ( outsize <= input_size )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-        
+
         *output = malloc(outsize);
         if ( ! *output )
                 return preludedb_error_from_errno(errno);
 
         (*output)[0] = 'X';
         (*output)[1] = '\'';
-        
+
         bin2hex(input, input_size, *output + 2);
-                
+
         (*output)[outsize - 2] = '\'';
         (*output)[outsize - 1] = '\0';
 
@@ -161,13 +161,13 @@ int _preludedb_plugin_sql_unescape_binary(preludedb_plugin_sql_t *plugin, void *
 {
         if ( plugin->unescape_binary )
                 return plugin->unescape_binary(session, input, output, output_size);
-        
-	*output = malloc(input_size);
-	if ( ! *output )
-		return preludedb_error_from_errno(errno);
 
-	memcpy(*output, input, input_size);
-	*output_size = input_size;
+        *output = malloc(input_size);
+        if ( ! *output )
+                return preludedb_error_from_errno(errno);
+
+        memcpy(*output, input, input_size);
+        *output_size = input_size;
 
         return 0;
 }
@@ -255,7 +255,7 @@ int _preludedb_plugin_sql_fetch_row(preludedb_plugin_sql_t *plugin, void *sessio
 {
         if ( ! plugin->fetch_row )
                 PRELUDEDB_ENOTSUP("fetch_row");
-                
+
         return plugin->fetch_row(session, resource, row);
 }
 
@@ -270,9 +270,9 @@ int _preludedb_plugin_sql_fetch_field(preludedb_plugin_sql_t *plugin,
                                       void *session, void *resource, void *row,
                                       unsigned int column_num, const char **value, size_t *len)
 {
-        if ( ! plugin->fetch_field ) 
+        if ( ! plugin->fetch_field )
                 return PRELUDEDB_ENOTSUP("fetch_field");
-                
+
         return plugin->fetch_field(session, resource, row, column_num, value, len);
 }
 
@@ -289,9 +289,9 @@ int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *p
                                                        preludedb_sql_time_constraint_type_t type,
                                                        idmef_criterion_operator_t operator, int value, int gmt_offset)
 {
-        if ( ! plugin->build_time_constraint_string ) 
+        if ( ! plugin->build_time_constraint_string )
                 return PRELUDEDB_ENOTSUP("build_time_constraint_string");
-                
+
         return plugin->build_time_constraint_string(output, field, type, operator, value, gmt_offset);
 }
 
@@ -309,7 +309,7 @@ int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plu
 {
         if ( ! plugin->build_time_interval_string )
                 return PRELUDEDB_ENOTSUP("build_time_interval_string");
-                
+
         return plugin->build_time_interval_string(type, value, buf, size);
 }
 
@@ -324,9 +324,9 @@ void preludedb_plugin_sql_set_build_limit_offset_string_func(preludedb_plugin_sq
 int _preludedb_plugin_sql_build_limit_offset_string(preludedb_plugin_sql_t *plugin,
                                                     void *session, int limit, int offset, prelude_string_t *output)
 {
-        if ( ! plugin->build_limit_offset_string ) 
+        if ( ! plugin->build_limit_offset_string )
                 return PRELUDEDB_ENOTSUP("build_limit_offset_string");
-                
+
         return plugin->build_limit_offset_string(session, limit, offset, output);
 }
 
@@ -344,7 +344,7 @@ int _preludedb_plugin_sql_build_constraint_string(preludedb_plugin_sql_t *plugin
 {
         if ( ! plugin->build_constraint_string )
                 return PRELUDEDB_ENOTSUP("build_constraint_string");
-                
+
         return plugin->build_constraint_string(out, field, operator, value);
 }
 
@@ -371,10 +371,10 @@ void preludedb_plugin_sql_set_build_timestamp_string_func(preludedb_plugin_sql_t
 int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin, const struct tm *lt, char *out, size_t size)
 {
         int ret;
-        
+
         if ( plugin->build_timestamp_string )
                 return plugin->build_timestamp_string(lt, out, size);
-        
+
         ret = snprintf(out, size, "'%d-%.2d-%.2d %.2d:%.2d:%.2d'",
                        lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
                        lt->tm_hour, lt->tm_min, lt->tm_sec);
@@ -389,6 +389,6 @@ int preludedb_plugin_sql_new(preludedb_plugin_sql_t **plugin)
         *plugin = calloc(1, sizeof(**plugin));
         if ( ! *plugin )
                 return prelude_error_from_errno(errno);
-        
+
         return 0;
 }
