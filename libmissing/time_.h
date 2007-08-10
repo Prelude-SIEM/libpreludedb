@@ -18,13 +18,20 @@
 
 /* Don't get in the way of glibc when it includes time.h merely to
    declare a few standard symbols, rather than to declare all the
-   symbols.  */
-#if defined __need_time_t || defined __need_clock_t || defined __need_timespec
-# include @ABSOLUTE_TIME_H@
+   symbols.  Also, Solaris 8 <time.h> eventually includes itself
+   recursively; if that is happening, just include the system <time.h>
+   without adding our own declarations.  */
+#if (defined __need_time_t || defined __need_clock_t \
+     || defined __need_timespec \
+     || defined _GL_TIME_H)
 
-#elif ! defined _GL_TIME_H
+# @INCLUDE_NEXT@ @NEXT_TIME_H@
+
+#else
+
 # define _GL_TIME_H
-# include @ABSOLUTE_TIME_H@
+
+# @INCLUDE_NEXT@ @NEXT_TIME_H@
 
 # ifdef __cplusplus
 extern "C" {
@@ -84,7 +91,7 @@ char *strptime (char const *restrict __buf, char const *restrict __format,
 #  undef timegm
 #  define timegm rpl_timegm
 time_t timegm (struct tm *__tm);
-#endif
+# endif
 
 /* Encourage applications to avoid unsafe functions that can overrun
    buffers when given outlandish struct tm values.  Portable

@@ -40,9 +40,11 @@ AC_DEFUN([gl_INIT],
   gl_cond_libtool=true
   gl_source_base='libmissing'
   gl_FUNC_ALLOCA
+  gl_FLOAT_H
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
+  gl_STDINT_H
   gl_STDIO_H
   gl_FUNC_STRDUP
   gl_STRING_MODULE_INDICATOR([strdup])
@@ -56,6 +58,7 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
+  gl_WCHAR_H
   gl_XSIZE
   m4_popdef([AC_LIBSOURCES])
   m4_popdef([AC_REPLACE_FUNCS])
@@ -98,12 +101,15 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/alloca_.h
   lib/asnprintf.c
   lib/dummy.c
+  lib/float+.h
+  lib/float_.h
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
   lib/printf-parse.h
   lib/size_max.h
   lib/snprintf.c
+  lib/stdint_.h
   lib/stdio_.h
   lib/strdup.c
   lib/string_.h
@@ -114,19 +120,21 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/vsnprintf.c
+  lib/wchar_.h
   lib/xsize.h
-  m4/absolute-header.m4
   m4/alloca.m4
   m4/eoverflow.m4
   m4/extensions.m4
+  m4/float_h.m4
   m4/gnulib-common.m4
+  m4/include_next.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
-  m4/longdouble.m4
   m4/longlong.m4
   m4/onceonly_2_57.m4
   m4/size_max.m4
   m4/snprintf.m4
+  m4/stdint.m4
   m4/stdint_h.m4
   m4/stdio_h.m4
   m4/strdup.m4
@@ -135,8 +143,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strnlen.m4
   m4/time_h.m4
   m4/time_r.m4
+  m4/ulonglong.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
+  m4/wchar.m4
   m4/wchar_t.m4
   m4/wint_t.m4
   m4/xsize.m4
