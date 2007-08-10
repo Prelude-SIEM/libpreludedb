@@ -1,12 +1,12 @@
 /*****
 *
-* Copyright (C) 2005 PreludeIDS Technologies. All Rights Reserved.
+* Copyright (C) 2005,2006,2007 PreludeIDS Technologies. All Rights Reserved.
 * Author: Yoann Vandoorselaere <yoann.v@prelude-ids.com>
 *
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -174,7 +174,7 @@ ssize_t _preludedb_plugin_format_delete_alert_from_list(preludedb_plugin_format_
 
         if ( plugin->delete_alert_from_list )
                 return plugin->delete_alert_from_list(sql, idents, size);
-                
+
         for ( i = 0; i < size; i++ ) {
                 ret = plugin->delete_alert(sql, idents[i]);
                 if ( ret < 0 )
@@ -187,17 +187,17 @@ ssize_t _preludedb_plugin_format_delete_alert_from_list(preludedb_plugin_format_
 
 
 ssize_t _preludedb_plugin_format_delete_alert_from_result_idents(preludedb_plugin_format_t *plugin,
-                                                                 preludedb_sql_t *sql, preludedb_result_idents_t *result) 
+                                                                 preludedb_sql_t *sql, preludedb_result_idents_t *result)
 {
         int ret;
         uint64_t ident;
         size_t count = 0;
-        
+
         if ( plugin->delete_alert_from_result_idents )
                 return plugin->delete_alert_from_result_idents(sql, result);
-        
+
         while ( (ret = preludedb_result_idents_get_next(result, &ident)) ) {
-                
+
                 ret = plugin->delete_alert(sql, ident);
                 if ( ret < 0 )
                         return ret;
@@ -208,17 +208,17 @@ ssize_t _preludedb_plugin_format_delete_alert_from_result_idents(preludedb_plugi
         return count;
 }
 
-         
+
 
 ssize_t _preludedb_plugin_format_delete_heartbeat_from_list(preludedb_plugin_format_t *plugin,
                                                             preludedb_sql_t *sql, uint64_t *idents, size_t size)
 {
         size_t i;
         int ret = 0;
-        
+
         if ( plugin->delete_heartbeat_from_list )
                 return plugin->delete_heartbeat_from_list(sql, idents, size);
-                
+
         for ( i = 0; i < size; i++ ) {
                 ret = plugin->delete_heartbeat(sql, idents[i]);
                 if ( ret < 0 )
@@ -231,15 +231,15 @@ ssize_t _preludedb_plugin_format_delete_heartbeat_from_list(preludedb_plugin_for
 
 
 ssize_t _preludedb_plugin_format_delete_heartbeat_from_result_idents(preludedb_plugin_format_t *plugin,
-                                                                     preludedb_sql_t *sql, preludedb_result_idents_t *result) 
+                                                                     preludedb_sql_t *sql, preludedb_result_idents_t *result)
 {
         int ret;
         uint64_t ident;
         size_t count = 0;
-        
+
         if ( plugin->delete_heartbeat_from_result_idents )
                 return plugin->delete_heartbeat_from_result_idents(sql, result);
-        
+
         while ( (ret = preludedb_result_idents_get_next(result, &ident)) ) {
 
                 ret = plugin->delete_heartbeat(sql, ident);
