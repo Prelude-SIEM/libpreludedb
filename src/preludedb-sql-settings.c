@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2005 PreludeIDS Technologies. All Rights Reserved.
+* Copyright (C) 2005,2006,2007 PreludeIDS Technologies. All Rights Reserved.
 * Author: Nicolas Delon <nicolas.delon@prelude-ids.com>
 *
 * This file is part of the PreludeDB library.
@@ -40,7 +40,7 @@ struct preludedb_sql_settings {
 
 
 
-static inline void skip_spaces(const char **str) 
+static inline void skip_spaces(const char **str)
 {
         while ( isspace((int) **str) )
                 (*str)++;
@@ -84,7 +84,7 @@ int preludedb_sql_settings_new_from_string(preludedb_sql_settings_t **settings, 
 
 void preludedb_sql_settings_destroy(preludedb_sql_settings_t *settings)
 {
-        prelude_hash_destroy(settings->hash);       
+        prelude_hash_destroy(settings->hash);
         free(settings);
 }
 
@@ -116,22 +116,22 @@ static int get_name(const char **str, char **name)
 
         skip_spaces(str);
 
-	if ( **str == '\0' )
-		return 0;
+        if ( **str == '\0' )
+                return 0;
 
-	start = *str;
+        start = *str;
 
-	while ( isalnum((int) **str) || **str == '_' )
-		(*str)++;
+        while ( isalnum((int) **str) || **str == '_' )
+                (*str)++;
 
-	if ( **str != '=' || *str == start )
-		return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
+        if ( **str != '=' || *str == start )
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
 
-	*name = strndup(start, *str - start);
+        *name = strndup(start, *str - start);
 
-	(*str)++;
+        (*str)++;
 
-	return *name ? (*str - start - 1) : preludedb_error_from_errno(errno);
+        return *name ? (*str - start - 1) : preludedb_error_from_errno(errno);
 }
 
 
@@ -139,70 +139,70 @@ static int get_name(const char **str, char **name)
 static int get_value(const char **str, char **value)
 {
         int escaped = 0, cnt;
-	char end_of_string = ' ';
-	
-	*value = calloc(strlen(*str) + 1, 1);
-	if ( ! *value )
-		return preludedb_error_from_errno(errno);
+        char end_of_string = ' ';
 
-	if ( **str == '\'' || **str == '"' ) {
-		end_of_string = **str;
-		(*str)++;
-	}
+        *value = calloc(strlen(*str) + 1, 1);
+        if ( ! *value )
+                return preludedb_error_from_errno(errno);
 
-	cnt = 0;
-	while ( **str ) {
-		if ( escaped ) {
-			(*value)[cnt++] = **str;
-			escaped = 0;
+        if ( **str == '\'' || **str == '"' ) {
+                end_of_string = **str;
+                (*str)++;
+        }
 
-		} else if ( **str == '\\' ) {
-			escaped = 1;
+        cnt = 0;
+        while ( **str ) {
+                if ( escaped ) {
+                        (*value)[cnt++] = **str;
+                        escaped = 0;
 
-		} else if ( **str == end_of_string ) {
-			(*str)++;
-			break;
+                } else if ( **str == '\\' ) {
+                        escaped = 1;
 
-		} else {
-			(*value)[cnt++] = **str;
-		}
+                } else if ( **str == end_of_string ) {
+                        (*str)++;
+                        break;
 
-		(*str)++;
-	}
+                } else {
+                        (*value)[cnt++] = **str;
+                }
 
-	if ( **str == '\0' && (end_of_string == '\'' || end_of_string == '"') ) {
-		free(*value);
-		return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
-	}
+                (*str)++;
+        }
 
-	return cnt;
+        if ( **str == '\0' && (end_of_string == '\'' || end_of_string == '"') ) {
+                free(*value);
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING);
+        }
+
+        return cnt;
 }
 
 
 
 int preludedb_sql_settings_set_from_string(preludedb_sql_settings_t *settings, const char *str)
 {
-	int ret;
-	char *name = NULL, *value;
+        int ret;
+        char *name = NULL, *value;
 
-	while ( (ret = get_name(&str, &name)) > 0 ) {
-		ret = get_value(&str, &value);
-		if ( ret < 0 )
-			return ret;
+        while ( (ret = get_name(&str, &name)) > 0 ) {
+                ret = get_value(&str, &value);
+                if ( ret < 0 )
+                        return ret;
 
-		ret = prelude_hash_set(settings->hash, name, value);
-		if ( ret < 0 )
-			return ret;
-	}
+                ret = prelude_hash_set(settings->hash, name, value);
+                if ( ret < 0 )
+                        return ret;
+        }
 
-	return ret;
+        return ret;
 }
 
 
 
 const char *preludedb_sql_settings_get(const preludedb_sql_settings_t *settings, const char *name)
 {
-	return prelude_hash_get(settings->hash, name);
+        return prelude_hash_get(settings->hash, name);
 }
 
 
@@ -212,21 +212,21 @@ const char *preludedb_sql_settings_get(const preludedb_sql_settings_t *settings,
  */
 
 
-#define convenient_functions(name, key, default)						\
-int preludedb_sql_settings_set_ ## name(preludedb_sql_settings_t *settings, const char *value)	\
-{												\
-	return preludedb_sql_settings_set(settings, key, value);				\
-}												\
-												\
-												\
-												\
-const char *preludedb_sql_settings_get_ ## name(const preludedb_sql_settings_t *settings)	\
-{												\
-	const char *value;									\
-												\
-	value = preludedb_sql_settings_get(settings, key);					\
-												\
-	return value ? value : default;								\
+#define convenient_functions(name, key, default)                                                \
+int preludedb_sql_settings_set_ ## name(preludedb_sql_settings_t *settings, const char *value)        \
+{                                                                                                \
+        return preludedb_sql_settings_set(settings, key, value);                                \
+}                                                                                                \
+                                                                                                \
+                                                                                                \
+                                                                                                \
+const char *preludedb_sql_settings_get_ ## name(const preludedb_sql_settings_t *settings)        \
+{                                                                                                \
+        const char *value;                                                                        \
+                                                                                                \
+        value = preludedb_sql_settings_get(settings, key);                                        \
+                                                                                                \
+        return value ? value : default;                                                                \
 }
 
 
