@@ -303,7 +303,7 @@ static void cmd_generic_help(void)
         fprintf(stderr, "  --offset <offset>               : Skip processing until 'offset' events.\n");
         fprintf(stderr, "  --count <count>                 : Process at most count events.\n");
         fprintf(stderr, "  --query-logging [filename]      : Log SQL query to the specified file.\n");
-        fprintf(stderr, "  --criteria <criteria>           : Only process alert matching criteria.\n");
+        fprintf(stderr, "  --criteria <criteria>           : Only process events matching criteria.\n");
         fprintf(stderr, "  --events-per-transaction        : Maximum number of event to process per transaction (default %d).\n",
                 events_per_transaction);
 }
@@ -423,14 +423,14 @@ static int setup_generic_options(int *argc, char **argv)
 
 static int setup_message_type(const char *type)
 {
-        if ( strcmp(type, "alert") == 0 ) {
+        if ( strcasecmp(type, "alert") == 0 ) {
                 get_message = preludedb_get_alert;
                 get_message_idents = preludedb_get_alert_idents;
                 delete_message_from_list = preludedb_delete_alert_from_list;
                 delete_message_from_result_idents = preludedb_delete_alert_from_result_idents;
         }
 
-        else if ( strcmp(type, "heartbeat") == 0 ) {
+        else if ( strcasecmp(type, "heartbeat") == 0 ) {
                 get_message = preludedb_get_heartbeat;
                 get_message_idents = preludedb_get_heartbeat_idents;
                 delete_message_from_list = preludedb_delete_heartbeat_from_list;
