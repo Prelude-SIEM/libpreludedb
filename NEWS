@@ -1,3 +1,28 @@
+* 2007-08-20, libpreludedb-0.9.13:
+
+- Source and Target now use a 16 bits index (required for CorrelationAlert with
+  large number of source/target). CorrelationAlert Alertident now use a 32 bits
+  index (required to link large number of Alert together).
+
+- Fix compilation on system without ENOTSUP (fix #227):
+  Include modified patch from Alexandre Anriot <aanriot@atlantilde.com>.
+
+- [pgsql] Patch by Pierre Chifflier <chifflier@inl.fr>, that fixes type
+  conversions preventing PostgreSQL to use indexes (fix #225).
+
+- [preludedb-admin] Use separate alert / heartbeat command: this is done to
+  have a coherent implementation of the --offset and --count command line
+  options.
+
+- [preludedb-admin] Fix --offset with the load command.
+
+- [preludedb-admin] Give the delete table a decent size, should speedup the
+  delete command.
+
+- [documentation] preludedb-admin manpage (fix #230), by Pierre Chifflier
+  <chifflier@inl.fr>.
+
+
 * 2007-03-17, libpreludedb-0.9.12:
 
         - [sqlite3] Provide case-insensitive regex. 

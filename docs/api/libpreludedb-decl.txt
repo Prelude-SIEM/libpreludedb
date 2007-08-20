@@ -13,9 +13,9 @@ typedef struct preludedb_result_values preludedb_result_values_t;
 <ENUM>
 <NAME>preludedb_result_idents_order_t</NAME>
 typedef enum {
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE = 0,
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC = 1,
-	PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC = 2
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE = 0,
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC = 1,
+        PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC = 2
 } preludedb_result_idents_order_t;
 </ENUM>
 <MACRO>
@@ -385,7 +385,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.12"
+#define LIBPRELUDEDB_VERSION "0.9.13"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
