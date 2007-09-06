@@ -42,6 +42,13 @@ void swig_python_raise_exception(int error, const char *strerror)
 }
 %}
 
+%exception {
+   Py_BEGIN_ALLOW_THREADS
+   $function
+   Py_END_ALLOW_THREADS
+}
+
+
 %typemap(in, numinputs=0) preludedb_result_values_t **result2 ($*1_type tmp) {
         $1 = ($1_ltype) &tmp;
 };
