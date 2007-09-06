@@ -192,7 +192,7 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
                 return -1;
         }
         
-        ret = prelude_string_sprintf(string, "'%s'", ptr);
+        ret = prelude_string_sprintf(string, "E'%s'", ptr);
         free(ptr);
 
         if ( ret < 0 ) {
