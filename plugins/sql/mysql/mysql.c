@@ -48,13 +48,16 @@
 #include "preludedb.h"
 
 
-int mysql_LTX_prelude_plugin_version(void);
-int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
+#define WAIT_TIMEOUT_VALUE "31536000" /* 365 days */
 
 
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
 # define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
+
+
+int mysql_LTX_prelude_plugin_version(void);
+int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
 static prelude_bool_t is_connection_broken(void *session)
@@ -117,6 +120,8 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 
                 return ret;
         }
+
+        mysql_query(*session, "SET SESSION wait_timeout=" WAIT_TIMEOUT_VALUE);
 
         return 0;
 }
