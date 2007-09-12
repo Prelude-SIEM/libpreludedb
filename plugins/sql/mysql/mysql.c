@@ -6,7 +6,7 @@
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -60,7 +60,7 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 static prelude_bool_t is_connection_broken(void *session)
 {
         switch (mysql_errno(session)) {
-                        
+
         case CR_CONNECTION_ERROR:
         case CR_SERVER_GONE_ERROR:
         case CR_SERVER_LOST:
@@ -79,10 +79,10 @@ static prelude_bool_t is_connection_broken(void *session)
 static int handle_error(void *session, prelude_error_code_t code)
 {
         int ret;
-        
-        if ( is_connection_broken(session) ) 
+
+        if ( is_connection_broken(session) )
                 code = PRELUDEDB_ERROR_CONNECTION;
-        
+
         if ( mysql_errno(session) )
                 ret = preludedb_error_verbose(code, "%s", mysql_error(session));
         else
@@ -111,7 +111,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
                                   preludedb_sql_settings_get_pass(settings),
                                   preludedb_sql_settings_get_name(settings),
                                   port, NULL, 0) ) {
-                
+
                 ret = handle_error(*session, PRELUDEDB_ERROR_CONNECTION);
                 mysql_close(*session);
 
@@ -132,7 +132,7 @@ static void sql_close(void *session)
 static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
 {
         size_t rsize;
-        
+
         /*
          * MySQL documentation say :
          * The string pointed to by from must be length bytes long. You must
@@ -143,13 +143,13 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
         rsize = input_size * 2 + 3;
         if ( rsize <= input_size )
                 return -1;
-        
+
         *output = malloc(rsize);
         if ( ! *output )
                 return preludedb_error_from_errno(errno);
 
         (*output)[0] = '\'';
-        
+
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
         rsize = mysql_real_escape_string((MYSQL *) session, (*output) + 1, (const char *) input, input_size);
 #else
@@ -183,7 +183,7 @@ static int sql_query(void *session, const char *query, void **resource)
 {
         if ( mysql_query(session, query) != 0 )
                 return handle_error(session, PRELUDEDB_ERROR_QUERY);
-        
+
         *resource = mysql_store_result(session);
         if ( *resource ) {
                 if ( mysql_num_rows(*resource) == 0 ) {
@@ -201,7 +201,7 @@ static int sql_query(void *session, const char *query, void **resource)
 
 static void sql_resource_destroy(void *session, void *resource)
 {
-        if ( resource ) 
+        if ( resource )
                 mysql_free_result(resource);
 }
 
@@ -223,7 +223,7 @@ static const char *sql_get_column_name(void *session, void *resource, unsigned i
         return field ? field->name : NULL;
 }
 
- 
+
 
 static int sql_get_column_num(void *session, void *resource, const char *column_name)
 {
@@ -276,7 +276,7 @@ static int sql_fetch_field(void *session, void *resource, void *row,
                            unsigned int column_num, const char **value, size_t *len)
 {
         unsigned long *lengths;
-        
+
         if ( column_num >= mysql_num_fields(resource) )
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
@@ -322,7 +322,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
                 { IDMEF_CRITERION_OPERATOR_REGEX_NOCASE,      "REGEXP"            },
                 { IDMEF_CRITERION_OPERATOR_NOT_REGEX,         "NOT REGEXP"        },
                 { IDMEF_CRITERION_OPERATOR_NOT_REGEX_NOCASE,  "NOT REGEXP BINARY" },
-                
+
                 { IDMEF_CRITERION_OPERATOR_NULL,              "IS NULL"           },
                 { IDMEF_CRITERION_OPERATOR_NOT_NULL,          "IS NOT NULL"       },
                 { 0, NULL },
@@ -341,14 +341,14 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
                                        idmef_criterion_operator_t operator, const char *value)
 {
         const char *op_str;
-        
+
         op_str = get_operator_string(operator);
         if ( ! op_str )
                 return -1;
 
         if ( ! value )
                 value = "";
-        
+
         return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
 }
 
@@ -361,7 +361,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         char buf[128];
         const char *sql_operator;
         int ret;
- 
+
         ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
         if ( ret < 0 || ret >= sizeof(buf) )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
@@ -369,7 +369,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         sql_operator = get_operator_string(operator);
         if ( ! sql_operator )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-        
+
         switch ( type ) {
         case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
                 return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
@@ -461,10 +461,10 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         ret = preludedb_plugin_sql_new(&plugin);
         if ( ret < 0 )
                 return ret;
-        
+
         prelude_plugin_set_name((prelude_plugin_generic_t *) plugin, "MySQL");
         prelude_plugin_entry_set_plugin(pe, (void *) plugin);
-        
+
         preludedb_plugin_sql_set_open_func(plugin, sql_open);
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
         preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
@@ -481,7 +481,7 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
-        
+
         return 0;
 }
 
