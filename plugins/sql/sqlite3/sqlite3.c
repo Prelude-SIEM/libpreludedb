@@ -6,7 +6,7 @@
  * This file is part of the PreludeDB library.
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by 
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
@@ -42,7 +42,7 @@
 #include "preludedb-plugin-sql.h"
 
 
-#define SQLITE_BUSY_TIMEOUT INT_MAX 
+#define SQLITE_BUSY_TIMEOUT INT_MAX
 
 
 /*
@@ -88,24 +88,24 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 static void sqlite3_regexp(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
-	int ret;
-	regex_t regex;
+        int ret;
+        regex_t regex;
 
-	if ( argc != 2 ) {
-		sqlite3_result_error(context, "Invalid argument count", -1);
-		return;
-	}
+        if ( argc != 2 ) {
+                sqlite3_result_error(context, "Invalid argument count", -1);
+                return;
+        }
 
-	ret = regcomp(&regex, (const char *) sqlite3_value_text(argv[0]), REG_EXTENDED | REG_NOSUB);
-	if ( ret != 0 ) {
-		sqlite3_result_error(context, "error compiling regular expression", -1);
-		return;
-	}
+        ret = regcomp(&regex, (const char *) sqlite3_value_text(argv[0]), REG_EXTENDED | REG_NOSUB);
+        if ( ret != 0 ) {
+                sqlite3_result_error(context, "error compiling regular expression", -1);
+                return;
+        }
 
-	ret = regexec(&regex, (const char *) sqlite3_value_text(argv[1]), 0, NULL, 0);
-	regfree(&regex);
+        ret = regexec(&regex, (const char *) sqlite3_value_text(argv[1]), 0, NULL, 0);
+        regfree(&regex);
 
-	sqlite3_result_int(context, (ret == REG_NOMATCH) ? 0 : 1 );
+        sqlite3_result_int(context, (ret == REG_NOMATCH) ? 0 : 1 );
 }
 
 
@@ -122,23 +122,23 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
         ret = access(dbfile, F_OK);
         if ( ret != 0 )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "database file '%s' does not exist", dbfile);
-        
-        ret = sqlite3_open(dbfile, (sqlite3 **) session);        
+
+        ret = sqlite3_open(dbfile, (sqlite3 **) session);
         if ( ret != SQLITE_OK ) {
                 ret = preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "%s", sqlite3_errmsg(*session));
                 sqlite3_close(*session);
                 return ret;
         }
 
-	ret = sqlite3_create_function(*session, SQLITE_REGEX_BIND_OPERATOR, 2, SQLITE_ANY, NULL, sqlite3_regexp, NULL, NULL);
-	if ( ret != SQLITE_OK ) {
+        ret = sqlite3_create_function(*session, SQLITE_REGEX_BIND_OPERATOR, 2, SQLITE_ANY, NULL, sqlite3_regexp, NULL, NULL);
+        if ( ret != SQLITE_OK ) {
                 ret = preludedb_error_verbose(PRELUDEDB_ERROR_CONNECTION, "%s", sqlite3_errmsg(*session));
                 sqlite3_close(*session);
                 return ret;
-	}
+        }
 
         sqlite3_busy_timeout(*session, SQLITE_BUSY_TIMEOUT);
-        
+
         return 0;
 }
 
@@ -155,7 +155,7 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 {
         char *buffer, *copy;
 
-        buffer = sqlite3_mprintf("'%q'", input); 
+        buffer = sqlite3_mprintf("'%q'", input);
         if ( ! buffer )
                 return preludedb_error_from_errno(errno);
 
@@ -201,10 +201,10 @@ static sqlite3_row_t *sql_resource_add_row(sqlite3_resource_t *resource, unsigne
                 free(row);
                 return NULL;
         }
-        
+
         resource->nrow++;
         prelude_list_add_tail(&resource->rows, &row->list);
-        
+
         return row;
 }
 
@@ -220,14 +220,14 @@ static int sql_resource_field_copy(sqlite3_field_t *field, sqlite3_stmt *stateme
 
         if ( field->len + 1 < field->len )
                 return -1;
-        
+
         field->data = malloc(field->len + 1);
         if ( ! field->data )
                 return preludedb_error_from_errno(errno);
 
         memcpy(field->data, sqlite3_column_blob(statement, col), field->len);
         ((unsigned char *) field->data)[field->len] = '\0';
-        
+
         return 0;
 }
 
@@ -242,23 +242,23 @@ static void sql_resource_destroy(void *session, void *res)
 
         if ( ! resource )
                 return;
-        
-        prelude_list_for_each_safe(&resource->rows, cursor, safety_cursor) { 
+
+        prelude_list_for_each_safe(&resource->rows, cursor, safety_cursor) {
                 row = prelude_list_entry(cursor, sqlite3_row_t, list);
-                               
+
                 for ( i = 0; i < resource->ncolumn; i++ ) {
                         field = &row->fields[i];
-               
+
                         if ( field->data )
                                 free(field->data);
                 }
-                
+
                 free(row->fields);
-                
+
                 prelude_list_del(&row->list);
                 free(row);
         }
-        
+
         sqlite3_finalize(resource->statement);
         free(resource);
 }
@@ -271,35 +271,35 @@ static int sql_read_row(void *session, sqlite3_stmt *statement, sqlite3_resource
         unsigned int i;
         sqlite3_row_t *row;
         unsigned int ncolumn;
-        
+
         ncolumn = sqlite3_column_count(statement);
-        if ( ncolumn == 0 )                
+        if ( ncolumn == 0 )
                 return 0;
-        
+
         *resource = calloc(1, sizeof(**resource));
         if ( ! *resource )
                 return preludedb_error_from_errno(errno);
-        
+
         prelude_list_init(&(*resource)->rows);
-        
+
         while ( (ret = sqlite3_step(statement)) ) {
-                
+
                 if ( ret == SQLITE_ERROR || ret == SQLITE_MISUSE || ret == SQLITE_BUSY ) {
                         sql_resource_destroy(NULL, *resource);
                         return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s", sqlite3_errmsg(session));
                 }
-                
+
                 else if ( ret == SQLITE_DONE )
                         break;
 
                 assert(ret == SQLITE_ROW);
-                
+
                 row = sql_resource_add_row(*resource, ncolumn);
                 if ( ! row ) {
                         sql_resource_destroy(NULL, *resource);
                         return preludedb_error_from_errno(errno);
                 }
-                
+
                 for ( i = 0; i < ncolumn; i++ ) {
                         ret = sql_resource_field_copy(&row->fields[i], statement, i);
                         if ( ret < 0 ) {
@@ -308,10 +308,10 @@ static int sql_read_row(void *session, sqlite3_stmt *statement, sqlite3_resource
                         }
                 }
         }
-        
+
         (*resource)->ncolumn = ncolumn;
         (*resource)->statement = statement;
-        
+
         return 1;
 }
 
@@ -327,7 +327,7 @@ static int sql_query(void *session, const char *query, void **resource)
          * FIXME: we need a better way to know the kind of operation performed.
          */
         if ( strncmp(query, "SELECT", 6) != 0 ) {
-                
+
                 ret = sqlite3_exec(session, query, NULL, NULL, 0);
                 if ( ret != SQLITE_OK )
                         return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
@@ -337,7 +337,7 @@ static int sql_query(void *session, const char *query, void **resource)
                 if ( ret != SQLITE_OK )
                         return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
 
-                ret = sql_read_row(session, statement, (sqlite3_resource_t **) resource);        
+                ret = sql_read_row(session, statement, (sqlite3_resource_t **) resource);
                 if ( ret != 1 ) {
                         sqlite3_finalize(statement);
                         return ret;
@@ -352,7 +352,7 @@ static int sql_query(void *session, const char *query, void **resource)
 static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
 {
         sqlite3_resource_t *res = resource;
-        
+
         if ( column_num >= res->ncolumn )
                 return NULL;
 
@@ -365,7 +365,7 @@ static int sql_get_column_num(void *session, void *resource, const char *column_
 {
         int ret, i;
         sqlite3_resource_t *res = resource;
-        
+
         for ( i = 0; i < res->ncolumn; i++ ) {
 
                 ret = strcmp(column_name, sqlite3_column_name(res->statement, i));
@@ -413,15 +413,15 @@ static int sql_fetch_field(void *session, void *resource, void *row,
                            unsigned int column_num, const char **value, size_t *len)
 {
         sqlite3_field_t *field;
-        
+
         if ( column_num >= ((sqlite3_resource_t *) resource)->ncolumn )
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
         field = &(((sqlite3_row_t *) row)->fields[column_num]);
-                
+
         *value = field->data;
         *len = field->len;
-        
+
         if ( *len == 0 )
                 return 0;
 
@@ -486,7 +486,7 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
 
         if ( operator & IDMEF_CRITERION_OPERATOR_NOCASE )
                 return prelude_string_sprintf(out, "lower(%s) %s lower(%s)", field, op_str, value);
-                
+
         return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
 }
 
@@ -552,7 +552,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
                                           char *buf, size_t size)
 {
-	/* It's not clear where this would be used... */
+        /* It's not clear where this would be used... */
 
         return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
@@ -563,11 +563,11 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
         int ret;
         preludedb_plugin_sql_t *plugin;
-        
+
         ret = preludedb_plugin_sql_new(&plugin);
         if ( ret < 0 )
                 return ret;
-        
+
         prelude_plugin_set_name((prelude_plugin_generic_t *) plugin, "sqlite3");
         prelude_plugin_entry_set_plugin(pe, (void *) plugin);
 
@@ -598,4 +598,4 @@ int sqlite3_LTX_prelude_plugin_version(void)
         return PRELUDE_PLUGIN_API_VERSION;
 }
 
-		
+
