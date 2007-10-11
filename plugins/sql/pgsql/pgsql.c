@@ -6,7 +6,7 @@
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -61,14 +61,14 @@ static int handle_error(prelude_error_code_t code, PGconn *conn)
         char *tmp;
         size_t len;
         const char *error;
-        
+
         if ( PQstatus(conn) == CONNECTION_BAD )
                 code = PRELUDEDB_ERROR_CONNECTION;
-        
+
         error = PQerrorMessage(conn);
         if ( ! error )
                 return preludedb_error(code);
-        
+
         /*
          * Pgsql error message are formatted. Remove trailing '\n'.
          */
@@ -99,7 +99,7 @@ static int sql_query(void *session, const char *query, void **resource)
 
         res->row = -1;
 
-        res->result = PQexec(session, query);        
+        res->result = PQexec(session, query);
         if ( ! res->result ) {
                 free(res);
                 return handle_error(PRELUDEDB_ERROR_QUERY, session);
@@ -110,12 +110,12 @@ static int sql_query(void *session, const char *query, void **resource)
                 *resource = res;
                 return 1;
         }
-        
+
         PQclear(res->result);
         free(res);
         if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
                 return 0;
-        
+
         return handle_error(PRELUDEDB_ERROR_QUERY, session);
 }
 
@@ -159,7 +159,7 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
         rsize = input_size * 2 + 3;
         if ( rsize <= input_size )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-        
+
         *output = malloc(rsize);
         if ( ! *output )
                 return preludedb_error_from_errno(errno);
@@ -170,7 +170,7 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 
         (*output)[rsize + 1] = '\'';
         (*output)[rsize + 2] = '\0';
-        
+
         return 0;
 }
 
@@ -185,13 +185,13 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
         ret = prelude_string_new(&string);
         if ( ret < 0 )
                 return ret;
-        
+
         ptr = PQescapeBytea(input, input_size, &dummy);
         if ( ! ptr ) {
                 prelude_string_destroy(string);
                 return -1;
         }
-        
+
         ret = prelude_string_sprintf(string, "E'%s'", ptr);
         free(ptr);
 
@@ -202,7 +202,7 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
 
         ret = prelude_string_get_string_released(string, output);
         prelude_string_destroy(string);
-        
+
         return 0;
 }
 
@@ -224,7 +224,7 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
         if ( limit >= 0 ) {
                 if ( offset >= 0 )
                         return prelude_string_sprintf(output, " LIMIT %d OFFSET %d", limit, offset);
-                
+
                 return prelude_string_sprintf(output, " LIMIT %d", limit);
         }
 
@@ -275,7 +275,7 @@ static int sql_fetch_row(void *s, void *resource, void **row)
 {
         struct pg_result *res = resource;
 
-        /* 
+        /*
          * initialize *row, but we won't use it since we access row's fields directly
          * through the PGresult structure
          */
@@ -295,7 +295,7 @@ static int sql_fetch_field(void *session, void *resource, void *r,
                            unsigned int column_num, const char **value, size_t *len)
 {
         struct pg_result *res = resource;
-        
+
         if ( column_num >= PQnfields(res->result) )
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
@@ -320,7 +320,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
         } tbl[] = {
                 { IDMEF_CRITERION_OPERATOR_EQUAL,             "="           },
                 { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,         "!="          },
-                
+
                 { IDMEF_CRITERION_OPERATOR_GREATER,           ">"           },
                 { IDMEF_CRITERION_OPERATOR_GREATER_OR_EQUAL,  ">="          },
                 { IDMEF_CRITERION_OPERATOR_LESSER,            "<"           },
@@ -340,7 +340,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
                 { IDMEF_CRITERION_OPERATOR_NOT_NULL,          "IS NOT NULL" },
                 { 0, NULL },
         };
-        
+
         for ( i = 0; tbl[i].operator != 0; i++ )
                 if ( operator == tbl[i].operator )
                         return tbl[i].name;
@@ -355,20 +355,20 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
                                        idmef_criterion_operator_t operator, const char *value)
 {
         const char *op_str;
-        
+
         if ( ! value )
                 value = "";
 
         op_str = get_operator_string(operator);
         if ( op_str )
                 return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
-                
+
         else if ( operator == IDMEF_CRITERION_OPERATOR_EQUAL_NOCASE )
                 return prelude_string_sprintf(out, "lower(%s) = lower(%s)", field, value);
 
         else if ( operator == IDMEF_CRITERION_OPERATOR_NOT_EQUAL_NOCASE )
                 return prelude_string_sprintf(out, "lower(%s) != lower(%s)", field, value);
-        
+
         return -1;
 }
 
@@ -389,7 +389,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         sql_operator = get_operator_string(operator);
         if ( ! sql_operator )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
-        
+
         switch ( type ) {
         case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
                 return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s %d",
@@ -481,10 +481,10 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         ret = preludedb_plugin_sql_new(&plugin);
         if ( ret < 0 )
                 return ret;
-        
+
         prelude_plugin_set_name((prelude_plugin_generic_t *) plugin, "PgSQL");
         prelude_plugin_entry_set_plugin(pe, (void *) plugin);
-        
+
         preludedb_plugin_sql_set_open_func(plugin, sql_open);
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
