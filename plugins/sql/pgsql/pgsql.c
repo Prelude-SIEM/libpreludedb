@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2003-2005 PreludeIDS Technologies. All Rights Reserved.
+* Copyright (C) 2003-2007 PreludeIDS Technologies. All Rights Reserved.
 * Author: Nicolas Delon <nicolas.delon@prelude-ids.com>
 *
 * This file is part of the PreludeDB library.
@@ -227,6 +227,9 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
                 return prelude_string_sprintf(output, " LIMIT %d", limit);
         }
+
+        else if ( offset >= 0 )
+                return prelude_string_sprintf(output, " LIMIT ALL OFFSET %d", offset);
 
         return 0;
 }

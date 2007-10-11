@@ -1,6 +1,6 @@
 /*****
  *
- * Copyright (C) 2005 PreludeIDS Technologies. All Rights Reserved.
+ * Copyright (C) 2005-2007 PreludeIDS Technologies. All Rights Reserved.
  * Author: Rob Holland <rob@inversepath.com>
  *
  * This file is part of the PreludeDB library.
@@ -182,6 +182,9 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
                 return prelude_string_sprintf(output, " LIMIT %d", limit);
         }
+
+        else if ( offset >= 0 )
+                return prelude_string_sprintf(output, " LIMIT %d, -1", offset);
 
         return 0;
 }

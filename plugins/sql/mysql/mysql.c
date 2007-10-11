@@ -178,6 +178,9 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
                 return prelude_string_sprintf(output, " LIMIT %d", limit);
         }
 
+        else if ( offset >= 0 )
+                return prelude_string_sprintf(output, " LIMIT %d, %" PRELUDE_PRIu64, offset, PRELUDE_UINT64_MAX);
+
         return 0;
 }
 
