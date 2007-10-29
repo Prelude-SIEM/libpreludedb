@@ -29,8 +29,8 @@
 #include "preludedb-plugin-sql.h"
 
 
-#if ! defined(ENOTSUP) && defined(ENOTSUPP)
-# define ENOTSUP ENOTSUPP
+#if ! defined(ENOTSUP) && defined(EOPNOTSUPP)
+# define ENOTSUP EOPNOTSUPP
 #endif
 
 #define PRELUDEDB_ENOTSUP(x) preludedb_error_verbose(prelude_error_code_from_errno(ENOTSUP), "Database backend does not support '%s' operation", x)
