@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.6');
+INSERT INTO _format (name, version) VALUES('classic', '14.7');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 
@@ -247,7 +247,7 @@ DROP TABLE IF EXISTS Prelude_Impact;
 
 CREATE TABLE Prelude_Impact (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
- description VARCHAR(255) NULL,
+ description TEXT NULL,
  severity ENUM("info", "low","medium","high") NULL,
  completion ENUM("failed", "succeeded") NULL,
  type ENUM("admin", "dos", "file", "recon", "user", "other") NOT NULL

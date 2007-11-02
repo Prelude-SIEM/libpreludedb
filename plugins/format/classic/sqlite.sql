@@ -3,7 +3,7 @@ CREATE TABLE _format (
  name TEXT NOT NULL,
  version TEXT NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.6');
+INSERT INTO _format (name, version) VALUES('classic', '14.7');
 
 
 CREATE TABLE Prelude_Alert (

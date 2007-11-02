@@ -4,7 +4,7 @@ CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
  version VARCHAR(255) NOT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.6');
+INSERT INTO _format (name, version) VALUES('classic', '14.7');
 
 DROP TABLE Prelude_Alert;
 
@@ -247,7 +247,7 @@ DROP TABLE Prelude_Impact;
 
 CREATE TABLE Prelude_Impact (
  _message_ident INT8 NOT NULL PRIMARY KEY,
- description VARCHAR(255) NULL,
+ description TEXT NULL,
  severity VARCHAR(32) CHECK ( severity IN ('info', 'low','medium','high')) NULL,
  completion VARCHAR(32) CHECK ( completion IN ('failed', 'succeeded')) NULL,
  type VARCHAR(32) CHECK ( type IN ('admin', 'dos', 'file', 'recon', 'user', 'other')) NOT NULL
