@@ -51,7 +51,7 @@ static const char *query_logging = NULL;
 static prelude_bool_t have_query_logging = FALSE;
 
 static uint64_t cur_count = 0;
-static int64_t limit = -1, offset = -1;
+static int64_t limit = -1, offset = 0, offset_copy;
 
 static idmef_criteria_t *criteria = NULL;
 static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
@@ -125,9 +125,8 @@ static void stat_dump_all(void)
                         fprintf(stderr, "%" PRELUDE_PRIu64, (uint64_t) stat->processed);
 
                 fprintf(stderr, " '%s' events processed in %f seconds (%f seconds/events - %f %s/sec average).\n",
-                        stat->opname, stat->elapsed / 1000000,
-                        (stat->elapsed / stat->processed) / 1000000,
-                        stat->processed / (stat->elapsed / 1000000), stat->opname);
+                        stat->opname, stat->elapsed, stat->elapsed / stat->processed,
+                        stat->processed / stat->elapsed, stat->opname);
         }
 
         if ( limit != -1 )
@@ -136,21 +135,39 @@ static void stat_dump_all(void)
                 fprintf(stderr, "%" PRELUDE_PRIu64, (uint64_t) total_processed);
 
         fprintf(stderr, " events processed in %f seconds (%f seconds/events - %f events/sec average).\n",
-                total_elapsed / 1000000,
-                (total_elapsed / total_processed) / 1000000,
-                total_processed / (total_elapsed / 1000000)
-                );
+                total_elapsed, total_elapsed / total_processed, total_processed / total_elapsed);
 }
 
 
+static void compute_elapsed(stat_item_t *stat, struct timeval *end, struct timeval *start)
+{
+        int nsec;
+
+        /* Perform the carry for the later subtraction by updating 'start'. */
+        if ( end->tv_usec < start->tv_usec ) {
+                nsec = (start->tv_usec - end->tv_usec) / 1000000 + 1;
+                start->tv_usec -= 1000000 * nsec;
+                start->tv_sec += nsec;
+        }
+
+        if ( end->tv_usec - start->tv_usec > 1000000 ) {
+                nsec = (end->tv_usec - start->tv_usec) / 1000000;
+                start->tv_usec += 1000000 * nsec;
+                start->tv_sec -= nsec;
+        }
+
+        /* Compute the time remaining to wait. tv_usec is certainly positive. */
+        stat->elapsed += (end->tv_sec - start->tv_sec);
+        stat->elapsed += ((float) (end->tv_usec - start->tv_usec) / 1000000);
+}
 
 
 static void stat_end(stat_item_t *stat, size_t count)
 {
         gettimeofday(&end, NULL);
-        stat->processed += count;
 
-        stat->elapsed += (end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
+        stat->processed += count;
+        compute_elapsed(stat, &end, &start);
 
         if ( ! dump_stat )
                 return;
@@ -272,6 +289,9 @@ static int set_offset(prelude_option_t *opt, const char *optarg, prelude_string_
                 fprintf(stderr, "Invalid offset specified: '%s'.\n", optarg);
                 return -1;
         }
+
+        if ( offset < 0 )
+                offset = 0;
 
         return 0;
 }
@@ -815,6 +835,44 @@ static int cmd_save(int argc, char **argv)
 
 
 
+static int do_read_message(prelude_io_t *io, prelude_msg_t **msg, idmef_message_t **idmef)
+{
+        int ret;
+
+        *msg = NULL;
+        *idmef = NULL;
+
+        ret = prelude_msg_read(msg, io);
+        if ( ret < 0 ) {
+                if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF )
+                        return 0;
+        }
+
+        if ( offset_copy > 0 ) {
+                offset_copy--;
+                prelude_msg_destroy(*msg);
+                return 1;
+        }
+
+        if ( limit != -1 && cur_count >= limit ) {
+                prelude_msg_destroy(*msg);
+                return 0;
+        }
+
+        ret = idmef_message_new(idmef);
+        if ( ret < 0 ) {
+                fprintf(stderr, "error creating new IDMEF message: %s.\n", prelude_strerror(ret));
+                return ret;
+        }
+
+        ret = idmef_message_read(*idmef, *msg);
+        if ( ret < 0 )
+                return ret;
+
+        return 1;
+}
+
+
 static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_fetch, stat_item_t *stat_insert)
 {
         int ret = 0;
@@ -823,39 +881,19 @@ static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_f
         unsigned int event_no = 0;
 
         while ( ! stop_processing ) {
-                msg = NULL;
-
-                ret = prelude_msg_read(&msg, io);
-                if ( ret < 0 ) {
-                        if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF )
-                                ret = 0;
-                        break;
-                }
-
-                if ( offset > 0 ) {
-                        offset--;
-                        prelude_msg_destroy(msg);
-                        continue;
-                }
-
-                if ( cur_count >= limit && limit != -1 ) {
-                        prelude_msg_destroy(msg);
-                        break;
-                }
-
-                ret = idmef_message_new(&idmef);
-                if ( ret < 0 ) {
-                        fprintf(stderr, "error creating new IDMEF message: %s.\n", prelude_strerror(ret));
-                        break;
-                }
-
-                stat_compute(stat_fetch, ret = idmef_message_read(idmef, msg), 1);
+                stat_compute(stat_fetch, ret = do_read_message(io, &msg, &idmef), 1);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error decoding IDMEF message: %s.\n", prelude_strerror(ret));
                         break;
                 }
 
-                if ( ! criteria || idmef_criteria_match(criteria, idmef) == 0 ) {
+                if ( ret == 0 )
+                        break;
+
+                if ( ! idmef )
+                        continue;
+
+                if ( ! criteria || idmef_criteria_match(criteria, idmef) ) {
                         stat_compute(stat_insert, ret = preludedb_insert_message(db, idmef), 1);
                         if ( ret < 0 ) {
                                 db_error(db, ret, "error inserting IDMEF message");
@@ -913,6 +951,8 @@ static int cmd_load(int argc, char **argv)
                 }
 
                 prelude_io_set_file_io(io, fd);
+
+                offset_copy = offset;
 
                 ret = load_from_file(db, io, stat_fetch, stat_insert);
                 if ( ret < 0 ) {
@@ -1066,7 +1106,7 @@ int main(int argc, char **argv)
 
                 ret = commands[i].run(--argc, &argv[1]);
 
-                if ( (ret < 0 || stop_processing) && cur_count > 0 )
+                if ( (ret < 0 || stop_processing) )
                         fprintf(stderr, "%s at transaction %" PRELUDE_PRIu64 ". Use --offset %" PRELUDE_PRIu64 " to resume operation.\n",
                                 (ret < 0) ? "Error"  : "Interrupted by signal", cur_count, (offset == -1) ? cur_count : cur_count + offset);
 
