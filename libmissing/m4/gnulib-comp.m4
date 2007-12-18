@@ -25,21 +25,24 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([AC_PROG_RANLIB])
+  AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  AC_REQUIRE([gl_LOCK_EARLY])
 ])
 
 # This macro should be invoked from ./configure.in, in the section
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
+  AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
+  gl_cond_libtool=true
   m4_pushdef([AC_LIBOBJ], m4_defn([gl_LIBOBJ]))
   m4_pushdef([AC_REPLACE_FUNCS], m4_defn([gl_REPLACE_FUNCS]))
   m4_pushdef([AC_LIBSOURCES], m4_defn([gl_LIBSOURCES]))
-  AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
-  gl_cond_libtool=true
   gl_source_base='libmissing'
   gl_FUNC_ALLOCA
   gl_FLOAT_H
+  gl_LOCK
   gl_FUNC_MALLOC_POSIX
   gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_SIZE_MAX
@@ -80,6 +83,29 @@ AC_DEFUN([gl_INIT],
     AC_SUBST([gl_LIBOBJS], [$gl_libobjs])
     AC_SUBST([gl_LTLIBOBJS], [$gl_ltlibobjs])
   ])
+  gltests_libdeps=
+  gltests_ltlibdeps=
+  m4_pushdef([AC_LIBOBJ], m4_defn([gltests_LIBOBJ]))
+  m4_pushdef([AC_REPLACE_FUNCS], m4_defn([gltests_REPLACE_FUNCS]))
+  m4_pushdef([AC_LIBSOURCES], m4_defn([gltests_LIBSOURCES]))
+  gl_source_base='tests'
+  m4_popdef([AC_LIBSOURCES])
+  m4_popdef([AC_REPLACE_FUNCS])
+  m4_popdef([AC_LIBOBJ])
+  AC_CONFIG_COMMANDS_PRE([
+    gltests_libobjs=
+    gltests_ltlibobjs=
+    if test -n "$gltests_LIBOBJS"; then
+      # Remove the extension.
+      sed_drop_objext='s/\.o$//;s/\.obj$//'
+      for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+        gltests_libobjs="$gltests_libobjs $i.$ac_objext"
+        gltests_ltlibobjs="$gltests_ltlibobjs $i.lo"
+      done
+    fi
+    AC_SUBST([gltests_LIBOBJS], [$gltests_libobjs])
+    AC_SUBST([gltests_LTLIBOBJS], [$gltests_ltlibobjs])
+  ])
 ])
 
 # Like AC_LIBOBJ, except that the module name goes
@@ -88,6 +114,13 @@ AC_DEFUN([gl_LIBOBJ], [
   AS_LITERAL_IF([$1], [gl_LIBSOURCES([$1.c])])dnl
   gl_LIBOBJS="$gl_LIBOBJS $1.$ac_objext"
 ])
+
+# m4_foreach_w is provided by autoconf-2.59c and later.
+# This definition is to accommodate developers using versions
+# of autoconf older than that.
+m4_ifndef([m4_foreach_w],
+  [m4_define([m4_foreach_w],
+    [m4_foreach([$1], m4_split(m4_normalize([$2]), [ ]), [$3])])])
 
 # Like AC_REPLACE_FUNCS, except that the module name goes
 # into gl_LIBOBJS instead of into LIBOBJS.
@@ -110,15 +143,52 @@ AC_DEFUN([gl_LIBSOURCES], [
   ])
 ])
 
+# Like AC_LIBOBJ, except that the module name goes
+# into gltests_LIBOBJS instead of into LIBOBJS.
+AC_DEFUN([gltests_LIBOBJ], [
+  AS_LITERAL_IF([$1], [gltests_LIBSOURCES([$1.c])])dnl
+  gltests_LIBOBJS="$gltests_LIBOBJS $1.$ac_objext"
+])
+
+# m4_foreach_w is provided by autoconf-2.59c and later.
+# This definition is to accommodate developers using versions
+# of autoconf older than that.
+m4_ifndef([m4_foreach_w],
+  [m4_define([m4_foreach_w],
+    [m4_foreach([$1], m4_split(m4_normalize([$2]), [ ]), [$3])])])
+
+# Like AC_REPLACE_FUNCS, except that the module name goes
+# into gltests_LIBOBJS instead of into LIBOBJS.
+AC_DEFUN([gltests_REPLACE_FUNCS], [
+  m4_foreach_w([gl_NAME], [$1], [AC_LIBSOURCES(gl_NAME[.c])])dnl
+  AC_CHECK_FUNCS([$1], , [gltests_LIBOBJ($ac_func)])
+])
+
+# Like AC_LIBSOURCES, except the directory where the source file is
+# expected is derived from the gnulib-tool parametrization,
+# and alloca is special cased (for the alloca-opt module).
+# We could also entirely rely on EXTRA_lib..._SOURCES.
+AC_DEFUN([gltests_LIBSOURCES], [
+  m4_foreach([_gl_NAME], [$1], [
+    m4_if(_gl_NAME, [alloca.c], [], [
+      m4_syscmd([test -r tests/]_gl_NAME[ || test ! -d tests])dnl
+      m4_if(m4_sysval, [0], [],
+        [AC_FATAL([missing tests/]_gl_NAME)])
+    ])
+  ])
+])
+
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/config.rpath
   build-aux/link-warning.h
   lib/alloca.in.h
   lib/asnprintf.c
-  lib/dummy.c
   lib/float+.h
   lib/float.in.h
+  lib/lock.c
+  lib/lock.h
   lib/malloc.c
   lib/printf-args.c
   lib/printf-args.h
@@ -150,6 +220,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/include_next.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
+  m4/lib-ld.m4
+  m4/lib-link.m4
+  m4/lib-prefix.m4
+  m4/lock.m4
   m4/longlong.m4
   m4/malloc.m4
   m4/onceonly_2_57.m4
@@ -165,7 +239,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strnlen.m4
   m4/time_h.m4
   m4/time_r.m4
-  m4/ulonglong.m4
   m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
