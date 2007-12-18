@@ -54,6 +54,7 @@
 #include <libprelude/prelude-error.h>
 #include <libprelude/idmef.h>
 
+#include "lock.h"
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
@@ -69,13 +70,15 @@ typedef enum {
 
 
 
-#define assert_connected(sql)                                     \
-        if ( ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) { \
-                int __ret;                                        \
-                                                                  \
-                __ret = preludedb_sql_connect(sql);               \
-                if ( __ret < 0 )                                  \
-                        return __ret;                             \
+#define assert_connected(sql)                                             \
+        if ( ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) {         \
+                int __ret;                                                \
+                                                                          \
+                __ret = preludedb_sql_connect(sql);                       \
+                if ( __ret < 0 ) {                                        \
+                        gl_recursive_lock_unlock(sql->mutex);             \
+                        return __ret;                                     \
+                }                                                         \
         }
 
 
@@ -87,6 +90,8 @@ struct preludedb_sql {
         void *session;
         FILE *logfile;
         prelude_bool_t internal_transaction_disabled;
+
+        gl_recursive_lock_t mutex;
 };
 
 struct preludedb_sql_table {
@@ -150,6 +155,8 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
         if ( ! *new )
                 return preludedb_error_from_errno(errno);
 
+        gl_recursive_lock_init(((*new)->mutex));
+
         if ( ! type ) {
                 type = preludedb_sql_settings_get_type(settings);
                 if ( ! type )
@@ -193,6 +200,7 @@ void preludedb_sql_destroy(preludedb_sql_t *sql)
         if ( sql->logfile )
                 fclose(sql->logfile);
 
+        gl_recursive_lock_destroy(sql->mutex);
         preludedb_sql_settings_destroy(sql->settings);
 
         free(sql->type);
@@ -300,11 +308,18 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
         void *res;
         struct timeval start, end;
 
+        gl_recursive_lock_lock(sql->mutex);
         assert_connected(sql);
 
         gettimeofday(&start, NULL);
+
         ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
+
+        if ( ret < 0 )
+                update_sql_from_errno(sql, ret);
+
         gettimeofday(&end, NULL);
+        gl_recursive_lock_unlock(sql->mutex);
 
         if ( sql->logfile ) {
                 fprintf(sql->logfile, "%fs %s\n",
@@ -314,13 +329,8 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
                 fflush(sql->logfile);
         }
 
-        if ( ret < 0 ) {
-                update_sql_from_errno(sql, ret);
+        if ( ret <= 0 )
                 return ret;
-        }
-
-        if ( ret == 0 )
-                return 0;
 
         ret = preludedb_sql_table_new(table, sql, res);
         if ( ret < 0 ) {
@@ -442,16 +452,20 @@ int _preludedb_sql_transaction_start(preludedb_sql_t *sql)
 {
         int ret;
 
-        if ( sql->status & PRELUDEDB_SQL_STATUS_TRANSACTION )
+        gl_recursive_lock_lock(sql->mutex);
+
+        if ( sql->status & PRELUDEDB_SQL_STATUS_TRANSACTION ) {
+                gl_recursive_lock_unlock(sql->mutex);
                 return preludedb_error(PRELUDEDB_ERROR_ALREADY_IN_TRANSACTION);
+        }
 
         ret = preludedb_sql_query(sql, "BEGIN", NULL);
         if ( ret < 0 )
-                return ret;
+                gl_recursive_lock_unlock(sql->mutex);
+        else
+                sql->status |= PRELUDEDB_SQL_STATUS_TRANSACTION;
 
-        sql->status |= PRELUDEDB_SQL_STATUS_TRANSACTION;
-
-        return 0;
+        return ret;
 }
 
 
@@ -483,6 +497,8 @@ int _preludedb_sql_transaction_end(preludedb_sql_t *sql)
 
         ret = preludedb_sql_query(sql, "COMMIT", NULL);
         sql->status &= ~PRELUDEDB_SQL_STATUS_TRANSACTION;
+
+        gl_recursive_lock_unlock(sql->mutex);
 
         return ret;
 }
@@ -524,8 +540,7 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
         if ( original_error && ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) {
                 ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s. No ROLLBACK possible due to connection closure",
                                               original_error);
-                free(original_error);
-                return ret;
+                goto error;
         }
 
         ret = preludedb_sql_query(sql, "ROLLBACK", NULL);
@@ -536,8 +551,11 @@ int _preludedb_sql_transaction_abort(preludedb_sql_t *sql)
                         ret = preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "ROLLBACK failed: %s", preludedb_strerror(ret));
         }
 
+    error:
         if ( original_error )
                 free(original_error);
+
+        gl_recursive_lock_unlock(sql->mutex);
 
         return ret;
 }
@@ -576,8 +594,16 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
  */
 int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t input_size, char **output)
 {
+        int ret;
+
+        gl_recursive_lock_lock(sql->mutex);
+
         assert_connected(sql);
-        return _preludedb_plugin_sql_escape(sql->plugin, sql->session, input, input_size, output);
+        ret = _preludedb_plugin_sql_escape(sql->plugin, sql->session, input, input_size, output);
+
+        gl_recursive_lock_unlock(sql->mutex);
+
+        return ret;
 }
 
 
@@ -618,8 +644,16 @@ int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output)
 int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input, size_t input_size,
                                 char **output)
 {
+        int ret;
+
+        gl_recursive_lock_lock(sql->mutex);
+
         assert_connected(sql);
-        return _preludedb_plugin_sql_escape_binary(sql->plugin, sql->session, input, input_size, output);
+        ret = _preludedb_plugin_sql_escape_binary(sql->plugin, sql->session, input, input_size, output);
+
+        gl_recursive_lock_unlock(sql->mutex);
+
+        return ret;
 }
 
 
@@ -639,8 +673,16 @@ int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input
 int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_t input_size,
                                   unsigned char **output, size_t *output_size)
 {
+        int ret;
+
+        gl_recursive_lock_lock(sql->mutex);
+
         assert_connected(sql);
-        return _preludedb_plugin_sql_unescape_binary(sql->plugin, sql->session, input, input_size, output, output_size);
+        ret = _preludedb_plugin_sql_unescape_binary(sql->plugin, sql->session, input, input_size, output, output_size);
+
+        gl_recursive_lock_unlock(sql->mutex);
+
+        return ret;
 }
 
 
@@ -1401,7 +1443,7 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
 const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql)
 {
         /*
-         * deprecated.
+         * FIXME: deprecated.
          */
         return NULL;
 }
