@@ -22,6 +22,7 @@ dist_schemadata_DATA =  mysql2sqlite.sh		\
 			mysql-update-14-4.sql	\
 			mysql-update-14-5.sql	\
 			mysql-update-14-6.sql	\
+			mysql-update-14-7.sql   \
 			pgsql.sql 		\
 			pgsql-update-14-1.sql	\
 			pgsql-update-14-2.sql	\
@@ -29,10 +30,12 @@ dist_schemadata_DATA =  mysql2sqlite.sh		\
 			pgsql-update-14-4.sql	\
 			pgsql-update-14-5.sql	\
 			pgsql-update-14-6.sql	\
+			pgsql-update-14-7.sql   \
 			sqlite.sql		\
 			sqlite-update-14-4.sql	\
 			sqlite-update-14-5.sql	\
-			sqlite-update-14-6.sql
+			sqlite-update-14-6.sql  \
+			sqlite-update-14-7.sql
 
 
 sqlite.sql: mysql.sql
