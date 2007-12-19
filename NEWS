@@ -1,3 +1,28 @@
+* 2007-12-19, libpreludedb-0.9.14:
+
+- Improved thread safety: all query are now mutex protected, and the
+  mutex won't be released until the transaction is over.
+
+- Use TEXT in place of VARCHAR for alert.assessment.impact.description (fix #265).
+
+- Fix OpenBSD compilation issue, thanks Alexandre Anriot <aanriot@atlantilde.com>
+  for pointing out this (fix #227).
+
+- [preludedb-admin] Make it possible to specify an offset with no limit.
+
+- [mysql] Prevent MySQL session from timing out after 8 hours of inactivity.
+
+- [pgsql] Fix PostgreSQL warning when inserting binary data.
+
+- [preludedb-admin] Fix a problem handling the offset option with the
+  load command.
+
+- [preludedb-admin] Fix possible wraparound in statistics computation
+  code.
+
+- Allow Python threads to run while executing libpreludedb C function.
+
+
 * 2007-08-20, libpreludedb-0.9.13:
 
 - Source and Target now use a 16 bits index (required for CorrelationAlert with
