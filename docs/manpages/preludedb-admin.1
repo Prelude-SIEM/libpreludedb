@@ -50,8 +50,7 @@ Valid options:
   --offset <offset>               : Skip processing until 'offset' events.
   --count <count>                 : Process at most count events.
   --query-logging [filename]      : Log SQL query to the specified file.
-  --alert-criteria <criteria>     : Only process alert matching criteria.
-  --heartbeat-criteria <criteria> : Only process heartbeat matching criteria.
+  --criteria <criteria>           : Only process events matching criteria.
   --events-per-transaction        : Maximum number of event to process per transaction (default 1000).
 .fi
 .RE
@@ -60,7 +59,7 @@ Preludedb-admin can be useful to delete events from a prelude database :
 
 .RS
 .nf
-preludedb-admin delete alert --alert-criteria <criteria> "type=<mysql> name=<dbname> user=<prelude-user> pass=<pass>"
+preludedb-admin delete alert --criteria <criteria> "type=<mysql> name=<dbname> user=<prelude-user> pass=<pass>"
 .fi
 .RE
 
@@ -68,7 +67,7 @@ where \fIcriteria\fR is an IDMEF criteria :
 
 .RS
 .nf
-preludedb-admin delete alert --alert-criteria "alert.classification.text == 'UDP packet dropped'" "type=mysql name=prelude user=prelude-user pass=prelude-pass"
+preludedb-admin delete alert --criteria "alert.classification.text == 'UDP packet dropped'" "type=mysql name=prelude user=prelude-user pass=prelude-pass"
 .fi
 .RE
 
