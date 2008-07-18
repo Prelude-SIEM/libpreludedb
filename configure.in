@@ -71,9 +71,11 @@ case "$host_os" in
         #
         AC_MSG_RESULT(Darwin: adding -no-cpp-precomp)
 	AX_CFLAGS_GCC_OPTION(-no-cpp-precomp)
+        libext=dylib	
         ;;
  *)
         AC_MSG_RESULT(none needed)
+        libext=so
         ;;
 esac
 
@@ -118,7 +120,7 @@ if test x$with_mysql != xno; then
       MYSQL_CFLAGS=`$MYSQL_CONFIG --cflags`
    else
       for dir in /usr/lib /usr/lib/mysql /usr/local/lib /usr/local/lib/mysql; do
-          AC_CHECK_FILE($dir/libmysqlclient.so, MYSQL_LIBS="-L$dir -lmysqlclient")
+          AC_CHECK_FILE($dir/libmysqlclient.$libext, MYSQL_LIBS="-L$dir -lmysqlclient")
       done
 
       for dir in /usr/include /usr/include/mysql /usr/local/include /usr/local/include/mysql; do
@@ -213,7 +215,7 @@ if test x$with_sqlite3 != xno; then
    with_sqlite3=no
 
    for dir in $default_path; do
-       AC_CHECK_FILE($dir/lib/libsqlite3.so, SQLITE3_LIBS="-L$dir -lsqlite3")
+       AC_CHECK_FILE($dir/lib/libsqlite3.$libext, SQLITE3_LIBS="-L$dir -lsqlite3")
        if test -z "$SQLITE3_LIBS"; then
 	  continue
        fi
@@ -226,7 +228,7 @@ if test x$with_sqlite3 != xno; then
    done
 
    if test x$sqlite3_required = xtrue && test -z "$SQLITE3_LIBS"; then
-      AC_MSG_ERROR(could not find libsqlite3.so)
+      AC_MSG_ERROR(could not find libsqlite3.$libext)
    fi
 
    if test x$sqlite3_required = xtrue && test -z "$SQLITE3_CFLAGS"; then
