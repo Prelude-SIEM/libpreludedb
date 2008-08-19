@@ -13,3 +13,6 @@ bin_PROGRAMS = preludedb-admin
 preludedb_admin_LDFLAGS = @LIBPRELUDE_LDFLAGS@
 preludedb_admin_LDADD = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 preludedb_admin_SOURCES = preludedb-admin.c
+
+check-local:
+	cd $(top_srcdir)/libmissing/tests && $(MAKE) check
