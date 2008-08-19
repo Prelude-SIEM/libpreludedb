@@ -1,5 +1,5 @@
-# stdio_h.m4 serial 9
-dnl Copyright (C) 2007 Free Software Foundation, Inc.
+# stdio_h.m4 serial 11
+dnl Copyright (C) 2007-2008 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -21,6 +21,8 @@ AC_DEFUN([gl_STDIO_H_DEFAULTS],
 [
   GNULIB_FPRINTF_POSIX=0;  AC_SUBST([GNULIB_FPRINTF_POSIX])
   GNULIB_PRINTF_POSIX=0;   AC_SUBST([GNULIB_PRINTF_POSIX])
+  GNULIB_OBSTACK_PRINTF=0; AC_SUBST([GNULIB_OBSTACK_PRINTF])
+  GNULIB_OBSTACK_PRINTF_POSIX=0;  AC_SUBST([GNULIB_OBSTACK_PRINTF_POSIX])
   GNULIB_SNPRINTF=0;       AC_SUBST([GNULIB_SNPRINTF])
   GNULIB_SPRINTF_POSIX=0;  AC_SUBST([GNULIB_SPRINTF_POSIX])
   GNULIB_VFPRINTF_POSIX=0; AC_SUBST([GNULIB_VFPRINTF_POSIX])
@@ -62,6 +64,8 @@ AC_DEFUN([gl_STDIO_H_DEFAULTS],
   HAVE_DECL_GETDELIM=1;    AC_SUBST([HAVE_DECL_GETDELIM])
   HAVE_DECL_GETLINE=1;     AC_SUBST([HAVE_DECL_GETLINE])
   REPLACE_GETLINE=0;       AC_SUBST([REPLACE_GETLINE])
+  HAVE_DECL_OBSTACK_PRINTF=1;     AC_SUBST([HAVE_DECL_OBSTACK_PRINTF])
+  REPLACE_OBSTACK_PRINTF=0;       AC_SUBST([REPLACE_OBSTACK_PRINTF])
 ])
 
 dnl Code shared by fseeko and ftello.  Determine if large files are supported,
@@ -70,8 +74,8 @@ AC_DEFUN([gl_STDIN_LARGE_OFFSET],
   [
     AC_CACHE_CHECK([whether stdin defaults to large file offsets],
       [gl_cv_var_stdin_large_offset],
-      [AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>],
-[#if defined __SL64 && defined __SCLE /* cygwin */
+      [AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]],
+[[#if defined __SL64 && defined __SCLE /* cygwin */
   /* Cygwin 1.5.24 and earlier fail to put stdin in 64-bit mode, making
      fseeko/ftello needlessly fail.  This bug was fixed in 1.5.25, and
      it is easier to do a version check than building a runtime test.  */
@@ -79,7 +83,7 @@ AC_DEFUN([gl_STDIN_LARGE_OFFSET],
 # if CYGWIN_VERSION_DLL_COMBINED < CYGWIN_VERSION_DLL_MAKE_COMBINED (1005, 25)
   choke me
 # endif
-#endif])],
+#endif]])],
 	[gl_cv_var_stdin_large_offset=yes],
 	[gl_cv_var_stdin_large_offset=no])])
 ])

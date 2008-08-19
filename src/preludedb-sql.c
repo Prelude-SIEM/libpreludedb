@@ -54,7 +54,7 @@
 #include <libprelude/prelude-error.h>
 #include <libprelude/idmef.h>
 
-#include "lock.h"
+#include "glthread/lock.h"
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
