@@ -51,7 +51,7 @@ static const char *query_logging = NULL;
 static prelude_bool_t have_query_logging = FALSE;
 
 static uint64_t cur_count = 0;
-static int64_t limit = -1, offset = 0, offset_copy;
+static int64_t limit = -1, offset = 0, offset_copy, limit_copy = -1;
 
 static idmef_criteria_t *criteria = NULL;
 static unsigned int events_per_transaction = MAX_EVENT_PER_TRANSACTION;
@@ -88,6 +88,11 @@ int (*get_message_idents)(preludedb_t *db, idmef_criteria_t *criteria,
 
 
 #define stat_compute(stat, op, count) stat_start(stat); op; stat_end(stat, count)
+
+
+#ifndef MIN
+# define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#endif
 
 
 static stat_item_t *stat_item_new(const char *opname)
@@ -192,12 +197,37 @@ static void free_global(void)
 
 
 
-static void flush_transaction_if_needed(preludedb_t *db, unsigned int *event_no)
+static void flush_transaction_if_needed(preludedb_t *db, unsigned int *event_no, unsigned int increment)
 {
-        if ( event_no && events_per_transaction && (*event_no)++ >= events_per_transaction ) {
+        if ( ! event_no )
+                cur_count += increment;
+
+        else if ( events_per_transaction && ((*event_no) += increment) >= events_per_transaction ) {
                 preludedb_transaction_end(db);
                 preludedb_transaction_start(db);
+
+                cur_count += *event_no;
                 *event_no = 0;
+        }
+}
+
+
+static void transaction_start(preludedb_t *db)
+{
+        if ( events_per_transaction > 1 )
+                preludedb_transaction_start(db);
+}
+
+
+static void transaction_end(preludedb_t *db, int ret, unsigned int event_no)
+{
+        if ( events_per_transaction > 1 ) {
+                if ( ret < 0 )
+                        preludedb_transaction_abort(db);
+                else {
+                        cur_count += event_no;
+                        preludedb_transaction_end(db);
+                }
         }
 }
 
@@ -246,6 +276,24 @@ static int db_error(preludedb_t *db, ssize_t ret, const char *fmt, ...)
 
 
 
+static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents_t **result)
+{
+        int count;
+        int64_t local_limit;
+
+        local_limit = (limit_copy < 0) ? events_per_transaction : MIN(events_per_transaction, limit_copy);
+
+        count = get_message_idents(db, criteria, (int) local_limit, (int) cur_count, 0, result);
+        if ( count < 0 )
+                return db_error(db, count, "retrieving alert ident failed");
+
+        if ( limit_copy > 0 )
+                limit_copy -= count;
+
+        return count;
+}
+
+
 static int set_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
         int ret;
@@ -277,6 +325,8 @@ static int set_count(prelude_option_t *opt, const char *optarg, prelude_string_t
                 fprintf(stderr, "Invalid count specified: '%s'.\n", optarg);
                 return -1;
         }
+
+        limit_copy = limit;
 
         return 0;
 }
@@ -386,6 +436,18 @@ static void cmd_print_help(void)
 
         fprintf(stderr, "Retrieve and print message from <database>.\n");
         fprintf(stderr, "Data will be written to [filename] if provided.\n\n");
+
+        cmd_generic_help();
+}
+
+
+
+static void cmd_count_help(void)
+{
+        fprintf(stderr, "Usage  : count <alert|heartbeat> <database> [options]\n");
+        fprintf(stderr, "Example: preludedb-admin count alert \"type=mysql name=dbname user=prelude\"\n\n");
+
+        fprintf(stderr, "Retrieve the count from <database>.\n");
 
         cmd_generic_help();
 }
@@ -507,20 +569,17 @@ static int do_delete(preludedb_t *db, preludedb_result_idents_t *idents,
         ssize_t ret;
 
         stat_compute(stat_delete, ret = dfunc(db, idents), ret);
-        if ( ret < 0 ) {
-                ret = db_error(db, ret, "retrieving alert ident failed");
-                return ret;
-        }
+        if ( ret < 0 )
+                ret = db_error(db, ret, "delete event failed");
 
-        flush_transaction_if_needed(db, NULL);
-
-        return 0;
+        return ret;
 }
 
 
 
 static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         preludedb_result_idents_t *idents,
+                        unsigned int *dst_event_no,
                         int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **msg),
                         ssize_t (*delete)(preludedb_t *db, uint64_t *idents, size_t size),
                         stat_item_t *stat_fetch, stat_item_t *stat_insert, stat_item_t *stat_delete)
@@ -531,13 +590,12 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
         idmef_message_t *msg;
         size_t delete_index = 0;
         uint64_t delete_tbl[1024];
-        unsigned int dst_event_no = 0;
 
-        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+        while ( (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
 
                 stat_compute(stat_fetch, ret = get_message(src, ident, &msg), 1);
                 if ( ret < 0 ) {
-                        db_error(src, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
+                        db_error(src, ret, "Error retrieving message ident %" PRELUDE_PRIu64 "", ident);
                         return ret;
                 }
 
@@ -552,7 +610,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                 if ( delete ) {
                         delete_tbl[delete_index++] = ident;
 
-                        if ( (events_per_transaction && dst_event_no >= events_per_transaction) ||
+                        if ( (events_per_transaction && *dst_event_no >= events_per_transaction) ||
                               delete_index >= (sizeof(delete_tbl) / sizeof(*delete_tbl)) ) {
 
                                 stat_compute(stat_delete, count = delete(src, delete_tbl, delete_index), count);
@@ -565,8 +623,7 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
                         }
                 }
 
-                flush_transaction_if_needed(dst, &dst_event_no);
-                cur_count++;
+                flush_transaction_if_needed(dst, dst_event_no, 1);
         }
 
         if ( delete_index ) {
@@ -584,9 +641,10 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
 
 static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
 {
-        int ret, idx;
+        int ret, idx, count;
         preludedb_t *src, *dst;
         preludedb_result_idents_t *idents;
+        unsigned int dst_event_no = 0;
         stat_item_t *stat_delete = NULL;
         stat_item_t *stat_fetch = stat_item_new("fetch");
         stat_item_t *stat_insert = stat_item_new("insert");
@@ -611,37 +669,22 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         if ( ret < 0 )
                 return ret;
 
-        ret = get_message_idents(src, criteria, (int) limit, (int) offset, 0, &idents);
-        if ( ret < 0 )
-                return db_error(src, ret, "retrieving alert idents list failed");
-
-        if ( events_per_transaction > 1 ) {
-                preludedb_transaction_start(src);
-                preludedb_transaction_start(dst);
-        }
-
         if ( delete_copied )
                 stat_delete = stat_item_new("delete");
 
-        if ( ret > 0 ) {
-                ret = copy_iterate(src, dst, idents, get_message,
-                                   (delete_copied) ? delete_message_from_list : NULL,
-                                   stat_fetch, stat_insert, stat_delete);
-                preludedb_result_idents_destroy(idents);
-                if ( ret < 0 )
-                        goto err;
-        }
+        transaction_start(dst);
 
- err:
-        if ( events_per_transaction > 1 ) {
-                if ( ret < 0 ) {
-                        preludedb_transaction_abort(src);
-                        preludedb_transaction_abort(dst);
-                } else {
-                        preludedb_transaction_end(src);
-                        preludedb_transaction_end(dst);
+        do {
+                count = ret = fetch_message_idents_limited(src, &idents);
+                if ( count > 0 ) {
+                        ret = copy_iterate(src, dst, idents, &dst_event_no, get_message,
+                                           (delete_copied) ? delete_message_from_list : NULL,
+                                           stat_fetch, stat_insert, stat_delete);
+                        preludedb_result_idents_destroy(idents);
                 }
-        }
+        } while ( count > 0 && ret >= 0 && ! stop_processing );
+
+        transaction_end(dst, ret, dst_event_no);
 
         preludedb_destroy(src);
         preludedb_destroy(dst);
@@ -666,8 +709,9 @@ static int cmd_move(int argc, char **argv)
 
 static int cmd_delete(int argc, char **argv)
 {
-        int ret, idx;
         preludedb_t *db;
+        int ret, idx, count;
+        unsigned int event_no = 0;
         preludedb_result_idents_t *idents;
         stat_item_t *stat_delete = stat_item_new("delete");
 
@@ -692,28 +736,20 @@ static int cmd_delete(int argc, char **argv)
         if ( ret < 0 )
                 return ret;
 
-        if ( events_per_transaction > 1 )
-                preludedb_transaction_start(db);
+        transaction_start(db);
 
-        ret = get_message_idents(db, criteria, (int) limit, (int) offset, 0, &idents);
-        if ( ret < 0 ) {
-                ret = db_error(db, ret, "retrieving alert ident failed");
-                goto err;
-        }
+        do {
+                count = ret = fetch_message_idents_limited(db, &idents);
+                if ( count > 0 ) {
+                        ret = do_delete(db, idents, delete_message_from_result_idents, stat_delete);
+                        preludedb_result_idents_destroy(idents);
 
-        if ( ret > 0 ) {
-                ret = do_delete(db, idents, delete_message_from_result_idents, stat_delete);
-                if ( ret < 0 )
-                        goto err;
-        }
+                        flush_transaction_if_needed(db, &event_no, count);
+                }
 
- err:
-        if ( events_per_transaction > 1 ) {
-                if ( ret < 0 )
-                        preludedb_transaction_abort(db);
-                else
-                        preludedb_transaction_end(db);
-        }
+        } while ( count > 0 && ret >= 0 && ! stop_processing );
+
+        transaction_end(db, ret, event_no);
 
         preludedb_destroy(db);
         return ret;
@@ -746,7 +782,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
 
                 stat_compute(stat_fetch, ret = get_message(db, ident, &message), 1);
                 if ( ret < 0 ) {
-                        db_error(db, ret, "Error retrieving message %u ident %" PRELUDE_PRIu64 "", cur_count, ident);
+                        db_error(db, ret, "Error retrieving message ident %" PRELUDE_PRIu64 "", ident);
                         continue;
                 }
 
@@ -768,7 +804,7 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
 
 static int cmd_save(int argc, char **argv)
 {
-        int ret, idx;
+        int ret, idx, count;
         preludedb_t *db;
         prelude_io_t *io;
         FILE *fd = stdout;
@@ -814,14 +850,14 @@ static int cmd_save(int argc, char **argv)
         prelude_msgbuf_set_data(msgbuf, io);
         prelude_msgbuf_set_callback(msgbuf, save_msg);
 
-        ret = get_message_idents(db, criteria, (int) limit, (int) offset, 0, &idents);
-        if ( ret < 0 )
-                return ret;
+        do {
+                count = ret = fetch_message_idents_limited(db, &idents);
+                if ( count > 0 ) {
+                        ret = save_iterate_message(db, idents, msgbuf, get_message, stat_fetch, stat_save);
+                        preludedb_result_idents_destroy(idents);
+                }
 
-        if ( ret > 0 ) {
-                save_iterate_message(db, idents, msgbuf, get_message, stat_fetch, stat_save);
-                preludedb_result_idents_destroy(idents);
-        }
+        } while ( count > 0 && ret >= 0 && ! stop_processing );
 
         prelude_msgbuf_destroy(msgbuf);
 
@@ -873,12 +909,12 @@ static int do_read_message(prelude_io_t *io, prelude_msg_t **msg, idmef_message_
 }
 
 
-static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_fetch, stat_item_t *stat_insert)
+static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_fetch,
+                          stat_item_t *stat_insert, unsigned int *event_no)
 {
         int ret = 0;
         prelude_msg_t *msg;
         idmef_message_t *idmef;
-        unsigned int event_no = 0;
 
         while ( ! stop_processing ) {
                 stat_compute(stat_fetch, ret = do_read_message(io, &msg, &idmef), 1);
@@ -904,8 +940,7 @@ static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_f
                 idmef_message_destroy(idmef);
                 prelude_msg_destroy(msg);
 
-                flush_transaction_if_needed(db, &event_no);
-                cur_count++;
+                flush_transaction_if_needed(db, event_no, 1);
         }
 
         return ret;
@@ -918,6 +953,7 @@ static int cmd_load(int argc, char **argv)
         preludedb_t *db;
         prelude_io_t *io;
         int ret, idx, argc2;
+        unsigned int event_no = 0;
         stat_item_t *stat_fetch = stat_item_new("fetch");
         stat_item_t *stat_insert = stat_item_new("insert");
 
@@ -936,11 +972,10 @@ static int cmd_load(int argc, char **argv)
         if ( ret < 0 )
                 return ret;
 
-        if ( events_per_transaction > 1 )
-                preludedb_transaction_start(db);
-
         if ( idx == argc )
                 argv[argc++] = "-";
+
+        transaction_start(db);
 
         while ( idx < argc ) {
 
@@ -954,7 +989,7 @@ static int cmd_load(int argc, char **argv)
 
                 offset_copy = offset;
 
-                ret = load_from_file(db, io, stat_fetch, stat_insert);
+                ret = load_from_file(db, io, stat_fetch, stat_insert, &event_no);
                 if ( ret < 0 ) {
                         fprintf(stderr, "error reading reading '%s': %s.\n", argv[idx], prelude_strerror(ret));
                         break;
@@ -966,12 +1001,7 @@ static int cmd_load(int argc, char **argv)
                 idx++;
         }
 
-        if ( events_per_transaction > 1 ) {
-                if ( ret < 0 )
-                        preludedb_transaction_abort(db);
-                else
-                        preludedb_transaction_end(db);
-        }
+        transaction_end(db, ret, event_no);
 
         prelude_io_destroy(io);
         preludedb_destroy(db);
@@ -993,7 +1023,7 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 
                 stat_compute(stat_fetch, ret = get_message(db, ident, &idmef), 1);
                 if ( ret < 0 ) {
-                        db_error(db, ret, "Error retrieving message %" PRELUDE_PRIu64 " ident %" PRELUDE_PRIu64 "", cur_count, ident);
+                        db_error(db, ret, "Error retrieving message ident %" PRELUDE_PRIu64, ident);
                         return ret;
                 }
 
@@ -1009,7 +1039,7 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 
 static int cmd_print(int argc, char **argv)
 {
-        int ret, idx;
+        int ret, idx, count;
         FILE *fd = stdout;
         preludedb_t *db;
         prelude_io_t *io;
@@ -1048,19 +1078,84 @@ static int cmd_print(int argc, char **argv)
 
         prelude_io_set_file_io(io, fd);
 
-        ret = get_message_idents(db, criteria, (int) limit, (int) offset, 0, &idents);
-        if ( ret < 0 )
-                return db_error(db, ret, "retrieving alert ident failed");
-
-        if ( ret > 0 ) {
-                ret = print_iterate_message(db, idents, io, get_message, stat_fetch, stat_print);
-                preludedb_result_idents_destroy(idents);
-        }
+        do {
+                count = ret = fetch_message_idents_limited(db, &idents);
+                if ( count > 0 ) {
+                        ret = print_iterate_message(db, idents, io, get_message, stat_fetch, stat_print);
+                        preludedb_result_idents_destroy(idents);
+                }
+        } while ( count > 0 && ret >= 0 && ! stop_processing );
 
         if ( fd != stdout )
                 prelude_io_close(io);
 
         prelude_io_destroy(io);
+        preludedb_destroy(db);
+
+        return ret;
+}
+
+
+
+static int cmd_count(int argc, char **argv)
+{
+        char buf[128];
+        int ret, idx;
+        preludedb_t *db;
+        idmef_value_t **values;
+        preludedb_result_values_t *results;
+        preludedb_path_selection_t *ps;
+        preludedb_selected_path_t *sp;
+
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc < 3 ) {
+                cmd_count_help();
+                exit(1);
+        }
+
+        snprintf(buf, sizeof(buf), "count(%s.create_time)", argv[idx]);
+
+        ret = setup_message_type(argv[idx++]);
+        if ( ret < 0 ) {
+                cmd_count_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx]);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_path_selection_new(&ps);
+        if ( ret < 0 ) {
+                preludedb_destroy(db);
+                return ret;
+        }
+
+        ret = preludedb_selected_path_new_string(&sp, buf);
+        if ( ret < 0 ) {
+                preludedb_destroy(db);
+                preludedb_path_selection_destroy(ps);
+                return ret;
+        }
+
+        preludedb_path_selection_add(ps, sp);
+
+        ret = preludedb_get_values(db, ps, criteria, FALSE, (int) limit, (int) offset, &results);
+        if ( ret < 0 ) {
+                ret = db_error(db, ret, "error retrieving database count");
+                goto err;
+        }
+
+        ret = preludedb_result_values_get_next(results, &values);
+        if ( ret < 0 )
+                goto err;
+
+        printf("COUNT: %u\n", idmef_value_get_uint32(values[0]));
+        idmef_value_destroy(values[0]);
+
+err:
+        preludedb_path_selection_destroy(ps);
+        preludedb_result_values_destroy(results);
         preludedb_destroy(db);
 
         return ret;
@@ -1076,6 +1171,7 @@ int main(int argc, char **argv)
                 char *name;
                 int (*run)(int argc, char **argv);
         } commands[] = {
+                { "count", cmd_count   },
                 { "copy", cmd_copy     },
                 { "delete", cmd_delete },
                 { "load", cmd_load     },
