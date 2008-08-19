@@ -49,180 +49,180 @@ static int default_table_name_resolver(const idmef_path_t *path, char **table_na
 {
         char c;
         int ret;
-	const char *class_name;
-	prelude_string_t *string;
+        const char *class_name;
+        prelude_string_t *string;
         prelude_bool_t next_is_maj = TRUE;
-        
-	class_name = idmef_class_get_name(idmef_path_get_class(path, idmef_path_get_depth(path) - 2));
 
-	ret = prelude_string_new(&string);
-	if ( ret < 0 )
-		return ret;
+        class_name = idmef_class_get_name(idmef_path_get_class(path, idmef_path_get_depth(path) - 2));
 
-	ret = prelude_string_cat(string, "Prelude_");
-	if ( ret < 0 )
-		goto error;
+        ret = prelude_string_new(&string);
+        if ( ret < 0 )
+                return ret;
 
-	while ( *class_name ) {
+        ret = prelude_string_cat(string, "Prelude_");
+        if ( ret < 0 )
+                goto error;
+
+        while ( *class_name ) {
                 c = *class_name++;
                 if ( c == '_' ) {
                         next_is_maj = TRUE;
                         continue;
                 }
-                
+
                 if ( next_is_maj ) {
                         c += 'A' - 'a';
                         next_is_maj = FALSE;
                 }
-                        
+
                 ret = prelude_string_ncat(string, &c, 1);
                 if ( ret < 0 )
                         goto error;
         }
 
-	ret = prelude_string_get_string_released(string, table_name);
+        ret = prelude_string_get_string_released(string, table_name);
 
  error:
-	prelude_string_destroy(string);
-        
-	return ret;
+        prelude_string_destroy(string);
+
+        return ret;
 }
 
 
 
-static int default_field_name_resolver(const idmef_path_t *path, int field_context, 
-				const char *table_name, prelude_string_t *output)
+static int default_field_name_resolver(const idmef_path_t *path, int field_context,
+                                const char *table_name, prelude_string_t *output)
 {
-	return prelude_string_sprintf(output, "%s.%s", table_name,
-				      idmef_path_get_name(path, idmef_path_get_depth(path) - 1));
+        return prelude_string_sprintf(output, "%s.%s", table_name,
+                                      idmef_path_get_name(path, idmef_path_get_depth(path) - 1));
 }
 
 
 
 static int time_with_usec_field_name_resolver(const idmef_path_t *path, int field_context,
-					      const char *table_name, prelude_string_t *output)
+                                              const char *table_name, prelude_string_t *output)
 {
-	if ( field_context == FIELD_CONTEXT_SELECT )
-		return prelude_string_sprintf(output, "%s.time, %s.gmtoff, %s.usec", table_name, table_name, table_name);
+        if ( field_context == FIELD_CONTEXT_SELECT )
+                return prelude_string_sprintf(output, "%s.time, %s.gmtoff, %s.usec", table_name, table_name, table_name);
 
-	return prelude_string_sprintf(output, "%s.time", table_name);
+        return prelude_string_sprintf(output, "%s.time", table_name);
 }
 
 
 
 static int time_without_usec_field_name_resolver(const idmef_path_t *path, int field_context,
-						 const char *table_name, prelude_string_t *output)
+                                                 const char *table_name, prelude_string_t *output)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( field_context == FIELD_CONTEXT_SELECT )
-		return prelude_string_sprintf(output, "%s.%s, %s.%s_gmtoff, 0",
-					      table_name, child_name, table_name, child_name);
+        if ( field_context == FIELD_CONTEXT_SELECT )
+                return prelude_string_sprintf(output, "%s.%s, %s.%s_gmtoff, 0",
+                                              table_name, child_name, table_name, child_name);
 
-	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+        return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
 }
 
 
 
 static int message_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "create_time") == 0 )
-		*table_name = strdup("Prelude_CreateTime");
-	else if ( strcmp(child_name, "detect_time") == 0 )
-		*table_name = strdup("Prelude_DetectTime");
-	else if ( strcmp(child_name, "analyzer_time") == 0 )
-		*table_name = strdup("Prelude_AnalyzerTime");
-	else
-		return default_table_name_resolver(path, table_name);
+        if ( strcmp(child_name, "create_time") == 0 )
+                *table_name = strdup("Prelude_CreateTime");
+        else if ( strcmp(child_name, "detect_time") == 0 )
+                *table_name = strdup("Prelude_DetectTime");
+        else if ( strcmp(child_name, "analyzer_time") == 0 )
+                *table_name = strdup("Prelude_AnalyzerTime");
+        else
+                return default_table_name_resolver(path, table_name);
 
-	return *table_name ? 0 : prelude_error_from_errno(errno);
+        return *table_name ? 0 : prelude_error_from_errno(errno);
 }
 
 
 
 static int message_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
-				       prelude_string_t *output)
+                                       prelude_string_t *output)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "create_time") == 0 ||
-	     strcmp(child_name, "detect_time") == 0 ||
-	     strcmp(child_name, "analyzer_time") == 0 )
-		return time_with_usec_field_name_resolver(path, field_context, table_name, output);
+        if ( strcmp(child_name, "create_time") == 0 ||
+             strcmp(child_name, "detect_time") == 0 ||
+             strcmp(child_name, "analyzer_time") == 0 )
+                return time_with_usec_field_name_resolver(path, field_context, table_name, output);
 
-	return default_field_name_resolver(path, field_context, table_name, output);
+        return default_field_name_resolver(path, field_context, table_name, output);
 }
 
 
 
 static int process_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "arg") == 0 )
-		*table_name = strdup("Prelude_ProcessArg");
-	else if ( strcmp(child_name, "env") == 0 )
-		*table_name = strdup("Prelude_ProcessEnv");
+        if ( strcmp(child_name, "arg") == 0 )
+                *table_name = strdup("Prelude_ProcessArg");
+        else if ( strcmp(child_name, "env") == 0 )
+                *table_name = strdup("Prelude_ProcessEnv");
         else
-		*table_name = strdup("Prelude_Process");
+                *table_name = strdup("Prelude_Process");
 
-	return *table_name ? 0 : prelude_error_from_errno(errno);
+        return *table_name ? 0 : prelude_error_from_errno(errno);
 }
 
 
 
 static int file_access_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "permission") == 0 )
-		*table_name = strdup("Prelude_FileAccess_Permission");
+        if ( strcmp(child_name, "permission") == 0 )
+                *table_name = strdup("Prelude_FileAccess_Permission");
         else
                 *table_name = strdup("Prelude_FileAccess");
-        
-	return *table_name ? 0 : prelude_error_from_errno(errno);
+
+        return *table_name ? 0 : prelude_error_from_errno(errno);
 }
 
 
 
 static int web_service_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "arg") == 0 )
+        if ( strcmp(child_name, "arg") == 0 )
                 *table_name = strdup("Prelude_WebServiceArg");
         else
                 *table_name = strdup("Prelude_WebService");
 
-	return *table_name ? 0 : prelude_error_from_errno(errno);
+        return *table_name ? 0 : prelude_error_from_errno(errno);
 }
 
 
 
 static int snmp_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
-				    prelude_string_t *output)
+                                    prelude_string_t *output)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "oid") == 0 )
-		child_name = "snmp_oid";
+        if ( strcmp(child_name, "oid") == 0 )
+                child_name = "snmp_oid";
 
-	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+        return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
 }
 
 
 
 static int checksum_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
-					prelude_string_t *output)
+                                        prelude_string_t *output)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
-	if ( strcmp(child_name, "key") == 0 )
-		child_name = "checksum_key";
+        if ( strcmp(child_name, "key") == 0 )
+                child_name = "checksum_key";
 
-	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+        return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
 }
 
 
@@ -230,14 +230,14 @@ static int checksum_field_name_resolver(const idmef_path_t *path, int field_cont
 static int file_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
                                     prelude_string_t *output)
 {
-	const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
         if ( strcmp(child_name, "create_time") == 0 ||
              strcmp(child_name, "modify_time") == 0 ||
              strcmp(child_name, "access_time") == 0 )
-		return time_without_usec_field_name_resolver(path, field_context, table_name, output);
+                return time_without_usec_field_name_resolver(path, field_context, table_name, output);
 
-	return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+        return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
 }
 
 
@@ -250,12 +250,12 @@ typedef struct classic_idmef_class {
 
 
 static const classic_idmef_class_t classes[] = {
-	{ IDMEF_CLASS_ID_ALERT, message_table_name_resolver, message_field_name_resolver },
-	{ IDMEF_CLASS_ID_HEARTBEAT, message_table_name_resolver, message_field_name_resolver },
-	{ IDMEF_CLASS_ID_PROCESS, process_table_name_resolver, default_field_name_resolver },
-	{ IDMEF_CLASS_ID_SNMP_SERVICE, default_table_name_resolver, snmp_field_name_resolver },
+        { IDMEF_CLASS_ID_ALERT, message_table_name_resolver, message_field_name_resolver },
+        { IDMEF_CLASS_ID_HEARTBEAT, message_table_name_resolver, message_field_name_resolver },
+        { IDMEF_CLASS_ID_PROCESS, process_table_name_resolver, default_field_name_resolver },
+        { IDMEF_CLASS_ID_SNMP_SERVICE, default_table_name_resolver, snmp_field_name_resolver },
         { IDMEF_CLASS_ID_WEB_SERVICE, web_service_table_name_resolver, default_field_name_resolver },
-	{ IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver },
+        { IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver },
         { IDMEF_CLASS_ID_FILE, default_table_name_resolver, file_field_name_resolver },
         { IDMEF_CLASS_ID_FILE_ACCESS, file_access_table_name_resolver, default_field_name_resolver },
 };
@@ -263,153 +263,153 @@ static const classic_idmef_class_t classes[] = {
 
 
 static const classic_idmef_class_t default_class = {
-	0,
-	default_table_name_resolver,
-	default_field_name_resolver
+        0,
+        default_table_name_resolver,
+        default_field_name_resolver
 };
 
 
 
 static const classic_idmef_class_t *search_path(const idmef_path_t *path)
 {
-	idmef_class_id_t class_id;
-	int i;
+        idmef_class_id_t class_id;
+        int i;
 
-	class_id = idmef_path_get_class(path, idmef_path_get_depth(path) - 2);
+        class_id = idmef_path_get_class(path, idmef_path_get_depth(path) - 2);
 
-	for ( i = 0; i < sizeof (classes) / sizeof (classes[0]); i++ )
-		if ( class_id == classes[i].id )
-			return &classes[i];
+        for ( i = 0; i < sizeof (classes) / sizeof (classes[0]); i++ )
+                if ( class_id == classes[i].id )
+                        return &classes[i];
 
-	return &default_class;
+        return &default_class;
 }
 
 
 
 static int classic_path_resolve(const idmef_path_t *path, int field_context,
-				classic_sql_join_t *join, prelude_string_t *output)
+                                classic_sql_join_t *join, prelude_string_t *output)
 {
-	const classic_idmef_class_t *class;
-	classic_sql_joined_table_t *table;
-	char *table_name;
-	int ret;
+        const classic_idmef_class_t *class;
+        classic_sql_joined_table_t *table;
+        char *table_name;
+        int ret;
 
-	if ( idmef_path_get_depth(path) == 2 && idmef_path_get_value_type(path, 1) != IDMEF_VALUE_TYPE_TIME )
-		return default_field_name_resolver(path, field_context, "top_table", output);
+        if ( idmef_path_get_depth(path) == 2 && idmef_path_get_value_type(path, 1) != IDMEF_VALUE_TYPE_TIME )
+                return default_field_name_resolver(path, field_context, "top_table", output);
 
-	class = search_path(path);
+        class = search_path(path);
 
-	table = classic_sql_join_lookup_table(join, path);
+        table = classic_sql_join_lookup_table(join, path);
 
-	if ( ! table ) {
-		ret = class->resolve_table_name(path, &table_name);
-		if ( ret < 0 )
-			return ret;
+        if ( ! table ) {
+                ret = class->resolve_table_name(path, &table_name);
+                if ( ret < 0 )
+                        return ret;
 
-		ret = classic_sql_join_new_table(join, &table, path, table_name);
-		if ( ret < 0 )
-			return ret;
-	}
+                ret = classic_sql_join_new_table(join, &table, path, table_name);
+                if ( ret < 0 )
+                        return ret;
+        }
 
-	return class->resolve_field_name(path, field_context,
-					 classic_sql_joined_table_get_name(table), output);
+        return class->resolve_field_name(path, field_context,
+                                         classic_sql_joined_table_get_name(table), output);
 }
 
 
 
 int classic_path_resolve_selected(preludedb_sql_t *sql,
-				  preludedb_selected_path_t *selected,
-				  classic_sql_join_t *join, classic_sql_select_t *select)
+                                  preludedb_selected_path_t *selected,
+                                  classic_sql_join_t *join, classic_sql_select_t *select)
 {
-	idmef_path_t *path;
-	preludedb_selected_path_flags_t flags;
-	prelude_string_t *field_name;
-	int ret;
-	int field_context;
+        idmef_path_t *path;
+        preludedb_selected_path_flags_t flags;
+        prelude_string_t *field_name;
+        int ret;
+        int field_context;
 
-	ret = prelude_string_new(&field_name);
-	if ( ret < 0 )
-		return ret;
+        ret = prelude_string_new(&field_name);
+        if ( ret < 0 )
+                return ret;
 
-	path = preludedb_selected_path_get_path(selected);
-	flags = preludedb_selected_path_get_flags(selected);
+        path = preludedb_selected_path_get_path(selected);
+        flags = preludedb_selected_path_get_flags(selected);
 
-	if ( flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
-		      PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-		      PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|
-		      PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
-		      PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT) )
-		field_context = FIELD_CONTEXT_FUNCTION;
-	else
-		field_context = FIELD_CONTEXT_SELECT;
+        if ( flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT) )
+                field_context = FIELD_CONTEXT_FUNCTION;
+        else
+                field_context = FIELD_CONTEXT_SELECT;
 
-	ret = classic_path_resolve(path, field_context, join, field_name);
-	if ( ret < 0 )
-		goto error;
+        ret = classic_path_resolve(path, field_context, join, field_name);
+        if ( ret < 0 )
+                goto error;
 
-	ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags);
+        ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags);
 
  error:
-	prelude_string_destroy(field_name);
+        prelude_string_destroy(field_name);
 
-	return ret;	
+        return ret;
 }
 
 
 
 int classic_path_resolve_selection(preludedb_sql_t *sql,
-				   preludedb_path_selection_t *selection,
-				   classic_sql_join_t *join, classic_sql_select_t *select)
+                                   preludedb_path_selection_t *selection,
+                                   classic_sql_join_t *join, classic_sql_select_t *select)
 {
-	preludedb_selected_path_t *selected = NULL;
-	int ret;
+        preludedb_selected_path_t *selected = NULL;
+        int ret;
 
-	while ( (selected = preludedb_path_selection_get_next(selection, selected)) ) {
-		ret = classic_path_resolve_selected(sql, selected, join, select);
-		if ( ret < 0 )
-			return ret;
-	}
+        while ( (selected = preludedb_path_selection_get_next(selection, selected)) ) {
+                ret = classic_path_resolve_selected(sql, selected, join, select);
+                if ( ret < 0 )
+                        return ret;
+        }
 
-	return 0;
+        return 0;
 }
 
 
 
 static int classic_path_resolve_criterion(preludedb_sql_t *sql,
-					  idmef_criterion_t *criterion,
-					  classic_sql_join_t *join, prelude_string_t *output)
+                                          idmef_criterion_t *criterion,
+                                          classic_sql_join_t *join, prelude_string_t *output)
 {
-	prelude_string_t *field_name;
-	int ret;
+        prelude_string_t *field_name;
+        int ret;
 
-	ret = prelude_string_new(&field_name);
-	if ( ret < 0 )
-		return ret;
+        ret = prelude_string_new(&field_name);
+        if ( ret < 0 )
+                return ret;
 
-	ret = classic_path_resolve(idmef_criterion_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
-	if ( ret < 0 )
-		goto error;
+        ret = classic_path_resolve(idmef_criterion_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
+        if ( ret < 0 )
+                goto error;
 
-	ret = preludedb_sql_build_criterion_string(sql, output,
-						   prelude_string_get_string(field_name),
-						   idmef_criterion_get_operator(criterion),
-						   idmef_criterion_get_value(criterion));
+        ret = preludedb_sql_build_criterion_string(sql, output,
+                                                   prelude_string_get_string(field_name),
+                                                   idmef_criterion_get_operator(criterion),
+                                                   idmef_criterion_get_value(criterion));
 
  error:
-	prelude_string_destroy(field_name);
+        prelude_string_destroy(field_name);
 
-	return ret;
+        return ret;
 }
 
 
 
 int classic_path_resolve_criteria(preludedb_sql_t *sql,
-				  idmef_criteria_t *criteria,
-				  classic_sql_join_t *join, prelude_string_t *output)
+                                  idmef_criteria_t *criteria,
+                                  classic_sql_join_t *join, prelude_string_t *output)
 {
-	int ret;
+        int ret;
         idmef_criteria_t *or, *and;
-        
+
         or = idmef_criteria_get_or(criteria);
         and = idmef_criteria_get_and(criteria);
 
