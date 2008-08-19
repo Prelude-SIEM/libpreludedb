@@ -201,6 +201,12 @@ AC_SUBST(PGSQL_LIBDIR)
 AC_SUBST(PGSQL_INCLUDEDIR)
 
 
+LIBS_bkp=$LIBS
+LIBS="-L$PGSQL_LIBDIR -lpq"
+AC_CHECK_FUNC(PQserverVersion, AC_DEFINE(HAVE_PQSERVERVERSION, , [Define if PQserverVersion function is available]))
+LIBS=$LIBS_bkp;
+
+
 
 dnl ********************************************************
 dnl * Check for the SQLite3 library (SQLite3 plugin)       *

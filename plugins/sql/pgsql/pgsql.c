@@ -192,9 +192,11 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
                 return -1;
         }
 
+#ifdef HAVE_PQSERVERVERSION
         if ( PQserverVersion(session) >= 80200 )
                 ret = prelude_string_sprintf(string, "E'%s'", ptr);
         else
+#endif
                 ret = prelude_string_sprintf(string, "'%s'", ptr);
 
         free(ptr);
