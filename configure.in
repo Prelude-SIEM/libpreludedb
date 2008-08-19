@@ -5,7 +5,7 @@ AC_CANONICAL_SYSTEM
 AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE(libpreludedb, 0.9.14.1)
 
-dnl library soname 
+dnl library soname
 dnl check http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91
 libpreludedb_current=4
 libpreludedb_revision=6
@@ -39,11 +39,11 @@ AC_SUBST(LDFLAGS)
 
 
 if test "x$prefix" = "xNONE"; then
-	prefix="/usr/local"
+        prefix="/usr/local"
 fi
 
 if test "x$localstatedir" = "x\${prefix}/var"; then
-	localstatedir="$prefix/var"
+        localstatedir="$prefix/var"
 fi
 
 if test "x$sysconfdir" = "x\${prefix}/etc"; then
@@ -70,8 +70,8 @@ case "$host_os" in
         # headers.
         #
         AC_MSG_RESULT(Darwin: adding -no-cpp-precomp)
-	AX_CFLAGS_GCC_OPTION(-no-cpp-precomp)
-        libext=dylib	
+        AX_CFLAGS_GCC_OPTION(-no-cpp-precomp)
+        libext=dylib
         ;;
  *)
         AC_MSG_RESULT(none needed)
@@ -106,7 +106,7 @@ dnl ***************************************************
 dnl * Check for the MySQL library (MySQL plugin       *
 dnl ***************************************************
 
-AC_ARG_WITH(mysql, AC_HELP_STRING(--with-mysql=@<:@=PATH@:>@, Enable MySQL plugin @<:@default=auto@:>@), 
+AC_ARG_WITH(mysql, AC_HELP_STRING(--with-mysql=@<:@=PATH@:>@, Enable MySQL plugin @<:@default=auto@:>@),
             mysql_required=true, with_mysql=yes)
 
 if test x$with_mysql != xno; then
@@ -145,7 +145,7 @@ if test x$with_mysql != xno; then
 
       AC_CHECK_FUNC(mysql_real_escape_string, have_real_escape_string=yes)
       if test x$have_real_escape_string = xyes; then
-      	AC_DEFINE(HAVE_MYSQL_REAL_ESCAPE_STRING, , mysql_real_escape_string function present)
+        AC_DEFINE(HAVE_MYSQL_REAL_ESCAPE_STRING, , mysql_real_escape_string function present)
       fi
 
       AC_CHECK_HEADER(mysql.h, with_mysql=yes, with_mysql=no)
@@ -171,7 +171,7 @@ dnl ********************************************************
 dnl * Check for the PostgreSQL library (PostgreSQL plugin) *
 dnl ********************************************************
 
-AC_ARG_WITH(pgsql, AC_HELP_STRING(--with-pgsql=@<:@=PFX@:>@, Enable PostgreSQL plugin @<:@default=auto@:>@), 
+AC_ARG_WITH(pgsql, AC_HELP_STRING(--with-pgsql=@<:@=PFX@:>@, Enable PostgreSQL plugin @<:@default=auto@:>@),
             pgsql_required=true, with_pgsql=yes)
 
 if test x$with_pgsql != xno; then
@@ -181,14 +181,14 @@ if test x$with_pgsql != xno; then
    with_pgsql=no
 
    if test x$PG_CONFIG != xno; then
-	PGSQL_LIBDIR=`$PG_CONFIG --libdir`
-	PGSQL_INCLUDEDIR=`$PG_CONFIG --includedir`
+        PGSQL_LIBDIR=`$PG_CONFIG --libdir`
+        PGSQL_INCLUDEDIR=`$PG_CONFIG --includedir`
 
-	AC_CHECK_HEADER($PGSQL_INCLUDEDIR/libpq-fe.h, with_pgsql=yes)
-	if test x$with_pgsql != xyes; then
-	   PGSQL_INCLUDEDIR="$PGSQL_INCLUDEDIR/postgresql"
-	   AC_CHECK_HEADER($PGSQL_INCLUDEDIR/libpq-fe.h, with_pgsql=yes)
-	fi
+        AC_CHECK_HEADER($PGSQL_INCLUDEDIR/libpq-fe.h, with_pgsql=yes)
+        if test x$with_pgsql != xyes; then
+           PGSQL_INCLUDEDIR="$PGSQL_INCLUDEDIR/postgresql"
+           AC_CHECK_HEADER($PGSQL_INCLUDEDIR/libpq-fe.h, with_pgsql=yes)
+        fi
    fi
 
    if test x$pgsql_required = xtrue && (test x$PG_CONFIG = xno -o x$with_pgsql != xyes); then
@@ -206,7 +206,7 @@ dnl ********************************************************
 dnl * Check for the SQLite3 library (SQLite3 plugin)       *
 dnl ********************************************************
 
-AC_ARG_WITH(sqlite3, AC_HELP_STRING(--with-sqlite3=@<:@=PFX@:>@, Enable Sqlite3 plugin @<:@default=auto@:>@), 
+AC_ARG_WITH(sqlite3, AC_HELP_STRING(--with-sqlite3=@<:@=PFX@:>@, Enable Sqlite3 plugin @<:@default=auto@:>@),
             sqlite3_required=true, with_sqlite3=yes)
 
 if test x$with_sqlite3 != xno; then
@@ -217,13 +217,13 @@ if test x$with_sqlite3 != xno; then
    for dir in $default_path; do
        AC_CHECK_FILE($dir/lib/libsqlite3.$libext, SQLITE3_LIBS="-L$dir -lsqlite3")
        if test -z "$SQLITE3_LIBS"; then
-	  continue
+          continue
        fi
 
        AC_CHECK_FILE($dir/include/sqlite3.h, SQLITE3_CFLAGS="-I$dir")
        if test -n "$SQLITE3_CFLAGS"; then
           with_sqlite3=yes
-	  break
+          break
        fi
    done
 
@@ -248,7 +248,7 @@ dnl **************************************************
 dnl * Swig support                                   *
 dnl **************************************************
 
-AC_ARG_WITH(swig, AC_HELP_STRING(--with-swig@<:@=PATH@:>@, Re-generate perl/python bindings sources @<:@default=auto@:>@), 
+AC_ARG_WITH(swig, AC_HELP_STRING(--with-swig@<:@=PATH@:>@, Re-generate perl/python bindings sources @<:@default=auto@:>@),
             [swig_required=true; if test x$withval = xyes; then with_swig="swig"; fi], with_swig="swig")
 
 if test x$with_swig != xno; then
@@ -256,7 +256,7 @@ if test x$with_swig != xno; then
 
    if test x$SWIG = xno; then
       if test x$swig_required = xtrue; then
-	 AC_MSG_ERROR([Could not find $with_swig binary])
+         AC_MSG_ERROR([Could not find $with_swig binary])
       fi
    fi
 fi
@@ -268,7 +268,7 @@ dnl **************************************************
 dnl * Perl support                                   *
 dnl **************************************************
 
-AC_ARG_WITH(perl, AC_HELP_STRING(--with-perl@<:@=PATH@:>@, Enable support for perl binding @<:@default=auto@:>@), 
+AC_ARG_WITH(perl, AC_HELP_STRING(--with-perl@<:@=PATH@:>@, Enable support for perl binding @<:@default=auto@:>@),
             [perl_required=true; if test x$withval = xyes; then with_perl="perl"; fi], with_perl="perl")
 
 if test x$with_perl != xno; then
@@ -277,16 +277,16 @@ if test x$with_perl != xno; then
 
    if test x$PERL = xno; then
       if test x$perl_required = xtrue; then
-	 AC_MSG_ERROR([Could not find $with_perl binary])
+         AC_MSG_ERROR([Could not find $with_perl binary])
       fi
-      
+
       with_perl=no
    else
       PERL_CFLAGS="-I`$PERL -e 'use Config; print $Config{archlib}'`/CORE"
-      
+
       old_CPPFLAGS="$CPPFLAGS"
       CPPFLAGS="$CPPFLAGS $PERL_CFLAGS"
-      
+
       AC_CHECK_HEADER(EXTERN.h, [AC_CHECK_HEADER(perl.h, with_perl=yes, with_perl=no, [#include <EXTERN.h>])], with_perl=no)
       CPPFLAGS="$old_CPPFLAGS"
    fi
@@ -314,14 +314,14 @@ dnl * Python support                                 *
 dnl **************************************************
 
 
-AC_ARG_WITH(python, AC_HELP_STRING(--with-python@<:@=PATH@:>@, Enable support for python binding @<:@default=auto@:>@), 
+AC_ARG_WITH(python, AC_HELP_STRING(--with-python@<:@=PATH@:>@, Enable support for python binding @<:@default=auto@:>@),
             [python_required=true; if test x$withval = xyes; then with_python="python"; fi], with_python="python")
 
 if test x$with_python != xno; then
 
    AC_PATH_PROG(PYTHON, `basename $with_python`, no, `dirname $with_python`:$PATH)
    if test x$PYTHON = xno; then
-      if test x$python_required = xtrue; then 
+      if test x$python_required = xtrue; then
          AC_MSG_ERROR([Could not find $with_python binary])
       fi
 
@@ -329,7 +329,7 @@ if test x$with_python != xno; then
    else
       old_CPPFLAGS="$CPPFLAGS"
       CPPFLAGS="-I`$PYTHON -c 'from distutils.sysconfig import get_python_inc; print get_python_inc()'`"
-      
+
       AC_CHECK_HEADER(Python.h, with_python=yes, with_python=no)
       CPPFLAGS="$old_CPPFLAGS"
    fi
@@ -420,9 +420,9 @@ AC_OUTPUT
 
 echo
 echo "*** Dumping configuration ***"
-echo "    - Generate documentation 	: $enable_gtk_doc"
-echo "    - Enable MySQL plugin    	: $with_mysql"
-echo "    - Enable PostgreSQL plugin 	: $with_pgsql"
-echo "    - Enable SQLite3 plugin	: $with_sqlite3"
-echo "    - Perl binding		: $with_perl"
-echo "    - Python binding		: $with_python";
+echo "    - Generate documentation      : $enable_gtk_doc"
+echo "    - Enable MySQL plugin         : $with_mysql"
+echo "    - Enable PostgreSQL plugin    : $with_pgsql"
+echo "    - Enable SQLite3 plugin       : $with_sqlite3"
+echo "    - Perl binding                : $with_perl"
+echo "    - Python binding              : $with_python";
