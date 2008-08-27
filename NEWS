@@ -1,3 +1,20 @@
+* 2008-08-27, libpreludedb-0.9.15:
+
+- preludedb-admin has a bew 'count' command, printing the result of a
+  COUNT() on the database.
+
+- preludedb-admin work on smaller set of data, to prevent large
+  retrieval error (fix #220, refs #305).
+
+- preludedb-admin handling of interrupted transaction was improved.
+
+- Fix MySQL and SQLite MacOSX detection, by
+  Uwe Schwartz <usx303 at googlemail.com>. (fix #296).
+
+- Check PostgreSQL version is higher or equal than 8.2.0, and use the
+  new E'value' escape method when available to avoid a warning.
+
+
 * 2008-01-03, libpreludedb-0.9.14.1:
 
 - Fix PostgreSQL upgrade script (fix #271).

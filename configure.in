@@ -11,8 +11,8 @@ dnl **********************************************************
 
 libpreludedb_major=0
 libpreludedb_minor=9
-libpreludedb_micro=14
-libpreludedb_patchlevel=1
+libpreludedb_micro=15
+libpreludedb_patchlevel=
 libpreludedb_version=$libpreludedb_major.$libpreludedb_minor.$libpreludedb_micro$libpreludedb_patchlevel
 
 
@@ -20,7 +20,7 @@ dnl **********************************************************
 dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
 dnl **********************************************************
 libpreludedb_current=4
-libpreludedb_revision=6
+libpreludedb_revision=7
 libpreludedb_age=4
 LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 

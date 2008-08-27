@@ -162,31 +162,6 @@ preludedb_t *db
 <RETURNS>int </RETURNS>
 preludedb_t *db
 </FUNCTION>
-<STRUCT>
-<NAME>preludedb_plugin_format</NAME>
-struct preludedb_plugin_format {
-	PRELUDE_PLUGIN_GENERIC;
-
-        preludedb_plugin_format_check_schema_version_func_t check_schema_version;
-        preludedb_plugin_format_get_alert_idents_func_t get_alert_idents;
-        preludedb_plugin_format_get_heartbeat_idents_func_t get_heartbeat_idents;
-        preludedb_plugin_format_get_message_ident_count_func_t get_message_ident_count;
-        preludedb_plugin_format_get_next_message_ident_func_t get_next_message_ident;
-        preludedb_plugin_format_destroy_message_idents_resource_func_t destroy_message_idents_resource;
-        preludedb_plugin_format_get_alert_func_t get_alert;
-        preludedb_plugin_format_get_heartbeat_func_t get_heartbeat;
-        preludedb_plugin_format_delete_alert_func_t delete_alert;
-        preludedb_plugin_format_delete_alert_from_list_func_t delete_alert_from_list;
-        preludedb_plugin_format_delete_alert_from_result_idents_func_t delete_alert_from_result_idents;
-        preludedb_plugin_format_delete_heartbeat_func_t delete_heartbeat;
-        preludedb_plugin_format_delete_heartbeat_from_list_func_t delete_heartbeat_from_list;
-        preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t delete_heartbeat_from_result_idents;
-        preludedb_plugin_format_insert_message_func_t insert_message;
-        preludedb_plugin_format_get_values_func_t get_values;
-        preludedb_plugin_format_get_next_values_func_t get_next_values;
-        preludedb_plugin_format_destroy_values_resource_func_t destroy_values_resource;
-};
-</STRUCT>
 <TYPEDEF>
 <NAME>preludedb_plugin_format_t</NAME>
 typedef struct preludedb_plugin_format preludedb_plugin_format_t;
@@ -385,7 +360,7 @@ preludedb_plugin_format_t **ret
 </FUNCTION>
 <MACRO>
 <NAME>LIBPRELUDEDB_VERSION</NAME>
-#define LIBPRELUDEDB_VERSION "0.9.13"
+#define LIBPRELUDEDB_VERSION "0.9.15"
 </MACRO>
 <FUNCTION>
 <NAME>preludedb_check_version</NAME>
