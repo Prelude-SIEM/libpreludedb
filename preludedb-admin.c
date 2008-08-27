@@ -364,8 +364,11 @@ static int set_help(prelude_option_t *opt, const char *optarg, prelude_string_t 
 static void cmd_generic_help(void)
 {
         fprintf(stderr, "Database arguments:\n");
-        fprintf(stderr, "  type\t: Type of database (mysql/pgsql).\n");
+        fprintf(stderr, "  host\t: Host where the database engine listen (default:localhost).\n");
+        fprintf(stderr, "  port\t: Port where the database engine listen.\n");
+        fprintf(stderr, "  type\t: Type of database (mysql/pgsql/sqlite).\n");
         fprintf(stderr, "  name\t: Name of the database.\n");
+        fprintf(stderr, "  file\t: file where the database is stored (sqlite).\n");
         fprintf(stderr, "  user\t: User to access the database.\n");
         fprintf(stderr, "  pass\t: Password to access the database.\n\n");
 
@@ -447,7 +450,7 @@ static void cmd_count_help(void)
         fprintf(stderr, "Usage  : count <alert|heartbeat> <database> [options]\n");
         fprintf(stderr, "Example: preludedb-admin count alert \"type=mysql name=dbname user=prelude\"\n\n");
 
-        fprintf(stderr, "Retrieve the count from <database>.\n");
+        fprintf(stderr, "Retrieve event count from <database>.\n");
 
         cmd_generic_help();
 }
@@ -456,8 +459,9 @@ static void cmd_count_help(void)
 
 static void print_help(char **argv)
 {
-        fprintf(stderr, "Usage: %s <copy|delete|load|move|print|save> <arguments>\n\n", argv[0]);
+        fprintf(stderr, "Usage: %s <count|copy|delete|load|move|print|save> <arguments>\n\n", argv[0]);
 
+        fprintf(stderr, "\tcount  - Retrieve event count from the database.\n");
         fprintf(stderr, "\tcopy   - Make a copy of a Prelude database to another database.\n");
         fprintf(stderr, "\tdelete - Delete content of a Prelude database.\n");
         fprintf(stderr, "\tload   - Load a Prelude database from a file.\n");
