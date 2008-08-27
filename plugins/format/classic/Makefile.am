@@ -1,6 +1,6 @@
 SUBDIRS=include
 
-AM_CPPFLAGS=-I$(top_srcdir)/src/include -I$(srcdir)/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing -DFORMAT_CONFIG_DIR=\"@format_config_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @defined@
+AM_CPPFLAGS=@THREADCPPFLAGS@ @PCFLAGS@ -I$(top_srcdir)/src/include -I$(srcdir)/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing @LIBPRELUDE_CFLAGS@
 
 classic_la_LIBADD  = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 classic_la_LDFLAGS = -module -avoid-version @LIBPRELUDE_LDFLAGS@

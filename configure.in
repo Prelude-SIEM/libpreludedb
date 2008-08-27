@@ -1,92 +1,101 @@
-AC_INIT(src)
-dnl AC_CONFIG_SRCDIR([src])
-
-AC_CANONICAL_SYSTEM
+AC_INIT
+AC_CONFIG_SRCDIR([src])
 AC_PREREQ(2.59)
-AM_INIT_AUTOMAKE(libpreludedb, 0.9.14.1)
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
-dnl library soname
-dnl check http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91
+
+dnl **********************************************************
+dnl * Version and release information
+dnl **********************************************************
+
+libpreludedb_major=0
+libpreludedb_minor=9
+libpreludedb_micro=14
+libpreludedb_patchlevel=1
+libpreludedb_version=$libpreludedb_major.$libpreludedb_minor.$libpreludedb_micro$libpreludedb_patchlevel
+
+
+dnl **********************************************************
+dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
+dnl **********************************************************
 libpreludedb_current=4
 libpreludedb_revision=6
 libpreludedb_age=4
+LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 
-libpreludedb_soname=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
-AC_SUBST(libpreludedb_soname)
 
-AM_CONFIG_HEADER(config.h)
-AM_DISABLE_STATIC
-
+AM_INIT_AUTOMAKE(libpreludedb, $libpreludedb_version)
+AC_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
-dnl Checks for programs
+
+dnl **********************************************************
+dnl * Check required program.
+dnl **********************************************************
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
 AC_PROG_CC
 
 BINDINGS_CC="$CC"
-AC_SUBST(BINDINGS_CC)
+
+
+dnl **********************************************************
+dnl * Setup GnuLib, libtool and libltdl.
+dnl **********************************************************
 
 gl_EARLY
-
-AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-AC_C_INLINE
 AC_LIBTOOL_DLOPEN
-AM_PROG_LIBTOOL
+AC_LIBTOOL_WIN32_DLL
+AM_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 
-AC_SUBST(CPPFLAGS)
-AC_SUBST(LDFLAGS)
 
 
-if test "x$prefix" = "xNONE"; then
-        prefix="/usr/local"
+dnl **************************************************
+dnl * Setup custom compiler flags                    *
+dnl **************************************************
+
+AC_MSG_CHECKING(for cpu-specific compiler flags)
+if test "$host_cpu" == "x86_64" && test $enable_static = "yes"; then
+        AC_MSG_RESULT(x86_64/static: adding -fPIC)
+        AX_C_CHECK_FLAG(-fPIC, , , CPPFLAGS="$CPPFLAGS -fPIC")
+else
+        AC_MSG_RESULT(none needed)
 fi
 
-if test "x$localstatedir" = "x\${prefix}/var"; then
-        localstatedir="$prefix/var"
-fi
-
-if test "x$sysconfdir" = "x\${prefix}/etc"; then
-    sysconfdir="$prefix/etc"
-fi
-
-if test "x$datadir" = "x\${prefix}/share"; then
-    datadir="$prefix/share"
-fi
-
-
-dnl **********************************************************
-dnl * Check for platform specific flags                      *
-dnl **********************************************************
 AC_MSG_CHECKING(for platform-specific compiler flags)
-
 case "$host_os" in
  darwin*)
-        #
         # It may be called "cc", but it's really a GCC derivative
         # with a problematic special precompiler and precompiled
         # headers; turn off the special precompiler, as some
         # apparently-legal code won't compile with its precompiled
         # headers.
-        #
         AC_MSG_RESULT(Darwin: adding -no-cpp-precomp)
-        AX_CFLAGS_GCC_OPTION(-no-cpp-precomp)
+        AX_C_CHECK_FLAG(-no-cpp-precomp, , , PCFLAGS="$PCFLAGS -no-cpp-precomp")
         libext=dylib
         ;;
  *)
-        AC_MSG_RESULT(none needed)
         libext=so
+        AC_MSG_RESULT(none needed)
         ;;
 esac
 
+AX_LD_CHECK_FLAG(-z relro, , , LDFLAGS="$LDFLAGS -z relro")
+AX_LD_CHECK_FLAG(-z now, , , LDFLAGS="$LDFLAGS -z now")
 
-dnl **************************************************
-dnl * Check for missing function replacement         *
-dnl **************************************************
-gl_SOURCE_BASE(libmissing)
-gl_M4_BASE(libmissing/m4)
-gl_INIT
 
+for i in -Wall -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
+         -Wbad-function-cast -Wcast-qual -Wcast-align -Wnested-externs -Wunused \
+         -Wformat -Wformat-security; do
+        AX_C_CHECK_FLAG($i, , , PCFLAGS="$PCFLAGS $i")
+done
+
+if test x$buggy_pthread_initializers = xyes; then
+   AX_C_CHECK_FLAG(-Wno-missing-braces, , , PCFLAGS="$PCFLAGS -Wno-missing-braces")
+fi
 
 
 dnl **************************************************
@@ -95,18 +104,12 @@ dnl **************************************************
 
 AM_PATH_LIBPRELUDE(0.9.9, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?) )
 
-defined="$defined $LIBPRELUDE_CFLAGS"
-
-AC_SUBST(defined)
-
-dnl ********************************* database stuff
-
 
 dnl ***************************************************
 dnl * Check for the MySQL library (MySQL plugin       *
 dnl ***************************************************
 
-AC_ARG_WITH(mysql, AC_HELP_STRING(--with-mysql=@<:@=PATH@:>@, Enable MySQL plugin @<:@default=auto@:>@),
+AC_ARG_WITH(mysql-prefix, AC_HELP_STRING(--with-mysql-prefix=@<:@=PATH@:>@, Enable MySQL plugin @<:@default=auto@:>@),
             mysql_required=true, with_mysql=yes)
 
 if test x$with_mysql != xno; then
@@ -171,7 +174,7 @@ dnl ********************************************************
 dnl * Check for the PostgreSQL library (PostgreSQL plugin) *
 dnl ********************************************************
 
-AC_ARG_WITH(pgsql, AC_HELP_STRING(--with-pgsql=@<:@=PFX@:>@, Enable PostgreSQL plugin @<:@default=auto@:>@),
+AC_ARG_WITH(pgsql-prefix, AC_HELP_STRING(--with-pgsql-prefix=@<:@=PFX@:>@, Enable PostgreSQL plugin @<:@default=auto@:>@),
             pgsql_required=true, with_pgsql=yes)
 
 if test x$with_pgsql != xno; then
@@ -212,7 +215,7 @@ dnl ********************************************************
 dnl * Check for the SQLite3 library (SQLite3 plugin)       *
 dnl ********************************************************
 
-AC_ARG_WITH(sqlite3, AC_HELP_STRING(--with-sqlite3=@<:@=PFX@:>@, Enable Sqlite3 plugin @<:@default=auto@:>@),
+AC_ARG_WITH(sqlite3-prefix, AC_HELP_STRING(--with-sqlite3-prefix=@<:@=PFX@:>@, Enable Sqlite3 plugin @<:@default=auto@:>@),
             sqlite3_required=true, with_sqlite3=yes)
 
 if test x$with_sqlite3 != xno; then
@@ -344,6 +347,13 @@ fi
 AM_CONDITIONAL(HAVE_PYTHON, test x$with_python = xyes)
 
 
+dnl **************************************************
+dnl * Check for missing function replacement         *
+dnl **************************************************
+gl_SOURCE_BASE(libmissing)
+gl_M4_BASE(libmissing/m4)
+gl_INIT
+
 
 dnl **************************************************
 dnl * Check for GTK-DOC                              *
@@ -351,41 +361,49 @@ dnl **************************************************
 
 GTK_DOC_CHECK(1.0)
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl **************************************************
+dnl * Typedefs, structures, compiler characteristics.*
+dnl **************************************************
+
 AC_C_CONST
+AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_HEADER_TIME
 
 
-db_plugin_dir=$libdir/libpreludedb/plugins
+
+dnl **************************************************
+dnl * Check for GTK-DOC                              *
+dnl **************************************************
+
+GTK_DOC_CHECK(1.0)
+
+
+dnl **************************************************
+dnl * Setup build variable                           *
+dnl **************************************************
+
+AC_SUBST(PCFLAGS)
+AC_SUBST(BINDINGS_CC)
+AC_SUBST(LIBPRELUDEDB_SONAME)
+
+AS_AC_EXPAND(LIBDIR, $libdir)
+AS_AC_EXPAND(DATADIR, $datadir)
+AS_AC_EXPAND(SYSCONFDIR, $sysconfdir)
+
+
+db_plugin_dir=$LIBDIR/libpreludedb/plugins
 sql_plugin_dir=$db_plugin_dir/sql
 format_plugin_dir=$db_plugin_dir/formats
-format_schema_dir=$datadir/libpreludedb
-format_config_dir=$sysconfdir/libpreludedb/plugins/formats
+format_schema_dir=$DATADIR/libpreludedb
 
-AC_SUBST(db_plugin_dir)
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
-AC_SUBST(format_config_dir)
 AC_SUBST(format_schema_dir)
 
-AX_CFLAGS_GCC_OPTION(-Wall)
-AX_CFLAGS_GCC_OPTION(-Wstrict-prototypes)
-AX_CFLAGS_GCC_OPTION(-Wmissing-prototypes)
-AX_CFLAGS_GCC_OPTION(-Wmissing-declarations)
-AX_CFLAGS_GCC_OPTION(-Wbad-function-cast)
-AX_CFLAGS_GCC_OPTION(-Wcast-qual)
-AX_CFLAGS_GCC_OPTION(-Wcast-align)
-AX_CFLAGS_GCC_OPTION(-Wnested-externs)
-AX_CFLAGS_GCC_OPTION(-Wunused)
-AX_CFLAGS_GCC_OPTION(-Wformat)
-AX_CFLAGS_GCC_OPTION(-Wformat-security)
-
-
-AC_SUBST(CFLAGS)
 
 AC_CONFIG_FILES([
-
 libpreludedb-config
 
 Makefile
@@ -417,12 +435,8 @@ bindings/perl/Makefile.PL
 bindings/python/setup.py
 
 ])
-
 AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
-
 AC_OUTPUT
-
-
 
 
 echo

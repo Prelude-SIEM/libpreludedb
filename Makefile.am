@@ -7,12 +7,9 @@ SUBDIRS = m4 libmissing src plugins bindings docs
 bin_SCRIPTS = $(top_builddir)/libpreludedb-config
 distuninstallcheck_listfiles = find . -type f -print | grep -v 'perl' | grep -v '3pm'
 
-AM_CPPFLAGS = @defined@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing 
+AM_CPPFLAGS = @PCFLAGS@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing @LIBPRELUDE_CFLAGS@
 bin_PROGRAMS = preludedb-admin
 
 preludedb_admin_LDFLAGS = @LIBPRELUDE_LDFLAGS@
 preludedb_admin_LDADD = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 preludedb_admin_SOURCES = preludedb-admin.c
-
-check-local:
-	cd $(top_srcdir)/libmissing/tests && $(MAKE) check
