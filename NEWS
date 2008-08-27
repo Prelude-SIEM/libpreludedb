@@ -55,391 +55,391 @@
 
 * 2007-03-17, libpreludedb-0.9.12:
 
-        - [sqlite3] Provide case-insensitive regex. 
+        - [sqlite3] Provide case-insensitive regex.
 
-        - [preludedb-admin] Loading of multiple file and improved reporting. 
+        - [preludedb-admin] Loading of multiple file and improved reporting.
 
-        - Provide substring match for AdditionalData value. 
+        - Provide substring match for AdditionalData value.
 
-        - Fix insertion issue for ProcessArg and File Linkage. 
-        
-        - Fix a bug when retrieving an empty time field (following retrieved fields 
+        - Fix insertion issue for ProcessArg and File Linkage.
+
+        - Fix a bug when retrieving an empty time field (following retrieved fields
           where not the one expected).
-                
-        - When a given SQL function is not implemented by the driver, return a detailed 
-          error message with information concerning the missing function. 
-                   
-        - Implement Python only get_values, get_heartbeat_idents, get_alert_idents. 
-          Return the number of rows as well as the rows in a tupple. 
-                 
-        - Make sure we have an exception to process: fix a crash with Python bindings 
-          upon signal reception. Fix #200. 
-        
-        
-* 2007-02-07, libpreludedb-0.9.11.3:
-	
-	- Fix invalid free() in the SQLite plugin.
 
-	- Fix preludedb-admin copy/move operations.
+        - When a given SQL function is not implemented by the driver, return a detailed
+          error message with information concerning the missing function.
+
+        - Implement Python only get_values, get_heartbeat_idents, get_alert_idents.
+          Return the number of rows as well as the rows in a tupple.
+
+        - Make sure we have an exception to process: fix a crash with Python bindings
+          upon signal reception. Fix #200.
+
+
+* 2007-02-07, libpreludedb-0.9.11.3:
+
+        - Fix invalid free() in the SQLite plugin.
+
+        - Fix preludedb-admin copy/move operations.
 
 
 * 2007-01-08, libpreludedb-0.9.11.2:
 
         - Fix make installation error when Perl bindings are disabled.
-        
-        
+
+
 * 2007-01-05, libpreludedb-0.9.11.1:
-        
+
         - Prevent binding generation error when using old SWIG version.
-        
+
         - Generate bindings for the error handling API.
-        
-        - Small Perl/Python detection improvement. Fix #182. 
-        
+
+        - Small Perl/Python detection improvement. Fix #182.
+
         - Fix bindings compilation when using make -j.
-        
-        - New configure --with-perl-installdirs flags: might be used to override 
+
+        - New configure --with-perl-installdirs flags: might be used to override
           default site perl installation.
 
         - Various bug fixes.
-        
+
 
 * 2006-12-20, libpreludedb-0.9.11:
 
         - Avoid using GNU sed extension when generating postgresql/sqlite schema.
-        
+
         - Fix a Python binding memory leak upon alert list deletion.
-        
+
         - Compile and run on OS X.
-        
+
         - Various bugfixes.
-        
+
         - Various portability fixes.
-        
+
 
 * 2006-10-06, libpreludedb-0.9.10:
 
-	- Fix PostgreSQL schema update version 5.
+        - Fix PostgreSQL schema update version 5.
 
-	- Only export symbol starting with preludedb_.
+        - Only export symbol starting with preludedb_.
 
-	- Verbose error reporting in case of libpreludedb initialization failure.
+        - Verbose error reporting in case of libpreludedb initialization failure.
 
 
 * 2006-08-11, libpreludedb-0.9.9:
 
-	- Implement an idea from Lex van Roon <r3boot@r3blog.nl.eu.org> providing
-	  an alert/heartbeat deletion performance improvement in the order of 
-	  3000% (preludedb-admin already benefit from it, next Prewikka release 
-	  will benefit from it too).
+        - Implement an idea from Lex van Roon <r3boot@r3blog.nl.eu.org> providing
+          an alert/heartbeat deletion performance improvement in the order of
+          3000% (preludedb-admin already benefit from it, next Prewikka release
+          will benefit from it too).
 
-	- Fix --with-(perl|python|swig) detection path ordering.
+        - Fix --with-(perl|python|swig) detection path ordering.
 
-	- Verbose error reporting on logfile opening error.
+        - Verbose error reporting on logfile opening error.
 
-	- Various bug fixes.
+        - Various bug fixes.
 
 
 * 2006-07-03, libpreludedb-0.9.8.1:
 
-	- Bump database schema version (fix invalid database version error).
+        - Bump database schema version (fix invalid database version error).
 
 
 * 2006-06-06, libpreludedb-0.9.8:
 
-	- Always use prelude_escape_binary() when inserting additional data, even in case 
-	  we're inserting a string, since the database field might be of a type that require 
-	  binary kind of escaping. Fix #143.
+        - Always use prelude_escape_binary() when inserting additional data, even in case
+          we're inserting a string, since the database field might be of a type that require
+          binary kind of escaping. Fix #143.
 
-	- Implement reading of message_processing_model, security_model, security_level.
-	  Handling of community member is deprecated (IDMEFv16 update).
+        - Implement reading of message_processing_model, security_model, security_level.
+          Handling of community member is deprecated (IDMEFv16 update).
 
-	- Fix a bug where Service->ip_version would not be read from database.
+        - Fix a bug where Service->ip_version would not be read from database.
 
-	- Upon connection to a PostgreSQL database, set default date style to ISO: 
-	  this is needed since libpreludedb assume ISO format to parse database timestamp.
-	  Fix #140.
+        - Upon connection to a PostgreSQL database, set default date style to ISO:
+          this is needed since libpreludedb assume ISO format to parse database timestamp.
+          Fix #140.
 
-	- Error reporting improvement.
+        - Error reporting improvement.
 
 
 * 2006-03-30, libpreludedb-0.9.7.1:
-	
-	- Flush the SQL query logfile after each query.
 
-	- Add --events-per-transaction option to preludedb-admin, default
-	  value is 1000, which prevent heavy VM pressure on large database 
-	  operation.
+        - Flush the SQL query logfile after each query.
+
+        - Add --events-per-transaction option to preludedb-admin, default
+          value is 1000, which prevent heavy VM pressure on large database
+          operation.
 
 
 * 2006-03-24, libpreludedb-0.9.7:
 
-	- Fix Perl/Python bindings uint64 handling on 32 bits machine.
+        - Fix Perl/Python bindings uint64 handling on 32 bits machine.
 
-	- Make preludedb_check_version available from Perl/Python bindings.
-	
-	- Use new IDMEF_LIST_APPEND primitive, require libprelude 0.9.6.
+        - Make preludedb_check_version available from Perl/Python bindings.
 
-	- Add libprelude dependencie to SQL plugins, since they depend on 
-	  libprelude symbols. Fix compilation problem with some distribution.
+        - Use new IDMEF_LIST_APPEND primitive, require libprelude 0.9.6.
 
-	- Use global transaction surrounding all operation in preludedb-admin,
-	  this bring a major performance improvement for insert operation.
+        - Add libprelude dependencie to SQL plugins, since they depend on
+          libprelude symbols. Fix compilation problem with some distribution.
 
-	- Fix PostgreSQL FileAccess query failure.
+        - Use global transaction surrounding all operation in preludedb-admin,
+          this bring a major performance improvement for insert operation.
 
-	- Dynamic PostgreSQL schema generation (this fix certain inefficient 
-	  datatype that were used in the old version). Update schema would be hard
-	  to do for all postgreSQL version, thus using preludedb-admin copy for 
-	  the update is required.
+        - Fix PostgreSQL FileAccess query failure.
 
-	- API improvement.
+        - Dynamic PostgreSQL schema generation (this fix certain inefficient
+          datatype that were used in the old version). Update schema would be hard
+          to do for all postgreSQL version, thus using preludedb-admin copy for
+          the update is required.
+
+        - API improvement.
 
 
 * 2006-03-08, libpreludedb-0.9.6:
 
-	- Fix PostgreSQL plugin compilation problem.
+        - Fix PostgreSQL plugin compilation problem.
 
-	- Update database schema: enforce that AdditionalData data field is not NULL.
+        - Update database schema: enforce that AdditionalData data field is not NULL.
 
-	- Improve Swig basic type mapping situation regarding to the target architecture.
+        - Improve Swig basic type mapping situation regarding to the target architecture.
 
-	- Fix query time calculation.
-	
+        - Fix query time calculation.
+
 
 * 2006-02-22, libpreludedb-0.9.5.1:
 
-	- Correctly read database schema version.
+        - Correctly read database schema version.
 
 
 * 2006-02-22, libpreludedb-0.9.5:
 
-	- Fix important memory leak in Python bindings, Prewikka should end-up 
-	  consuming way less memory than it used to.
+        - Fix important memory leak in Python bindings, Prewikka should end-up
+          consuming way less memory than it used to.
 
-	- Fix PostgreSQL plugin compilation problem.
+        - Fix PostgreSQL plugin compilation problem.
 
-	- Fix for preludedb-admin --count handling when --offset was used.
+        - Fix for preludedb-admin --count handling when --offset was used.
 
-	- Provide more information in preludedb-admin error message.
+        - Provide more information in preludedb-admin error message.
 
-	- Various cleanup.
+        - Various cleanup.
 
 
 * 2006-02-08, libpreludedb-0.9.4:
 
-	- Fix for filtering IDMEF field using the '!=' operator, which resulted in 
-	  filtering of events where the field did not exist (#129). 
+        - Fix for filtering IDMEF field using the '!=' operator, which resulted in
+          filtering of events where the field did not exist (#129).
 
-	- Implement a "move" command in preludedb-admin.
+        - Implement a "move" command in preludedb-admin.
 
-	- When SQL query logging is enabled, log the time taken to execute the query.
+        - When SQL query logging is enabled, log the time taken to execute the query.
 
-	- Improve plugin API by making it opaque so that existing plugin don't break
-	  if we add more SQL plugin function.
+        - Improve plugin API by making it opaque so that existing plugin don't break
+          if we add more SQL plugin function.
 
-	- Verbose error reporting, make the plugin error API viable for more drivers.
+        - Verbose error reporting, make the plugin error API viable for more drivers.
 
-	- Fix error reporting from perl and python bindings.
+        - Fix error reporting from perl and python bindings.
 
-	- Make libpreludedb header files c++ compiler friendly.
+        - Make libpreludedb header files c++ compiler friendly.
 
-	- Enforce listed IDMEF value ordering. IDMEF value were sometime unordered
-	  because of an uninitialized list position problem.
+        - Enforce listed IDMEF value ordering. IDMEF value were sometime unordered
+          because of an uninitialized list position problem.
 
 
 
 * 2005-01-16, libpreludedb-0.9.3:
 
-	- SQLite support.
+        - SQLite support.
 
-	- More accurate error reporting in preludedb-admin.
+        - More accurate error reporting in preludedb-admin.
 
-	- Fix NULL error in case the buffer is too small, truncate.
+        - Fix NULL error in case the buffer is too small, truncate.
 
-	- Fix license notice, stating clearly that linking from a program
-	  using a GPL compatible license is allowed. Required for Debian package 
-	  inclusion.
+        - Fix license notice, stating clearly that linking from a program
+          using a GPL compatible license is allowed. Required for Debian package
+          inclusion.
 
 
 
 * 2005-12-12, libpreludedb-0.9.2:
 
-	- Fix character escaping issue with two consecutive backslash 
-	  followed by a wildcard (we were escaping the wildcard, which
+        - Fix character escaping issue with two consecutive backslash
+          followed by a wildcard (we were escaping the wildcard, which
           is not supposed to be escaped in this case).
 
 
 * 2005-11-28, libpreludedb-0.9.1:
 
-	- Fix automated reconnection to the database server.
+        - Fix automated reconnection to the database server.
 
-	- Allow saving to standard output with preludedb-admin.
+        - Allow saving to standard output with preludedb-admin.
 
-	- Make preludedb-admin delete command safer to use: forbid deletion 
-	  unless a criteria is provided. 
+        - Make preludedb-admin delete command safer to use: forbid deletion
+          unless a criteria is provided.
 
-	- Workaround invalid library run path added through MakeMaker generated Makefile. 
+        - Workaround invalid library run path added through MakeMaker generated Makefile.
 
-	- Fix Perl bindings Makefile generated with DESTDIR appended twice. 
+        - Fix Perl bindings Makefile generated with DESTDIR appended twice.
 
 
 * 2005-09-20, libpreludedb-0.9.0:
 
-	- 0.9.0 final.
+        - 0.9.0 final.
 
-	- Make Perl/Python bindings more fault tolerant.
+        - Make Perl/Python bindings more fault tolerant.
 
 
 * 2005-09-15, libpreludedb-0.9.0-rc14:
 
-	- Correct Python bindings exception handling.
+        - Correct Python bindings exception handling.
 
-	- Fix alert saving in preludedb-admin.
+        - Fix alert saving in preludedb-admin.
 
-	- Perl bindings would fail to compile if perl was compiled using
-	  the platform (non gcc) compiler.
+        - Perl bindings would fail to compile if perl was compiled using
+          the platform (non gcc) compiler.
 
-	- Fix warnings.
+        - Fix warnings.
 
 
 * 2005-08-25, libpreludedb-0.9.0-rc13:
 
-	- Fix broken table comparison.
+        - Fix broken table comparison.
 
-	- Empty additional data are valid.
+        - Empty additional data are valid.
 
 
 * 2005-08-17, libpreludedb-0.9.0-rc12:
 
-	- Fix preludedb-admin link on some systems.
+        - Fix preludedb-admin link on some systems.
 
 
 * 2005-08-17, libpreludedb-0.9.0-rc11:
 
-	- More useful Python exception on PreludeDB error.
+        - More useful Python exception on PreludeDB error.
 
-	- Fix insertion of FileAccess Permission.
+        - Fix insertion of FileAccess Permission.
 
-	- Add missing retrieval of UserID tty.
+        - Add missing retrieval of UserID tty.
 
-	- Fine grained libprelude operator now allow us to have similar behavior
-	  between different database implementation. 
+        - Fine grained libprelude operator now allow us to have similar behavior
+          between different database implementation.
 
-	- Support for more operator, including case insensitive version of most
-	  operator, and a new regexp operator.
+        - Support for more operator, including case insensitive version of most
+          operator, and a new regexp operator.
 
-	- Fix invalid UTC offset applied to broken down time match.
+        - Fix invalid UTC offset applied to broken down time match.
 
-	- New preludedb-admin tool. Allow save/load/delete/copy/print of PreludeDB database.
+        - New preludedb-admin tool. Allow save/load/delete/copy/print of PreludeDB database.
 
-	- When no database password is set, don't default to "prelude". 
-	  This failed on user trying to access a database with no password.
+        - When no database password is set, don't default to "prelude".
+          This failed on user trying to access a database with no password.
 
 
 * 2005-08-02, libpreludedb-0.9.0-rc10:
 
-	- Include missing database schema update.
+        - Include missing database schema update.
 
 
 * 2005-08-01, libpreludedb-0.9.0-rc9:
 
-	- Fix IDMEF SNMPService mapping problem.
+        - Fix IDMEF SNMPService mapping problem.
 
-	- Fix IDMEF FileAccess permission mapping problem.
+        - Fix IDMEF FileAccess permission mapping problem.
 
-	- Set close on exec flags on the logging file descriptor.
+        - Set close on exec flags on the logging file descriptor.
 
-	- Escape '%' character within query, since the caller is expected to use '*'.
+        - Escape '%' character within query, since the caller is expected to use '*'.
 
 
 * 2005-07-08, libpreludedb-0.9.0-rc8:
 
-	- Fix Perl bindings Makefile generation with some MakeMaker version.
+        - Fix Perl bindings Makefile generation with some MakeMaker version.
 
-	- Use GnuLib for portability issue.
+        - Use GnuLib for portability issue.
 
-	- Handle broken down criteria match.
+        - Handle broken down criteria match.
 
-	- Improve error reporting.
+        - Improve error reporting.
 
-	- Various bugfixes.
+        - Various bugfixes.
 
 
 * 2005-05-30, libpreludedb-0.9.0-rc7:
 
-	- Fix alert deletion query issue.
+        - Fix alert deletion query issue.
 
 
 * 2005-05-30, libpreludedb-0.9.0-rc6:
 
-	- Fix portability problem with %hh convertion specifier (exampe: Solaris
-	  selection problem).
+        - Fix portability problem with %hh convertion specifier (exampe: Solaris
+          selection problem).
 
-	- Fix potential problem on 64 bits systems.
+        - Fix potential problem on 64 bits systems.
 
-	- Fix IDMEF FileAccess insertion.
+        - Fix IDMEF FileAccess insertion.
 
-	- Fix bad indexes.
-	
-	- Improve DELETE operation speed.
+        - Fix bad indexes.
 
-	- Handle IDMEFv14 file_type attribute.
+        - Improve DELETE operation speed.
 
-	- Fix several PostgreSQL incompatibility in generated request.
+        - Handle IDMEFv14 file_type attribute.
 
-	- Update PostrgreSQL schema.
+        - Fix several PostgreSQL incompatibility in generated request.
 
-	- Various bugfix.
+        - Update PostrgreSQL schema.
 
-	
+        - Various bugfix.
+
+
 * 2005-04-17, libpreludedb-0.9.0-rc5:
 
-	- Fix truncated error code on some INSERT.
-	
-	- Handle confidence as a float, not as an integer.
+        - Fix truncated error code on some INSERT.
 
-	- Fix GMT offset and USEC invertion.
+        - Handle confidence as a float, not as an integer.
 
-	- Fix checksum field insertion.
+        - Fix GMT offset and USEC invertion.
 
-	- Fix PgSQL schema update.
+        - Fix checksum field insertion.
 
-	- Update PgSQL/MySQL schema version.
+        - Fix PgSQL schema update.
+
+        - Update PgSQL/MySQL schema version.
 
 
 * 2005-04-09, libpreludedb-0.9.0-rc4:
 
-	- Fix error with bindings Makefile when using BSD make.
+        - Fix error with bindings Makefile when using BSD make.
 
-	- Add missing 'info' severity to the MySQL schema.
-	  Provide a schema for upgrading.
+        - Add missing 'info' severity to the MySQL schema.
+          Provide a schema for upgrading.
 
-	- Check database schema version on initialization.
+        - Check database schema version on initialization.
 
-	- Fix broken libpreludedb.m4 detection routine.
+        - Fix broken libpreludedb.m4 detection routine.
 
-	- Fix Perl/Python bindings regeneration problem.
-	
-	- Fix database schema for MySQL 3.23.
+        - Fix Perl/Python bindings regeneration problem.
 
-	- Fix broken MySQL error check.
+        - Fix database schema for MySQL 3.23.
+
+        - Fix broken MySQL error check.
 
 
 * 2005-03-31, libpreludedb-0.9.0-rc3:
 
-	- Fix PgSQL plugin loading problem.
+        - Fix PgSQL plugin loading problem.
 
 
 * 2005-03-31, libpreludedb-0.9.0-rc2:
 
-	- Fix Python/Perl bindings linking order. Was linking to old version
-  	  of the library on system where old libprelude-0.8 was installed.
+        - Fix Python/Perl bindings linking order. Was linking to old version
+          of the library on system where old libprelude-0.8 was installed.
 
-	- Fix an issue with the Perl bindings on make clean.
+        - Fix an issue with the Perl bindings on make clean.
 
 
 * 2005-03-29, libpreludedb-0.9.0-rc1:
 
-	- Initial release.
+        - Initial release.
 
