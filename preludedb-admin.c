@@ -283,7 +283,7 @@ static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents
 
         local_limit = (limit_copy < 0) ? events_per_transaction : MIN(events_per_transaction, limit_copy);
 
-        count = get_message_idents(db, criteria, (int) local_limit, (int) cur_count, 0, result);
+        count = get_message_idents(db, criteria, (int) local_limit, (int) offset + cur_count, 0, result);
         if ( count < 0 )
                 return db_error(db, count, "retrieving alert ident failed");
 
