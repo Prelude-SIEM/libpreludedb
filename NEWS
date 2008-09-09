@@ -1,3 +1,8 @@
+* 2008-09-09, libpreludedb-0.9.15.1:
+
+- Fix handling of preludedb-admin --offset parameter.
+
+
 * 2008-08-27, libpreludedb-0.9.15:
 
 - preludedb-admin has a bew 'count' command, printing the result of a
