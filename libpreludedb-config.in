@@ -3,9 +3,12 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 exec_prefix_set=no
+want_cflags=no
+want_libs=no
+thread_set=no
 
 usage="\
-Usage: libprelude-db-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--libs] [--ldflags] [--cflags] [--plugin-dir]"
+Usage: libpreludedb-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--thread] [--libs] [--ldflags] [--cflags] [--plugin-dir]"
 
 if test $# -eq 0; then
       echo "${usage}" 1>&2
@@ -44,10 +47,7 @@ while test $# -gt 0; do
       ;;
 
     --cflags)
-      if test @includedir@ != /usr/include ; then
-        includes=-I@includedir@
-      fi
-      echo $includes
+      want_cflags=yes
       ;;
 
     --ldflags)
@@ -55,12 +55,15 @@ while test $# -gt 0; do
       ;;
 
     --libs)
-      libdirs=-L@libdir@
-      echo $libdirs -lpreludedb @LIBPRELUDE_LIBS@
+      want_libs=yes
       ;;
 
     --plugin-dir)
       echo @db_plugin_dir@
+      ;;
+
+    --thread)
+      thread_set=yes
       ;;
 
     *)
@@ -71,5 +74,31 @@ while test $# -gt 0; do
   esac
   shift
 done
+
+if test $want_cflags = yes; then
+      flags=""
+      if test @includedir@ != /usr/include ; then
+        flags=-I@includedir@
+      fi
+
+      if test $thread_set = yes; then
+              flags=$flags @THREADCPPFLAGS@
+      fi
+
+      echo $flags
+fi
+
+
+if test $want_libs = yes; then
+      libdirs=-L@libdir@
+
+      if test $thread_set = yes; then
+              thrlibs=@LTLIBMULTITHREAD@
+      else
+              thrlibs=@LTLIBTHREAD@
+      fi
+
+      echo $libdirs -lpreludedb @LIBPRELUDE_LIBS@ $thrlibs
+fi
 
 exit 0
