@@ -4,6 +4,27 @@ EXTRA_DIST = LICENSE.README HACKING.README
 
 SUBDIRS = m4 libmissing src plugins bindings docs
 
+MAINTAINERCLEANFILES = \
+	$(srcdir)/INSTALL \
+	$(srcdir)/aclocal.m4 \
+	$(srcdir)/autoscan.log \
+	$(srcdir)/compile \
+	$(srcdir)/config.guess \
+	$(srcdir)/config.h.in \
+	$(srcdir)/config.sub \
+	$(srcdir)/configure.scan \
+	$(srcdir)/depcomp \
+	$(srcdir)/install-sh \
+	$(srcdir)/ltmain.sh \
+	$(srcdir)/missing \
+	$(srcdir)/mkinstalldirs \
+	$(srcdir)/omf.make \
+	$(srcdir)/xmldocs.make \
+	$(srcdir)/gtk-doc.make \
+	$(srcdir)/ChangeLog \
+	`find "$(srcdir)" -type f -name Makefile.in -print`
+
+
 bin_SCRIPTS = $(top_builddir)/libpreludedb-config
 distuninstallcheck_listfiles = find . -type f -print | grep -v 'perl' | grep -v '3pm'
 
@@ -26,3 +47,5 @@ dist-hook:
 	else \
 		echo A git clone is required to generate a ChangeLog >&2; \
 	fi
+
+-include $(top_srcdir)/git.mk

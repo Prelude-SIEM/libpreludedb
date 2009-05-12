@@ -9,3 +9,5 @@ sqlite3dir = $(sql_plugin_dir)
 sqlite3_LTLIBRARIES = sqlite3.la
 
 endif
+
+-include $(top_srcdir)/git.mk

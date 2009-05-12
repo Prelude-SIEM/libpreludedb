@@ -9,3 +9,5 @@ mysqldir = $(sql_plugin_dir)
 mysql_LTLIBRARIES = mysql.la
 
 endif
+
+-include $(top_srcdir)/git.mk

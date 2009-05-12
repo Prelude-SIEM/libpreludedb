@@ -36,3 +36,5 @@ libpreludedb_la_SOURCES =		\
 	preludedb-sql-settings.c	\
 	preludedb-version.c		\
 	preludedb-error.c		
+
+-include $(top_srcdir)/git.mk

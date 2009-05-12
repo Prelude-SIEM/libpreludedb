@@ -43,3 +43,5 @@ sqlite.sql: mysql.sql
 
 pgsql.sql: mysql.sql
 	$(srcdir)/mysql2pgsql.sh $(srcdir)/mysql.sql > $@
+
+-include $(top_srcdir)/git.mk

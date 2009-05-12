@@ -10,3 +10,5 @@ pgsqldir = $(sql_plugin_dir)
 pgsql_LTLIBRARIES = pgsql.la
 
 endif
+
+-include $(top_srcdir)/git.mk
