@@ -1,4 +1,4 @@
-AM_CPPFLAGS=@THREADCPPFLAGS@ @PCFLAGS@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing @LIBPRELUDE_CFLAGS@ -I@PGSQL_INCLUDEDIR@
+AM_CPPFLAGS=@PCFLAGS@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing @LIBPRELUDE_CFLAGS@ -I@PGSQL_INCLUDEDIR@
 pgsql_la_LDFLAGS = -module -avoid-version @LIBPRELUDE_LDFLAGS@ 
 
 if HAVE_PGSQL

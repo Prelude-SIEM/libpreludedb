@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2008 Free Software Foundation, Inc.
+# Copyright (C) 2002-2009 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -26,7 +26,6 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([AC_PROG_RANLIB])
   AC_REQUIRE([AM_PROG_CC_C_O])
-  AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   gl_THREADLIB_EARLY
 ])
@@ -44,18 +43,16 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='libmissing'
-  gl_EOVERFLOW
   gl_FUNC_ALLOCA
+  gl_HEADER_ERRNO_H
   gl_FLOAT_H
   gl_LOCK
-  gl_FUNC_MALLOC_POSIX
-  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  gl_MULTIARCH
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
   gl_STDINT_H
   gl_STDIO_H
-  gl_STDLIB_H
   gl_FUNC_STRDUP
   gl_STRING_MODULE_INDICATOR([strdup])
   gl_HEADER_STRING_H
@@ -66,7 +63,6 @@ AC_DEFUN([gl_INIT],
   gl_THREADLIB
   gl_HEADER_TIME_H
   gl_TIME_R
-  gl_UNISTD_H
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
@@ -210,12 +206,12 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/link-warning.h
   lib/alloca.in.h
   lib/asnprintf.c
+  lib/errno.in.h
   lib/float+.h
   lib/float.in.h
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
-  lib/malloc.c
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
@@ -223,22 +219,22 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/size_max.h
   lib/snprintf.c
   lib/stdint.in.h
+  lib/stdio-write.c
   lib/stdio.in.h
-  lib/stdlib.in.h
   lib/strdup.c
   lib/string.in.h
   lib/strndup.c
   lib/strnlen.c
   lib/time.in.h
   lib/time_r.c
-  lib/unistd.in.h
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/vsnprintf.c
   lib/wchar.in.h
   lib/xsize.h
+  m4/00gnulib.m4
   m4/alloca.m4
-  m4/eoverflow.m4
+  m4/errno_h.m4
   m4/extensions.m4
   m4/float_h.m4
   m4/gnulib-common.m4
@@ -250,7 +246,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-prefix.m4
   m4/lock.m4
   m4/longlong.m4
-  m4/malloc.m4
+  m4/multiarch.m4
   m4/onceonly.m4
   m4/printf.m4
   m4/size_max.m4
@@ -258,7 +254,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/stdint.m4
   m4/stdint_h.m4
   m4/stdio_h.m4
-  m4/stdlib_h.m4
   m4/strdup.m4
   m4/string_h.m4
   m4/strndup.m4
@@ -267,7 +262,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/threadlib.m4
   m4/time_h.m4
   m4/time_r.m4
-  m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
   m4/wchar.m4
@@ -275,16 +269,14 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/wint_t.m4
   m4/xsize.m4
   m4/yield.m4
-  tests/test-EOVERFLOW.c
   tests/test-alloca-opt.c
+  tests/test-errno.c
   tests/test-lock.c
   tests/test-snprintf.c
   tests/test-stdint.c
   tests/test-stdio.c
-  tests/test-stdlib.c
   tests/test-string.c
   tests/test-time.c
-  tests/test-unistd.c
   tests/test-vasnprintf.c
   tests/test-vsnprintf.c
   tests/test-wchar.c

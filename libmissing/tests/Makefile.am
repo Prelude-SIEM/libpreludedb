@@ -1,6 +1,6 @@
 ## DO NOT EDIT! GENERATED AUTOMATICALLY!
 ## Process this file with automake to produce Makefile.in.
-# Copyright (C) 2002-2008 Free Software Foundation, Inc.
+# Copyright (C) 2002-2009 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -42,14 +42,6 @@ libtests_a_DEPENDENCIES = $(gltests_LIBOBJS)
 EXTRA_libtests_a_SOURCES =
 AM_LIBTOOLFLAGS = --preserve-dup-deps
 
-## begin gnulib module EOVERFLOW-tests
-
-TESTS += test-EOVERFLOW
-check_PROGRAMS += test-EOVERFLOW
-EXTRA_DIST += test-EOVERFLOW.c
-
-## end   gnulib module EOVERFLOW-tests
-
 ## begin gnulib module alloca-opt-tests
 
 TESTS += test-alloca-opt
@@ -58,6 +50,15 @@ check_PROGRAMS += test-alloca-opt
 EXTRA_DIST += test-alloca-opt.c
 
 ## end   gnulib module alloca-opt-tests
+
+## begin gnulib module errno-tests
+
+TESTS += test-errno
+check_PROGRAMS += test-errno
+
+EXTRA_DIST += test-errno.c
+
+## end   gnulib module errno-tests
 
 ## begin gnulib module intprops
 
@@ -102,15 +103,6 @@ EXTRA_DIST += test-stdio.c
 
 ## end   gnulib module stdio-tests
 
-## begin gnulib module stdlib-tests
-
-TESTS += test-stdlib
-check_PROGRAMS += test-stdlib
-
-EXTRA_DIST += test-stdlib.c
-
-## end   gnulib module stdlib-tests
-
 ## begin gnulib module string-tests
 
 TESTS += test-string
@@ -134,15 +126,6 @@ check_PROGRAMS += test-time
 EXTRA_DIST += test-time.c
 
 ## end   gnulib module time-tests
-
-## begin gnulib module unistd-tests
-
-TESTS += test-unistd
-check_PROGRAMS += test-unistd
-
-EXTRA_DIST += test-unistd.c
-
-## end   gnulib module unistd-tests
 
 ## begin gnulib module vasnprintf-tests
 
@@ -179,7 +162,7 @@ EXTRA_DIST += test-wchar.c
 
 ## begin gnulib module yield
 
-libtests_a_SOURCES += glthread/yield.h 
+libtests_a_SOURCES += glthread/yield.h
 
 ## end   gnulib module yield
 

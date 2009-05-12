@@ -1,6 +1,6 @@
 SUBDIRS = include
 
-AM_CPPFLAGS = @THREADCPPFLAGS@ @PCFLAGS@ -I$(srcdir)/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing -DSQL_PLUGIN_DIR=\"@sql_plugin_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @LIBPRELUDE_CFLAGS@
+AM_CPPFLAGS = @PCFLAGS@ -I$(srcdir)/include -I$(top_srcdir)/libmissing -I$(top_builddir)/libmissing -DSQL_PLUGIN_DIR=\"@sql_plugin_dir@\" -DFORMAT_PLUGIN_DIR=\"@format_plugin_dir@\" @LIBPRELUDE_CFLAGS@
 
 lib_LTLIBRARIES = libpreludedb.la
 
