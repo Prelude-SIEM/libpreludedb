@@ -398,6 +398,7 @@ sql_plugin_dir=$db_plugin_dir/sql
 format_plugin_dir=$db_plugin_dir/formats
 format_schema_dir=$DATADIR/libpreludedb
 
+AC_SUBST(db_plugin_dir)
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
 AC_SUBST(format_schema_dir)
