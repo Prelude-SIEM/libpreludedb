@@ -104,6 +104,15 @@ EXTRA_DIST += float.in.h
 
 ## end   gnulib module float
 
+## begin gnulib module getpagesize
+
+
+EXTRA_DIST += getpagesize.c
+
+EXTRA_libmissing_la_SOURCES += getpagesize.c
+
+## end   gnulib module getpagesize
+
 ## begin gnulib module havelib
 
 
@@ -124,6 +133,15 @@ EXTRA_DIST += $(top_srcdir)/./link-warning.h
 libmissing_la_SOURCES += glthread/lock.h glthread/lock.c
 
 ## end   gnulib module lock
+
+## begin gnulib module memchr
+
+
+EXTRA_DIST += memchr.c memchr.valgrind
+
+EXTRA_libmissing_la_SOURCES += memchr.c
+
+## end   gnulib module memchr
 
 ## begin gnulib module size_max
 
@@ -218,6 +236,7 @@ stdio.h: stdio.in.h
 	      -e 's|@''GNULIB_FTELL''@|$(GNULIB_FTELL)|g' \
 	      -e 's|@''GNULIB_FTELLO''@|$(GNULIB_FTELLO)|g' \
 	      -e 's|@''GNULIB_FFLUSH''@|$(GNULIB_FFLUSH)|g' \
+	      -e 's|@''GNULIB_FPURGE''@|$(GNULIB_FPURGE)|g' \
 	      -e 's|@''GNULIB_FCLOSE''@|$(GNULIB_FCLOSE)|g' \
 	      -e 's|@''GNULIB_FPUTC''@|$(GNULIB_FPUTC)|g' \
 	      -e 's|@''GNULIB_PUTC''@|$(GNULIB_PUTC)|g' \
@@ -255,6 +274,8 @@ stdio.h: stdio.in.h
 	      -e 's|@''REPLACE_FTELLO''@|$(REPLACE_FTELLO)|g' \
 	      -e 's|@''REPLACE_FTELL''@|$(REPLACE_FTELL)|g' \
 	      -e 's|@''REPLACE_FFLUSH''@|$(REPLACE_FFLUSH)|g' \
+	      -e 's|@''REPLACE_FPURGE''@|$(REPLACE_FPURGE)|g' \
+	      -e 's|@''HAVE_DECL_FPURGE''@|$(HAVE_DECL_FPURGE)|g' \
 	      -e 's|@''REPLACE_FCLOSE''@|$(REPLACE_FCLOSE)|g' \
 	      -e 's|@''HAVE_DECL_GETDELIM''@|$(HAVE_DECL_GETDELIM)|g' \
 	      -e 's|@''HAVE_DECL_GETLINE''@|$(HAVE_DECL_GETLINE)|g' \
@@ -307,6 +328,7 @@ string.h: string.in.h
 	      -e 's|@''GNULIB_MBSSPN''@|$(GNULIB_MBSSPN)|g' \
 	      -e 's|@''GNULIB_MBSSEP''@|$(GNULIB_MBSSEP)|g' \
 	      -e 's|@''GNULIB_MBSTOK_R''@|$(GNULIB_MBSTOK_R)|g' \
+	      -e 's|@''GNULIB_MEMCHR''@|$(GNULIB_MEMCHR)|g' \
 	      -e 's|@''GNULIB_MEMMEM''@|$(GNULIB_MEMMEM)|g' \
 	      -e 's|@''GNULIB_MEMPCPY''@|$(GNULIB_MEMPCPY)|g' \
 	      -e 's|@''GNULIB_MEMRCHR''@|$(GNULIB_MEMRCHR)|g' \
@@ -343,6 +365,7 @@ string.h: string.in.h
 	      -e 's|@''HAVE_DECL_STRERROR''@|$(HAVE_DECL_STRERROR)|g' \
 	      -e 's|@''HAVE_DECL_STRSIGNAL''@|$(HAVE_DECL_STRSIGNAL)|g' \
 	      -e 's|@''HAVE_STRVERSCMP''@|$(HAVE_STRVERSCMP)|g' \
+	      -e 's|@''REPLACE_MEMCHR''@|$(REPLACE_MEMCHR)|g' \
 	      -e 's|@''REPLACE_MEMMEM''@|$(REPLACE_MEMMEM)|g' \
 	      -e 's|@''REPLACE_STRCASESTR''@|$(REPLACE_STRCASESTR)|g' \
 	      -e 's|@''REPLACE_STRDUP''@|$(REPLACE_STRDUP)|g' \
@@ -420,6 +443,76 @@ EXTRA_DIST += time_r.c
 EXTRA_libmissing_la_SOURCES += time_r.c
 
 ## end   gnulib module time_r
+
+## begin gnulib module unistd
+
+BUILT_SOURCES += unistd.h
+
+# We need the following in order to create an empty placeholder for
+# <unistd.h> when the system doesn't have one.
+unistd.h: unistd.in.h
+	rm -f $@-t $@
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  sed -e 's|@''HAVE_UNISTD_H''@|$(HAVE_UNISTD_H)|g' \
+	      -e 's|@''INCLUDE_NEXT''@|$(INCLUDE_NEXT)|g' \
+	      -e 's|@''PRAGMA_SYSTEM_HEADER''@|@PRAGMA_SYSTEM_HEADER@|g' \
+	      -e 's|@''NEXT_UNISTD_H''@|$(NEXT_UNISTD_H)|g' \
+	      -e 's|@''GNULIB_CHOWN''@|$(GNULIB_CHOWN)|g' \
+	      -e 's|@''GNULIB_CLOSE''@|$(GNULIB_CLOSE)|g' \
+	      -e 's|@''GNULIB_DUP2''@|$(GNULIB_DUP2)|g' \
+	      -e 's|@''GNULIB_ENVIRON''@|$(GNULIB_ENVIRON)|g' \
+	      -e 's|@''GNULIB_EUIDACCESS''@|$(GNULIB_EUIDACCESS)|g' \
+	      -e 's|@''GNULIB_FCHDIR''@|$(GNULIB_FCHDIR)|g' \
+	      -e 's|@''GNULIB_FSYNC''@|$(GNULIB_FSYNC)|g' \
+	      -e 's|@''GNULIB_FTRUNCATE''@|$(GNULIB_FTRUNCATE)|g' \
+	      -e 's|@''GNULIB_GETCWD''@|$(GNULIB_GETCWD)|g' \
+	      -e 's|@''GNULIB_GETDOMAINNAME''@|$(GNULIB_GETDOMAINNAME)|g' \
+	      -e 's|@''GNULIB_GETDTABLESIZE''@|$(GNULIB_GETDTABLESIZE)|g' \
+	      -e 's|@''GNULIB_GETHOSTNAME''@|$(GNULIB_GETHOSTNAME)|g' \
+	      -e 's|@''GNULIB_GETLOGIN_R''@|$(GNULIB_GETLOGIN_R)|g' \
+	      -e 's|@''GNULIB_GETPAGESIZE''@|$(GNULIB_GETPAGESIZE)|g' \
+	      -e 's|@''GNULIB_GETUSERSHELL''@|$(GNULIB_GETUSERSHELL)|g' \
+	      -e 's|@''GNULIB_LCHOWN''@|$(GNULIB_LCHOWN)|g' \
+	      -e 's|@''GNULIB_LINK''@|$(GNULIB_LINK)|g' \
+	      -e 's|@''GNULIB_LSEEK''@|$(GNULIB_LSEEK)|g' \
+	      -e 's|@''GNULIB_READLINK''@|$(GNULIB_READLINK)|g' \
+	      -e 's|@''GNULIB_SLEEP''@|$(GNULIB_SLEEP)|g' \
+	      -e 's|@''GNULIB_UNISTD_H_SIGPIPE''@|$(GNULIB_UNISTD_H_SIGPIPE)|g' \
+	      -e 's|@''GNULIB_WRITE''@|$(GNULIB_WRITE)|g' \
+	      -e 's|@''HAVE_DUP2''@|$(HAVE_DUP2)|g' \
+	      -e 's|@''HAVE_EUIDACCESS''@|$(HAVE_EUIDACCESS)|g' \
+	      -e 's|@''HAVE_FSYNC''@|$(HAVE_FSYNC)|g' \
+	      -e 's|@''HAVE_FTRUNCATE''@|$(HAVE_FTRUNCATE)|g' \
+	      -e 's|@''HAVE_GETDOMAINNAME''@|$(HAVE_GETDOMAINNAME)|g' \
+	      -e 's|@''HAVE_GETDTABLESIZE''@|$(HAVE_GETDTABLESIZE)|g' \
+	      -e 's|@''HAVE_GETHOSTNAME''@|$(HAVE_GETHOSTNAME)|g' \
+	      -e 's|@''HAVE_GETPAGESIZE''@|$(HAVE_GETPAGESIZE)|g' \
+	      -e 's|@''HAVE_GETUSERSHELL''@|$(HAVE_GETUSERSHELL)|g' \
+	      -e 's|@''HAVE_LINK''@|$(HAVE_LINK)|g' \
+	      -e 's|@''HAVE_READLINK''@|$(HAVE_READLINK)|g' \
+	      -e 's|@''HAVE_SLEEP''@|$(HAVE_SLEEP)|g' \
+	      -e 's|@''HAVE_DECL_ENVIRON''@|$(HAVE_DECL_ENVIRON)|g' \
+	      -e 's|@''HAVE_DECL_GETLOGIN_R''@|$(HAVE_DECL_GETLOGIN_R)|g' \
+	      -e 's|@''HAVE_OS_H''@|$(HAVE_OS_H)|g' \
+	      -e 's|@''HAVE_SYS_PARAM_H''@|$(HAVE_SYS_PARAM_H)|g' \
+	      -e 's|@''REPLACE_CHOWN''@|$(REPLACE_CHOWN)|g' \
+	      -e 's|@''REPLACE_CLOSE''@|$(REPLACE_CLOSE)|g' \
+	      -e 's|@''REPLACE_FCHDIR''@|$(REPLACE_FCHDIR)|g' \
+	      -e 's|@''REPLACE_GETCWD''@|$(REPLACE_GETCWD)|g' \
+	      -e 's|@''REPLACE_GETPAGESIZE''@|$(REPLACE_GETPAGESIZE)|g' \
+	      -e 's|@''REPLACE_LCHOWN''@|$(REPLACE_LCHOWN)|g' \
+	      -e 's|@''REPLACE_LSEEK''@|$(REPLACE_LSEEK)|g' \
+	      -e 's|@''REPLACE_WRITE''@|$(REPLACE_WRITE)|g' \
+	      -e 's|@''UNISTD_H_HAVE_WINSOCK2_H''@|$(UNISTD_H_HAVE_WINSOCK2_H)|g' \
+	      -e '/definition of GL_LINK_WARNING/r $(LINK_WARNING_H)' \
+	      < $(srcdir)/unistd.in.h; \
+	} > $@-t
+	mv $@-t $@
+MOSTLYCLEANFILES += unistd.h unistd.h-t
+
+EXTRA_DIST += unistd.in.h
+
+## end   gnulib module unistd
 
 ## begin gnulib module vasnprintf
 
@@ -511,5 +604,3 @@ mostlyclean-local: mostlyclean-generic
 	  fi; \
 	done; \
 	:
-
--include $(top_srcdir)/git.mk

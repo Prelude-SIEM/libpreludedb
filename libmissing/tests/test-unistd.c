@@ -1,4 +1,4 @@
-/* Test of <stdio.h> substitute.
+/* Test of <unistd.h> substitute.
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -18,16 +18,36 @@
 
 #include <config.h>
 
-#include <stdio.h>
+#include <unistd.h>
 
 #include "verify.h"
-
-/* Check that the various SEEK_* macros are defined.  */
-int sk[] = { SEEK_CUR, SEEK_END, SEEK_SET };
 
 /* Check that NULL can be passed through varargs as a pointer type,
    per POSIX 2008.  */
 verify (sizeof NULL == sizeof (void *));
+
+/* Check that the various SEEK_* macros are defined.  */
+int sk[] = { SEEK_CUR, SEEK_END, SEEK_SET };
+
+/* Check that the various *_FILENO macros are defined.  */
+#if ! (defined STDIN_FILENO                                     \
+       && (STDIN_FILENO + STDOUT_FILENO + STDERR_FILENO == 3))
+missing or broken *_FILENO macros
+#endif
+
+/* Check that the types are all defined.  */
+size_t t1;
+ssize_t t2;
+#ifdef TODO /* Not implemented in gnulib yet */
+uid_t t3;
+gid_t t4;
+#endif
+off_t t5;
+pid_t t6;
+#ifdef TODO
+useconds_t t7;
+intptr_t t8;
+#endif
 
 int
 main ()

@@ -76,6 +76,14 @@ EXTRA_DIST += test-lock.c
 
 ## end   gnulib module lock-tests
 
+## begin gnulib module memchr-tests
+
+TESTS += test-memchr
+check_PROGRAMS += test-memchr
+EXTRA_DIST += test-memchr.c zerosize-ptr.h
+
+## end   gnulib module memchr-tests
+
 ## begin gnulib module snprintf-tests
 
 TESTS += test-snprintf
@@ -127,6 +135,15 @@ EXTRA_DIST += test-time.c
 
 ## end   gnulib module time-tests
 
+## begin gnulib module unistd-tests
+
+TESTS += test-unistd
+check_PROGRAMS += test-unistd
+
+EXTRA_DIST += test-unistd.c
+
+## end   gnulib module unistd-tests
+
 ## begin gnulib module vasnprintf-tests
 
 TESTS += test-vasnprintf
@@ -177,5 +194,3 @@ mostlyclean-local: mostlyclean-generic
 	  fi; \
 	done; \
 	:
-
--include $(top_srcdir)/git.mk

@@ -46,7 +46,11 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_ALLOCA
   gl_HEADER_ERRNO_H
   gl_FLOAT_H
+  gl_FUNC_GETPAGESIZE
+  gl_UNISTD_MODULE_INDICATOR([getpagesize])
   gl_LOCK
+  gl_FUNC_MEMCHR
+  gl_STRING_MODULE_INDICATOR([memchr])
   gl_MULTIARCH
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
@@ -63,6 +67,7 @@ AC_DEFUN([gl_INIT],
   gl_THREADLIB
   gl_HEADER_TIME_H
   gl_TIME_R
+  gl_UNISTD_H
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
@@ -209,9 +214,12 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/errno.in.h
   lib/float+.h
   lib/float.in.h
+  lib/getpagesize.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
+  lib/memchr.c
+  lib/memchr.valgrind
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
@@ -227,6 +235,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strnlen.c
   lib/time.in.h
   lib/time_r.c
+  lib/unistd.in.h
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/vsnprintf.c
@@ -237,6 +246,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/errno_h.m4
   m4/extensions.m4
   m4/float_h.m4
+  m4/getpagesize.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/intmax_t.m4
@@ -246,6 +256,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-prefix.m4
   m4/lock.m4
   m4/longlong.m4
+  m4/memchr.m4
+  m4/mmap-anon.m4
   m4/multiarch.m4
   m4/onceonly.m4
   m4/printf.m4
@@ -262,6 +274,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/threadlib.m4
   m4/time_h.m4
   m4/time_r.m4
+  m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
   m4/wchar.m4
@@ -272,14 +285,17 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-alloca-opt.c
   tests/test-errno.c
   tests/test-lock.c
+  tests/test-memchr.c
   tests/test-snprintf.c
   tests/test-stdint.c
   tests/test-stdio.c
   tests/test-string.c
   tests/test-time.c
+  tests/test-unistd.c
   tests/test-vasnprintf.c
   tests/test-vsnprintf.c
   tests/test-wchar.c
+  tests/zerosize-ptr.h
   tests=lib/glthread/thread.c
   tests=lib/glthread/thread.h
   tests=lib/glthread/yield.h
