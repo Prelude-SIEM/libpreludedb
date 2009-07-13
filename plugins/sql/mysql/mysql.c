@@ -157,7 +157,7 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
 #ifdef HAVE_MYSQL_REAL_ESCAPE_STRING
         rsize = mysql_real_escape_string((MYSQL *) session, (*output) + 1, (const char *) input, input_size);
 #else
-        rsize = mysql_escape_string((*output) + 1, input, input_size);
+        rsize = mysql_escape_string((*output) + 1, (const char *) input, input_size);
 #endif
 
         (*output)[rsize + 1] = '\'';
