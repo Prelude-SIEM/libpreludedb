@@ -1,3 +1,8 @@
+* 2009-07-15, libpreludedb-0.9.15.3:
+
+- libpreludedb distribution was missing SWIG generated bindings.
+
+
 * 2009-07-10, libpreludedb-0.9.15.2:
 
 - Fix regression introduced in libpreludedb 0.9.15:
