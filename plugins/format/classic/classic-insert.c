@@ -410,7 +410,7 @@ static int insert_process_env(preludedb_sql_t *sql,
 		return ret;
                 
 	ret = preludedb_sql_insert(sql, "Prelude_ProcessEnv",
-				   "_parent_type, _message_ident, _parent0_index, _index, arg",
+				   "_parent_type, _message_ident, _parent0_index, _index, env",
 				   "'%c', %" PRELUDE_PRIu64 ", %d, %d, %s",
 				   parent_type, message_ident, parent_index, env_index,
 				   tmp);
