@@ -923,7 +923,10 @@ static int load_from_file(preludedb_t *db, prelude_io_t *io, stat_item_t *stat_f
         idmef_message_t *idmef;
 
         while ( ! stop_processing ) {
-                stat_compute(stat_fetch, ret = do_read_message(io, &msg, &idmef), 1);
+                stat_start(stat_fetch);
+                ret = do_read_message(io, &msg, &idmef);
+                stat_end(stat_fetch, (ret >= 0) ? ret : 0);
+
                 if ( ret < 0 ) {
                         fprintf(stderr, "error decoding IDMEF message: %s.\n", prelude_strerror(ret));
                         break;
