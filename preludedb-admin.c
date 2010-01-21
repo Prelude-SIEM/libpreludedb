@@ -886,6 +886,8 @@ static int do_read_message(prelude_io_t *io, prelude_msg_t **msg, idmef_message_
         if ( ret < 0 ) {
                 if ( prelude_error_get_code(ret) == PRELUDE_ERROR_EOF )
                         return 0;
+
+                return ret;
         }
 
         if ( offset_copy > 0 ) {
