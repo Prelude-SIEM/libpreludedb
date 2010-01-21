@@ -276,14 +276,14 @@ static int db_error(preludedb_t *db, ssize_t ret, const char *fmt, ...)
 
 
 
-static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents_t **result)
+static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents_t **result, prelude_bool_t no_increment)
 {
         int count;
         int64_t local_limit;
 
         local_limit = (limit_copy < 0) ? events_per_transaction : MIN(events_per_transaction, limit_copy);
 
-        count = get_message_idents(db, criteria, (int) local_limit, (int) offset + cur_count, 0, result);
+        count = get_message_idents(db, criteria, (int) local_limit, (int) offset + ((no_increment) ? 0 : cur_count), 0, result);
         if ( count < 0 )
                 return db_error(db, count, "retrieving alert ident failed");
 
@@ -679,7 +679,7 @@ static int do_cmd_copy_move(int argc, char **argv, prelude_bool_t delete_copied)
         transaction_start(dst);
 
         do {
-                count = ret = fetch_message_idents_limited(src, &idents);
+                count = ret = fetch_message_idents_limited(src, &idents, (delete_copied) ? TRUE : FALSE);
                 if ( count > 0 ) {
                         ret = copy_iterate(src, dst, idents, &dst_event_no, get_message,
                                            (delete_copied) ? delete_message_from_list : NULL,
@@ -743,7 +743,7 @@ static int cmd_delete(int argc, char **argv)
         transaction_start(db);
 
         do {
-                count = ret = fetch_message_idents_limited(db, &idents);
+                count = ret = fetch_message_idents_limited(db, &idents, TRUE);
                 if ( count > 0 ) {
                         ret = do_delete(db, idents, delete_message_from_result_idents, stat_delete);
                         preludedb_result_idents_destroy(idents);
@@ -855,7 +855,7 @@ static int cmd_save(int argc, char **argv)
         prelude_msgbuf_set_callback(msgbuf, save_msg);
 
         do {
-                count = ret = fetch_message_idents_limited(db, &idents);
+                count = ret = fetch_message_idents_limited(db, &idents, FALSE);
                 if ( count > 0 ) {
                         ret = save_iterate_message(db, idents, msgbuf, get_message, stat_fetch, stat_save);
                         preludedb_result_idents_destroy(idents);
@@ -1083,7 +1083,7 @@ static int cmd_print(int argc, char **argv)
         prelude_io_set_file_io(io, fd);
 
         do {
-                count = ret = fetch_message_idents_limited(db, &idents);
+                count = ret = fetch_message_idents_limited(db, &idents, FALSE);
                 if ( count > 0 ) {
                         ret = print_iterate_message(db, idents, io, get_message, stat_fetch, stat_print);
                         preludedb_result_idents_destroy(idents);
