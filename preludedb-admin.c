@@ -202,12 +202,16 @@ static void flush_transaction_if_needed(preludedb_t *db, unsigned int *event_no,
         if ( ! event_no )
                 cur_count += increment;
 
-        else if ( events_per_transaction && ((*event_no) += increment) >= events_per_transaction ) {
-                preludedb_transaction_end(db);
-                preludedb_transaction_start(db);
+        else if ( events_per_transaction ) {
+                (*event_no) += increment;
 
-                cur_count += *event_no;
-                *event_no = 0;
+                if ( *event_no >= events_per_transaction || (increment == 0 && *event_no) ) {
+                        preludedb_transaction_end(db);
+                        preludedb_transaction_start(db);
+
+                        cur_count += *event_no;
+                        *event_no = 0;
+                }
         }
 }
 
@@ -629,6 +633,8 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
 
                 flush_transaction_if_needed(dst, dst_event_no, 1);
         }
+
+        flush_transaction_if_needed(dst, dst_event_no, 0);
 
         if ( delete_index ) {
                 stat_compute(stat_delete, count = delete(src, delete_tbl, delete_index), count);
