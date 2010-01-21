@@ -41,28 +41,28 @@
 
 static int delete_message(preludedb_sql_t *sql, unsigned int count, const char **queries, const char *idents)
 {
-	int i;
-	int ret;
-	int tmp;
+        int i;
+        int ret;
+        int tmp;
 
-	ret = preludedb_sql_transaction_start(sql);
-	if ( ret < 0 )
-		return ret;
-        
-	for ( i = 0; i < count; i++ ) {
-                
+        ret = preludedb_sql_transaction_start(sql);
+        if ( ret < 0 )
+                return ret;
+
+        for ( i = 0; i < count; i++ ) {
+
                 ret = preludedb_sql_query_sprintf(sql, NULL, queries[i], idents);
-		if ( ret < 0 )
-			goto error;
-	}
+                if ( ret < 0 )
+                        goto error;
+        }
 
-	return preludedb_sql_transaction_end(sql);
+        return preludedb_sql_transaction_end(sql);
 
  error:
-	tmp = preludedb_sql_transaction_abort(sql);
+        tmp = preludedb_sql_transaction_abort(sql);
 
-	return (tmp < 0) ? tmp : ret;
-	
+        return (tmp < 0) ? tmp : ret;
+
 }
 
 
@@ -70,42 +70,42 @@ static int do_delete_alert(preludedb_sql_t *sql, const char *idents)
 {
         static const char *queries[] = {
                 "DELETE FROM Prelude_Action WHERE _message_ident %s",
-		"DELETE FROM Prelude_AdditionalData WHERE _message_ident %s AND _parent_type = 'A'",
-		"DELETE FROM Prelude_Address WHERE _message_ident %s AND _parent_type != 'H'",
-		"DELETE FROM Prelude_Alert WHERE _ident %s",
-		"DELETE FROM Prelude_Alertident WHERE _message_ident %s",
-		"DELETE FROM Prelude_Analyzer WHERE _message_ident %s AND _parent_type = 'A'",
-		"DELETE FROM Prelude_AnalyzerTime WHERE _message_ident %s AND _parent_type = 'A'",
-		"DELETE FROM Prelude_Assessment WHERE _message_ident %s",
-		"DELETE FROM Prelude_Classification WHERE _message_ident %s",
-		"DELETE FROM Prelude_Reference WHERE _message_ident %s",
-		"DELETE FROM Prelude_Confidence WHERE _message_ident %s",
-		"DELETE FROM Prelude_CorrelationAlert WHERE _message_ident %s",
-		"DELETE FROM Prelude_CreateTime WHERE _message_ident %s AND _parent_type = 'A'",
-		"DELETE FROM Prelude_DetectTime WHERE _message_ident %s",
-		"DELETE FROM Prelude_File WHERE _message_ident %s",
-		"DELETE FROM Prelude_FileAccess WHERE _message_ident %s",
-		"DELETE FROM Prelude_FileAccess_Permission WHERE _message_ident %s",
-		"DELETE FROM Prelude_Impact WHERE _message_ident %s",
-		"DELETE FROM Prelude_Inode WHERE _message_ident %s",
-		"DELETE FROM Prelude_Checksum WHERE _message_ident %s",
-		"DELETE FROM Prelude_Linkage WHERE _message_ident %s",
-		"DELETE FROM Prelude_Node WHERE _message_ident %s AND _parent_type != 'H'",
-		"DELETE FROM Prelude_OverflowAlert WHERE _message_ident %s",
-		"DELETE FROM Prelude_Process WHERE _message_ident %s AND _parent_type != 'H'",
-		"DELETE FROM Prelude_ProcessArg WHERE _message_ident %s AND _parent_type != 'H'",
-		"DELETE FROM Prelude_ProcessEnv WHERE _message_ident %s AND _parent_type != 'H'",
-		"DELETE FROM Prelude_SnmpService WHERE _message_ident %s",
-		"DELETE FROM Prelude_Service WHERE _message_ident %s",
-		"DELETE FROM Prelude_Source WHERE _message_ident %s",
-		"DELETE FROM Prelude_Target WHERE _message_ident %s",
-		"DELETE FROM Prelude_ToolAlert WHERE _message_ident %s",
-		"DELETE FROM Prelude_User WHERE _message_ident %s",
-		"DELETE FROM Prelude_UserId WHERE _message_ident %s",
-		"DELETE FROM Prelude_WebService WHERE _message_ident %s",
-		"DELETE FROM Prelude_WebServiceArg WHERE _message_ident %s"
-	};
-        
+                "DELETE FROM Prelude_AdditionalData WHERE _message_ident %s AND _parent_type = 'A'",
+                "DELETE FROM Prelude_Address WHERE _message_ident %s AND _parent_type != 'H'",
+                "DELETE FROM Prelude_Alert WHERE _ident %s",
+                "DELETE FROM Prelude_Alertident WHERE _message_ident %s",
+                "DELETE FROM Prelude_Analyzer WHERE _message_ident %s AND _parent_type = 'A'",
+                "DELETE FROM Prelude_AnalyzerTime WHERE _message_ident %s AND _parent_type = 'A'",
+                "DELETE FROM Prelude_Assessment WHERE _message_ident %s",
+                "DELETE FROM Prelude_Classification WHERE _message_ident %s",
+                "DELETE FROM Prelude_Reference WHERE _message_ident %s",
+                "DELETE FROM Prelude_Confidence WHERE _message_ident %s",
+                "DELETE FROM Prelude_CorrelationAlert WHERE _message_ident %s",
+                "DELETE FROM Prelude_CreateTime WHERE _message_ident %s AND _parent_type = 'A'",
+                "DELETE FROM Prelude_DetectTime WHERE _message_ident %s",
+                "DELETE FROM Prelude_File WHERE _message_ident %s",
+                "DELETE FROM Prelude_FileAccess WHERE _message_ident %s",
+                "DELETE FROM Prelude_FileAccess_Permission WHERE _message_ident %s",
+                "DELETE FROM Prelude_Impact WHERE _message_ident %s",
+                "DELETE FROM Prelude_Inode WHERE _message_ident %s",
+                "DELETE FROM Prelude_Checksum WHERE _message_ident %s",
+                "DELETE FROM Prelude_Linkage WHERE _message_ident %s",
+                "DELETE FROM Prelude_Node WHERE _message_ident %s AND _parent_type != 'H'",
+                "DELETE FROM Prelude_OverflowAlert WHERE _message_ident %s",
+                "DELETE FROM Prelude_Process WHERE _message_ident %s AND _parent_type != 'H'",
+                "DELETE FROM Prelude_ProcessArg WHERE _message_ident %s AND _parent_type != 'H'",
+                "DELETE FROM Prelude_ProcessEnv WHERE _message_ident %s AND _parent_type != 'H'",
+                "DELETE FROM Prelude_SnmpService WHERE _message_ident %s",
+                "DELETE FROM Prelude_Service WHERE _message_ident %s",
+                "DELETE FROM Prelude_Source WHERE _message_ident %s",
+                "DELETE FROM Prelude_Target WHERE _message_ident %s",
+                "DELETE FROM Prelude_ToolAlert WHERE _message_ident %s",
+                "DELETE FROM Prelude_User WHERE _message_ident %s",
+                "DELETE FROM Prelude_UserId WHERE _message_ident %s",
+                "DELETE FROM Prelude_WebService WHERE _message_ident %s",
+                "DELETE FROM Prelude_WebServiceArg WHERE _message_ident %s"
+        };
+
         return delete_message(sql, sizeof(queries) / sizeof(*queries), queries, idents);
 }
 
@@ -113,20 +113,20 @@ static int do_delete_alert(preludedb_sql_t *sql, const char *idents)
 
 static int do_delete_heartbeat(preludedb_sql_t *sql, const char *idents)
 {
-	static const char *queries[] = {
-		"DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_Address WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_Analyzer WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_CreateTime WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_Node WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_Process WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_ProcessArg WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_ProcessEnv WHERE _parent_type = 'H' AND _message_ident %s",
-		"DELETE FROM Prelude_Heartbeat WHERE _ident %s",
-	};
+        static const char *queries[] = {
+                "DELETE FROM Prelude_AdditionalData WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_Address WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_Analyzer WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_AnalyzerTime WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_CreateTime WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_Node WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_Process WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_ProcessArg WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_ProcessEnv WHERE _parent_type = 'H' AND _message_ident %s",
+                "DELETE FROM Prelude_Heartbeat WHERE _ident %s",
+        };
 
-	return delete_message(sql, sizeof(queries) / sizeof(*queries), queries, idents);
+        return delete_message(sql, sizeof(queries) / sizeof(*queries), queries, idents);
 }
 
 
@@ -135,7 +135,7 @@ static ssize_t get_string_from_ident_list(prelude_string_t **out, uint64_t *iden
         int ret;
         size_t i;
         prelude_bool_t need_sep = FALSE;
-        
+
         ret = prelude_string_new(out);
         if ( ret < 0 )
                 return ret;
@@ -145,20 +145,20 @@ static ssize_t get_string_from_ident_list(prelude_string_t **out, uint64_t *iden
                 goto err;
 
         for ( i = 0; i < size; i++ ) {
-                
+
                 ret = prelude_string_sprintf(*out, "%s%" PRELUDE_PRIu64, (need_sep) ? ", " : "", ident[i]);
                 if ( ret < 0 )
                         goto err;
 
                 need_sep = TRUE;
         }
-        
+
         ret = prelude_string_cat(*out, ")");
         if ( ret < 0 )
                 goto err;
 
         return i;
-        
+
  err:
         prelude_string_destroy(*out);
         return ret;
@@ -172,7 +172,7 @@ static ssize_t get_string_from_result_ident(prelude_string_t **out, preludedb_re
         size_t i = 0;
         uint64_t ident;
         prelude_bool_t need_sep = FALSE;
-        
+
         ret = prelude_string_new(out);
         if ( ret < 0 )
                 return ret;
@@ -195,13 +195,13 @@ static ssize_t get_string_from_result_ident(prelude_string_t **out, preludedb_re
                 ret = 0;
                 goto err;
         }
-        
+
         ret = prelude_string_cat(*out, ")");
         if ( ret < 0 )
                 goto err;
 
         return i;
-        
+
  err:
         prelude_string_destroy(*out);
         return ret;
@@ -237,7 +237,7 @@ ssize_t classic_delete_alert_from_result_idents(preludedb_sql_t *sql, preludedb_
         ssize_t count;
         prelude_string_t *buf;
 
-        count = get_string_from_result_ident(&buf, results);        
+        count = get_string_from_result_ident(&buf, results);
         if ( count <= 0 )
                 return count;
 
@@ -260,7 +260,7 @@ ssize_t classic_delete_alert_from_list(preludedb_sql_t *sql, uint64_t *ident, si
 
         ret = do_delete_alert(sql, prelude_string_get_string(buf));
         prelude_string_destroy(buf);
-        
+
         return (ret < 0) ? ret : count;
 }
 

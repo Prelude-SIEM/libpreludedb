@@ -29,7 +29,7 @@
 
 const char *preludedb_strerror(preludedb_error_t error)
 {
-	static const char *error_strings[] = {
+        static const char *error_strings[] = {
                 "Successful",
                 "Unknown generic error",
                 "Invalid SQL settings string",
@@ -43,28 +43,28 @@ const char *preludedb_strerror(preludedb_error_t error)
                 "Unknown format plugin",
                 "Already in transaction",
                 "Not in transaction",
-		"Invalid message ident",
-		"Invalid selected path string",
-		"Invalid path selection",
-		"Database schema version too old",
-		"Database schema version too recent",
-		"Database schema version invalid",
-		"Cannot load sql plugin",
-		"Cannot load format plugin"
+                "Invalid message ident",
+                "Invalid selected path string",
+                "Invalid path selection",
+                "Database schema version too old",
+                "Database schema version too recent",
+                "Database schema version invalid",
+                "Cannot load sql plugin",
+                "Cannot load format plugin"
         };
 
         if ( prelude_error_is_verbose(error) )
                 return _prelude_thread_get_error();
-               
-	if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {
-		preludedb_error_code_t code;
 
-		code = prelude_error_get_code(error);
-		if ( code < 0 || code >= sizeof(error_strings) / sizeof(*error_strings) )
-			return NULL;
+        if ( prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB ) {
+                preludedb_error_code_t code;
 
-		return error_strings[code];
-	}
+                code = prelude_error_get_code(error);
+                if ( code < 0 || code >= sizeof(error_strings) / sizeof(*error_strings) )
+                        return NULL;
 
-	return prelude_strerror(error);
+                return error_strings[code];
+        }
+
+        return prelude_strerror(error);
 }
