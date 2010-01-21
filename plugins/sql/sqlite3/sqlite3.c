@@ -365,7 +365,8 @@ static const char *sql_get_column_name(void *session, void *resource, unsigned i
 
 static int sql_get_column_num(void *session, void *resource, const char *column_name)
 {
-        int ret, i;
+        int ret;
+        unsigned int i;
         sqlite3_resource_t *res = resource;
 
         for ( i = 0; i < res->ncolumn; i++ ) {
@@ -503,7 +504,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         int ret;
 
         ret = snprintf(buf, sizeof(buf), "DATETIME(%s, '%d hours')", field, gmt_offset / 3600);
-        if ( ret < 0 || ret >= sizeof(buf) )
+        if ( ret < 0 || (size_t) ret >= sizeof(buf) )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
         sql_operator = get_operator_string(operator);

@@ -60,7 +60,7 @@ const char *preludedb_strerror(preludedb_error_t error)
                 preludedb_error_code_t code;
 
                 code = prelude_error_get_code(error);
-                if ( code < 0 || code >= sizeof(error_strings) / sizeof(*error_strings) )
+                if ( code >= sizeof(error_strings) / sizeof(*error_strings) )
                         return NULL;
 
                 return error_strings[code];

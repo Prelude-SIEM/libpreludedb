@@ -41,9 +41,8 @@
 
 static int delete_message(preludedb_sql_t *sql, unsigned int count, const char **queries, const char *idents)
 {
-        int i;
-        int ret;
-        int tmp;
+        unsigned int i;
+        int ret, tmp;
 
         ret = preludedb_sql_transaction_start(sql);
         if ( ret < 0 )

@@ -64,7 +64,7 @@ int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
 
 static int parse_filter(const char *str, size_t len)
 {
-        int i;
+        unsigned int i;
         struct {
                 const char *name;
                 int flag;
@@ -110,7 +110,7 @@ static int parse_filters(const char *str)
 
 static int parse_function(const char *str)
 {
-        int i;
+        unsigned int i;
         struct {
                 const char *name;
                 size_t len;

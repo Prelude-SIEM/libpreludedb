@@ -894,7 +894,7 @@ static int do_read_message(prelude_io_t *io, prelude_msg_t **msg, idmef_message_
                 return 1;
         }
 
-        if ( limit != -1 && cur_count >= limit ) {
+        if ( limit != -1 && cur_count >= (uint64_t) limit ) {
                 prelude_msg_destroy(*msg);
                 return 0;
         }

@@ -272,7 +272,7 @@ static const classic_idmef_class_t default_class = {
 static const classic_idmef_class_t *search_path(const idmef_path_t *path)
 {
         idmef_class_id_t class_id;
-        int i;
+        unsigned int i;
 
         class_id = idmef_path_get_class(path, idmef_path_get_depth(path) - 2);
 

@@ -103,7 +103,7 @@ int classic_sql_select_add_field(classic_sql_select_t *select, const char *field
                 { PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD, "STD" },
                 { PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT, "COUNT" }
         };
-        int i;
+        unsigned int i;
         const char *function_name = NULL;
         int ret;
 

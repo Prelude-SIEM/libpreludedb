@@ -370,7 +370,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
         int ret;
 
         ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
-        if ( ret < 0 || ret >= sizeof(buf) )
+        if ( ret < 0 || (size_t) ret >= sizeof(buf) )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
         sql_operator = get_operator_string(operator);
@@ -455,7 +455,7 @@ static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t t
 
         ret = snprintf(buf, size, "INTERVAL %d %s", value, type_str);
 
-        return (ret < 0 || ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
+        return (ret < 0 || (size_t) ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
 }
 
 

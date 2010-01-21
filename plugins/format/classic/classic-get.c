@@ -1141,7 +1141,7 @@ static int get_file_access(preludedb_sql_t *sql,
         preludedb_sql_field_t *field;
         idmef_file_access_t *file_access;
         uint32_t file_access_count;
-        int cnt;
+        unsigned int cnt;
         int ret;
 
         ret = preludedb_sql_query_sprintf(sql, &table,

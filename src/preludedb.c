@@ -324,7 +324,7 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
         tmp = preludedb_error(prelude_error_get_code(error));
 
         ret = snprintf(errbuf, size, "%s: %s", preludedb_strerror(tmp), preludedb_strerror(error));
-        if ( ret < 0 || ret >= size )
+        if ( ret < 0 || (size_t) ret >= size )
                 return NULL;
 
         return errbuf;

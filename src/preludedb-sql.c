@@ -1182,8 +1182,8 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
 static int build_criterion_broken_down_time_equal(preludedb_sql_t *sql, prelude_string_t *output,
                                                   const char *field, idmef_criterion_operator_t op, const struct tm *lt)
 {
-        int ret;
-        int i, prev = 0, year, month;
+        unsigned int i;
+        int ret, prev = 0, year, month;
         const struct {
                 preludedb_sql_time_constraint_type_t type;
                 const int *field_ptr;

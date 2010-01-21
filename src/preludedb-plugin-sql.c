@@ -379,7 +379,7 @@ int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin,
                        lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
                        lt->tm_hour, lt->tm_min, lt->tm_sec);
 
-        return (ret < 0 || ret >= size) ? -1 : 0;
+        return (ret < 0 || (size_t) ret >= size) ? -1 : 0;
 }
 
 
