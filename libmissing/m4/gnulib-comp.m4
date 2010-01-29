@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2009 Free Software Foundation, Inc.
+# Copyright (C) 2002-2010 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -46,8 +46,6 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_ALLOCA
   gl_HEADER_ERRNO_H
   gl_FLOAT_H
-  gl_FUNC_GETPAGESIZE
-  gl_UNISTD_MODULE_INDICATOR([getpagesize])
   gl_LOCK
   gl_FUNC_MEMCHR
   gl_STRING_MODULE_INDICATOR([memchr])
@@ -55,6 +53,7 @@ AC_DEFUN([gl_INIT],
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
+  gl_STDDEF_H
   gl_STDINT_H
   gl_STDIO_H
   gl_FUNC_STRDUP
@@ -67,7 +66,6 @@ AC_DEFUN([gl_INIT],
   gl_THREADLIB
   gl_HEADER_TIME_H
   gl_TIME_R
-  gl_UNISTD_H
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
@@ -95,7 +93,7 @@ AC_DEFUN([gl_INIT],
     if test -n "$gl_LIBOBJS"; then
       # Remove the extension.
       sed_drop_objext='s/\.o$//;s/\.obj$//'
-      for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+      for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gl_libobjs="$gl_libobjs $i.$ac_objext"
         gl_ltlibobjs="$gl_ltlibobjs $i.lo"
       done
@@ -138,7 +136,7 @@ AC_DEFUN([gl_INIT],
     if test -n "$gltests_LIBOBJS"; then
       # Remove the extension.
       sed_drop_objext='s/\.o$//;s/\.obj$//'
-      for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed "$sed_drop_objext" | sort | uniq`; do
+      for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gltests_libobjs="$gltests_libobjs $i.$ac_objext"
         gltests_ltlibobjs="$gltests_ltlibobjs $i.lo"
       done
@@ -207,14 +205,14 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/arg-nonnull.h
   build-aux/config.rpath
-  build-aux/link-warning.h
+  build-aux/warn-on-use.h
   lib/alloca.in.h
   lib/asnprintf.c
   lib/errno.in.h
   lib/float+.h
   lib/float.in.h
-  lib/getpagesize.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
@@ -226,6 +224,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/printf-parse.h
   lib/size_max.h
   lib/snprintf.c
+  lib/stddef.in.h
   lib/stdint.in.h
   lib/stdio-write.c
   lib/stdio.in.h
@@ -235,7 +234,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strnlen.c
   lib/time.in.h
   lib/time_r.c
-  lib/unistd.in.h
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/vsnprintf.c
@@ -246,7 +244,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/errno_h.m4
   m4/extensions.m4
   m4/float_h.m4
-  m4/getpagesize.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/intmax_t.m4
@@ -263,6 +260,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/printf.m4
   m4/size_max.m4
   m4/snprintf.m4
+  m4/stddef_h.m4
   m4/stdint.m4
   m4/stdint_h.m4
   m4/stdio_h.m4
@@ -274,24 +272,26 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/threadlib.m4
   m4/time_h.m4
   m4/time_r.m4
-  m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
+  m4/warn-on-use.m4
   m4/wchar.m4
   m4/wchar_t.m4
   m4/wint_t.m4
   m4/xsize.m4
   m4/yield.m4
+  tests/macros.h
+  tests/signature.h
   tests/test-alloca-opt.c
   tests/test-errno.c
   tests/test-lock.c
   tests/test-memchr.c
   tests/test-snprintf.c
+  tests/test-stddef.c
   tests/test-stdint.c
   tests/test-stdio.c
   tests/test-string.c
   tests/test-time.c
-  tests/test-unistd.c
   tests/test-vasnprintf.c
   tests/test-vsnprintf.c
   tests/test-wchar.c

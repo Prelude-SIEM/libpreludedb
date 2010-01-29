@@ -25,7 +25,7 @@ libpreludedb_la_LDFLAGS =  \
 			  $(LTLIBTHREAD) \
 			  #$(DLOPENED_OBJS)
 
-libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@ ../libmissing/libmissing.la
+libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@ $(LTLIBTHREAD) ../libmissing/libmissing.la
 
 libpreludedb_la_SOURCES =		\
 	preludedb.c			\
