@@ -108,10 +108,11 @@ classic_sql_joined_table_t *classic_sql_join_lookup_table(const classic_sql_join
         prelude_list_for_each(&join->tables, tmp) {
                 table = prelude_list_entry(tmp, classic_sql_joined_table_t, list);
                 if ( depth == idmef_path_get_depth(table->path) ) {
-                        if ( last_element_is_listed )
+                        if ( last_element_is_listed || (idmef_path_get_value_type(path, -1) == IDMEF_VALUE_TYPE_TIME && idmef_path_get_class(path, depth - 2) != IDMEF_CLASS_ID_FILE) )
                                 ret = idmef_path_compare(path, table->path);
                         else
                                 ret = idmef_path_ncompare(path, table->path, depth - 1);
+
 
                         if ( ret == 0 )
                                 return table;
