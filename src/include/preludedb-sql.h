@@ -63,7 +63,7 @@ typedef struct preludedb_sql_table preludedb_sql_table_t;
 typedef struct preludedb_sql_row preludedb_sql_row_t;
 typedef struct preludedb_sql_field preludedb_sql_field_t;
 
-int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_settings_t *settings);
+int preludedb_sql_new(preludedb_sql_t **newdb, const char *type, preludedb_sql_settings_t *settings);
 
 void preludedb_sql_destroy(preludedb_sql_t *sql);
 
@@ -117,7 +117,7 @@ int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
 					 prelude_string_t *output,
 					 const char *field,
-					 idmef_criterion_operator_t operator, idmef_criterion_value_t *value);
+					 idmef_criterion_operator_t idmef_operator, idmef_criterion_value_t *value);
 
 int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec);
 int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,

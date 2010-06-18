@@ -61,7 +61,7 @@ typedef prelude_error_t preludedb_error_t;
 
 static inline preludedb_error_t preludedb_error(preludedb_error_code_t error)
 {
-        return (preludedb_error_t) prelude_error_make(PRELUDE_ERROR_SOURCE_PRELUDEDB, error);
+        return (preludedb_error_t) prelude_error_make(PRELUDE_ERROR_SOURCE_PRELUDEDB, (prelude_error_code_t) error);
 }
 
 
@@ -72,7 +72,7 @@ static inline preludedb_error_t preludedb_error_verbose(preludedb_error_code_t e
 	va_list ap;
 
 	va_start(ap, fmt);
-	ret = prelude_error_verbose_make_v(PRELUDE_ERROR_SOURCE_PRELUDEDB, error, fmt, ap);
+	ret = prelude_error_verbose_make_v(PRELUDE_ERROR_SOURCE_PRELUDEDB, (prelude_error_code_t) error, fmt, ap);
 	va_end(ap);
 
 	return ret;
