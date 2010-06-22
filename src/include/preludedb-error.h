@@ -83,8 +83,8 @@ static inline preludedb_error_t preludedb_error_verbose(preludedb_error_code_t e
 static inline prelude_bool_t preludedb_error_check(preludedb_error_t error,
 						   preludedb_error_code_t code)
 {
-	return (prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB &&
-		prelude_error_get_code(error) == code);
+	return (prelude_bool_t) (prelude_error_get_source(error) == PRELUDE_ERROR_SOURCE_PRELUDEDB &&
+		                 prelude_error_get_code(error) == (prelude_error_code_t) code);
 }
 
 

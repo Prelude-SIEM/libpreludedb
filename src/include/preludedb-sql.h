@@ -25,6 +25,9 @@
 #define _LIBPRELUDEDB_SQL_H
 
 #include <libprelude/prelude-string.h>
+#include <libprelude/idmef-criteria.h>
+#include <libprelude/idmef-time.h>
+#include "preludedb-sql-settings.h"
 
 #ifdef __cplusplus
  extern "C" {
