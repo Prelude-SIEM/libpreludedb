@@ -2060,7 +2060,7 @@ int classic_insert(preludedb_sql_t *sql, idmef_message_t *message)
                 break;
 
         default:
-                return -1;
+                ret = -1;
         }
 
         if ( ret < 0 ) {
