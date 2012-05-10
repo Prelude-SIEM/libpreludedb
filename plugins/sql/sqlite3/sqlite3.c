@@ -1,6 +1,6 @@
 /*****
  *
- * Copyright (C) 2005-2007 PreludeIDS Technologies. All Rights Reserved.
+ * Copyright (C) 2005-2012 CS-SI. All Rights Reserved.
  * Author: Rob Holland <rob@inversepath.com>
  *
  * This file is part of the PreludeDB library.
