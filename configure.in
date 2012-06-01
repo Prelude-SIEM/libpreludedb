@@ -11,7 +11,7 @@ dnl **********************************************************
 
 libpreludedb_major=1
 libpreludedb_minor=0
-libpreludedb_micro=0
+libpreludedb_micro=1
 libpreludedb_patchlevel=
 libpreludedb_version=$libpreludedb_major.$libpreludedb_minor.$libpreludedb_micro$libpreludedb_patchlevel
 

@@ -1,3 +1,24 @@
+* 2012-06-01, libpreludedb-1.0.1
+
+- Changed copyright
+
+- Added packaging for rhel6
+
+- Call prelude_transaction_abort() on empty IDMEF message.
+    
+  When trying to insert a message containing no alert/heartbeat,
+  the database would remain locked since preludedb_transaction_abort()
+  was not called.
+
+- Whitespace police
+
+- C++ compilation fixes
+    
+  Include required dependencies, and add missing cast to preludedb-error.h
+
+- Fixed some compile errors with g++
+    
+
 * 2010-03-16, libpreludedb-1.0.0:
 
 - No changes since rc1.

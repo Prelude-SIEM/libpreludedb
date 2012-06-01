@@ -67,7 +67,7 @@ preludedb-sql
 
 </para>
 
-@new: 
+@newdb: 
 @type: 
 @settings: 
 @Returns: 
@@ -445,7 +445,7 @@ preludedb-sql
 @sql: 
 @output: 
 @field: 
-@operator: 
+@idmef_operator: 
 @value: 
 @Returns: 
 
