@@ -1,4 +1,4 @@
-PreludeDB Library (http://www.prelude-ids.org)
+PreludeDB Library (http://www.prelude-ids.com)
 PreludeDB is brought to you by CS-SI (http://www.prelude-ids.com).
 
 
@@ -48,14 +48,14 @@ prelude-devel mailing list by sending a mail to:
 and post your patch with a description of functionality.
 You can also attach patches to bugs on 
 
-        http://trac.prelude-ids.org
+        https://dev.prelude-ids.com
 
 
 2. BUGS
 
 If you find any bugs, please report them to:
 
-	http://trac.prelude-ids.org
+	https://dev.prelude-ids.com
 
 Please make sure that what you're reporting is actually a BUG and not
 a problem on your side.
@@ -71,8 +71,7 @@ How to install the PreludeDB Library
 ==================================
 
 
-If you don't want to build the PreludeDB Library yourself, you can get 
-prebuild rpm and debian packages at http://www.prelude-ids.org.
+If you don't want to build the PreludeDB Library yourself, some distributions include binary packages for prelude.
 
 If you want to build PreludeDB, unpack the tarball and cd into the
 newly created directory. Then type :

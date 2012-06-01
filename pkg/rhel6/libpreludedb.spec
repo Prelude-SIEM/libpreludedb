@@ -8,8 +8,8 @@ Release: 1%{?dist}
 Summary: Provide the framework for easy access to the Prelude database
 Group:  System Environment/Libraries
 License: GPLv2+
-URL:  http://prelude-ids.org/
-Source0: http://prelude-ids.org/download/releases/%{name}/%{name}-%{version}.tar.gz 
+URL:  http://prelude-ids.com/
+Source0: http://prelude-ids.com/download/releases/%{name}/%{name}-%{version}.tar.gz 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: libprelude-devel python-devel perl-devel
 BuildRequires: sqlite-devel mysql-devel, postgresql-devel
