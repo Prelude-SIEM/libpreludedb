@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS Prelude_Alert;
 CREATE TABLE Prelude_Alert (
  _ident BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
  messageid VARCHAR(255) NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_alert_messageid ON Prelude_Alert (messageid);
 
@@ -25,7 +25,7 @@ CREATE TABLE Prelude_Alertident (
  alertident VARCHAR(255) NOT NULL,
  analyzerid VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -35,7 +35,7 @@ CREATE TABLE Prelude_ToolAlert (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  name VARCHAR(255) NOT NULL,
  command VARCHAR(255) NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -44,7 +44,7 @@ DROP TABLE IF EXISTS Prelude_CorrelationAlert;
 CREATE TABLE Prelude_CorrelationAlert (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  name VARCHAR(255) NOT NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -55,7 +55,7 @@ CREATE TABLE Prelude_OverflowAlert (
  program VARCHAR(255) NOT NULL,
  size INTEGER UNSIGNED NULL,
  buffer BLOB NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -65,7 +65,7 @@ CREATE TABLE Prelude_Heartbeat (
  _ident BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
  messageid VARCHAR(255) NULL,
  heartbeat_interval INTEGER NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -84,7 +84,7 @@ CREATE TABLE Prelude_Analyzer (
  ostype VARCHAR(255) NULL,
  osversion VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type,_message_ident,_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_analyzer_analyzerid ON Prelude_Analyzer (_parent_type,_index,analyzerid);
 CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (_parent_type,_index,model);
@@ -97,7 +97,7 @@ CREATE TABLE Prelude_Classification (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  ident VARCHAR(255) NULL,
  text VARCHAR(255) NOT NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_classification_index_text ON Prelude_Classification (text(40));
 
@@ -113,7 +113,7 @@ CREATE TABLE Prelude_Reference (
  url VARCHAR(255) NOT NULL,
  meaning VARCHAR(255) NULL,
  PRIMARY KEY (_message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_reference_index_name ON Prelude_Reference (name(40));
 
@@ -128,7 +128,7 @@ CREATE TABLE Prelude_Source (
  spoofed ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL,
  PRIMARY KEY (_message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -141,7 +141,7 @@ CREATE TABLE Prelude_Target (
  decoy ENUM("unknown","yes","no") NOT NULL,
  interface VARCHAR(255) NULL,
  PRIMARY KEY (_message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -166,7 +166,7 @@ CREATE TABLE Prelude_File (
  fstype ENUM("ufs", "efs", "nfs", "afs", "ntfs", "fat16", "fat32", "pcfs", "joliet", "iso9660") NULL,
  file_type VARCHAR(255) NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -178,7 +178,7 @@ CREATE TABLE Prelude_FileAccess (
  _parent1_index TINYINT NOT NULL,
  _index TINYINT NOT NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -192,7 +192,7 @@ CREATE TABLE Prelude_FileAccess_Permission (
  _index TINYINT NOT NULL,
  permission VARCHAR(255) NOT NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _parent2_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -207,7 +207,7 @@ CREATE TABLE Prelude_Linkage (
  name VARCHAR(255) NOT NULL,
  path VARCHAR(255) NOT NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -225,7 +225,7 @@ CREATE TABLE Prelude_Inode (
  c_major_device INT UNSIGNED NULL,
  c_minor_device INT UNSIGNED NULL,
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -240,7 +240,7 @@ CREATE TABLE Prelude_Checksum (
  value VARCHAR(255) NOT NULL,
  checksum_key VARCHAR(255) NULL, # key is a reserved word
  PRIMARY KEY (_message_ident, _parent0_index, _parent1_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 DROP TABLE IF EXISTS Prelude_Impact;
@@ -251,7 +251,7 @@ CREATE TABLE Prelude_Impact (
  severity ENUM("info", "low","medium","high") NULL,
  completion ENUM("failed", "succeeded") NULL,
  type ENUM("admin", "dos", "file", "recon", "user", "other") NOT NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_impact_index_severity ON Prelude_Impact (severity);
 CREATE INDEX prelude_impact_index_completion ON Prelude_Impact (completion);
@@ -267,7 +267,7 @@ CREATE TABLE Prelude_Action (
  description VARCHAR(255) NULL,
  category ENUM("block-installed", "notification-sent", "taken-offline", "other") NOT NULL,
  PRIMARY KEY (_message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -277,7 +277,7 @@ CREATE TABLE Prelude_Confidence (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY,
  confidence FLOAT NULL,
  rating ENUM("low", "medium", "high", "numeric") NOT NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -285,7 +285,7 @@ DROP TABLE IF EXISTS Prelude_Assessment;
 
 CREATE TABLE Prelude_Assessment (
  _message_ident BIGINT UNSIGNED NOT NULL PRIMARY KEY
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -299,7 +299,7 @@ CREATE TABLE Prelude_AdditionalData (
  meaning VARCHAR(255) NULL,
  data BLOB NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -312,7 +312,7 @@ CREATE TABLE Prelude_CreateTime (
  usec INTEGER UNSIGNED NOT NULL,
  gmtoff INTEGER NOT NULL,
  PRIMARY KEY (_parent_type,_message_ident)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_createtime_index ON Prelude_CreateTime (_parent_type,time);
 
@@ -324,7 +324,7 @@ CREATE TABLE Prelude_DetectTime (
  time DATETIME NOT NULL,
  usec INTEGER UNSIGNED NOT NULL,
  gmtoff INTEGER NOT NULL
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_detecttime_index ON Prelude_DetectTime (time);
 
@@ -338,7 +338,7 @@ CREATE TABLE Prelude_AnalyzerTime (
  usec INTEGER UNSIGNED NOT NULL,
  gmtoff INTEGER NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_analyzertime_index ON Prelude_AnalyzerTime (_parent_type,time);
 
@@ -355,7 +355,7 @@ CREATE TABLE Prelude_Node (
  location VARCHAR(255) NULL,
  name VARCHAR(255) NULL,
  PRIMARY KEY(_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_node_index_location ON Prelude_Node (_parent_type,_parent0_index,location(20));
 CREATE INDEX prelude_node_index_name ON Prelude_Node (_parent_type,_parent0_index,name(20));
@@ -376,7 +376,7 @@ CREATE TABLE Prelude_Address (
  address VARCHAR(255) NOT NULL,
  netmask VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_address_index_address ON Prelude_Address (_parent_type,_parent0_index,_index,address(10));
 
@@ -391,7 +391,7 @@ CREATE TABLE Prelude_User (
  ident VARCHAR(255) NULL,
  category ENUM("unknown","application","os-device") NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -410,7 +410,7 @@ CREATE TABLE Prelude_UserId (
  tty VARCHAR(255) NULL,
  number INTEGER UNSIGNED NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _parent1_index, _parent2_index, _index) # _parent_index1 and _parent2_index will always be zero if parent_type = 'F'
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -425,7 +425,7 @@ CREATE TABLE Prelude_Process (
  pid INTEGER UNSIGNED NULL,
  path VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -438,7 +438,7 @@ CREATE TABLE Prelude_ProcessArg (
  _index TINYINT NOT NULL,
  arg VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -451,7 +451,7 @@ CREATE TABLE Prelude_ProcessEnv (
  _index TINYINT NOT NULL,
  env VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -470,7 +470,7 @@ CREATE TABLE Prelude_Service (
  portlist VARCHAR (255) NULL,
  protocol VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 CREATE INDEX prelude_service_index_protocol_port ON Prelude_Service (_parent_type,_parent0_index,protocol(10),port);
 CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_type,_parent0_index,protocol(10),name(10));
@@ -487,7 +487,7 @@ CREATE TABLE Prelude_WebService (
  cgi VARCHAR(255) NULL,
  http_method VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -500,7 +500,7 @@ CREATE TABLE Prelude_WebServiceArg (
  _index TINYINT NOT NULL,
  arg VARCHAR(255) NOT NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index, _index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;
 
 
 
@@ -519,4 +519,4 @@ CREATE TABLE Prelude_SnmpService (
  context_engine_id VARCHAR(255) NULL,
  command VARCHAR(255) NULL,
  PRIMARY KEY (_parent_type, _message_ident, _parent0_index)
-) TYPE=InnoDB;
+) ENGINE=InnoDB;

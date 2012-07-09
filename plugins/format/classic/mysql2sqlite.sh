@@ -7,6 +7,6 @@ sed \
 	-e 's/ENUM([^)]\{1,\})/TEXT/' \
 	-e 's/VARCHAR([^)]\{1,\})/TEXT/' \
 	-e 's/AUTO_INCREMENT/AUTOINCREMENT/' \
-	-e 's/TYPE=InnoDB//' \
+	-e 's/ENGINE=InnoDB//' \
 	-e 's/([0-9]\{1,\})//g' \
 	$1 

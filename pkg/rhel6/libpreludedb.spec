@@ -4,7 +4,7 @@
 Name:  libpreludedb
 Epoch:  1
 Version: 1.0.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Provide the framework for easy access to the Prelude database
 Group:  System Environment/Libraries
 License: GPLv2+
