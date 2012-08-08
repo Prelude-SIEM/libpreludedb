@@ -1,10 +1,10 @@
-* Unreleased, libpreludedb-1.0.2
+* 2012-08-08, libpreludedb-1.0.2:
 
 - Change TYPE to ENGINE in mysql.sql (requires MySQL >= 4.0.18)
 
 
 
-* 2012-06-01, libpreludedb-1.0.1
+* 2012-06-01, libpreludedb-1.0.1:
 
 - Changed copyright
 

@@ -3,8 +3,8 @@
 
 Name:  libpreludedb
 Epoch:  1
-Version: 1.0.1
-Release: 2%{?dist}
+Version: 1.0.2
+Release: 1%{?dist}
 Summary: Provide the framework for easy access to the Prelude database
 Group:  System Environment/Libraries
 License: GPLv2+
@@ -165,6 +165,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Wed Aug 08 2012 Antoine Luong <antoine.luong@c-s.fr> - 1.0.2-1
+- new upstream release
+
 * Wed Jun 15 2011 Vincent Quéméner <vincent.quemener@c-s.fr> - 1.0.0-8
 - Rebuilt for RHEL6
 
