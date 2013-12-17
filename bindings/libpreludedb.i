@@ -59,11 +59,11 @@ typedef enum {
 
 
 #ifdef SWIGPYTHON
-%include libpreludedb_python.i
+%include libpreludedb-python.i
 #endif /* ! SWIGPYTHON */
 
 #ifdef SWIGPERL
-%include libpreludedb_perl.i
+%include perl/libpreludedb-perl.i
 #endif /* ! SWIGPERL */
 
 %apply SWIGTYPE **OUTPARAM {

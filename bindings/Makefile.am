@@ -1,4 +1,4 @@
-BINDING_DEPENDS=libpreludedb.i libpreludedb_perl.i libpreludedb_python.i \
+BINDING_DEPENDS=libpreludedb.i perl/libpreludedb-perl.i python/libpreludedb-python.i \
 		$(top_srcdir)/src/include/preludedb-error.h \
 		$(top_srcdir)/src/include/preludedb.h \
 		$(top_srcdir)/src/include/preludedb-path-selection.h \
@@ -7,7 +7,9 @@ BINDING_DEPENDS=libpreludedb.i libpreludedb_perl.i libpreludedb_python.i \
 		$(top_srcdir)/src/include/preludedb-sql.h \
 		$(top_srcdir)/src/include/preludedb-sql-settings.h
 
-EXTRA_DIST = libpreludedb.i libpreludedb_perl.i libpreludedb_python.i perl/Makefile.PL.in perl/PreludeDB.pm python/setup.py.in python/preludedb.py perl/PreludeDB.c python/_preludedb.c
+SUBDIRS = python
+
+EXTRA_DIST = libpreludedb.i perl/libpreludedb-perl.i perl/Makefile.PL.in perl/PreludeDB.pm python/setup.py.in perl/PreludeDB.c
 
 CLEANFILES = perl/pm_to_blib perl/PreludeDB.o perl/blib python/build
 MAINTAINERCLEANFILES =  perl/Makefile		\
@@ -16,7 +18,7 @@ MAINTAINERCLEANFILES =  perl/Makefile		\
 			perl/PreludeDB.c	\
 			python/_preludedb.c
 
-all-am: perl python
+all-am: perl
 
 
 if HAVE_PERL
@@ -24,14 +26,6 @@ perl: perl-build
 else
 perl:
 endif
-
-
-if HAVE_PYTHON
-python: python-build
-else
-python:
-endif
-
 
 
 if HAVE_PERL
@@ -54,27 +48,13 @@ if HAVE_SWIG
 	 `$(SWIG) -perl5 -help 2>&1 | grep noproxy > /dev/null && echo -noproxy` $(srcdir)/libpreludedb.i
 endif
 
-python/_preludedb.c: $(BINDING_DEPENDS)
-if HAVE_SWIG
-	$(SWIG) -I$(top_srcdir)/src/include @LIBPRELUDE_CFLAGS@ -o $@ -python -noproxy -interface _preludedb -module _preludedb $(srcdir)/libpreludedb.i
-endif
-
 
 perl-build: perl/PreludeDB.c perl-makefile
 	cd perl && $(MAKE) LD_RUN_PATH=""
 
-python-build: python/_preludedb.c
-	cd python && CC="$(BINDINGS_CC)" $(PYTHON) setup.py build
-
-
-
 install-exec-hook: perl-makefile
 if HAVE_PERL
 	cd perl && $(MAKE) LD_RUN_PATH="" install
-endif
-
-if HAVE_PYTHON
-	cd python && $(PYTHON) setup.py install `test -n "$(DESTDIR)" && echo --root $(DESTDIR)`
 endif
 
 uninstall-hook: perl-makefile
@@ -82,18 +62,9 @@ if HAVE_PERL
 	cd perl && $(MAKE) uninstall
 endif
 
-if HAVE_PYTHON
-	cd python && $(PYTHON) setup.py uninstall `test -n "$(DESTDIR)" && echo --root $(DESTDIR)`
-endif
-
-
 clean-local:
 if HAVE_PERL
 	cd perl && if test -f Makefile; then $(MAKE) clean; fi
-endif
-
-if HAVE_PYTHON
-	cd python && $(PYTHON) setup.py clean -a
 endif
 
 -include $(top_srcdir)/git.mk

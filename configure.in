@@ -325,6 +325,7 @@ docs/manpages/Makefile
 
 bindings/Makefile
 bindings/perl/Makefile.PL
+bindings/python/Makefile
 bindings/python/setup.py
 
 ])
