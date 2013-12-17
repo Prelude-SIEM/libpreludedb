@@ -17,6 +17,9 @@ preludedb-plugin-format
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### TYPEDEF preludedb_plugin_format_t ##### -->
 <para>
 

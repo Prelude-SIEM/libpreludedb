@@ -17,6 +17,9 @@ preludedb
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### TYPEDEF preludedb_t ##### -->
 <para>
 
@@ -56,6 +59,7 @@ preludedb
 
 </para>
 
+@void: 
 @Returns: 
 
 
@@ -64,6 +68,7 @@ preludedb
 
 </para>
 
+@void: 
 
 
 <!-- ##### FUNCTION preludedb_new ##### -->

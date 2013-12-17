@@ -1,20 +1,4 @@
-AC_INIT
-AC_CONFIG_SRCDIR([src])
-AC_PREREQ(2.59)
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
-
-
-dnl **********************************************************
-dnl * Version and release information
-dnl **********************************************************
-
-libpreludedb_major=1
-libpreludedb_minor=0
-libpreludedb_micro=2
-libpreludedb_patchlevel=
-libpreludedb_version=$libpreludedb_major.$libpreludedb_minor.$libpreludedb_micro$libpreludedb_patchlevel
-
+AC_INIT(libpreludedb, 1.0.2)
 
 dnl **********************************************************
 dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
@@ -24,8 +8,13 @@ libpreludedb_revision=10
 libpreludedb_age=4
 LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 
+AC_PREREQ(2.59)
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE(libpreludedb, $libpreludedb_version)
+AC_CONFIG_SRCDIR([src])
+AM_INIT_AUTOMAKE([-Wall tar-pax 1.9])
+
 AC_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -45,11 +34,13 @@ dnl * Setup GnuLib, libtool and libltdl.
 dnl **********************************************************
 
 gl_EARLY
+AC_CONFIG_MACRO_DIR([m4])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+
 AC_LIBTOOL_DLOPEN
 AC_LIBTOOL_WIN32_DLL
 AM_DISABLE_STATIC
 AC_PROG_LIBTOOL
-
 
 
 
@@ -60,7 +51,7 @@ dnl **************************************************
 AC_MSG_CHECKING(for cpu-specific compiler flags)
 if test "$host_cpu" == "x86_64" && test $enable_static = "yes"; then
         AC_MSG_RESULT(x86_64/static: adding -fPIC)
-        AX_C_CHECK_FLAG(-fPIC, , , CPPFLAGS="$CPPFLAGS -fPIC")
+        AX_CHECK_COMPILE_FLAG(-fPIC, CPPFLAGS="$CPPFLAGS -fPIC")
 else
         AC_MSG_RESULT(none needed)
 fi
@@ -74,7 +65,7 @@ case "$host_os" in
         # apparently-legal code won't compile with its precompiled
         # headers.
         AC_MSG_RESULT(Darwin: adding -no-cpp-precomp)
-        AX_C_CHECK_FLAG(-no-cpp-precomp, , , PCFLAGS="$PCFLAGS -no-cpp-precomp")
+        AX_CHECK_COMPILE_FLAG(-no-cpp-precomp, PCFLAGS="$PCFLAGS -no-cpp-precomp")
         libext=dylib
         ;;
  *)
@@ -83,18 +74,18 @@ case "$host_os" in
         ;;
 esac
 
-AX_LD_CHECK_FLAG(-z relro, , , LDFLAGS="$LDFLAGS -z relro")
-AX_LD_CHECK_FLAG(-z now, , , LDFLAGS="$LDFLAGS -z now")
+AX_CHECK_LINK_FLAG([-z relro], LDFLAGS="$LDFLAGS -z relro")
+AX_CHECK_LINK_FLAG([-z now], LDFLAGS="$LDFLAGS -z now")
 
 
 for i in -Wall -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
          -Wbad-function-cast -Wcast-qual -Wcast-align -Wnested-externs -Wunused \
          -Wformat -Wformat-security; do
-        AX_C_CHECK_FLAG($i, , , PCFLAGS="$PCFLAGS $i")
+        AX_CHECK_COMPILE_FLAG([$i], PCFLAGS="$PCFLAGS $i")
 done
 
 if test x$buggy_pthread_initializers = xyes; then
-   AX_C_CHECK_FLAG(-Wno-missing-braces, , , PCFLAGS="$PCFLAGS -Wno-missing-braces")
+   AX_CHECK_COMPILE_FLAG([-Wno-missing-braces], PCFLAGS="$PCFLAGS -Wno-missing-braces")
 fi
 
 
@@ -111,11 +102,15 @@ dnl ***************************************************
 AX_LIB_MYSQL()
 with_mysql="no"
 if test x$MYSQL_CONFIG != x; then
-        with_mysql="yes"
         LIBS_bkp=$LIBS
         LIBS="$MYSQL_LDFLAGS"
         AC_CHECK_FUNC(mysql_real_escape_string, AC_DEFINE(HAVE_MYSQL_REAL_ESCAPE_STRING, , mysql_real_escape_string function present))
         LIBS=$LIBS_bkp
+
+        CPPFLAGS_bkp=$CPPFLAGS
+        CPPFLAGS="$MYSQL_CFLAGS"
+        AC_CHECK_HEADER(mysql.h, with_mysql=yes, with_mysql=no)
+        CPPFLAGS=$CPPFLAGS_bkp;
 fi
 
 AM_CONDITIONAL(HAVE_MYSQL, test x$with_mysql = xyes)
@@ -128,11 +123,15 @@ AX_LIB_POSTGRESQL()
 
 with_pgsql="no"
 if test x$POSTGRESQL_VERSION != x; then
-        with_pgsql="yes"
         LIBS_bkp=$LIBS
         LIBS="$POSTGRESQL_LDFLAGS"
         AC_CHECK_FUNC(PQserverVersion, AC_DEFINE(HAVE_PQSERVERVERSION, , [Define if PQserverVersion function is available]))
         LIBS=$LIBS_bkp;
+
+        CPPFLAGS_bkp=$CPPFLAGS
+        CPPFLAGS="$POSTGREGSQL_CFLAGS"
+        AC_CHECK_HEADER(libpq-fe.h, with_pgsql=yes, with_pgsql=no)
+        CPPFLAGS=$CPPFLAGS_bkp;
 fi
 
 AM_CONDITIONAL(HAVE_PGSQL, test x$with_pgsql = xyes)
@@ -142,10 +141,12 @@ dnl * Check for the SQLite3 library (SQLite3 plugin)       *
 dnl ********************************************************
 AX_LIB_SQLITE3("3.0.0")
 
+with_sqlite3="no"
 if test x$SQLITE3_VERSION != x; then
-        with_sqlite3="yes"
-else
-        with_sqlite3="no"
+        CPPFLAGS_bkp=$CPPFLAGS
+        CPPFLAGS="$SQLITE3_CFLAGS"
+        AC_CHECK_HEADER(sqlite3.h, with_sqlite3=yes, with_sqlite3=no)
+        CPPFLAGS=$CPPFLAGS_bkp;
 fi
 
 AM_CONDITIONAL(HAVE_SQLITE3, test x$with_sqlite3 = xyes)
@@ -269,14 +270,6 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_HEADER_TIME
-
-
-
-dnl **************************************************
-dnl * Check for GTK-DOC                              *
-dnl **************************************************
-
-GTK_DOC_CHECK(1.0)
 
 
 dnl **************************************************

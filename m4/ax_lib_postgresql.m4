@@ -1,5 +1,5 @@
 # ===========================================================================
-#        http://www.nongnu.org/autoconf-archive/ax_lib_postgresql.html
+#     http://www.gnu.org/software/autoconf-archive/ax_lib_postgresql.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -41,12 +41,15 @@
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
-#   and this notice are preserved.
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 9
 
 AC_DEFUN([AX_LIB_POSTGRESQL],
 [
     AC_ARG_WITH([postgresql],
-        AC_HELP_STRING([--with-postgresql=@<:@ARG@:>@],
+        AS_HELP_STRING([--with-postgresql=@<:@ARG@:>@],
             [use PostgreSQL library @<:@default=yes@:>@, optionally specify path to pg_config]
         ),
         [
@@ -71,13 +74,13 @@ AC_DEFUN([AX_LIB_POSTGRESQL],
     dnl
 
     if test "$want_postgresql" = "yes"; then
-
+        AC_MSG_CHECKING([for $PG_CONFIG])
         if test -z "$PG_CONFIG" -o test; then
             AC_PATH_PROG([PG_CONFIG], [pg_config], [])
         fi
 
         if test ! -x "$PG_CONFIG"; then
-            AC_MSG_ERROR([$PG_CONFIG does not exist or it is not an exectuable file])
+            AC_MSG_RESULT([$PG_CONFIG does not exist or it is not an exectuable file])
             PG_CONFIG="no"
             found_postgresql="no"
         fi

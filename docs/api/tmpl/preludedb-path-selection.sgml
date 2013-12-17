@@ -17,6 +17,9 @@ preludedb-path-selection
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### ENUM preludedb_selected_path_flags_t ##### -->
 <para>
 

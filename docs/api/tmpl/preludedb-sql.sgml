@@ -17,6 +17,9 @@ preludedb-sql
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### MACRO PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE ##### -->
 <para>
 
@@ -127,7 +130,7 @@ preludedb-sql
 @sql: 
 @table: 
 @format: 
-@Varargs: 
+@...: 
 @Returns: 
 
 
@@ -140,7 +143,7 @@ preludedb-sql
 @table: 
 @fields: 
 @format: 
-@Varargs: 
+@...: 
 @Returns: 
 
 

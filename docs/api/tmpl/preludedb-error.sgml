@@ -17,6 +17,9 @@ preludedb-error
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### ENUM preludedb_error_code_t ##### -->
 <para>
 
@@ -64,7 +67,7 @@ preludedb-error
 
 </para>
 
-@Varargs: 
+@Param1: 
 @Returns: 
 
 
