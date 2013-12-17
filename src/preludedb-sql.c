@@ -1297,7 +1297,6 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                          idmef_criterion_operator_t operator, idmef_criterion_value_t *value)
 {
         int ret = -1;
-        const void *vptr;
         idmef_criterion_value_type_t type;
 
         if ( operator == IDMEF_CRITERION_OPERATOR_NULL )
@@ -1316,7 +1315,6 @@ int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
         }
 
         type = idmef_criterion_value_get_type(value);
-        vptr = idmef_criterion_value_get_value(value);
 
         if ( type == IDMEF_CRITERION_VALUE_TYPE_VALUE )
                 ret = build_criterion_fixed_value(sql, output, field, operator, idmef_criterion_value_get_value(value));

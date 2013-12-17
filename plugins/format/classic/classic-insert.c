@@ -425,8 +425,8 @@ static int insert_process_env(preludedb_sql_t *sql,
 static int insert_process(preludedb_sql_t *sql, char parent_type, uint64_t message_ident, int parent_index,
                           idmef_process_t *process) 
 {
-        prelude_string_t *process_arg, *last_process_arg;
-        prelude_string_t *process_env, *last_process_env;
+        prelude_string_t *process_arg;
+        prelude_string_t *process_env;
         char *name, *path, pid[16], *ident;
 	int index;
         int ret;
@@ -467,23 +467,19 @@ static int insert_process(preludedb_sql_t *sql, char parent_type, uint64_t messa
                 return ret;
 
 	index = 0;
-        last_process_arg = process_arg = NULL;
+        process_arg = NULL;
         while ( (process_arg = idmef_process_get_next_arg(process, process_arg)) ) {
 		ret = insert_process_arg(sql, parent_type, message_ident, parent_index, index++, process_arg);
 		if ( ret < 0 )
 			return ret;
-
-		last_process_arg = process_arg;
         }
 
 	index = 0;
-        last_process_env = process_env = NULL;
+        process_env = NULL;
         while ( (process_env = idmef_process_get_next_env(process, process_env)) ) {
 		ret = insert_process_env(sql, parent_type, message_ident, parent_index, index++, process_env);
 		if ( ret < 0 )
 			return ret;
-
-		last_process_env = process_env;
         }
 	
         return 1;
@@ -1683,7 +1679,7 @@ static int insert_alertident(preludedb_sql_t *sql,
 static int insert_tool_alert(preludedb_sql_t *sql, uint64_t message_ident, idmef_tool_alert_t *tool_alert) 
 {
         char *name, *command;
-	idmef_alertident_t *alertident, *last_alertident;
+	idmef_alertident_t *alertident;
 	int index;
         int ret;
 
@@ -1708,13 +1704,11 @@ static int insert_tool_alert(preludedb_sql_t *sql, uint64_t message_ident, idmef
         free(command);
 
 	index = 0;
-	last_alertident = alertident = NULL;
+	alertident = NULL;
 	while ( (alertident = idmef_tool_alert_get_next_alertident(tool_alert, alertident)) ) {
 		ret = insert_alertident(sql, 'T', message_ident, index++, alertident);
 		if ( ret < 0 )
 			return ret;
-
-		last_alertident = alertident;
 	}
 
 	if ( ret < 0 ) {
