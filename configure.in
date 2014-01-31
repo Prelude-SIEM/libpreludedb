@@ -133,7 +133,7 @@ if test x$POSTGRESQL_VERSION != x; then
         LIBS=$LIBS_bkp;
 
         CPPFLAGS_bkp=$CPPFLAGS
-        CPPFLAGS="$POSTGREGSQL_CFLAGS"
+        CPPFLAGS="$POSTGRESQL_CFLAGS"
         AC_CHECK_HEADER(libpq-fe.h, with_pgsql=yes, with_pgsql=no)
         CPPFLAGS=$CPPFLAGS_bkp;
 fi
