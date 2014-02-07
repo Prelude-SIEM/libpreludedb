@@ -185,7 +185,11 @@ static int sql_escape_binary(void *session, const unsigned char *input, size_t i
         if ( ret < 0 )
                 return ret;
 
+#ifdef HAVE_PQESCAPEBYTEACONN
+        ptr = PQescapeByteaConn(session, input, input_size, &dummy);
+#else
         ptr = PQescapeBytea(input, input_size, &dummy);
+#endif
         if ( ! ptr ) {
                 prelude_string_destroy(string);
                 return -1;
