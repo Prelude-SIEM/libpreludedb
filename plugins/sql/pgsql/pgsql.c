@@ -153,6 +153,9 @@ static void sql_close(void *session)
 
 static int sql_escape(void *session, const char *input, size_t input_size, char **output)
 {
+#ifdef HAVE_PQESCAPESTRINGCONN
+        int error;
+#endif
         size_t rsize;
 
         rsize = input_size * 2 + 3;
@@ -165,8 +168,13 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 
         (*output)[0] = '\'';
 
+#ifdef HAVE_PQESCAPESTRINGCONN
+        rsize = PQescapeStringConn(session, (*output) + 1, input, input_size, &error);
+        if ( error )
+                return handle_error(PRELUDEDB_ERROR_GENERIC, session);
+#else
         rsize = PQescapeString((*output) + 1, input, input_size);
-
+#endif
         (*output)[rsize + 1] = '\'';
         (*output)[rsize + 2] = '\0';
 
