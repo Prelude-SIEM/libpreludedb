@@ -130,7 +130,6 @@ if test x$POSTGRESQL_VERSION != x; then
         LIBS_bkp=$LIBS
         LIBS="$POSTGRESQL_LDFLAGS"
         AC_CHECK_FUNC(PQserverVersion, AC_DEFINE(HAVE_PQSERVERVERSION, , [Define if PQserverVersion function is available]))
-        AC_CHECK_FUNC(PQescapeByteaConn, AC_DEFINE(HAVE_PQESCAPEBYTEACONN, , [Define if PQescapeByteaConn function is available]))
         LIBS=$LIBS_bkp;
 
         CPPFLAGS_bkp=$CPPFLAGS
