@@ -958,7 +958,7 @@ int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *val
         int ret;                                                                                \
                                                                                                 \
         ret = sscanf(preludedb_sql_field_get_value(field), format, value);                      \
-        if ( ret < 0 )                                                                          \
+        if ( ret <= 0 )                                                                         \
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
                                                                                                 \
         return 0;                                                                               \
