@@ -595,6 +595,11 @@ int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t in
 {
         int ret;
 
+        if ( ! input ) {
+                *output = (char *) strdup("NULL");
+                return *output ? 0 : preludedb_error_from_errno(errno);
+        }
+
         gl_recursive_lock_lock(sql->mutex);
 
         assert_connected(sql);
@@ -619,12 +624,7 @@ int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t in
  */
 int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output)
 {
-        if ( ! input ) {
-                *output = strdup("NULL");
-                return *output ? 0 : preludedb_error_from_errno(errno);
-        }
-
-        return preludedb_sql_escape_fast(sql, input, strlen(input), output);
+        return preludedb_sql_escape_fast(sql, input, (input) ? strlen(input) : 0, output);
 }
 
 
@@ -644,6 +644,11 @@ int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input
                                 char **output)
 {
         int ret;
+
+        if ( ! input ) {
+                *output = (char *) strdup("NULL");
+                return *output ? 0 : preludedb_error_from_errno(errno);
+        }
 
         gl_recursive_lock_lock(sql->mutex);
 
