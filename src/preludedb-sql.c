@@ -986,14 +986,14 @@ int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *val
 /*
  * %hh is not a portable convertion specifier
  */
-preludedb_sql_field_to_int8(int8, int8_t, "%d", PRELUDE_INT8_MIN, PRELUDE_INT8_MAX)
-preludedb_sql_field_to_int8(uint8, uint8_t, "%u", 0, PRELUDE_UINT8_MAX)
-preludedb_sql_field_to(int16, int16_t, "%hd")
-preludedb_sql_field_to(uint16, uint16_t, "%hu")
-preludedb_sql_field_to(int32, int32_t, "%d")
-preludedb_sql_field_to(uint32, uint32_t, "%u")
-preludedb_sql_field_to(int64, int64_t, "%" PRELUDE_PRId64)
-preludedb_sql_field_to(uint64, uint64_t, "%" PRELUDE_PRIu64)
+preludedb_sql_field_to_int8(int8, int8_t, "%" PRELUDE_SCNd32, PRELUDE_INT8_MIN, PRELUDE_INT8_MAX)
+preludedb_sql_field_to_int8(uint8, uint8_t, "%" PRELUDE_SCNu32, 0, PRELUDE_UINT8_MAX)
+preludedb_sql_field_to(int16, int16_t, "%" PRELUDE_SCNd16)
+preludedb_sql_field_to(uint16, uint16_t, "%" PRELUDE_SCNu16)
+preludedb_sql_field_to(int32, int32_t, "%" PRELUDE_SCNd32)
+preludedb_sql_field_to(uint32, uint32_t, "%" PRELUDE_SCNu32)
+preludedb_sql_field_to(int64, int64_t, "%" PRELUDE_SCNd64)
+preludedb_sql_field_to(uint64, uint64_t, "%" PRELUDE_SCNu64)
 preludedb_sql_field_to(float, float, "%f")
 preludedb_sql_field_to(double, double, "%lf")
 
