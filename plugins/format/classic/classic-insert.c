@@ -52,7 +52,7 @@ static inline const char *get_string(prelude_string_t *string)
 
 
 
-static inline int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **output)
+static int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **output)
 {
         int ret;
         prelude_string_t *string;
