@@ -1581,18 +1581,64 @@ static int get_target(preludedb_sql_t *sql,
         return ret;
 }
 
+
+static int unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *field,
+                                idmef_additional_data_type_t type, unsigned char **output, size_t *outsize)
+{
+        int ret;
+        size_t size;
+        unsigned char *value;
+
+        ret = preludedb_sql_unescape_binary(sql,
+                                            preludedb_sql_field_get_value(field),
+                                            preludedb_sql_field_get_len(field),
+                                            (unsigned char **) &value, &size);
+        if ( ret < 0 )
+                return ret;
+
+
+        if ( type == IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER || type == IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING ) {
+                /*
+                 * These are the only two case where we don't need to append a terminating 0
+                 */
+                *outsize = size;
+                *output = value;
+        }
+        else {
+                *outsize = size + 1;
+                if ( *outsize < size )
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Value is too big");
+
+                *output = malloc(*outsize);
+                if ( ! *output )
+                        return preludedb_error_from_errno(errno);
+
+                memcpy(*output, value, size);
+                (*output)[size] = 0;
+
+                free(value);
+        }
+
+        return 0;
+}
+
+
 static int get_additional_data(preludedb_sql_t *sql,
                                uint64_t message_ident,
                                char parent_type,
                                void *parent,
                                int (*parent_new_child)(void *, idmef_additional_data_t **, int pos))
 {
+        int ret = 0;
+        char *svalue = NULL;
+        size_t svalue_size;
+        prelude_bool_t svalue_need_free = TRUE;
         preludedb_sql_table_t *table;
         preludedb_sql_row_t *row;
+        idmef_additional_data_type_t type;
         idmef_additional_data_t *additional_data;
         idmef_data_t *data;
         preludedb_sql_field_t *field;
-        int ret = 0;
 
         ret = preludedb_sql_query_sprintf(sql, &table,
                                           "SELECT type, meaning, data "
@@ -1626,86 +1672,74 @@ static int get_additional_data(preludedb_sql_t *sql,
                 if ( ret < 0 )
                         goto error;
 
-                switch ( idmef_additional_data_get_type(additional_data) ) {
-                case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: case IDMEF_ADDITIONAL_DATA_TYPE_BYTE: {
-                        uint8_t value;
+                type = idmef_additional_data_get_type(additional_data);
 
-                        ret = preludedb_sql_field_to_uint8(field, &value);
-                        if ( ret < 0 )
-                                ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
-                        else
-                                idmef_data_set_byte(data, value);
-
+                ret = unescape_binary_safe(sql, field, type, (unsigned char **) &svalue, &svalue_size);
+                if ( ret < 0 )
                         break;
-                }
 
+                switch ( type ) {
                 case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER: {
-                        uint8_t value;
-
-                        ret = preludedb_sql_field_to_uint8(field, &value);
-                        if ( ret < 0 )
-                                ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
-                        else
-                                idmef_data_set_char(data, (char) value);
-
+                        idmef_data_set_char(data, (char) *svalue);
                         break;
                 }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
-                case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
-                case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
-                case IDMEF_ADDITIONAL_DATA_TYPE_XML:
-                        ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
-                        break;
 
                 case IDMEF_ADDITIONAL_DATA_TYPE_REAL: {
                         float value;
 
-                        ret = preludedb_sql_field_to_float(field, &value);
-                        if ( ret < 0 )
-                                ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
-                        else
-                                idmef_data_set_float(data, value);
+                        ret = sscanf(svalue, "%f", &value);
+                        if ( ret <= 0 )
+                                break;
 
+                        idmef_data_set_float(data, value);
+                        break;
+                }
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
+                case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: {
+                        uint8_t value;
+
+                        ret = sscanf(svalue, "%" PRELUDE_SCNu8, &value);
+                        if ( ret <= 0 )
+                                break;
+
+                        idmef_data_set_byte(data, value);
                         break;
                 }
 
                 case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER: {
                         uint32_t value;
 
-                        ret = preludedb_sql_field_to_uint32(field, &value);
-                        if ( ret < 0 )
-                                ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
-                        else
-                                idmef_data_set_uint32(data, value);
-
-                        break;
-                }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING: {
-                        unsigned char *value;
-                        size_t value_size;
-
-                        ret = preludedb_sql_unescape_binary(sql,
-                                                            preludedb_sql_field_get_value(field),
-                                                            preludedb_sql_field_get_len(field),
-                                                            &value, &value_size);
-                        if ( ret < 0 )
+                        ret = sscanf(svalue, "%" PRELUDE_SCNu32, &value);
+                        if ( ret <= 0 )
                                 break;
 
-                        ret = idmef_data_set_byte_string_nodup(data, value, value_size);
-
+                        idmef_data_set_uint32(data, value);
                         break;
                 }
 
                 case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP: {
                         uint64_t value;
 
-                        ret = preludedb_sql_field_to_uint64(field, &value);
-                        if ( ret < 0 )
-                                ret = idmef_data_set_char_string_dup(data, preludedb_sql_field_get_value(field));
+                        ret = sscanf(svalue, "%" PRELUDE_SCNu64, &value);
+                        if ( ret <= 0 )
+                                break;
+
+                        idmef_data_set_uint64(data, value);
+                        break;
+                }
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
+                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
+                case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
+                case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
+                case IDMEF_ADDITIONAL_DATA_TYPE_XML: {
+                        svalue_need_free = FALSE;
+
+                        if ( type == IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING )
+                                ret = idmef_data_set_byte_string_nodup(data, (unsigned char *) svalue, svalue_size);
                         else
-                                idmef_data_set_uint64(data, value);
+                                ret = idmef_data_set_char_string_nodup_fast(data, (char *) svalue, svalue_size - 1);
 
                         break;
                 }
@@ -1716,8 +1750,10 @@ static int get_additional_data(preludedb_sql_t *sql,
 
                 if ( ret < 0 )
                         goto error;
-
         }
+
+        if ( svalue_need_free )
+                free(svalue);
 
  error:
         preludedb_sql_table_destroy(table);

@@ -58,7 +58,6 @@ static int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **output)
         prelude_string_t *string;
 
         switch ( idmef_data_get_type(data) ) {
-        case IDMEF_DATA_TYPE_BYTE:
         case IDMEF_DATA_TYPE_BYTE_STRING:
                 return preludedb_sql_escape_binary(sql, idmef_data_get_data(data), idmef_data_get_len(data), output);
 
@@ -80,7 +79,7 @@ static int get_data(preludedb_sql_t *sql, idmef_data_t *data, char **output)
                 }
 
                 ret = preludedb_sql_escape_binary(sql, (const unsigned char *) prelude_string_get_string(string),
-                                                  prelude_string_get_len(string) + 1, output);
+                                                  prelude_string_get_len(string), output);
                 prelude_string_destroy(string);
                 return ret;
         }
