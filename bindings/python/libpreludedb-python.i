@@ -6,7 +6,7 @@
 * This file is part of the Prelude program.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -63,31 +63,31 @@ void swig_python_raise_exception(int error, const char *strerror)
 }
 
 %typemap(argout) preludedb_result_values_t **result2 {
-	long size;
+        long size;
 
-	size = PyInt_AsLong($result);
-	if ( size < 0 ) {
-		swig_python_raise_exception(size, NULL);
-		$result = NULL;
+        size = PyInt_AsLong($result);
+        if ( size < 0 ) {
+                swig_python_raise_exception(size, NULL);
+                $result = NULL;
 
-	} else if ( size == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
+        } else if ( size == 0 ) {
+                $result = Py_None;
+                Py_INCREF(Py_None);
 
-	} else {
-	        PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
+        } else {
+                PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
 
-		$result = PyTuple_New(2);
+                $result = PyTuple_New(2);
                 PyTuple_SetItem($result, 0, s);
                 PyTuple_SetItem($result, 1, PyInt_FromLong(size));
-	}
+        }
 };
 
 
 %inline %{
 int preludedb_get_values2(preludedb_t *db, preludedb_path_selection_t *path_selection,
                          idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,
-                         preludedb_result_values_t **result2) 
+                         preludedb_result_values_t **result2)
 {
         return preludedb_get_values(db, path_selection, criteria, distinct, limit, offset, result2);
 }
@@ -108,24 +108,24 @@ int preludedb_get_values2(preludedb_t *db, preludedb_path_selection_t *path_sele
 }
 
 %typemap(argout) preludedb_result_idents_t **result2 {
-	long size;
+        long size;
 
-	size = PyInt_AsLong($result);
-	if ( size < 0 ) {
-		swig_python_raise_exception(size, NULL);
-		$result = NULL;
+        size = PyInt_AsLong($result);
+        if ( size < 0 ) {
+                swig_python_raise_exception(size, NULL);
+                $result = NULL;
 
-	} else if ( size == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
+        } else if ( size == 0 ) {
+                $result = Py_None;
+                Py_INCREF(Py_None);
 
-	} else {
-	        PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
+        } else {
+                PyObject *s = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
 
-		$result = PyTuple_New(2);
+                $result = PyTuple_New(2);
                 PyTuple_SetItem($result, 0, s);
                 PyTuple_SetItem($result, 1, PyInt_FromLong(size));
-	}
+        }
 };
 
 
@@ -133,7 +133,7 @@ int preludedb_get_values2(preludedb_t *db, preludedb_path_selection_t *path_sele
 int preludedb_get_alert_idents2(preludedb_t *db, idmef_criteria_t *criteria,
                                int limit, int offset,
                                preludedb_result_idents_order_t order,
-                               preludedb_result_idents_t **result2) 
+                               preludedb_result_idents_t **result2)
 {
         return preludedb_get_alert_idents(db, criteria, limit, offset, order, result2);
 }
@@ -141,7 +141,7 @@ int preludedb_get_alert_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
                                    int limit, int offset,
                                    preludedb_result_idents_order_t order,
-                                   preludedb_result_idents_t **result2) 
+                                   preludedb_result_idents_t **result2)
 {
         return preludedb_get_heartbeat_idents(db, criteria, limit, offset, order, result2);
 }
@@ -165,36 +165,36 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 
 
 %typemap(in, numinputs=0) idmef_value_t ***values (idmef_value_t **tmp) {
-	$1 = &tmp;
+        $1 = &tmp;
 };
 
 
 %typemap(argout) idmef_value_t ***values {
-	long size;
+        long size;
 
-	size = PyInt_AsLong($result);
-	if ( size < 0 ) {
-		swig_python_raise_exception(size, NULL);
-		$result = NULL;
+        size = PyInt_AsLong($result);
+        if ( size < 0 ) {
+                swig_python_raise_exception(size, NULL);
+                $result = NULL;
 
-	} else if ( size == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
+        } else if ( size == 0 ) {
+                $result = Py_None;
+                Py_INCREF(Py_None);
 
-	} else {
-		idmef_value_t **values = *($1);
-		int cnt;
+        } else {
+                idmef_value_t **values = *($1);
+                int cnt;
 
-		$result = PyList_New(0);
+                $result = PyList_New(0);
 
-		for ( cnt = 0; cnt < size; cnt++ ) {
-			PyObject *s = SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0);
-			PyList_Append($result, s);
-			Py_XDECREF(s);
-		}
+                for ( cnt = 0; cnt < size; cnt++ ) {
+                        PyObject *s = SWIG_NewPointerObj((void *) values[cnt], $descriptor(idmef_value_t *), 0);
+                        PyList_Append($result, s);
+                        Py_XDECREF(s);
+                }
 
-		free(values);
-	}
+                free(values);
+        }
 };
 
 
@@ -219,69 +219,69 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 
 
 %typemap(in, numinputs=0) uint64_t *ident (uint64_t tmp) {
-	$1 = &tmp;
+        $1 = &tmp;
 };
 
 
 %typemap(in, numinputs=0) (char *errbuf, size_t size) (char tmp[PRELUDEDB_ERRBUF_SIZE]) {
-	$1 = tmp;
-	$2 = sizeof(tmp);
+        $1 = tmp;
+        $2 = sizeof(tmp);
 };
 
 %typemap(out) int {
-	if ( $1 < 0 ) {
-		swig_python_raise_exception($1, NULL);
-		return NULL;
-	}
+        if ( $1 < 0 ) {
+                swig_python_raise_exception($1, NULL);
+                return NULL;
+        }
 
-	/*
-	 * swig workaround: we want to access ret from some argout typemap when ret can
-	 * contain the number of results for example, but the C result is not reachable
-	 * from argout
-	 */
-	$result = PyInt_FromLong($1);
+        /*
+         * swig workaround: we want to access ret from some argout typemap when ret can
+         * contain the number of results for example, but the C result is not reachable
+         * from argout
+         */
+        $result = PyInt_FromLong($1);
 };
 
 
 %typemap(out) ssize_t {
-	if ( $1 < 0 ) {
-		swig_python_raise_exception($1, NULL);
-		return NULL;
-	}
+        if ( $1 < 0 ) {
+                swig_python_raise_exception($1, NULL);
+                return NULL;
+        }
 
-	/*
-	 * swig workaround: we want to access ret from some argout typemap when ret can
-	 * contain the number of results for example, but the C result is not reachable
-	 * from argout
-	 */
-	$result = PyLong_FromLongLong($1);
+        /*
+         * swig workaround: we want to access ret from some argout typemap when ret can
+         * contain the number of results for example, but the C result is not reachable
+         * from argout
+         */
+        $result = PyLong_FromLongLong($1);
 };
 
 
 %typemap(argout) uint64_t *ident {
-	if ( PyInt_AsLong($result) == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
-	}
-	else
-		$result = PyLong_FromUnsignedLongLong(*($1));
+        if ( PyInt_AsLong($result) == 0 ) {
+                $result = Py_None;
+                Py_INCREF(Py_None);
+        }
+        else
+                $result = PyLong_FromUnsignedLongLong(*($1));
 };
 
 
 %typemap(in, numinputs=0) prelude_string_t *output {
-	int ret;
-	
-	ret = prelude_string_new(&($1));
-	if ( ret < 0 ) {
-		swig_python_raise_exception(ret, NULL);
-		return NULL;
-	}
+        int ret;
+
+        ret = prelude_string_new(&($1));
+        if ( ret < 0 ) {
+                swig_python_raise_exception(ret, NULL);
+                return NULL;
+        }
 };
 
 
 %typemap(argout) prelude_string_t *output {
-	$result = PyString_FromStringAndSize(prelude_string_get_string($1), prelude_string_get_len($1));
-	prelude_string_destroy($1);
+        $result = PyString_FromStringAndSize(prelude_string_get_string($1), prelude_string_get_len($1));
+        prelude_string_destroy($1);
 };
 
 
@@ -291,51 +291,51 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 
 
 %typemap(argout) SWIGTYPE **OUTRESULT {
-	if ( PyInt_AsLong($result) == 0 ) {
-		$result = Py_None;
-		Py_INCREF(Py_None);
-	}
-	else
-		$result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
+        if ( PyInt_AsLong($result) == 0 ) {
+                $result = Py_None;
+                Py_INCREF(Py_None);
+        }
+        else
+                $result = SWIG_NewPointerObj((void *) * $1, $*1_descriptor, 0);
 };
 
 
 %typemap(in, numinputs=0) char **output (char *tmp) {
-	$1 = &tmp;
+        $1 = &tmp;
 };
 
 
 %typemap(argout) char **output {
-	if ( PyInt_AsLong($result) < 0 ) {
-		swig_python_raise_exception(PyInt_AsLong($result), NULL);
-		return NULL;
-	}
+        if ( PyInt_AsLong($result) < 0 ) {
+                swig_python_raise_exception(PyInt_AsLong($result), NULL);
+                return NULL;
+        }
 
-	$result = PyString_FromString(*$1);
-	free(*$1);
+        $result = PyString_FromString(*$1);
+        free(*$1);
 };
 
 
 %typemap(in) (uint64_t *idents, size_t size) {
-	int i = 0;
+        int i = 0;
 
-	if ( ! PyList_Check($input) ) {
-		PyErr_SetString(PyExc_TypeError,"not a list");
-    		return NULL;
-	}
+        if ( ! PyList_Check($input) ) {
+                PyErr_SetString(PyExc_TypeError,"not a list");
+                return NULL;
+        }
 
-     	$2 = PyList_Size($input);
-    
-	$1 = malloc($2 * sizeof(uint64_t));
-	if ( !$1 )
-		return NULL;
+        $2 = PyList_Size($input);
 
-	for ( i = 0; i < $2; i++ )
-		$1[i] = (uint64_t) PyLong_AsUnsignedLongLong(PyList_GetItem($input, i));
+        $1 = malloc($2 * sizeof(uint64_t));
+        if ( !$1 )
+                return NULL;
+
+        for ( i = 0; i < $2; i++ )
+                $1[i] = (uint64_t) PyLong_AsUnsignedLongLong(PyList_GetItem($input, i));
 }
 
 %typemap(freearg) (uint64_t *idents, size_t size) {
-	free($1);
+        free($1);
 }
 
 
@@ -345,8 +345,8 @@ import prelude
 
 class PreludeDBError(prelude.PreludeError):
     def __str__(self):
-	if self._strerror:
-	    return self._strerror
+        if self._strerror:
+            return self._strerror
 
         return preludedb_strerror(self.errno) or ""
 %}

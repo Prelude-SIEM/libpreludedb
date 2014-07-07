@@ -49,17 +49,17 @@
 #define PRELUDEDB_SQL_TIMESTAMP_STRING_SIZE 128
 
 typedef enum {
-	PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_MIN,
-	PRELUDEDB_SQL_TIME_CONSTRAINT_SEC
+        PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_MIN,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_SEC
 } preludedb_sql_time_constraint_type_t;
 
-		
+
 typedef struct preludedb_sql preludedb_sql_t;
 
 typedef struct preludedb_sql_table preludedb_sql_table_t;
@@ -91,7 +91,7 @@ int preludedb_sql_escape_fast(preludedb_sql_t *sql, const char *input, size_t in
 int preludedb_sql_escape(preludedb_sql_t *sql, const char *input, char **output);
 int preludedb_sql_escape_binary(preludedb_sql_t *sql, const unsigned char *input, size_t input_size, char **output);
 int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_t input_size,
-				  unsigned char **output, size_t *output_size);
+                                  unsigned char **output, size_t *output_size);
 
 void preludedb_sql_table_destroy(preludedb_sql_table_t *table);
 const char *preludedb_sql_table_get_column_name(preludedb_sql_table_t *table, unsigned int column_num);
@@ -118,22 +118,22 @@ int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
 
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
-					 prelude_string_t *output,
-					 const char *field,
-					 idmef_criterion_operator_t idmef_operator, idmef_criterion_value_t *value);
+                                         prelude_string_t *output,
+                                         const char *field,
+                                         idmef_criterion_operator_t idmef_operator, idmef_criterion_value_t *value);
 
 int preludedb_sql_time_from_timestamp(idmef_time_t *time, const char *time_buf, int32_t gmtoff, uint32_t usec);
 int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
                                     const idmef_time_t *time,
-				    char *time_buf, size_t time_buf_size,
-				    char *gmtoff_buf, size_t gmtoff_buf_size,
-				    char *usec_buf, size_t usec_buf_size);
+                                    char *time_buf, size_t time_buf_size,
+                                    char *gmtoff_buf, size_t gmtoff_buf_size,
+                                    char *usec_buf, size_t usec_buf_size);
 
 /*
  * Deprecated, use preludedb_strerror()
  */
 const char *preludedb_sql_get_plugin_error(preludedb_sql_t *sql);
-         
+
 #ifdef __cplusplus
   }
 #endif
