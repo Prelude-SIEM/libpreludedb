@@ -1,3 +1,35 @@
+* 2014-07-07, libpreludedb-1.2.5:
+
+- Use new libprelude PRELUDE_SCN* definition
+
+- Handle NULL input on preludedb_sql_escape_fast() and preludedb_sql_escape_binary()
+
+- Fix AdditionalData insertion/retrieval
+
+- Use PQescapeStringConn() in place of PQescapeString() when available
+
+- Fix warnings and error on PostgreSQL ByteA insertion
+
+    Use the E'%s' ByteA insertion method with our own escaping function,
+    since this method is not compatible with PQescapeByteaConn().
+
+- Improve sscanf() error check
+
+- Remove rhel6 packaging
+
+- Move Python command to a Python specific Makefile, filename fixes
+
+- Fix compile warnings
+
+- Fix configure script generation, and update GnuLib code
+
+    Modify configure.in to fit latest autoconf / automake change.
+    Configure script generation and make distcheck now work again.
+    Update GnuLib code.
+    Update various autoconf macros, and gtk-doc build files.
+
+
+
 * 2012-08-08, libpreludedb-1.0.2:
 
 - Change TYPE to ENGINE in mysql.sql (requires MySQL >= 4.0.18)

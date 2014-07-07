@@ -1,4 +1,4 @@
-AC_INIT(libpreludedb, 1.0.2)
+AC_INIT(libpreludedb, 1.2.5)
 
 dnl **********************************************************
 dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
