@@ -532,12 +532,12 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
  *
  * Returns: the number of alert deleted on success, or a negative value if an error occur.
  */
-ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size)
+ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size_t isize)
 {
-        if ( size == 0 )
+        if ( isize == 0 )
                 return 0;
 
-        return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, ident, size);
+        return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, idents, isize);
 }
 
 
@@ -582,12 +582,12 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
  *
  * Returns: the number of heartbeat deleted on success, or a negative value if an error occur.
  */
-ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t size)
+ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t isize)
 {
-        if ( size == 0 )
+        if ( isize == 0 )
                 return 0;
 
-        return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, size);
+        return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, isize);
 }
 
 
@@ -641,6 +641,57 @@ int preludedb_get_values(preludedb_t *db,
                 free(*result);
 
         return ret;
+}
+
+
+ssize_t preludedb_update_from_list(preludedb_t *db,
+                                   const char * const *paths, const char * const *values, size_t pvsize,
+                                   uint64_t *idents, size_t isize)
+{
+       if ( ! db->plugin->update_from_list )
+                return preludedb_error_from_errno(ENOTSUP);
+
+        return db->plugin->update_from_list(db->sql, paths, values, pvsize, idents, isize);
+}
+
+
+ssize_t preludedb_update_from_result_idents(preludedb_t *db,
+                                            const char * const *paths, const char * const *values, size_t pvsize,
+                                            preludedb_result_idents_t *result)
+{
+        if ( ! db->plugin->update_from_result_idents )
+                return preludedb_error_from_errno(ENOTSUP);
+
+        return db->plugin->update_from_result_idents(db->sql, paths, values, pvsize, result);
+}
+
+
+
+/**
+ * preludedb_update:
+ * @db: Pointer to a db object.
+ * @paths: Array of path to update
+ * @values: Array of value for their respective @paths.
+ * @pvsize: Number of element in the @paths and @values array.
+ * @criteria: Criteria updated event should match.
+ * @order: Optional list of path used to order the update command.
+ * @limit: Limit of results or -1 if no limit.
+ * @offset: Offset in results or -1 if no offset.
+ *
+ *
+ * Returns: the number of result or a negative value if an error occured.
+ */
+
+int preludedb_update(preludedb_t *db,
+                     const char * const *paths, const char * const *values, size_t pvsize,
+                     idmef_criteria_t *criteria,
+                     preludedb_path_selection_t *order,
+                     int limit, int offset)
+{
+        if ( ! db->plugin->update )
+                return preludedb_error_from_errno(ENOTSUP);
+
+        return db->plugin->update(db->sql, paths, values, pvsize, criteria, order, limit, offset);
 }
 
 

@@ -316,7 +316,50 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 };
 
 
-%typemap(in) (uint64_t *idents, size_t size) {
+%typemap(in) (preludedb_path_selection_t *order) {
+        if ( SWIG_ConvertPtr($input, (void **)&arg$argnum, $1_descriptor, SWIG_POINTER_EXCEPTION|0) )
+                return NULL;
+};
+
+%typemap(in) (const char * const *paths, const char * const *values, size_t pvsize) {
+        size_t i = 0;
+
+        if ( ! PyList_Check($input) ) {
+                PyErr_SetString(PyExc_TypeError, "not a list");
+                return NULL;
+        }
+
+        $3 = PyList_Size($input);
+
+        $1 = malloc($3 * sizeof(const char *));
+        if ( !$1 )
+                return NULL;
+
+        $2 = malloc($3 * sizeof(const char *));
+        if ( !$2 ) {
+                free($1);
+                return NULL;
+        }
+
+        for ( i = 0; i < $3; i++ ) {
+                PyObject *l = PyList_GetItem($input, i);
+
+                if ( ! PyTuple_Check(l) ) {
+                        PyErr_SetString(PyExc_TypeError, "not a tuple");
+                        return NULL;
+                }
+
+                $1[i] = PyString_AsString(PyTuple_GetItem(l, 0));
+                $2[i] = PyString_AsString(PyTuple_GetItem(l, 1));
+        }
+}
+
+%typemap(freearg) (const char * const *paths, const char * const *values, size_t pvsize) {
+   free($1);
+   free($2);
+}
+
+%typemap(in) (uint64_t *idents, size_t isize) {
         int i = 0;
 
         if ( ! PyList_Check($input) ) {

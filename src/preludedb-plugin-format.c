@@ -154,6 +154,26 @@ void preludedb_plugin_format_set_destroy_values_resource_func(preludedb_plugin_f
 }
 
 
+void preludedb_plugin_format_set_update_from_result_idents_func(preludedb_plugin_format_t *plugin,
+                                                                preludedb_plugin_format_update_from_result_idents_func_t func)
+{
+        plugin->update_from_result_idents = func;
+}
+
+
+void preludedb_plugin_format_set_update_from_list_func(preludedb_plugin_format_t *plugin,
+                                                       preludedb_plugin_format_update_from_list_func_t func)
+{
+        plugin->update_from_list = func;
+}
+
+
+void preludedb_plugin_format_set_update_func(preludedb_plugin_format_t *plugin,
+                                             preludedb_plugin_format_update_func_t func)
+{
+        plugin->update = func;
+}
+
 
 int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
 {

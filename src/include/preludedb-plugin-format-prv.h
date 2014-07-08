@@ -6,7 +6,7 @@
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -27,7 +27,7 @@
 #include "preludedb-plugin-format.h"
 
 struct preludedb_plugin_format {
-	PRELUDE_PLUGIN_GENERIC;
+        PRELUDE_PLUGIN_GENERIC;
 
         preludedb_plugin_format_check_schema_version_func_t check_schema_version;
         preludedb_plugin_format_get_alert_idents_func_t get_alert_idents;
@@ -47,6 +47,9 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_get_values_func_t get_values;
         preludedb_plugin_format_get_next_values_func_t get_next_values;
         preludedb_plugin_format_destroy_values_resource_func_t destroy_values_resource;
+        preludedb_plugin_format_update_func_t update;
+        preludedb_plugin_format_update_from_list_func_t update_from_list;
+        preludedb_plugin_format_update_from_result_idents_func_t update_from_result_idents;
 };
 
 #endif

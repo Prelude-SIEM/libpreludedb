@@ -1178,6 +1178,92 @@ err:
 
 
 
+static preludedb_path_selection_t *selection = NULL;
+
+static int set_order(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+{
+        int ret;
+        preludedb_selected_path_t *selected;
+
+        ret = preludedb_selected_path_new_string(&selected, optarg);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_selected_path_get_flags(selected);
+        if ( !(ret & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC) && ! (ret & PRELUDEDB_SELECTED_OBJECT_ORDER_DESC) ) {
+                fprintf(stderr, "Invalid order specified : require use of 'order_asc' or 'order_desc' flags.\n");
+                return -1;
+        }
+
+        if ( ! selection ) {
+                ret = preludedb_path_selection_new(&selection);
+                if ( ret < 0 )
+                        return ret;
+        }
+
+        preludedb_path_selection_add(selection, selected);
+
+
+        ret = preludedb_selected_path_new_string(&selected, "alert.create_time/order_asc");
+        preludedb_path_selection_add(selection, selected);
+
+        return ret;
+}
+
+
+
+static int cmd_update(int argc, char **argv)
+{
+        int ret, idx, argc2;
+        preludedb_t *db;
+        int i, j = 0;
+        char **paths, **values;
+
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "order",
+                           NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_order, NULL);
+
+        argc2 = argc;
+        idx = setup_generic_options(&argc2, argv);
+        if ( idx < 0 || argc < 3 ) {
+                cmd_count_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx++]);
+        if ( ret < 0 )
+                return ret;
+
+        paths = malloc((argc - idx) * sizeof(char *));
+        values = malloc((argc - idx) * sizeof(char *));
+
+        for ( i = 0, j = 0; (i + 1) < (argc - idx); i += 2, j++ ) {
+                paths[j] = argv[idx + i];
+
+                ret = preludedb_sql_escape(preludedb_get_sql(db), argv[idx + i + 1], &values[j]);
+                if ( ret < 0 )
+                        goto err;
+        }
+
+        ret = preludedb_update(db, (const char * const *) paths, (const char * const *) values,
+                               (argc - idx) / 2, criteria, selection, (int) limit, (int) offset);
+        free(paths);
+
+        for ( i = 0; i < (argc - idx) / 2; i++ )
+                free(values[i]);
+        free(values);
+
+        if ( ret < 0 ) {
+                ret = db_error(db, ret, "error performing update commande");
+                goto err;
+        }
+
+err:
+        preludedb_destroy(db);
+        return ret;
+}
+
+
+
 int main(int argc, char **argv)
 {
         int ret;
@@ -1193,6 +1279,7 @@ int main(int argc, char **argv)
                 { "move", cmd_move     },
                 { "print", cmd_print   },
                 { "save", cmd_save     },
+                { "update", cmd_update },
         };
 
         signal(SIGINT, handle_signal);
