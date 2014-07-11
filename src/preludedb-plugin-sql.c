@@ -58,7 +58,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_build_constraint_string_func_t build_constraint_string;
         preludedb_plugin_sql_get_operator_string_func_t get_operator_string;
         preludedb_plugin_sql_build_timestamp_string_func_t build_timestamp_string;
-
+        preludedb_plugin_sql_get_server_version_func_t get_server_version;
 };
 
 
@@ -382,6 +382,21 @@ int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin,
         return (ret < 0 || (size_t) ret >= size) ? -1 : 0;
 }
 
+
+void preludedb_plugin_sql_set_get_server_version_func(preludedb_plugin_sql_t *plugin,
+                                                      preludedb_plugin_sql_get_server_version_func_t func)
+{
+        plugin->get_server_version = func;
+}
+
+
+long _preludedb_plugin_sql_get_server_version(preludedb_plugin_sql_t *plugin, void *session)
+{
+        if ( ! plugin->get_server_version )
+                return PRELUDEDB_ENOTSUP("get_server_version");
+
+        return plugin->get_server_version(session);
+}
 
 
 int preludedb_plugin_sql_new(preludedb_plugin_sql_t **plugin)

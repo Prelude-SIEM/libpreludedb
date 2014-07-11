@@ -1434,6 +1434,37 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
 
 
 /**
+ * preludedb_sql_get_server_version:
+ * @sql: Pointer to a sql object.
+ *
+ * Get sql server version.
+ *
+ * Returns: A negative value if an error occur, the version number otherwise.
+ */
+long preludedb_sql_get_server_version(const preludedb_sql_t *sql)
+{
+        return _preludedb_plugin_sql_get_server_version(sql->plugin, sql->session);
+}
+
+
+
+/**
+ * preludedb_sql_get_type:
+ * @sql: Pointer to a sql object.
+ *
+ * Get the type of the SQL database (specified by the user at
+ * @sql initialization time).
+ *
+ * Returns: the type of the SQL database.
+ */
+const char *preludedb_sql_get_type(const preludedb_sql_t *sql)
+{
+        return sql->type;
+}
+
+
+
+/**
  * preludedb_sql_get_plugin_error:
  * @sql: Pointer to a sql object.
  *

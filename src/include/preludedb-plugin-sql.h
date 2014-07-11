@@ -6,7 +6,7 @@
 * This file is part of the PreludeDB library.
 *
 * This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by 
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2, or (at your option)
 * any later version.
 *
@@ -32,7 +32,8 @@
 
 typedef struct preludedb_plugin_sql preludedb_plugin_sql_t;
 
-typedef int (*preludedb_plugin_sql_open_func_t)(preludedb_sql_settings_t *settings, void **session);         
+
+typedef int (*preludedb_plugin_sql_open_func_t)(preludedb_sql_settings_t *settings, void **session);
 typedef void (*preludedb_plugin_sql_close_func_t)(void *session);
 typedef int (*preludedb_plugin_sql_escape_func_t)(void *session, const char *input, size_t input_size, char **output);
 typedef int (*preludedb_plugin_sql_escape_binary_func_t)(void *session, const unsigned char *input, size_t input_size, char **output);
@@ -60,7 +61,7 @@ typedef int (*preludedb_plugin_sql_build_constraint_string_func_t)(prelude_strin
 
 typedef const char *(*preludedb_plugin_sql_get_operator_string_func_t)(idmef_criterion_operator_t operator);
 typedef int (*preludedb_plugin_sql_build_timestamp_string_func_t)(const struct tm *t, char *out, size_t size);
-
+typedef long (*preludedb_plugin_sql_get_server_version_func_t)(void *session);
 
 
 
@@ -157,6 +158,11 @@ void preludedb_plugin_sql_set_build_timestamp_string_func(preludedb_plugin_sql_t
                                                           preludedb_plugin_sql_build_timestamp_string_func_t func);
 
 int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin, const struct tm *t, char *out, size_t size);
+
+void preludedb_plugin_sql_set_get_server_version_func(preludedb_plugin_sql_t *plugin,
+                                                      preludedb_plugin_sql_get_server_version_func_t func);
+
+long _preludedb_plugin_sql_get_server_version(preludedb_plugin_sql_t *plugin, void *session);
 
 int preludedb_plugin_sql_new(preludedb_plugin_sql_t **plugin);
 

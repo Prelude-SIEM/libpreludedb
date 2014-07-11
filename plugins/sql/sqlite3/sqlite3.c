@@ -562,6 +562,13 @@ static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t t
 
 
 
+static long sql_get_server_version(void *session)
+{
+        return SQLITE_VERSION_NUMBER;
+}
+
+
+
 int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 {
         int ret;
@@ -578,6 +585,7 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_close_func(plugin, sql_close);
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
+        preludedb_plugin_sql_set_get_server_version_func(plugin, sql_get_server_version);
         preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);
         preludedb_plugin_sql_set_get_column_count_func(plugin, sql_get_column_count);
         preludedb_plugin_sql_set_get_row_count_func(plugin, sql_get_row_count);
