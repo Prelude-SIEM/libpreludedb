@@ -1,8 +1,8 @@
-import prelude
+import preludeold
 
-from _preludedb import *
+from _preludedbold import *
 
-class PreludeDBError(prelude.PreludeError):
+class PreludeDBError(preludeold.PreludeError):
     def __str__(self):
         if self._strerror:
             return self._strerror

@@ -5,7 +5,7 @@ import shutil
 from distutils.sysconfig import get_python_lib
 from distutils.core import setup, Extension
 
-FILES_TO_BE_COPIED = ("_preludedb.c", "preludedb.py")
+FILES_TO_BE_COPIED = ("_preludedbold.c", "preludedbold.py")
 
 
 def split_args(s):
@@ -36,8 +36,8 @@ def pre_install():
 def pre_build():
     if not builddir_is_srcdir():
         for file in FILES_TO_BE_COPIED:
-            src = "@top_srcdir@/bindings/python/" + file
-            dst = "@top_builddir@/bindings/python/" + file
+            src = "@top_srcdir@/bindings/low-level/python/" + file
+            dst = "@top_builddir@/bindings/low-level/python/" + file
             if not exists(dst):
                 shutil.copy(src, dst)
 
@@ -54,7 +54,7 @@ def uninstall():
     else:
         prefix = "@prefix@"
     
-    for f in "preludedb.py", "preludedb.pyc", "_preludedb.so":
+    for f in "preludedbold.py", "preludedbold.pyc", "_preludedbold.so":
         file = get_root() + "/" + get_python_lib(prefix=prefix) + "/" + f
         exists(file) and os.remove(file)
 
@@ -75,16 +75,16 @@ commands = {
 if len(sys.argv) > 1 and commands.has_key(sys.argv[1]):
     commands[sys.argv[1]]()
 
-setup(name="preludedb",
+setup(name="preludedbold",
       version="@VERSION@",
       description="Low-level Python bindings for the PreludeDB Library",
       author="CS-SI",
       license="GPL V2.1",
       url="http://www.prelude-ids.com",
-      package_dir={'preludedb': '@top_srcdir@/bindings/python'},
-      py_modules=["preludedb"],
-      ext_modules=[Extension("_preludedb",
-                             ["_preludedb.c"],
+      package_dir={'preludedbold': '@top_srcdir@/bindings/low-level/python'},
+      py_modules=["preludedbold"],
+      ext_modules=[Extension("_preludedbold",
+                             ["_preludedbold.c"],
                              extra_compile_args=split_args("-I@top_srcdir@/src/include @LIBPRELUDE_CFLAGS@ @LIBPRELUDE_PTHREAD_CFLAGS@"),
                              library_dirs=[ "@top_builddir@/src/.libs/" ],
                              extra_link_args=split_args("@LIBPRELUDE_LDFLAGS@ @LIBPRELUDE_PTHREAD_CFLAGS@ -lpreludedb @LIBPRELUDE_LIBS@"))])

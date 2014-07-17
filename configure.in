@@ -183,7 +183,7 @@ dnl **************************************************
 dnl * Swig support                                   *
 dnl **************************************************
 
-AC_ARG_WITH(swig, AC_HELP_STRING(--with-swig@<:@=PATH@:>@, Re-generate perl/python bindings sources @<:@default=auto@:>@),
+AC_ARG_WITH(swig, AC_HELP_STRING(--with-swig@<:@=PATH@:>@, Re-generate python bindings sources @<:@default=auto@:>@),
             [swig_required=true; if test x$withval = xyes; then with_swig="swig"; fi], with_swig="swig")
 
 if test x$with_swig != xno; then
@@ -197,50 +197,6 @@ if test x$with_swig != xno; then
 fi
 
 AM_CONDITIONAL(HAVE_SWIG, test x$SWIG != xno)
-
-
-dnl **************************************************
-dnl * Perl support                                   *
-dnl **************************************************
-
-AC_ARG_WITH(perl, AC_HELP_STRING(--with-perl@<:@=PATH@:>@, Enable support for perl binding @<:@default=auto@:>@),
-            [perl_required=true; if test x$withval = xyes; then with_perl="perl"; fi], with_perl="perl")
-
-if test x$with_perl != xno; then
-
-   AC_PATH_PROG(PERL, `basename $with_perl`, no, `dirname $with_perl`:$PATH)
-
-   if test x$PERL = xno; then
-      if test x$perl_required = xtrue; then
-         AC_MSG_ERROR([Could not find $with_perl binary])
-      fi
-
-      with_perl=no
-   else
-      PERL_CFLAGS="-I`$PERL -e 'use Config; print $Config{archlib}'`/CORE"
-
-      old_CPPFLAGS="$CPPFLAGS"
-      CPPFLAGS="$CPPFLAGS $PERL_CFLAGS"
-
-      AC_CHECK_HEADER(EXTERN.h, [AC_CHECK_HEADER(perl.h, with_perl=yes, with_perl=no, [#include <EXTERN.h>])], with_perl=no)
-      CPPFLAGS="$old_CPPFLAGS"
-   fi
-fi
-
-AM_CONDITIONAL(HAVE_PERL, test x$with_perl = xyes)
-
-
-PERL_INSTALLDIRS="site"
-
-AC_ARG_WITH(perl-installdirs, AC_HELP_STRING(--with-perl-installdirs=@<:@site|vendor@:>@, Specify where to install the Perl module @<:@default=site@:>@),
-            PERL_INSTALLDIRS="$withval")
-
-if test x$PERL_INSTALLDIRS != xsite && test x$PERL_INSTALLDIRS != xvendor; then
-        AC_MSG_ERROR(Invalid value for --with-perl-installdirs: only "site" or "vendor" supported.)
-fi
-
-PERL_EXTRA_PARAMS="INSTALLDIRS=$PERL_INSTALLDIRS"
-AC_SUBST(PERL_EXTRA_PARAMS)
 
 
 
@@ -356,9 +312,9 @@ docs/api/Makefile
 docs/manpages/Makefile
 
 bindings/Makefile
-bindings/perl/Makefile.PL
-bindings/python/Makefile
-bindings/python/setup.py
+bindings/low-level/Makefile
+bindings/low-level/python/Makefile
+bindings/low-level/python/setup.py
 
 ])
 AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
@@ -371,5 +327,4 @@ echo "    - Generate documentation      : $enable_gtk_doc"
 echo "    - Enable MySQL plugin         : $with_mysql"
 echo "    - Enable PostgreSQL plugin    : $with_pgsql"
 echo "    - Enable SQLite3 plugin       : $with_sqlite3"
-echo "    - Perl binding                : $with_perl"
 echo "    - Python binding              : $with_python";
