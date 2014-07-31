@@ -43,6 +43,7 @@ struct preludedb_selected_path {
 struct preludedb_path_selection {
         prelude_list_t list;
         size_t count;
+        int refcount;
 };
 
 
@@ -220,6 +221,7 @@ int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
                 return preludedb_error_from_errno(errno);
 
         (*path_selection)->count = 0;
+        (*path_selection)->refcount = 1;
         prelude_list_init(&(*path_selection)->list);
 
         return 0;
@@ -232,12 +234,23 @@ void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection
         prelude_list_t *ptr, *next;
         preludedb_selected_path_t *selected_path;
 
+        if ( --path_selection->refcount != 0 )
+                return;
+
         prelude_list_for_each_safe(&path_selection->list, ptr, next) {
                 selected_path = prelude_list_entry(ptr, preludedb_selected_path_t, list);
                 preludedb_selected_path_destroy(selected_path);
         }
 
         free(path_selection);
+}
+
+
+
+preludedb_path_selection_t *preludedb_path_selection_ref(preludedb_path_selection_t *path_selection)
+{
+        path_selection->refcount++;
+        return path_selection;
 }
 
 

@@ -48,7 +48,11 @@ typedef struct preludedb_selected_path preludedb_selected_path_t;
 int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
                                   idmef_path_t *path, int flags);
 int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path, const char *str);
+
 void preludedb_selected_path_destroy(preludedb_selected_path_t *selected_path);
+
+preludedb_path_selection_t *preludedb_path_selection_ref(preludedb_path_selection_t *path_selection);
+
 idmef_path_t *preludedb_selected_path_get_path(preludedb_selected_path_t *selected_path);
 preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path);
 
