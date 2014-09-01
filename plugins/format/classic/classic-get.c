@@ -51,7 +51,7 @@ static int _get_ ## name (preludedb_sql_t *sql, preludedb_sql_row_t *row,       
         type *value;                                                                            \
         int ret;                                                                                \
                                                                                                 \
-        ret = preludedb_sql_row_fetch_field(row, index, &field);                                \
+        ret = preludedb_sql_row_get_field(row, index, &field);                                \
         if ( ret <= 0 )                                                                         \
                 return ret;                                                                     \
                                                                                                 \
@@ -90,7 +90,7 @@ static int _get_string(preludedb_sql_t *sql, preludedb_sql_row_t *row,
         prelude_string_t *string;
         int ret;
 
-        ret = preludedb_sql_row_fetch_field(row, index, &field);
+        ret = preludedb_sql_row_get_field(row, index, &field);
         if ( ret <= 0 )
                 return ret;
 
@@ -114,7 +114,7 @@ static int _get_string_listed(preludedb_sql_t *sql, preludedb_sql_row_t *row,
         prelude_string_t *string;
         int ret;
 
-        ret = preludedb_sql_row_fetch_field(row, index, &field);
+        ret = preludedb_sql_row_get_field(row, index, &field);
         if ( ret <= 0 )
                 return ret;
 
@@ -139,7 +139,7 @@ static int _get_enum(preludedb_sql_t *sql, preludedb_sql_row_t *row,
         int *enum_val;
         int ret;
 
-        ret = preludedb_sql_row_fetch_field(row, index, &field);
+        ret = preludedb_sql_row_get_field(row, index, &field);
         if ( ret <= 0 )
                 return ret;
 
@@ -165,16 +165,16 @@ static int _get_timestamp(preludedb_sql_t *sql, preludedb_sql_row_t *row,
         idmef_time_t *time;
         int ret;
 
-        ret = preludedb_sql_row_fetch_field(row, time_index, &time_field);
+        ret = preludedb_sql_row_get_field(row, time_index, &time_field);
         if ( ret <= 0 )
                 return ret;
 
-        ret = preludedb_sql_row_fetch_field(row, gmtoff_index, &gmtoff_field);
+        ret = preludedb_sql_row_get_field(row, gmtoff_index, &gmtoff_field);
         if ( ret <= 0 )
                 return (ret < 0) ? ret : -1;
 
         if ( usec_index != -1 ) {
-                ret = preludedb_sql_row_fetch_field(row, usec_index, &usec_field);
+                ret = preludedb_sql_row_get_field(row, usec_index, &usec_field);
                 if ( ret <= 0 )
                         return (ret < 0) ? ret : -1;
 
@@ -1157,7 +1157,7 @@ static int get_file_access(preludedb_sql_t *sql,
         if ( ret <= 0 )
                 goto error;
 
-        ret = preludedb_sql_row_fetch_field(row, 0, &field);
+        ret = preludedb_sql_row_get_field(row, 0, &field);
         if ( ret <= 0 )
                 goto error;
 
@@ -1664,7 +1664,7 @@ static int get_additional_data(preludedb_sql_t *sql,
                 if ( ret < 0 )
                         goto error;
 
-                ret = preludedb_sql_row_fetch_field(row, 2, &field);
+                ret = preludedb_sql_row_get_field(row, 2, &field);
                 if ( ret <= 0 )
                         goto error;
 
@@ -2011,7 +2011,7 @@ static int get_overflow_alert(preludedb_sql_t *sql,
         if ( ret < 0 )
                 goto error;
 
-        ret = preludedb_sql_row_fetch_field(row, 2, &field);
+        ret = preludedb_sql_row_get_field(row, 2, &field);
         if ( ret < 0 )
                 goto error;
 

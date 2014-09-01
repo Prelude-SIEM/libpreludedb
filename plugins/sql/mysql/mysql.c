@@ -36,6 +36,7 @@
 #include <errmsg.h>
 
 #include <libprelude/idmef.h>
+#include <libprelude/common.h>
 #include <libprelude/prelude-error.h>
 #include <libprelude/prelude-string.h>
 
@@ -53,6 +54,14 @@
 #if ! defined(MYSQL_VERSION_ID) || MYSQL_VERSION_ID < 32224
 # define mysql_field_count mysql_num_fields
 #endif /* ! MYSQL_VERSION_ID */
+
+
+
+typedef struct {
+        MYSQL_ROW *row;
+        unsigned long *lengths;
+} mysql_row_data_t;
+
 
 
 int mysql_LTX_prelude_plugin_version(void);
@@ -186,30 +195,37 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
 
 
-static int sql_query(void *session, const char *query, void **resource)
+static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
+        int ret;
+        MYSQL_RES *result;
+
         if ( mysql_query(session, query) != 0 )
                 return handle_error(session, PRELUDEDB_ERROR_QUERY);
 
-        *resource = mysql_store_result(session);
-        if ( *resource ) {
-                if ( mysql_num_rows(*resource) == 0 ) {
-                        mysql_free_result(*resource);
-                        return 0;
-                }
+        result = mysql_store_result(session);
+        if ( ! result )
+                return mysql_errno(session) ? handle_error(session, PRELUDEDB_ERROR_QUERY) : 0;
 
-                return 1;
+        if ( mysql_num_rows(result) == 0 ) {
+                mysql_free_result(result);
+                return 0;
         }
 
-        return mysql_errno(session) ? handle_error(session, PRELUDEDB_ERROR_QUERY) : 0;
+        ret = preludedb_sql_table_new(table, result);
+        if ( ret < 0 ) {
+                mysql_free_result(result);
+                return ret;
+        }
+
+        return 1;
 }
 
 
 
-static void sql_resource_destroy(void *session, void *resource)
+static void sql_table_destroy(void *session, preludedb_sql_table_t *table)
 {
-        if ( resource )
-                mysql_free_result(resource);
+        mysql_free_result(preludedb_sql_table_get_data(table));
 }
 
 
@@ -221,29 +237,28 @@ static MYSQL_FIELD *get_field(MYSQL_RES *res, unsigned int column_num)
 
 
 
-static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
+static const char *sql_get_column_name(void *session, preludedb_sql_table_t *table, unsigned int column_num)
 {
         MYSQL_FIELD *field;
 
-        field = get_field(resource, column_num);
+        field = get_field(preludedb_sql_table_get_data(table), column_num);
 
         return field ? field->name : NULL;
 }
 
 
 
-static int sql_get_column_num(void *session, void *resource, const char *column_name)
+static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const char *column_name)
 {
+        int fields_num, i;
         MYSQL_FIELD *fields;
-        int fields_num;
-        int i;
+        MYSQL_RES *result = preludedb_sql_table_get_data(table);
 
-        fields = mysql_fetch_fields(resource);
+        fields = mysql_fetch_fields(result);
         if ( ! fields )
                 return -1;
 
-        fields_num = mysql_num_fields(resource);
-
+        fields_num = mysql_num_fields(result);
         for ( i = 0; i < fields_num; i++ ) {
                 if ( strcmp(column_name, fields[i].name) == 0 )
                         return i;
@@ -254,50 +269,82 @@ static int sql_get_column_num(void *session, void *resource, const char *column_
 
 
 
-static unsigned int sql_get_column_count(void *session, void *resource)
+static unsigned int sql_get_column_count(void *session, preludedb_sql_table_t *table)
 {
-        return mysql_num_fields(resource);
+        return mysql_num_fields(preludedb_sql_table_get_data(table));
 }
 
 
 
-static unsigned int sql_get_row_count(void *session, void *resource)
+static unsigned int sql_get_row_count(void *session, preludedb_sql_table_t *table)
 {
-        return (unsigned int) mysql_num_rows(resource);
+        return (unsigned int) mysql_num_rows(preludedb_sql_table_get_data(table));
 }
 
 
-
-static int sql_fetch_row(void *session, void *resource, void **row)
+static void sql_destroy_row(void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row)
 {
-        *row = mysql_fetch_row(resource);
-        if ( ! *row )
-                return mysql_errno(session) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
+        free(preludedb_sql_row_get_data(row));
+}
+
+
+static int sql_fetch_row(void *session, preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **rrow)
+{
+        int ret;
+        void *row;
+        mysql_row_data_t *myrow;
+        unsigned long *lengths;
+        MYSQL_RES *result = preludedb_sql_table_get_data(table);
+
+        while ( preludedb_sql_table_get_fetched_row_count(table) <= row_index ) {
+                row = mysql_fetch_row(result);
+                if ( ! row ) {
+                        ret = mysql_errno(session);
+                        if ( ret )
+                                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, mysql_error(session));
+
+                        return 0;
+                }
+
+                lengths = mysql_fetch_lengths(result);
+                if ( ! lengths )
+                        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+
+                ret = preludedb_sql_table_new_row(table, rrow, preludedb_sql_table_get_fetched_row_count(table));
+                if ( ret < 0 )
+                        return ret;
+
+                myrow = malloc(sizeof(*myrow));
+                if ( ! myrow ) {
+                        preludedb_sql_row_destroy(*rrow);
+                        return preludedb_error_from_errno(errno);
+                }
+
+                myrow->row = row;
+                myrow->lengths = lengths;
+                preludedb_sql_row_set_data(*rrow, myrow);
+        }
 
         return 1;
 }
 
 
 
-static int sql_fetch_field(void *session, void *resource, void *row,
-                           unsigned int column_num, const char **value, size_t *len)
+static int sql_fetch_field(void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row,
+                           unsigned int column_num, preludedb_sql_field_t **field)
 {
-        unsigned long *lengths;
+        mysql_row_data_t *d = preludedb_sql_row_get_data(row);
+        void *data;
+        size_t dlen = 0;
 
-        if ( column_num >= mysql_num_fields(resource) )
+        if ( column_num >= mysql_num_fields(preludedb_sql_table_get_data(table)) )
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
-        lengths = mysql_fetch_lengths(resource);
-        if ( ! lengths )
-                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        data = d->row[column_num];
+        if ( data )
+                dlen = d->lengths[column_num];
 
-        if ( ! ((MYSQL_ROW) row)[column_num] )
-                return 0;
-
-        *value = ((MYSQL_ROW) row)[column_num];
-        *len = lengths[column_num];
-
-        return 1;
+        return preludedb_sql_row_new_field(row, field, column_num, data, dlen);
 }
 
 
@@ -484,13 +531,14 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_get_server_version_func(plugin, sql_get_server_version);
-        preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);
+        preludedb_plugin_sql_set_table_destroy_func(plugin, sql_table_destroy);
         preludedb_plugin_sql_set_get_column_count_func(plugin, sql_get_column_count);
         preludedb_plugin_sql_set_get_row_count_func(plugin, sql_get_row_count);
         preludedb_plugin_sql_set_get_column_name_func(plugin, sql_get_column_name);
         preludedb_plugin_sql_set_get_column_num_func(plugin, sql_get_column_num);
         preludedb_plugin_sql_set_get_operator_string_func(plugin, get_operator_string);
         preludedb_plugin_sql_set_fetch_row_func(plugin, sql_fetch_row);
+        preludedb_plugin_sql_set_row_destroy_func(plugin, sql_destroy_row);
         preludedb_plugin_sql_set_fetch_field_func(plugin, sql_fetch_field);
         preludedb_plugin_sql_set_build_constraint_string_func(plugin, sql_build_constraint_string);
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);

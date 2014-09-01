@@ -237,7 +237,7 @@ static int classic_get_next_message_ident(void *res, uint64_t *ident)
         if ( ret <= 0 )
                 return ret;
 
-        ret = preludedb_sql_row_fetch_field(row, 0, &field);
+        ret = preludedb_sql_row_get_field(row, 0, &field);
         if ( ret <= 0 )
                 return ret;
 
@@ -360,7 +360,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
         path = preludedb_selected_path_get_path(selected);
         type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
 
-        ret = preludedb_sql_row_fetch_field(row, cnt, &field);
+        ret = preludedb_sql_row_get_field(row, cnt, &field);
         if ( ret < 0 )
                 return ret;
 
@@ -400,7 +400,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                 if ( multiple_time_field ) {
                         preludedb_sql_field_t *gmtoff_field, *usec_field;
 
-                        ret = preludedb_sql_row_fetch_field(row, cnt + 1, &gmtoff_field);
+                        ret = preludedb_sql_row_get_field(row, cnt + 1, &gmtoff_field);
                         if ( ret < 0 )
                                 return ret;
 
@@ -410,7 +410,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                                         return ret;
                         }
 
-                        ret = preludedb_sql_row_fetch_field(row, cnt + 2, &usec_field);
+                        ret = preludedb_sql_row_get_field(row, cnt + 2, &usec_field);
                         if ( ret < 0 )
                                 return ret;
 

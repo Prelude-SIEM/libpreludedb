@@ -58,26 +58,6 @@
 #endif
 
 
-typedef struct {
-        size_t len;
-        void *data;
-} sqlite3_field_t;
-
-
-typedef struct {
-        prelude_list_t list;
-        sqlite3_field_t *fields;
-} sqlite3_row_t;
-
-
-typedef struct {
-        prelude_list_t rows;
-        sqlite3_stmt *statement;
-        unsigned int nrow;
-        unsigned int ncolumn;
-        sqlite3_row_t *current_row;
-} sqlite3_resource_t;
-
 
 
 int sqlite3_LTX_prelude_plugin_version(void);
@@ -190,136 +170,42 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
 
 
-static sqlite3_row_t *sql_resource_add_row(sqlite3_resource_t *resource, unsigned int cols)
+static int sql_table_field_copy(preludedb_sql_row_t *row, sqlite3_stmt *statement, unsigned int col)
 {
-        sqlite3_row_t *row;
+        char *data = NULL;
+        preludedb_sql_field_t *field;
+        size_t len;
 
-        row = malloc(sizeof(*row));
-        if ( ! row )
-                return NULL;
+        len = sqlite3_column_bytes(statement, col);
+        if ( len ) {
+                if ( len + 1 < len )
+                        return -1;
 
-        row->fields = malloc(sizeof(*row->fields) * cols);
-        if ( ! row->fields ) {
-                free(row);
-                return NULL;
-        }
-
-        resource->nrow++;
-        prelude_list_add_tail(&resource->rows, &row->list);
-
-        return row;
-}
-
-
-
-static int sql_resource_field_copy(sqlite3_field_t *field, sqlite3_stmt *statement, unsigned int col)
-{
-        field->len = sqlite3_column_bytes(statement, col);
-        if ( ! field->len ) {
-                field->data = NULL;
-                return 0;
-        }
-
-        if ( field->len + 1 < field->len )
-                return -1;
-
-        field->data = malloc(field->len + 1);
-        if ( ! field->data )
-                return preludedb_error_from_errno(errno);
-
-        memcpy(field->data, sqlite3_column_blob(statement, col), field->len);
-        ((unsigned char *) field->data)[field->len] = '\0';
-
-        return 0;
-}
-
-
-static void sql_resource_destroy(void *session, void *res)
-{
-        unsigned int i;
-        sqlite3_row_t *row;
-        sqlite3_field_t *field;
-        sqlite3_resource_t *resource = res;
-        prelude_list_t *cursor, *safety_cursor;
-
-        if ( ! resource )
-                return;
-
-        prelude_list_for_each_safe(&resource->rows, cursor, safety_cursor) {
-                row = prelude_list_entry(cursor, sqlite3_row_t, list);
-
-                for ( i = 0; i < resource->ncolumn; i++ ) {
-                        field = &row->fields[i];
-
-                        if ( field->data )
-                                free(field->data);
-                }
-
-                free(row->fields);
-
-                prelude_list_del(&row->list);
-                free(row);
-        }
-
-        sqlite3_finalize(resource->statement);
-        free(resource);
-}
-
-
-
-static int sql_read_row(void *session, sqlite3_stmt *statement, sqlite3_resource_t **resource)
-{
-        int ret;
-        unsigned int i;
-        sqlite3_row_t *row;
-        unsigned int ncolumn;
-
-        ncolumn = sqlite3_column_count(statement);
-        if ( ncolumn == 0 )
-                return 0;
-
-        *resource = calloc(1, sizeof(**resource));
-        if ( ! *resource )
-                return preludedb_error_from_errno(errno);
-
-        prelude_list_init(&(*resource)->rows);
-
-        while ( (ret = sqlite3_step(statement)) ) {
-
-                if ( ret == SQLITE_ERROR || ret == SQLITE_MISUSE || ret == SQLITE_BUSY ) {
-                        sql_resource_destroy(NULL, *resource);
-                        return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s", sqlite3_errmsg(session));
-                }
-
-                else if ( ret == SQLITE_DONE )
-                        break;
-
-                assert(ret == SQLITE_ROW);
-
-                row = sql_resource_add_row(*resource, ncolumn);
-                if ( ! row ) {
-                        sql_resource_destroy(NULL, *resource);
+                data = malloc(len + 1);
+                if ( ! data )
                         return preludedb_error_from_errno(errno);
-                }
 
-                for ( i = 0; i < ncolumn; i++ ) {
-                        ret = sql_resource_field_copy(&row->fields[i], statement, i);
-                        if ( ret < 0 ) {
-                                sql_resource_destroy(NULL, *resource);
-                                return preludedb_error_from_errno(errno);
-                        }
-                }
+                memcpy(data, sqlite3_column_blob(statement, col), len);
+                data[len] = '\0';
         }
 
-        (*resource)->ncolumn = ncolumn;
-        (*resource)->statement = statement;
-
-        return 1;
+        return preludedb_sql_row_new_field(row, &field, col, data, len);
 }
 
 
+static void sql_field_destroy(void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row, preludedb_sql_field_t *field)
+{
+        free(preludedb_sql_field_get_value(field));
+}
 
-static int sql_query(void *session, const char *query, void **resource)
+
+static void sql_table_destroy(void *session, preludedb_sql_table_t *table)
+{
+        sqlite3_finalize(preludedb_sql_table_get_data(table));
+}
+
+
+static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
         int ret;
         sqlite3_stmt *statement;
@@ -328,7 +214,7 @@ static int sql_query(void *session, const char *query, void **resource)
         /*
          * FIXME: we need a better way to know the kind of operation performed.
          */
-        if ( strncmp(query, "SELECT", 6) != 0 ) {
+        if ( strncasecmp(query, "SELECT", 6) != 0 ) {
 
                 ret = sqlite3_exec(session, query, NULL, NULL, 0);
                 if ( ret != SQLITE_OK )
@@ -339,11 +225,14 @@ static int sql_query(void *session, const char *query, void **resource)
                 if ( ret != SQLITE_OK )
                         return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
 
-                ret = sql_read_row(session, statement, (sqlite3_resource_t **) resource);
-                if ( ret != 1 ) {
-                        sqlite3_finalize(statement);
+                if ( sqlite3_column_count(statement) == 0 )
+                        return 0;
+
+                ret = preludedb_sql_table_new(table, statement);
+                if ( ret < 0 )
                         return ret;
-                }
+
+                ret = 1;
         }
 
         return ret;
@@ -351,27 +240,22 @@ static int sql_query(void *session, const char *query, void **resource)
 
 
 
-static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
+static const char *sql_get_column_name(void *session, preludedb_sql_table_t *table, unsigned int column_num)
 {
-        sqlite3_resource_t *res = resource;
-
-        if ( column_num >= res->ncolumn )
+        if ( column_num >= preludedb_sql_table_get_column_count(table) )
                 return NULL;
 
-        return sqlite3_column_name(res->statement, column_num);
+        return sqlite3_column_name(preludedb_sql_table_get_data(table), column_num);
 }
 
 
-
-static int sql_get_column_num(void *session, void *resource, const char *column_name)
+static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const char *column_name)
 {
         int ret;
         unsigned int i;
-        sqlite3_resource_t *res = resource;
 
-        for ( i = 0; i < res->ncolumn; i++ ) {
-
-                ret = strcmp(column_name, sqlite3_column_name(res->statement, i));
+        for ( i = 0; i < preludedb_sql_table_get_column_count(table); i++ ) {
+                ret = strcmp(column_name, sqlite3_column_name(preludedb_sql_table_get_data(table), i));
                 if ( ret == 0 )
                         return i;
         }
@@ -381,52 +265,38 @@ static int sql_get_column_num(void *session, void *resource, const char *column_
 
 
 
-static unsigned int sql_get_column_count(void *session, void *resource)
+static unsigned int sql_get_column_count(void *session, preludedb_sql_table_t *table)
 {
-        return ((sqlite3_resource_t *) resource)->ncolumn;
+        return sqlite3_column_count(preludedb_sql_table_get_data(table));
 }
 
 
 
-static unsigned int sql_get_row_count(void *session, void *resource)
+static int sql_fetch_row(void *session, preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row)
 {
-        return ((sqlite3_resource_t *) resource)->nrow;
-}
+        int ret, i;
+        sqlite3_stmt *statement = preludedb_sql_table_get_data(table);
 
+        while ( preludedb_sql_table_get_fetched_row_count(table) <= row_index ) {
+                ret = sqlite3_step(statement);
+                if ( ret == SQLITE_ERROR || ret == SQLITE_MISUSE || ret == SQLITE_BUSY )
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, "%s", sqlite3_errmsg(session));
 
+                else if ( ret == SQLITE_DONE )
+                        return 0;
 
-static int sql_fetch_row(void *session, void *resource, void **row)
-{
-        sqlite3_resource_t *res = resource;
+                assert(ret == SQLITE_ROW);
 
-        *row = prelude_list_get_next(&res->rows, res->current_row, sqlite3_row_t, list);
-        if ( ! *row ) {
-                res->current_row = NULL;
-                return 0;
+                ret = preludedb_sql_table_new_row(table, row, preludedb_sql_table_get_fetched_row_count(table));
+                if ( ret < 0 )
+                        return ret;
+
+                for ( i = 0; i < sqlite3_column_count(statement); i++ ) {
+                        ret = sql_table_field_copy(*row, statement, i);
+                        if ( ret < 0 )
+                                return preludedb_error_from_errno(errno);
+                }
         }
-
-        res->current_row = *row;
-
-        return 1;
-}
-
-
-
-static int sql_fetch_field(void *session, void *resource, void *row,
-                           unsigned int column_num, const char **value, size_t *len)
-{
-        sqlite3_field_t *field;
-
-        if ( column_num >= ((sqlite3_resource_t *) resource)->ncolumn )
-                return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
-
-        field = &(((sqlite3_row_t *) row)->fields[column_num]);
-
-        *value = field->data;
-        *len = field->len;
-
-        if ( *len == 0 )
-                return 0;
 
         return 1;
 }
@@ -586,14 +456,13 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_get_server_version_func(plugin, sql_get_server_version);
-        preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);
+        preludedb_plugin_sql_set_field_destroy_func(plugin, sql_field_destroy);
+        preludedb_plugin_sql_set_table_destroy_func(plugin, sql_table_destroy);
         preludedb_plugin_sql_set_get_column_count_func(plugin, sql_get_column_count);
-        preludedb_plugin_sql_set_get_row_count_func(plugin, sql_get_row_count);
         preludedb_plugin_sql_set_get_column_name_func(plugin, sql_get_column_name);
         preludedb_plugin_sql_set_get_column_num_func(plugin, sql_get_column_num);
         preludedb_plugin_sql_set_get_operator_string_func(plugin, get_operator_string);
         preludedb_plugin_sql_set_fetch_row_func(plugin, sql_fetch_row);
-        preludedb_plugin_sql_set_fetch_field_func(plugin, sql_fetch_field);
         preludedb_plugin_sql_set_build_constraint_string_func(plugin, sql_build_constraint_string);
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);

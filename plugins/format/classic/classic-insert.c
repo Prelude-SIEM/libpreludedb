@@ -1781,7 +1781,7 @@ static int get_last_insert_ident(preludedb_sql_t *sql, const char *table_name, u
         if ( ret < 0 )
                 goto error;
 
-        ret = preludedb_sql_row_fetch_field(row, 0, &field);
+        ret = preludedb_sql_row_get_field(row, 0, &field);
         if ( ret < 0 )
                 goto error;
 

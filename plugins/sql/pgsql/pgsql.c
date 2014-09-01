@@ -47,13 +47,6 @@ int pgsql_LTX_prelude_plugin_version(void);
 int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 
 
-struct pg_result {
-        PGresult *result;
-        int row;
-};
-
-
-
 static int handle_error(prelude_error_code_t code, PGconn *conn)
 {
         int ret;
@@ -87,31 +80,28 @@ static int handle_error(prelude_error_code_t code, PGconn *conn)
 
 
 
-static int sql_query(void *session, const char *query, void **resource)
+static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
         int ret;
-        struct pg_result *res;
+        PGresult *result;
 
-        res = calloc(1, sizeof (*res));
-        if ( ! res )
-                return prelude_error_from_errno(errno);
-
-        res->row = -1;
-
-        res->result = PQexec(session, query);
-        if ( ! res->result ) {
-                free(res);
+        result = PQexec(session, query);
+        if ( ! result )
                 return handle_error(PRELUDEDB_ERROR_QUERY, session);
-        }
 
-        ret = PQresultStatus(res->result);
-        if ( ret == PGRES_TUPLES_OK && PQntuples(res->result) != 0 ) {
-                *resource = res;
+        ret = PQresultStatus(result);
+        if ( ret == PGRES_TUPLES_OK && PQntuples(result) != 0 ) {
+                ret = preludedb_sql_table_new(table, result);
+                if ( ret < 0 ) {
+                        PQclear(result);
+                        return ret;
+                }
+
                 return 1;
         }
 
-        PQclear(res->result);
-        free(res);
+        PQclear(result);
+
         if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
                 return 0;
 
@@ -265,56 +255,53 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 
 
 
-static void sql_resource_destroy(void *session, void *resource)
+static void sql_table_destroy(void *session, preludedb_sql_table_t *table)
 {
-        if ( resource ) {
-                PQclear(((struct pg_result *) resource)->result);
-                free(resource);
-        }
+        PQclear(preludedb_sql_table_get_data(table));
 }
 
 
 
-static const char *sql_get_column_name(void *session, void *resource, unsigned int column_num)
+static const char *sql_get_column_name(void *session, preludedb_sql_table_t *table, unsigned int column_num)
 {
-        return PQfname(((struct pg_result *) resource)->result, column_num);
+        return PQfname(preludedb_sql_table_get_data(table), column_num);
 }
 
 
 
-static int sql_get_column_num(void *session, void *resource, const char *column_name)
+static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const char *column_name)
 {
-        return PQfnumber(((struct pg_result *) resource)->result, column_name);
+        return PQfnumber(preludedb_sql_table_get_data(table), column_name);
 }
 
 
 
-static unsigned int sql_get_column_count(void *session, void *resource)
+static unsigned int sql_get_column_count(void *session, preludedb_sql_table_t *table)
 {
-        return PQnfields(((struct pg_result *) resource)->result);
+        return PQnfields(preludedb_sql_table_get_data(table));
 }
 
 
 
-static unsigned int sql_get_row_count(void *session, void *resource)
+static unsigned int sql_get_row_count(void *session, preludedb_sql_table_t *table)
 {
-        return PQntuples(((struct pg_result *) resource)->result);
+        return PQntuples(preludedb_sql_table_get_data(table));
 }
 
 
 
-static int sql_fetch_row(void *s, void *resource, void **row)
+static int sql_fetch_row(void *s, preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row)
 {
-        struct pg_result *res = resource;
+        int ret;
+        unsigned int row_count;
 
-        /*
-         * initialize *row, but we won't use it since we access row's fields directly
-         * through the PGresult structure
-         */
-        *row = NULL;
+        row_count = PQntuples(preludedb_sql_table_get_data(table));
+        if ( row_index < row_count ) {
+                ret = preludedb_sql_table_new_row(table, row, row_index);
+                if ( ret < 0 )
+                        return ret;
 
-        if ( res->row + 1 < PQntuples(res->result) ) {
-                res->row++;
+                preludedb_sql_row_set_data(*row, (void *) (unsigned long) row_index);
                 return 1;
         }
 
@@ -323,23 +310,30 @@ static int sql_fetch_row(void *s, void *resource, void **row)
 
 
 
-static int sql_fetch_field(void *session, void *resource, void *r,
-                           unsigned int column_num, const char **value, size_t *len)
+static int sql_fetch_field(void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row,
+                           unsigned int column_num, preludedb_sql_field_t **field)
 {
-        int nfields;
-        struct pg_result *res = resource;
+        char *value;
+        void *valaddr = preludedb_sql_row_get_data(row);
+        PGresult *result = preludedb_sql_table_get_data(table);
+        int nfields, len;
+        unsigned int row_index;
 
-        nfields = PQnfields(res->result);
+        row_index = (unsigned int) (unsigned long) valaddr;
+
+        nfields = PQnfields(result);
         if ( nfields < 0 || column_num >= (unsigned int) nfields )
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_COLUMN_NUM);
 
-        if ( PQgetisnull(res->result, res->row, column_num) )
-                return 0;
+        if ( PQgetisnull(result, row_index, column_num) ) {
+                value = NULL;
+                len = 0;
+        } else {
+                value = PQgetvalue(result, row_index, column_num);
+                len = PQgetlength(result, row_index, column_num);
+        }
 
-        *value = PQgetvalue(res->result, res->row, column_num);
-        *len = PQgetlength(res->result, res->row, column_num);
-
-        return 1;
+        return preludedb_sql_row_new_field(row, field, column_num, value, len);
 }
 
 
@@ -533,7 +527,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_unescape_binary_func(plugin, sql_unescape_binary);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_get_server_version_func(plugin, sql_get_server_version);
-        preludedb_plugin_sql_set_resource_destroy_func(plugin, sql_resource_destroy);
+        preludedb_plugin_sql_set_table_destroy_func(plugin, sql_table_destroy);
         preludedb_plugin_sql_set_get_column_count_func(plugin, sql_get_column_count);
         preludedb_plugin_sql_set_get_row_count_func(plugin, sql_get_row_count);
         preludedb_plugin_sql_set_get_column_name_func(plugin, sql_get_column_name);

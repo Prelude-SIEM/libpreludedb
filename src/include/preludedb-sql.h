@@ -24,6 +24,7 @@
 #ifndef _LIBPRELUDEDB_SQL_H
 #define _LIBPRELUDEDB_SQL_H
 
+#include <libprelude/prelude.h>
 #include <libprelude/prelude-string.h>
 #include <libprelude/idmef-criteria.h>
 #include <libprelude/idmef-time.h>
@@ -66,6 +67,30 @@ typedef struct preludedb_sql_table preludedb_sql_table_t;
 typedef struct preludedb_sql_row preludedb_sql_row_t;
 typedef struct preludedb_sql_field preludedb_sql_field_t;
 
+int preludedb_sql_row_new_field(preludedb_sql_row_t *row, preludedb_sql_field_t **field, int num, char *value, size_t len);
+
+preludedb_sql_field_t *preludedb_sql_field_ref(preludedb_sql_field_t *field);
+
+void preludedb_sql_field_destroy(preludedb_sql_field_t *field);
+
+int preludedb_sql_table_new_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row, unsigned int row_index);
+
+void preludedb_sql_row_set_data(preludedb_sql_row_t *row, void *data);
+
+void *preludedb_sql_row_get_data(preludedb_sql_row_t *row);
+
+preludedb_sql_row_t *preludedb_sql_row_ref(preludedb_sql_row_t *row);
+
+void preludedb_sql_row_destroy(preludedb_sql_row_t *row);
+
+preludedb_sql_table_t *preludedb_sql_table_ref(preludedb_sql_table_t *table);
+
+void *preludedb_sql_table_get_data(preludedb_sql_table_t *table);
+
+int preludedb_sql_table_new(preludedb_sql_table_t **table, void *data);
+
+preludedb_sql_t *preludedb_sql_ref(preludedb_sql_t *sql);
+
 int preludedb_sql_new(preludedb_sql_t **newdb, const char *type, preludedb_sql_settings_t *settings);
 
 void preludedb_sql_destroy(preludedb_sql_t *sql);
@@ -98,12 +123,17 @@ const char *preludedb_sql_table_get_column_name(preludedb_sql_table_t *table, un
 int preludedb_sql_table_get_column_num(preludedb_sql_table_t *table, const char *column_name);
 unsigned int preludedb_sql_table_get_column_count(preludedb_sql_table_t *table);
 unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table);
+unsigned int preludedb_sql_table_get_fetched_row_count(preludedb_sql_table_t *table);
+
+int preludedb_sql_table_get_row(preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row);
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row);
 
-int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_num, preludedb_sql_field_t **field);
-int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *column_name, preludedb_sql_field_t **field);
+int preludedb_sql_row_get_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field);
+int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field) PRELUDE_DEPRECATED;
+int preludedb_sql_row_get_field_by_name(preludedb_sql_row_t *row, const char *column_name, preludedb_sql_field_t **field);
+int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *column_name, preludedb_sql_field_t **field) PRELUDE_DEPRECATED;
 
-const char *preludedb_sql_field_get_value(preludedb_sql_field_t *field);
+char *preludedb_sql_field_get_value(preludedb_sql_field_t *field);
 size_t preludedb_sql_field_get_len(preludedb_sql_field_t *field);
 int preludedb_sql_field_to_int8(preludedb_sql_field_t *field, int8_t *value);
 int preludedb_sql_field_to_uint8(preludedb_sql_field_t *field, uint8_t *value);

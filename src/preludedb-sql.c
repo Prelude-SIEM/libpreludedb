@@ -62,6 +62,13 @@
 #include "preludedb.h"
 
 
+#ifndef MAX
+# define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#endif
+
+#define SQL_NULL_FIELD (void *) 0xdeadbeef
+
+
 typedef enum {
         PRELUDEDB_SQL_STATUS_CONNECTED    = 0x01,
         PRELUDEDB_SQL_STATUS_TRANSACTION  = 0x02
@@ -89,29 +96,37 @@ struct preludedb_sql {
         void *session;
         FILE *logfile;
         prelude_bool_t internal_transaction_disabled;
-
         gl_recursive_lock_t mutex;
+        int refcount;
 };
 
 struct preludedb_sql_table {
         preludedb_sql_t *sql;
-        void *res;
-        prelude_list_t row_list;
+        void *data;
+
+        preludedb_sql_row_t **rows;
+        unsigned int nrow;
+
+        uint16_t refcount;
+        uint8_t done;
 };
+
 
 struct preludedb_sql_row {
-        prelude_list_t list;
         preludedb_sql_table_t *table;
-        void *res;
-        prelude_list_t field_list;
+        preludedb_sql_field_t **fields;
+        void *data;
+        uint16_t refcount;
 };
 
+
 struct preludedb_sql_field {
-        prelude_list_t list;
         preludedb_sql_row_t *row;
-        int num;
-        const char *value;
+
+        char *value;
         size_t len;
+
+        uint16_t refcount;
 };
 
 
@@ -154,6 +169,7 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
         if ( ! *new )
                 return preludedb_error_from_errno(errno);
 
+        (*new)->refcount = 1;
         gl_recursive_lock_init(((*new)->mutex));
 
         if ( ! type ) {
@@ -185,6 +201,15 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 
 
 
+preludedb_sql_t *preludedb_sql_ref(preludedb_sql_t *sql)
+{
+        sql->refcount++;
+        return sql;
+}
+
+
+
+
 /**
  * preludedb_sql_destroy:
  * @sql: Pointer to a sql object.
@@ -193,6 +218,9 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
  */
 void preludedb_sql_destroy(preludedb_sql_t *sql)
 {
+        if ( --sql->refcount > 0 )
+                return;
+
         if ( sql->status & PRELUDEDB_SQL_STATUS_CONNECTED )
                 _preludedb_plugin_sql_close(sql->plugin, sql->session);
 
@@ -275,17 +303,26 @@ static int preludedb_sql_connect(preludedb_sql_t *sql)
 
 
 
-static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t *sql, void *res)
+int preludedb_sql_table_new(preludedb_sql_table_t **new, void *data)
 {
         *new = malloc(sizeof(**new));
         if ( ! *new )
                 return preludedb_error_from_errno(errno);
 
-        (*new)->sql = sql;
-        (*new)->res = res;
-        prelude_list_init(&(*new)->row_list);
+        (*new)->rows = NULL;
+        (*new)->nrow = 0;
+        (*new)->done = FALSE;
+        (*new)->refcount = 1;
+        (*new)->data = data;
 
         return 0;
+}
+
+
+
+void *preludedb_sql_table_get_data(preludedb_sql_table_t *table)
+{
+        return table->data;
 }
 
 
@@ -299,12 +336,11 @@ static int preludedb_sql_table_new(preludedb_sql_table_t **new, preludedb_sql_t 
  *
  * Execute a SQL query.
  *
- * Returns: the number of result or a negative value if an error occured.
+ * Returns: 1 if result are available, 0 for no result, -1 if an error occured.
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
         int ret;
-        void *res;
         struct timeval start, end;
 
         gl_recursive_lock_lock(sql->mutex);
@@ -312,8 +348,7 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
 
         gettimeofday(&start, NULL);
 
-        ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, &res);
-
+        ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, table);
         if ( ret < 0 )
                 update_sql_from_errno(sql, ret);
 
@@ -331,13 +366,8 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
         if ( ret <= 0 )
                 return ret;
 
-        ret = preludedb_sql_table_new(table, sql, res);
-        if ( ret < 0 ) {
-                _preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, res);
-                return ret;
-        }
-
-        return preludedb_sql_table_get_row_count(*table);
+        (*table)->sql = preludedb_sql_ref(sql);
+        return 1;
 }
 
 
@@ -691,6 +721,16 @@ int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_
 
 
 
+preludedb_sql_table_t *preludedb_sql_table_ref(preludedb_sql_table_t *table)
+{
+        prelude_return_val_if_fail(table, NULL);
+
+        table->refcount++;
+        return table;
+}
+
+
+
 /**
  * preludedb_sql_table_destroy:
  * @table: Pointer to a table object.
@@ -699,64 +739,151 @@ int preludedb_sql_unescape_binary(preludedb_sql_t *sql, const char *input, size_
  */
 void preludedb_sql_table_destroy(preludedb_sql_table_t *table)
 {
-        preludedb_sql_t *sql = table->sql;
-        preludedb_sql_row_t *row;
-        preludedb_sql_field_t *field;
-        prelude_list_t *tmp, *next_row, *next_field;
+        unsigned int i;
 
-        prelude_list_for_each_safe(&table->row_list, tmp, next_row) {
-                row = prelude_list_entry(tmp, preludedb_sql_row_t, list);
+        if ( --table->refcount > 0 )
+                return;
 
-                prelude_list_for_each_safe(&row->field_list, tmp, next_field) {
-                        field = prelude_list_entry(tmp, preludedb_sql_field_t, list);
-                        free(field);
-                }
+        for ( i = 0; i < table->nrow; i++ )
+                preludedb_sql_row_destroy(table->rows[i]);
 
-                free(row);
-        }
+        free(table->rows);
 
-        _preludedb_plugin_sql_resource_destroy(sql->plugin, sql->session, table->res);
+        _preludedb_plugin_sql_table_destroy(table->sql->plugin, table->sql->session, table);
+        preludedb_sql_destroy(table->sql);
         free(table);
 }
 
 
 
-static int preludedb_sql_row_new(preludedb_sql_row_t **row, preludedb_sql_table_t *table, void *res)
+int preludedb_sql_table_new_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row, unsigned int row_index)
 {
+        unsigned int i;
+        unsigned int nindex = MAX(row_index, table->nrow) + 1;
+
+        if ( row_index >= table->nrow ) {
+                table->rows = realloc(table->rows, sizeof(*table->rows) * nindex);
+                if ( ! table->rows )
+                        return preludedb_error_from_errno(errno);
+
+                for ( i = table->nrow; i < nindex; i++ )
+                        table->rows[i] = NULL;
+
+                table->nrow = nindex;
+        }
+
         *row = malloc(sizeof(**row));
         if ( ! *row )
                 return preludedb_error_from_errno(errno);
 
+        (*row)->fields = NULL;
+        (*row)->refcount = 1;
         (*row)->table = table;
-        (*row)->res = res;
-
-        prelude_list_init(&(*row)->list);
-        prelude_list_init(&(*row)->field_list);
-
-        prelude_list_add_tail(&table->row_list, &(*row)->list);
+        table->rows[row_index] = *row;
 
         return 0;
 }
 
 
-
-static int preludedb_sql_field_new(preludedb_sql_field_t **field,
-                                   preludedb_sql_row_t *row, int num, const char *value, size_t len)
+void preludedb_sql_row_set_data(preludedb_sql_row_t *row, void *data)
 {
+        row->data = data;
+}
+
+
+void *preludedb_sql_row_get_data(preludedb_sql_row_t *row)
+{
+        return row->data;
+}
+
+
+preludedb_sql_row_t *preludedb_sql_row_ref(preludedb_sql_row_t *row)
+{
+        row->refcount++;
+        preludedb_sql_table_ref(row->table);
+        return row;
+}
+
+
+
+void preludedb_sql_row_destroy(preludedb_sql_row_t *row)
+{
+        unsigned int i;
+
+        if ( --row->refcount != 0 ) {
+                preludedb_sql_table_destroy(row->table);
+                return;
+        }
+
+        _preludedb_plugin_sql_row_destroy(row->table->sql->plugin, row->table->sql->session, row->table, row);
+
+        if ( row->fields ) {
+                for ( i = 0; i < preludedb_sql_table_get_column_count(row->table); i++ ) {
+                        if ( row->fields[i] )
+                                preludedb_sql_field_destroy(row->fields[i]);
+                }
+
+                free(row->fields);
+        }
+
+        free(row);
+}
+
+
+
+int preludedb_sql_row_new_field(preludedb_sql_row_t *row, preludedb_sql_field_t **field,
+                                int num, char *value, size_t len)
+{
+        if ( ! row->fields ) {
+                row->fields = calloc(preludedb_sql_table_get_column_count(row->table), sizeof(**field));
+                if ( ! row->fields )
+                        return preludedb_error_from_errno(errno);
+        }
+
+        if ( ! value ) {
+                *field = NULL;
+                row->fields[num] = SQL_NULL_FIELD;
+                return 0;
+        }
+
         *field = malloc(sizeof(**field));
-        if ( ! field )
+        if ( ! *field )
                 return preludedb_error_from_errno(errno);
 
+        (*field)->refcount = 1;
         (*field)->row = row;
-        (*field)->num = num;
         (*field)->value = value;
         (*field)->len = len;
+        row->fields[num] = *field;
 
-        prelude_list_init(&(*field)->list);
+        return 1;
+}
 
-        prelude_list_add_tail(&row->field_list, &(*field)->list);
 
-        return 0;
+
+preludedb_sql_field_t *preludedb_sql_field_ref(preludedb_sql_field_t *field)
+{
+        field->refcount++;
+        preludedb_sql_row_ref(field->row);
+
+        return field;
+}
+
+
+void preludedb_sql_field_destroy(preludedb_sql_field_t *field)
+{
+        if ( field == SQL_NULL_FIELD )
+                return;
+
+        if ( --field->refcount != 0 ) {
+                preludedb_sql_row_destroy(field->row);
+                return;
+        }
+
+        _preludedb_plugin_sql_field_destroy(field->row->table->sql->plugin, field->row->table->sql->session,
+                                            field->row->table, field->row, field);
+
+        free(field);
 }
 
 
@@ -772,7 +899,7 @@ static int preludedb_sql_field_new(preludedb_sql_field_t **field,
  */
 const char *preludedb_sql_table_get_column_name(preludedb_sql_table_t *table, unsigned int column_num)
 {
-        return _preludedb_plugin_sql_get_column_name(table->sql->plugin, table->sql->session, table->res, column_num);
+        return _preludedb_plugin_sql_get_column_name(table->sql->plugin, table->sql->session, table, column_num);
 }
 
 
@@ -788,7 +915,7 @@ const char *preludedb_sql_table_get_column_name(preludedb_sql_table_t *table, un
  */
 int preludedb_sql_table_get_column_num(preludedb_sql_table_t *table, const char *column_name)
 {
-        return _preludedb_plugin_sql_get_column_num(table->sql->plugin, table->sql->session, table->res, column_name);
+        return _preludedb_plugin_sql_get_column_num(table->sql->plugin, table->sql->session, table, column_name);
 }
 
 
@@ -803,22 +930,99 @@ int preludedb_sql_table_get_column_num(preludedb_sql_table_t *table, const char 
  */
 unsigned int preludedb_sql_table_get_column_count(preludedb_sql_table_t *table)
 {
-        return _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table->res);
+        return _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table);
 }
 
 
 
 /**
- * preludedb_sql_table_get_column_count:
+ * preludedb_sql_table_get_row_count:
  * @table: Pointer to a table object.
  *
- * Get the the number of columns.
+ * Get the the number of row in the table.
+ * Depending on the database backend, this might require retrieving all rows.
  *
  * Returns: the number of columns.
  */
 unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
 {
-        return _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table->res);
+        int ret;
+        preludedb_sql_row_t *row;
+
+        if ( table->done )
+                return table->nrow;
+
+        ret = _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table);
+        if ( ret >= 0 || (ret < 0 && prelude_error_get_code(ret) != ENOTSUP) )
+                return ret;
+
+        prelude_log(PRELUDE_LOG_WARN, "SQL plugin '%s' emulate row-count before fetch: this is a slow operation.\n", preludedb_sql_get_type(table->sql));
+
+        do {
+                ret = preludedb_sql_table_fetch_row(table, &row);
+        } while ( ret > 0 );
+
+        return table->nrow;
+}
+
+
+
+/**
+ * preludedb_sql_table_get_fetched_row_count:
+ * @table: Pointer to a table object.
+ *
+ * Get the the number of row already retrieved in the table.
+ *
+ * Returns: the number of columns.
+ */
+ unsigned int preludedb_sql_table_get_fetched_row_count(preludedb_sql_table_t *table)
+{
+        return table->nrow;
+}
+
+
+
+/**
+ * preludedb_sql_table_get_row:
+ * @table: Pointer to a table object.
+ * @row: Pointer to the row object where the result will be stored.
+ *
+ * Fetch the next table's row.
+ *
+ * Returns: 1 if the table returns a new row, 0 if there is no more rows to fetch or
+ * a negative value if an error occur.
+ */
+int preludedb_sql_table_get_row(preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row)
+{
+        int ret;
+
+        if ( row_index == (unsigned int) -1 )
+                row_index = table->nrow;
+
+        if ( row_index < table->nrow && table->rows[row_index] ) {
+                *row = table->rows[row_index];
+                return 1;
+        }
+
+        if ( table->done ) {
+                if ( row_index == table->nrow )
+                        return 0;
+
+                return preludedb_error_verbose(PRELUDEDB_ERROR_INDEX, "Invalid row '%u'", row_index);
+        }
+
+        ret = _preludedb_plugin_sql_fetch_row(table->sql->plugin, table->sql->session, table, row_index, row);
+        if ( ret < 0 ) {
+                update_sql_from_errno(table->sql, ret);
+                return ret;
+        }
+
+        if ( ret == 0 ) {
+                table->done = TRUE;
+                return 0;
+        }
+
+        return 1;
 }
 
 
@@ -835,23 +1039,53 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
  */
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row)
 {
-        int ret;
-        void *res;
+        return preludedb_sql_table_get_row(table, -1, row);
+}
 
-        ret = _preludedb_plugin_sql_fetch_row(table->sql->plugin, table->sql->session, table->res, &res);
+
+
+/**
+ * preludedb_sql_row_get_field:
+ * @row: Pointer to a row object.
+ * @column_num: The column number of the field to be fetched.
+ * @field: Pointer to the field object where the result will be stored.
+ *
+ * Fetch the field of column @column_num
+ *
+ * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
+ * a negative value if an error occur.
+ */
+int preludedb_sql_row_get_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field)
+{
+        int ret;
+        unsigned int ccount;
+
+        ccount = preludedb_sql_table_get_column_count(row->table);
+        if ( column_num < 0 )
+                column_num = ccount - (-column_num);
+
+        if ( column_num >= ccount )
+                return prelude_error_verbose(PRELUDEDB_ERROR_INDEX, "Attempt to access invalid column `%d` (max is `%d`)", column_num, ccount);
+
+        if ( column_num < ccount && row->fields && row->fields[column_num] ) {
+                *field = row->fields[column_num];
+                if ( *field == SQL_NULL_FIELD ) {
+                        *field = NULL;
+                        return 0;
+                }
+
+                return 1;
+        }
+
+
+        ret = _preludedb_plugin_sql_fetch_field(row->table->sql->plugin,
+                                                row->table->sql->session, row->table, row, column_num, field);
         if ( ret < 0 ) {
-                update_sql_from_errno(table->sql, ret);
+                update_sql_from_errno(row->table->sql, ret);
                 return ret;
         }
 
-        if ( ret == 0 )
-                return 0;
-
-        ret = preludedb_sql_row_new(row, table, res);
-        if ( ret < 0 )
-                return ret;
-
-        return 1;
+        return ret;
 }
 
 
@@ -862,33 +1096,39 @@ int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_ro
  * @column_num: The column number of the field to be fetched.
  * @field: Pointer to the field object where the result will be stored.
  *
+ * DEPRECATED: use preludedb_sql_row_get_field() instead.
  * Fetch the field of column @column_num
  *
  * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
  * a negative value if an error occur.
  */
-int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_num,
-                                  preludedb_sql_field_t **field)
+int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field)
 {
-        const char *value;
-        size_t len;
-        int ret;
+        return preludedb_sql_row_get_field(row, column_num, field);
+}
 
-        ret = _preludedb_plugin_sql_fetch_field(row->table->sql->plugin,
-                                                row->table->sql->session, row->table->res, row->res, column_num, &value, &len);
-        if ( ret < 0 ) {
-                update_sql_from_errno(row->table->sql, ret);
-                return ret;
-        }
 
-        if ( ret == 0 )
-                return 0;
+/**
+ * preludedb_sql_row_get_field_by_name:
+ * @row: Pointer to a row object.
+ * @column_name: The column name of the field to be fetched.
+ * @field: Pointer to the field object where the result will be stored.
+ *
+ * Fetch the field of column @column_name
+ *
+ * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
+ * a negative value if an error occur.
+ */
+int preludedb_sql_row_get_field_by_name(preludedb_sql_row_t *row, const char *column_name,
+                                        preludedb_sql_field_t **field)
+{
+        int column_num;
 
-        ret = preludedb_sql_field_new(field, row, column_num, value, len);
-        if ( ret < 0 )
-                return ret;
+        column_num = preludedb_sql_table_get_column_num(row->table, column_name);
+        if ( column_num < 0 )
+                return column_num;
 
-        return 1;
+        return preludedb_sql_row_get_field(row, column_num, field);
 }
 
 
@@ -899,6 +1139,7 @@ int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_
  * @column_name: The column name of the field to be fetched.
  * @field: Pointer to the field object where the result will be stored.
  *
+ * DEPRECATED: use preludedb_sql_row_get_field_by_name() instead.
  * Fetch the field of column @column_name
  *
  * Returns: 1 if the row returns a non-empty field, 0 if it returns an empty field, or
@@ -907,15 +1148,8 @@ int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, unsigned int column_
 int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *column_name,
                                           preludedb_sql_field_t **field)
 {
-        int column_num;
-
-        column_num = preludedb_sql_table_get_column_num(row->table, column_name);
-        if ( column_num < 0 )
-                return column_num;
-
-        return preludedb_sql_row_fetch_field(row, column_num, field);
+        return preludedb_sql_row_get_field_by_name(row, column_name, field);
 }
-
 
 
 /**
@@ -926,7 +1160,7 @@ int preludedb_sql_row_fetch_field_by_name(preludedb_sql_row_t *row, const char *
  *
  * Returns: field value.
  */
-const char *preludedb_sql_field_get_value(preludedb_sql_field_t *field)
+char *preludedb_sql_field_get_value(preludedb_sql_field_t *field)
 {
         return field->value;
 }

@@ -22,6 +22,7 @@
 *****/
 
 #define inline 
+#define _PRELUDE_DEPRECATED
 
 %{
 #include <libprelude/prelude.h>
@@ -101,6 +102,7 @@ typedef enum {
 };
 
 
+%include <libprelude/prelude-macros.h>
 %include "preludedb-sql-settings.h"
 %include "preludedb-sql.h"
 %include "preludedb.h"

@@ -49,7 +49,9 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_get_row_count_func_t get_row_count;
         preludedb_plugin_sql_get_column_name_func_t get_column_name;
         preludedb_plugin_sql_get_column_num_func_t get_column_num;
-        preludedb_plugin_sql_resource_destroy_func_t resource_destroy;
+        preludedb_plugin_sql_field_destroy_func_t field_destroy;
+        preludedb_plugin_sql_row_destroy_func_t row_destroy;
+        preludedb_plugin_sql_table_destroy_func_t table_destroy;
         preludedb_plugin_sql_fetch_row_func_t fetch_row;
         preludedb_plugin_sql_fetch_field_func_t fetch_field;
         preludedb_plugin_sql_build_time_constraint_string_func_t build_time_constraint_string;
@@ -179,7 +181,7 @@ void preludedb_plugin_sql_set_query_func(preludedb_plugin_sql_t *plugin, prelude
 }
 
 
-int _preludedb_plugin_sql_query(preludedb_plugin_sql_t *plugin, void *session, const char *query, void **res)
+int _preludedb_plugin_sql_query(preludedb_plugin_sql_t *plugin, void *session, const char *query, preludedb_sql_table_t **res)
 {
         return plugin->query(session, query, res);
 }
@@ -191,9 +193,9 @@ void preludedb_plugin_sql_set_get_column_count_func(preludedb_plugin_sql_t *plug
 }
 
 
-unsigned int _preludedb_plugin_sql_get_column_count(preludedb_plugin_sql_t *plugin, void *session, void *resource)
+unsigned int _preludedb_plugin_sql_get_column_count(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table)
 {
-        return plugin->get_column_count(session, resource);
+        return plugin->get_column_count(session, table);
 }
 
 
@@ -203,9 +205,12 @@ void preludedb_plugin_sql_set_get_row_count_func(preludedb_plugin_sql_t *plugin,
 }
 
 
-unsigned int _preludedb_plugin_sql_get_row_count(preludedb_plugin_sql_t *plugin, void *session, void *resource)
+unsigned int _preludedb_plugin_sql_get_row_count(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table)
 {
-        return plugin->get_row_count(session, resource);
+        if ( ! plugin->get_row_count )
+                return PRELUDEDB_ENOTSUP("get_row_count");
+
+        return plugin->get_row_count(session, table);
 }
 
 
@@ -215,9 +220,9 @@ void preludedb_plugin_sql_set_get_column_name_func(preludedb_plugin_sql_t *plugi
 }
 
 
-const char *_preludedb_plugin_sql_get_column_name(preludedb_plugin_sql_t *plugin, void *session, void *resource, unsigned int column_num)
+const char *_preludedb_plugin_sql_get_column_name(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table, unsigned int column_num)
 {
-        return plugin->get_column_name(session, resource, column_num);
+        return plugin->get_column_name(session, table, column_num);
 }
 
 
@@ -227,21 +232,47 @@ void preludedb_plugin_sql_set_get_column_num_func(preludedb_plugin_sql_t *plugin
 }
 
 
-int _preludedb_plugin_sql_get_column_num(preludedb_plugin_sql_t *plugin, void *session, void *resource, const char *column_name)
+int _preludedb_plugin_sql_get_column_num(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table, const char *column_name)
 {
-        return plugin->get_column_num(session, resource, column_name);
+        return plugin->get_column_num(session, table, column_name);
 }
 
 
-void preludedb_plugin_sql_set_resource_destroy_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_resource_destroy_func_t func)
+void preludedb_plugin_sql_set_field_destroy_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_field_destroy_func_t func)
 {
-        plugin->resource_destroy = func;
+        plugin->field_destroy = func;
 }
 
 
-void _preludedb_plugin_sql_resource_destroy(preludedb_plugin_sql_t *plugin, void *session, void *resource)
+void _preludedb_plugin_sql_field_destroy(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row, preludedb_sql_field_t *field)
 {
-        plugin->resource_destroy(session, resource);
+        if ( plugin->field_destroy )
+                plugin->field_destroy(session, table, row, field);
+}
+
+
+void preludedb_plugin_sql_set_row_destroy_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_row_destroy_func_t func)
+{
+        plugin->row_destroy = func;
+}
+
+
+void _preludedb_plugin_sql_row_destroy(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row)
+{
+        if ( plugin->row_destroy )
+                plugin->row_destroy(session, table, row);
+}
+
+
+void preludedb_plugin_sql_set_table_destroy_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_table_destroy_func_t func)
+{
+        plugin->table_destroy = func;
+}
+
+
+void _preludedb_plugin_sql_table_destroy(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table)
+{
+        plugin->table_destroy(session, table);
 }
 
 
@@ -251,12 +282,12 @@ void preludedb_plugin_sql_set_fetch_row_func(preludedb_plugin_sql_t *plugin, pre
 }
 
 
-int _preludedb_plugin_sql_fetch_row(preludedb_plugin_sql_t *plugin, void *session, void *resource, void **row)
+int _preludedb_plugin_sql_fetch_row(preludedb_plugin_sql_t *plugin, void *session, preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row)
 {
         if ( ! plugin->fetch_row )
-                PRELUDEDB_ENOTSUP("fetch_row");
+                return PRELUDEDB_ENOTSUP("fetch_row");
 
-        return plugin->fetch_row(session, resource, row);
+        return plugin->fetch_row(session, table, row_index, row);
 }
 
 
@@ -267,13 +298,13 @@ void preludedb_plugin_sql_set_fetch_field_func(preludedb_plugin_sql_t *plugin, p
 
 
 int _preludedb_plugin_sql_fetch_field(preludedb_plugin_sql_t *plugin,
-                                      void *session, void *resource, void *row,
-                                      unsigned int column_num, const char **value, size_t *len)
+                                      void *session, preludedb_sql_table_t *table, void *row,
+                                      unsigned int column_num, preludedb_sql_field_t **field)
 {
         if ( ! plugin->fetch_field )
                 return PRELUDEDB_ENOTSUP("fetch_field");
 
-        return plugin->fetch_field(session, resource, row, column_num, value, len);
+        return plugin->fetch_field(session, table, row, column_num, field);
 }
 
 

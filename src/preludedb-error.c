@@ -50,7 +50,8 @@ const char *preludedb_strerror(preludedb_error_t error)
                 "Database schema version too recent",
                 "Database schema version invalid",
                 "Cannot load sql plugin",
-                "Cannot load format plugin"
+                "Cannot load format plugin",
+                "Invalid index"
         };
 
         if ( prelude_error_is_verbose(error) )

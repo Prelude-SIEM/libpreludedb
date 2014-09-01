@@ -154,7 +154,7 @@ static int preludedb_autodetect_format(preludedb_t *db)
         if ( ret < 0 )
                 goto error;
 
-        ret = preludedb_sql_row_fetch_field(row, 0, &format_name);
+        ret = preludedb_sql_row_get_field(row, 0, &format_name);
         if ( ret < 0 )
                 goto error;
 
@@ -162,7 +162,7 @@ static int preludedb_autodetect_format(preludedb_t *db)
         if ( ret < 0 )
                 goto error;
 
-        ret = preludedb_sql_row_fetch_field(row, 1, &format_version);
+        ret = preludedb_sql_row_get_field(row, 1, &format_version);
         if ( ret < 0 )
                 goto error;
 
