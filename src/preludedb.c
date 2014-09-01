@@ -781,7 +781,7 @@ unsigned int preludedb_result_values_get_field_count(preludedb_result_values_t *
 
 
 ssize_t preludedb_update_from_list(preludedb_t *db,
-                                   const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
+                                   const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                                    uint64_t *idents, size_t isize)
 {
        if ( ! db->plugin->update_from_list )
@@ -792,7 +792,7 @@ ssize_t preludedb_update_from_list(preludedb_t *db,
 
 
 ssize_t preludedb_update_from_result_idents(preludedb_t *db,
-                                            const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
+                                            const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                                             preludedb_result_idents_t *result)
 {
         if ( ! db->plugin->update_from_result_idents )
@@ -819,7 +819,7 @@ ssize_t preludedb_update_from_result_idents(preludedb_t *db,
  */
 
 int preludedb_update(preludedb_t *db,
-                     const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
+                     const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                      idmef_criteria_t *criteria,
                      preludedb_path_selection_t *order,
                      int limit, int offset)

@@ -1217,7 +1217,8 @@ static int cmd_update(int argc, char **argv)
         int ret, idx, argc2;
         preludedb_t *db;
         int i, j = 0;
-        char **paths, **values;
+        idmef_path_t **paths;
+        idmef_value_t **values;
 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "order",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_order, NULL);
@@ -1233,18 +1234,20 @@ static int cmd_update(int argc, char **argv)
         if ( ret < 0 )
                 return ret;
 
-        paths = malloc((argc - idx) * sizeof(char *));
-        values = malloc((argc - idx) * sizeof(char *));
+        paths = malloc((argc - idx) * sizeof(idmef_path_t *));
+        values = malloc((argc - idx) * sizeof(idmef_value_t *));
 
         for ( i = 0, j = 0; (i + 1) < (argc - idx); i += 2, j++ ) {
-                paths[j] = argv[idx + i];
+                ret = idmef_path_new_fast(&paths[j], argv[idx + i]);
+                if ( ret < 0 )
+                        goto err;
 
-                ret = preludedb_sql_escape(preludedb_get_sql(db), argv[idx + i + 1], &values[j]);
+                ret = idmef_value_new_from_path(&values[j], paths[j], argv[idx + i + 1]);
                 if ( ret < 0 )
                         goto err;
         }
 
-        ret = preludedb_update(db, (const char * const *) paths, (const char * const *) values,
+        ret = preludedb_update(db, (const idmef_path_t * const *) paths, (const idmef_value_t * const *) values,
                                (argc - idx) / 2, criteria, selection, (int) limit, (int) offset);
         free(paths);
 

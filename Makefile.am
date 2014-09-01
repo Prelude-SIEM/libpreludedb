@@ -26,7 +26,7 @@ MAINTAINERCLEANFILES = \
 
 
 bin_SCRIPTS = $(top_builddir)/libpreludedb-config
-distuninstallcheck_listfiles = find . -type f -print | $(GREP) -v 'perl' | $(GREP) -v '3pm' | $(GREP) -v 'egg-info'
+distuninstallcheck_listfiles = find . -type f -print | $(GREP) -v 'perl' | $(GREP) -v '3pm' | $(GREP) -v 'egg-info' | $(GREP) -v 'cpython'
 
 AM_CPPFLAGS = @PCFLAGS@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing @LIBPRELUDE_CFLAGS@
 bin_PROGRAMS = preludedb-admin

@@ -797,6 +797,12 @@ void *preludedb_sql_row_get_data(preludedb_sql_row_t *row)
 }
 
 
+unsigned int preludedb_sql_row_get_field_count(preludedb_sql_row_t *row)
+{
+        return preludedb_sql_table_get_column_count(row->table);
+}
+
+
 preludedb_sql_row_t *preludedb_sql_row_ref(preludedb_sql_row_t *row)
 {
         row->refcount++;

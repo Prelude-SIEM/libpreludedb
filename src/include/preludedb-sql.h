@@ -128,6 +128,7 @@ unsigned int preludedb_sql_table_get_fetched_row_count(preludedb_sql_table_t *ta
 int preludedb_sql_table_get_row(preludedb_sql_table_t *table, unsigned int row_index, preludedb_sql_row_t **row);
 int preludedb_sql_table_fetch_row(preludedb_sql_table_t *table, preludedb_sql_row_t **row);
 
+unsigned int preludedb_sql_row_get_field_count(preludedb_sql_row_t *row);
 int preludedb_sql_row_get_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field);
 int preludedb_sql_row_fetch_field(preludedb_sql_row_t *row, int column_num, preludedb_sql_field_t **field) PRELUDE_DEPRECATED;
 int preludedb_sql_row_get_field_by_name(preludedb_sql_row_t *row, const char *column_name, preludedb_sql_field_t **field);

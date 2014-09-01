@@ -6223,6 +6223,32 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_preludedb_sql_row_get_field_count(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  preludedb_sql_row_t *arg1 = (preludedb_sql_row_t *) 0 ;
+  PyObject * obj0 = 0 ;
+  unsigned int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:preludedb_sql_row_get_field_count",&obj0)) SWIG_fail;
+  {
+    if ( obj0 == Py_None )
+    return NULL;
+    
+    if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb_sql_row, SWIG_POINTER_EXCEPTION|0) )
+    return NULL;
+  }
+  {
+    Py_BEGIN_ALLOW_THREADS
+    result = (unsigned int)preludedb_sql_row_get_field_count(arg1);
+    Py_END_ALLOW_THREADS
+  }
+  resultobj = SWIG_From_unsigned_SS_int((unsigned int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_preludedb_sql_row_get_field(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_sql_row_t *arg1 = (preludedb_sql_row_t *) 0 ;
@@ -10252,6 +10278,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"preludedb_sql_table_get_fetched_row_count", _wrap_preludedb_sql_table_get_fetched_row_count, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_table_get_row", _wrap_preludedb_sql_table_get_row, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_table_fetch_row", _wrap_preludedb_sql_table_fetch_row, METH_VARARGS, NULL},
+	 { (char *)"preludedb_sql_row_get_field_count", _wrap_preludedb_sql_row_get_field_count, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_row_get_field", _wrap_preludedb_sql_row_get_field, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_row_fetch_field", _wrap_preludedb_sql_row_fetch_field, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_row_get_field_by_name", _wrap_preludedb_sql_row_get_field_by_name, METH_VARARGS, NULL},
