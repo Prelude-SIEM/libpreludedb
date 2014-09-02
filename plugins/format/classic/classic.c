@@ -248,6 +248,26 @@ static int classic_get_next_message_ident(void *res, uint64_t *ident)
 
 
 
+static int classic_get_message_ident(void *res, unsigned int row_index, uint64_t *ident)
+{
+        preludedb_sql_row_t *row;
+        preludedb_sql_field_t *field;
+        int ret;
+
+        ret = preludedb_sql_table_get_row(res, row_index, &row);
+        if ( ret <= 0 )
+                return ret;
+
+        ret = preludedb_sql_row_get_field(row, 0, &field);
+        if ( ret <= 0 )
+                return ret;
+
+        ret = preludedb_sql_field_to_uint64(field, ident);
+
+        return (ret < 0) ? ret : 1;
+}
+
+
 static void classic_destroy_message_idents_resource(void *res)
 {
         preludedb_sql_table_destroy(res);
@@ -491,6 +511,29 @@ static int classic_get_next_values(void *res, preludedb_path_selection_t *select
 }
 
 
+static int classic_get_result_values_field(preludedb_result_values_t *results, void *row, preludedb_selected_path_t *selected, idmef_value_t **values)
+{
+        unsigned int cnum;
+
+        cnum = preludedb_selected_path_get_index(selected);
+        if ( cnum < 0 )
+                return cnum;
+
+        return get_value(row, cnum, selected, values);
+}
+
+
+static int classic_get_result_values_row(preludedb_result_values_t *results, unsigned int rnum, void **row)
+{
+        return preludedb_sql_table_get_row(preludedb_result_values_get_data(results), rnum, (preludedb_sql_row_t **) row);
+}
+
+
+static int classic_get_result_values_count(preludedb_result_values_t *results)
+{
+        return preludedb_sql_table_get_row_count(preludedb_result_values_get_data(results));
+}
+
 
 static void classic_destroy_values_resource(void *res)
 {
@@ -540,6 +583,7 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_format_set_get_alert_idents_func(plugin, classic_get_alert_idents);
         preludedb_plugin_format_set_get_heartbeat_idents_func(plugin, classic_get_heartbeat_idents);
         preludedb_plugin_format_set_get_message_ident_count_func(plugin, classic_get_message_ident_count);
+        preludedb_plugin_format_set_get_message_ident_func(plugin, classic_get_message_ident);
         preludedb_plugin_format_set_get_next_message_ident_func(plugin, classic_get_next_message_ident);
         preludedb_plugin_format_set_destroy_message_idents_resource_func(plugin,
                                                                          classic_destroy_message_idents_resource);
@@ -555,6 +599,11 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_format_set_insert_message_func(plugin, classic_insert);
         preludedb_plugin_format_set_get_values_func(plugin, classic_get_values);
         preludedb_plugin_format_set_get_next_values_func(plugin, classic_get_next_values);
+
+        preludedb_plugin_format_set_get_result_values_row_func(plugin, classic_get_result_values_row);
+        preludedb_plugin_format_set_get_result_values_field_func(plugin, classic_get_result_values_field);
+        preludedb_plugin_format_set_get_result_values_count_func(plugin, classic_get_result_values_count);
+
         preludedb_plugin_format_set_destroy_values_resource_func(plugin, classic_destroy_values_resource);
 
         return 0;

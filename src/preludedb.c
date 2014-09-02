@@ -44,6 +44,7 @@
 
 
 struct preludedb {
+        int refcount;
         char *format_version;
         preludedb_sql_t *sql;
         preludedb_plugin_format_t *plugin;
@@ -52,15 +53,15 @@ struct preludedb {
 struct preludedb_result_idents {
         preludedb_t *db;
         void *res;
+        int refcount;
 };
 
 struct preludedb_result_values {
+        int refcount;
         preludedb_t *db;
         preludedb_path_selection_t *selection;
         void *res;
 };
-
-
 
 
 int _preludedb_sql_transaction_start(preludedb_sql_t *sql);
@@ -200,6 +201,11 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 {
         int ret;
 
+        /*
+         * FIXME: format_name, errbuf, are deprecated.
+         */
+        prelude_return_val_if_fail(sql, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         *db = calloc(1, sizeof (**db));
         if ( ! *db ) {
                 ret = preludedb_error_from_errno(errno);
@@ -207,7 +213,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
                 return ret;
         }
 
-        (*db)->sql = sql;
+        (*db)->refcount = 1;
+        (*db)->sql = preludedb_sql_ref(sql);
 
         if ( format_name )
                 ret = preludedb_set_format(*db, format_name);
@@ -229,6 +236,16 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
 
 
 
+
+preludedb_t *preludedb_ref(preludedb_t *db)
+{
+        db->refcount++;
+        return db;
+}
+
+
+
+
 /**
  * preludedb_destroy:
  * @db: Pointer to a db object.
@@ -237,6 +254,9 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
  */
 void preludedb_destroy(preludedb_t *db)
 {
+        if ( --db->refcount != 0 )
+                return;
+
         preludedb_sql_destroy(db->sql);
         free(db->format_version);
         free(db);
@@ -314,6 +334,8 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
  * Build an error message from the error code given as argument and from
  * the sql plugin error string (if any) if the error code is db related.
  *
+ * FIXME: deprecated.
+ *
  * Returns: a pointer to the error string or NULL if an error occured.
  */
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size)
@@ -348,6 +370,13 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 
 
 
+preludedb_result_idents_t *preludedb_result_idents_ref(preludedb_result_idents_t *results)
+{
+        results->refcount++;
+        return results;
+}
+
+
 /**
  * preludedb_result_idents_destroy:
  * @result: Pointer to an idents result object.
@@ -356,7 +385,12 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
  */
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 {
+        if ( --result->refcount != 0 )
+                return;
+
         result->db->plugin->destroy_message_idents_resource(result->res);
+        preludedb_destroy(result->db);
+
         free(result);
 }
 
@@ -377,6 +411,37 @@ int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t
 }
 
 
+
+/**
+ * preludedb_result_idents_get:
+ * @result: Pointer to an idents result object.
+ * @row_index: Row index to retrieve the ident from.
+ * @ident: Pointer to an ident where the next ident will be stored.
+ *
+ * Retrieve the ident located at @row_index from the idents result object.
+ *
+ * Returns: 1 if an ident is available, 0 if there is no more idents available or
+ * a negative value if an error occur.
+ */
+int preludedb_result_idents_get(preludedb_result_idents_t *result, unsigned int row_index, uint64_t *ident)
+{
+        if ( ! result->db->plugin->get_message_ident )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement ident retrieval by index");
+
+        return result->db->plugin->get_message_ident(result->res, row_index, ident);
+}
+
+
+unsigned int preludedb_result_idents_get_count(preludedb_result_idents_t *result)
+{
+        if ( ! result->db->plugin->get_message_ident_count )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement ident count retrieval");
+
+        return result->db->plugin->get_message_ident_count(result->res);
+}
+
+
+
 /**
  * preludedb_result_values_destroy:
  * @result: Pointer to a result values object.
@@ -385,10 +450,22 @@ int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t
  */
 void preludedb_result_values_destroy(preludedb_result_values_t *result)
 {
+        if ( --result->refcount != 0 )
+                return;
+
         result->db->plugin->destroy_values_resource(result->res);
+        preludedb_path_selection_destroy(result->selection);
+        preludedb_destroy(result->db);
+
         free(result);
 }
 
+
+
+preludedb_path_selection_t *preludedb_result_values_get_selection(preludedb_result_values_t *result)
+{
+        return result->selection;
+}
 
 
 /**
@@ -403,7 +480,29 @@ void preludedb_result_values_destroy(preludedb_result_values_t *result)
  */
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values)
 {
+        if ( ! result->db->plugin->get_next_values )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value iteration");
+
         return result->db->plugin->get_next_values(result->res, result->selection, values);
+}
+
+
+
+int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned int rownum, void **row)
+{
+        if ( ! result->db->plugin->get_result_values_row )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
+
+        return result->db->plugin->get_result_values_row(result, rownum, row);
+}
+
+
+int preludedb_result_values_get_field(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected, idmef_value_t **field)
+{
+        if ( ! result->db->plugin->get_result_values_field )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
+
+        return result->db->plugin->get_result_values_field(result, row, selected, field);
 }
 
 
@@ -425,11 +524,14 @@ preludedb_get_message_idents(preludedb_t *db,
         if ( ! *result )
                 return preludedb_error_from_errno(errno);
 
-        (*result)->db = db;
-
         ret = get_idents(db->sql, criteria, limit, offset, order, &(*result)->res);
-        if ( ret <= 0 )
+        if ( ret <= 0 ) {
                 free(*result);
+                return ret;
+        }
+
+        (*result)->refcount++;
+        (*result)->db = preludedb_ref(db);
 
         return ret;
 }
@@ -633,14 +735,48 @@ int preludedb_get_values(preludedb_t *db,
         if ( ! *result )
                 return preludedb_error_from_errno(errno);
 
-        (*result)->db = db;
-        (*result)->selection = path_selection;
-
         ret = db->plugin->get_values(db->sql, path_selection, criteria, distinct, limit, offset, &(*result)->res);
-        if ( ret <= 0 )
+        if ( ret <= 0 ) {
                 free(*result);
+                return ret;
+        }
+
+        (*result)->refcount = 1;
+        (*result)->db = preludedb_ref(db);
+        (*result)->selection = preludedb_path_selection_ref(path_selection);
 
         return ret;
+}
+
+
+
+void *preludedb_result_values_get_data(preludedb_result_values_t *results)
+{
+        return results->res;
+}
+
+
+
+int preludedb_result_values_get_count(preludedb_result_values_t *results)
+{
+        if ( ! results->db->plugin->get_result_values_count )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value count retrieval");
+
+        return results->db->plugin->get_result_values_count(results);
+}
+
+
+
+preludedb_result_values_t *preludedb_result_values_ref(preludedb_result_values_t *results)
+{
+        results->refcount++;
+        return results;
+}
+
+
+unsigned int preludedb_result_values_get_field_count(preludedb_result_values_t *results)
+{
+        return preludedb_path_selection_get_count(results->selection);
 }
 
 

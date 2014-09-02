@@ -45,6 +45,7 @@ typedef int (*preludedb_plugin_format_get_heartbeat_idents_func_t)(preludedb_sql
                                                                    void **res);
 
 typedef size_t (*preludedb_plugin_format_get_message_ident_count_func_t)(void *res);
+typedef int (*preludedb_plugin_format_get_message_ident_func_t)(void *res, unsigned int row_index, uint64_t *ident);
 typedef int (*preludedb_plugin_format_get_next_message_ident_func_t)(void *res, uint64_t *ident);
 typedef void (*preludedb_plugin_format_destroy_message_idents_resource_func_t)(void *res);
 typedef int (*preludedb_plugin_format_get_alert_func_t)(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
@@ -58,6 +59,13 @@ typedef ssize_t (*preludedb_plugin_format_delete_heartbeat_from_list_func_t)(pre
 typedef ssize_t (*preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t)(preludedb_sql_t *sql,
                                                                                       preludedb_result_idents_t *results);
 typedef int (*preludedb_plugin_format_insert_message_func_t)(preludedb_sql_t *sql, idmef_message_t *message);
+
+typedef int (*preludedb_plugin_format_get_result_values_count_func_t)(preludedb_result_values_t *results);
+
+typedef int (*preludedb_plugin_format_get_result_values_field_func_t)(preludedb_result_values_t *results, void *row, preludedb_selected_path_t *selected, idmef_value_t **value);
+
+typedef int (*preludedb_plugin_format_get_result_values_row_func_t)(preludedb_result_values_t *results, unsigned int rownum, void **row);
+
 typedef int (*preludedb_plugin_format_get_values_func_t)(preludedb_sql_t *sql, preludedb_path_selection_t *selection,
                                                          idmef_criteria_t *criteria, int distinct, int limit, int offset, void **res);
 
@@ -84,6 +92,9 @@ void preludedb_plugin_format_set_get_heartbeat_idents_func(preludedb_plugin_form
 
 void preludedb_plugin_format_set_get_message_ident_count_func(preludedb_plugin_format_t *plugin,
                                                               preludedb_plugin_format_get_message_ident_count_func_t func);
+
+void preludedb_plugin_format_set_get_message_ident_func(preludedb_plugin_format_t *plugin,
+                                                        preludedb_plugin_format_get_message_ident_func_t func);
 
 void preludedb_plugin_format_set_get_next_message_ident_func(preludedb_plugin_format_t *plugin,
                                                              preludedb_plugin_format_get_next_message_ident_func_t func);
@@ -132,6 +143,15 @@ void preludedb_plugin_format_set_get_values_func(preludedb_plugin_format_t *plug
 
 void preludedb_plugin_format_set_get_next_values_func(preludedb_plugin_format_t *plugin,
                                                       preludedb_plugin_format_get_next_values_func_t func);
+
+void preludedb_plugin_format_set_get_result_values_count_func(preludedb_plugin_format_t *plugin,
+                                                              preludedb_plugin_format_get_result_values_count_func_t func);
+
+void preludedb_plugin_format_set_get_result_values_row_func(preludedb_plugin_format_t *plugin,
+                                                            preludedb_plugin_format_get_result_values_row_func_t func);
+
+void preludedb_plugin_format_set_get_result_values_field_func(preludedb_plugin_format_t *plugin,
+                                                              preludedb_plugin_format_get_result_values_field_func_t func);
 
 void preludedb_plugin_format_set_update_func(preludedb_plugin_format_t *plugin,
                                              preludedb_plugin_format_update_func_t func);

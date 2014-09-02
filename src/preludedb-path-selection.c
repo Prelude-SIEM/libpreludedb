@@ -35,14 +35,14 @@
 #include "preludedb-path-selection.h"
 
 struct preludedb_selected_path {
-        prelude_list_t list;
         idmef_path_t *path;
         preludedb_selected_path_flags_t flags;
+        unsigned int position;
 };
 
 struct preludedb_path_selection {
-        prelude_list_t list;
-        size_t count;
+        preludedb_selected_path_t **selecteds;
+        unsigned int count;
         int refcount;
 };
 
@@ -213,6 +213,22 @@ preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_sele
 }
 
 
+int preludedb_selected_path_get_index(preludedb_selected_path_t *selected)
+{
+        return selected->position;
+}
+
+
+int preludedb_path_selection_get_selected(preludedb_path_selection_t *selection, preludedb_selected_path_t **selected, unsigned int index)
+{
+        if ( index >= selection->count )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_INDEX, "Invalid index '%u' for path selection", index);
+
+        *selected = selection->selecteds[index];
+        return 1;
+}
+
+
 
 int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
 {
@@ -220,9 +236,9 @@ int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
         if ( ! *path_selection )
                 return preludedb_error_from_errno(errno);
 
+        (*path_selection)->selecteds = NULL;
         (*path_selection)->count = 0;
         (*path_selection)->refcount = 1;
-        prelude_list_init(&(*path_selection)->list);
 
         return 0;
 }
@@ -231,17 +247,15 @@ int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
 
 void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection)
 {
-        prelude_list_t *ptr, *next;
-        preludedb_selected_path_t *selected_path;
+        unsigned int i;
 
         if ( --path_selection->refcount != 0 )
                 return;
 
-        prelude_list_for_each_safe(&path_selection->list, ptr, next) {
-                selected_path = prelude_list_entry(ptr, preludedb_selected_path_t, list);
-                preludedb_selected_path_destroy(selected_path);
-        }
+        for ( i = 0; i < path_selection->count; i++ )
+                preludedb_selected_path_destroy(path_selection->selecteds[i]);
 
+        free(path_selection->selecteds);
         free(path_selection);
 }
 
@@ -258,8 +272,13 @@ preludedb_path_selection_t *preludedb_path_selection_ref(preludedb_path_selectio
 void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
                                   preludedb_selected_path_t *selected_path)
 {
-        path_selection->count++;
-        prelude_list_add_tail(&path_selection->list, &selected_path->list);
+        selected_path->position = path_selection->count++;
+
+        path_selection->selecteds = realloc(path_selection->selecteds, sizeof(*path_selection->selecteds) * path_selection->count);
+        if ( ! path_selection->selecteds )
+                return;
+
+        path_selection->selecteds[selected_path->position] = selected_path;
 }
 
 
@@ -267,12 +286,23 @@ void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
 preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
                                                              preludedb_selected_path_t *selected_path)
 {
-        return prelude_list_get_next(&path_selection->list, selected_path, preludedb_selected_path_t, list);
+        int ret;
+        unsigned int pos = 0;
+        preludedb_selected_path_t *selected;
+
+        if ( selected_path )
+                pos = selected_path->position + 1;
+
+        ret = preludedb_path_selection_get_selected(path_selection, &selected, pos);
+        if ( ret <= 0 )
+                return NULL;
+
+        return selected;
 }
 
 
 
-size_t preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection)
+unsigned int preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection)
 {
         return path_selection->count;
 }

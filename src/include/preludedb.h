@@ -51,10 +51,24 @@ typedef enum {
 
 #define PRELUDEDB_ERRBUF_SIZE 512
 
+int preludedb_result_values_get_count(preludedb_result_values_t *results);
+
+void *preludedb_result_values_get_data(preludedb_result_values_t *results);
+
+int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned int rownum, void **row);
+
+int preludedb_result_values_get_field(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected, idmef_value_t **field);
+
+unsigned int preludedb_result_values_get_field_count(preludedb_result_values_t *results);
+
+preludedb_path_selection_t *preludedb_result_values_get_selection(preludedb_result_values_t *result);
+
 int preludedb_init(void);
 void preludedb_deinit(void);
 
 int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_name, char *errbuf, size_t size);
+
+preludedb_t *preludedb_ref(preludedb_t *db);
 
 void preludedb_destroy(preludedb_t *db);
 
@@ -66,12 +80,15 @@ int preludedb_set_format(preludedb_t *db, const char *format_name);
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db);
 
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result);
+int preludedb_result_idents_get(preludedb_result_idents_t *result, unsigned int row_index, uint64_t *ident);
 int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident);
+unsigned int preludedb_result_idents_get_count(preludedb_result_idents_t *result);
+preludedb_result_idents_t *preludedb_result_idents_ref(preludedb_result_idents_t *results);
 
 void preludedb_result_values_destroy(preludedb_result_values_t *result);
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values);
 
-char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size);
+char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size) PRELUDE_DEPRECATED;
 
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message);
 
@@ -98,6 +115,8 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident);
 ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t isize);
 
 ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result);
+
+preludedb_result_values_t *preludedb_result_values_ref(preludedb_result_values_t *results);
 
 int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selection,
                          idmef_criteria_t *criteria, prelude_bool_t distinct, int limit, int offset,

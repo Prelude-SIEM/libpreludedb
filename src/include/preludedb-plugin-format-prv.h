@@ -33,6 +33,7 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_get_alert_idents_func_t get_alert_idents;
         preludedb_plugin_format_get_heartbeat_idents_func_t get_heartbeat_idents;
         preludedb_plugin_format_get_message_ident_count_func_t get_message_ident_count;
+        preludedb_plugin_format_get_message_ident_func_t get_message_ident;
         preludedb_plugin_format_get_next_message_ident_func_t get_next_message_ident;
         preludedb_plugin_format_destroy_message_idents_resource_func_t destroy_message_idents_resource;
         preludedb_plugin_format_get_alert_func_t get_alert;
@@ -45,6 +46,9 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_delete_heartbeat_from_result_idents_func_t delete_heartbeat_from_result_idents;
         preludedb_plugin_format_insert_message_func_t insert_message;
         preludedb_plugin_format_get_values_func_t get_values;
+        preludedb_plugin_format_get_result_values_count_func_t get_result_values_count;
+        preludedb_plugin_format_get_result_values_row_func_t get_result_values_row;
+        preludedb_plugin_format_get_result_values_field_func_t get_result_values_field;
         preludedb_plugin_format_get_next_values_func_t get_next_values;
         preludedb_plugin_format_destroy_values_resource_func_t destroy_values_resource;
         preludedb_plugin_format_update_func_t update;

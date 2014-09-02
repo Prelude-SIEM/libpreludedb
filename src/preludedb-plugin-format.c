@@ -57,6 +57,13 @@ void preludedb_plugin_format_set_get_message_ident_count_func(preludedb_plugin_f
 }
 
 
+void preludedb_plugin_format_set_get_message_ident_func(preludedb_plugin_format_t *plugin,
+                                                        preludedb_plugin_format_get_message_ident_func_t func)
+{
+        plugin->get_message_ident = func;
+}
+
+
 void preludedb_plugin_format_set_get_next_message_ident_func(preludedb_plugin_format_t *plugin,
                                                              preludedb_plugin_format_get_next_message_ident_func_t func)
 {
@@ -137,6 +144,27 @@ void preludedb_plugin_format_set_get_values_func(preludedb_plugin_format_t *plug
                                                  preludedb_plugin_format_get_values_func_t func)
 {
         plugin->get_values = func;
+}
+
+
+void preludedb_plugin_format_set_get_result_values_count_func(preludedb_plugin_format_t *plugin,
+                                                              preludedb_plugin_format_get_result_values_count_func_t func)
+{
+        plugin->get_result_values_count = func;
+}
+
+
+void preludedb_plugin_format_set_get_result_values_field_func(preludedb_plugin_format_t *plugin,
+                                                         preludedb_plugin_format_get_result_values_field_func_t func)
+{
+        plugin->get_result_values_field = func;
+}
+
+
+void preludedb_plugin_format_set_get_result_values_row_func(preludedb_plugin_format_t *plugin,
+                                                            preludedb_plugin_format_get_result_values_row_func_t func)
+{
+        plugin->get_result_values_row = func;
 }
 
 
