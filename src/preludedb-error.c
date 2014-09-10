@@ -62,7 +62,7 @@ const char *preludedb_strerror(preludedb_error_t error)
 
                 code = prelude_error_get_code(error);
                 if ( code >= sizeof(error_strings) / sizeof(*error_strings) )
-                        return NULL;
+                        return "Unknown error code";
 
                 return error_strings[code];
         }
