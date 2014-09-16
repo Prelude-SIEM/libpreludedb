@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2002-2014 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,6 +59,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module fread-tests:
   # Code from module fwrite-tests:
   # Code from module getpagesize:
+  # Code from module gettimeofday:
+  # Code from module gettimeofday-tests:
   # Code from module havelib:
   # Code from module include_next:
   # Code from module intprops:
@@ -68,11 +70,13 @@ AC_DEFUN([gl_EARLY],
   # Code from module inttypes-tests:
   # Code from module lock:
   # Code from module lock-tests:
+  # Code from module malloc-posix:
   # Code from module memchr:
   # Code from module memchr-tests:
   # Code from module msvc-inval:
   # Code from module multiarch:
   # Code from module size_max:
+  # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
@@ -87,12 +91,16 @@ AC_DEFUN([gl_EARLY],
   # Code from module stdint-tests:
   # Code from module stdio:
   # Code from module stdio-tests:
-  # Code from module strdup:
+  # Code from module stdlib:
+  # Code from module stdlib-tests:
+  # Code from module strdup-posix:
   # Code from module string:
   # Code from module string-tests:
   # Code from module strndup:
   # Code from module strnlen:
   # Code from module strnlen-tests:
+  # Code from module sys_time:
+  # Code from module sys_time-tests:
   # Code from module sys_types:
   # Code from module sys_types-tests:
   # Code from module test-framework-sh:
@@ -142,8 +150,19 @@ AC_DEFUN([gl_INIT],
   if test $REPLACE_ITOLD = 1; then
     AC_LIBOBJ([itold])
   fi
+  gl_FUNC_GETTIMEOFDAY
+  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
+    AC_LIBOBJ([gettimeofday])
+    gl_PREREQ_GETTIMEOFDAY
+  fi
+  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
+  gl_FUNC_MALLOC_POSIX
+  if test $REPLACE_MALLOC = 1; then
+    AC_LIBOBJ([malloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_FUNC_MEMCHR
   if test $HAVE_MEMCHR = 0 || test $REPLACE_MEMCHR = 1; then
     AC_LIBOBJ([memchr])
@@ -159,8 +178,9 @@ AC_DEFUN([gl_INIT],
   gl_STDDEF_H
   gl_STDINT_H
   gl_STDIO_H
-  gl_FUNC_STRDUP
-  if test $ac_cv_func_strdup = no; then
+  gl_STDLIB_H
+  gl_FUNC_STRDUP_POSIX
+  if test $ac_cv_func_strdup = no || test $REPLACE_STRDUP = 1; then
     AC_LIBOBJ([strdup])
     gl_PREREQ_STRDUP
   fi
@@ -177,6 +197,8 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_STRNLEN
   fi
   gl_STRING_MODULE_INDICATOR([strnlen])
+  gl_HEADER_SYS_TIME_H
+  AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_THREADLIB
@@ -187,6 +209,7 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_TIME_R
   fi
   gl_TIME_MODULE_INDICATOR([time_r])
+  gl_UNISTD_H
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
@@ -267,7 +290,6 @@ changequote([, ])dnl
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
   gl_THREAD
-  gl_UNISTD_H
   gl_YIELD
   m4_popdef([gl_MODULE_INDICATOR_CONDITION])
   m4_ifval(gltests_LIBSOURCES_LIST, [
@@ -362,6 +384,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/config.rpath
+  build-aux/snippet/_Noreturn.h
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
@@ -371,10 +394,12 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/float+.h
   lib/float.c
   lib/float.in.h
+  lib/gettimeofday.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
   lib/itold.c
+  lib/malloc.c
   lib/memchr.c
   lib/memchr.valgrind
   lib/printf-args.c
@@ -386,13 +411,17 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/stddef.in.h
   lib/stdint.in.h
   lib/stdio.in.h
+  lib/stdlib.in.h
   lib/strdup.c
   lib/string.in.h
   lib/strndup.c
   lib/strnlen.c
+  lib/sys_time.in.h
   lib/sys_types.in.h
   lib/time.in.h
   lib/time_r.c
+  lib/unistd.c
+  lib/unistd.in.h
   lib/vasnprintf.c
   lib/vasnprintf.h
   lib/verify.h
@@ -411,6 +440,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/float_h.m4
   m4/fpieee.m4
   m4/getpagesize.m4
+  m4/gettimeofday.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/intmax_t.m4
@@ -422,6 +452,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-prefix.m4
   m4/lock.m4
   m4/longlong.m4
+  m4/malloc.m4
   m4/math_h.m4
   m4/memchr.m4
   m4/mmap-anon.m4
@@ -438,10 +469,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/stdint.m4
   m4/stdint_h.m4
   m4/stdio_h.m4
+  m4/stdlib_h.m4
   m4/strdup.m4
   m4/string_h.m4
   m4/strndup.m4
   m4/strnlen.m4
+  m4/sys_socket_h.m4
+  m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/thread.m4
   m4/threadlib.m4
@@ -467,6 +501,7 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-fputc.c
   tests/test-fread.c
   tests/test-fwrite.c
+  tests/test-gettimeofday.c
   tests/test-init.sh
   tests/test-intprops.c
   tests/test-inttypes.c
@@ -477,9 +512,12 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-stddef.c
   tests/test-stdint.c
   tests/test-stdio.c
+  tests/test-stdlib.c
   tests/test-string.c
   tests/test-strnlen.c
+  tests/test-sys_time.c
   tests/test-sys_types.c
+  tests/test-sys_wait.h
   tests/test-thread_create.c
   tests/test-thread_self.c
   tests/test-time.c
@@ -501,6 +539,4 @@ AC_DEFUN([gl_FILE_LIST], [
   tests=lib/msvc-inval.c
   tests=lib/msvc-inval.h
   tests=lib/stdbool.in.h
-  tests=lib/unistd.c
-  tests=lib/unistd.in.h
 ])

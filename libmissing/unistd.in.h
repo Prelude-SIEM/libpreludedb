@@ -1,17 +1,17 @@
 /* Substitute for and wrapper around <unistd.h>.
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_UNISTD_H
@@ -21,9 +21,23 @@
 #endif
 @PRAGMA_COLUMNS@
 
+#ifdef _GL_INCLUDING_UNISTD_H
+/* Special invocation convention:
+   - On Mac OS X 10.3.9 we have a sequence of nested includes
+     <unistd.h> -> <signal.h> -> <pthread.h> -> <unistd.h>
+     In this situation, the functions are not yet declared, therefore we cannot
+     provide the C++ aliases.  */
+
+#@INCLUDE_NEXT@ @NEXT_UNISTD_H@
+
+#else
+/* Normal invocation convention.  */
+
 /* The include_next requires a split double-inclusion guard.  */
 #if @HAVE_UNISTD_H@
+# define _GL_INCLUDING_UNISTD_H
 # @INCLUDE_NEXT@ @NEXT_UNISTD_H@
+# undef _GL_INCLUDING_UNISTD_H
 #endif
 
 /* Get all possible declarations of gethostname().  */
@@ -1539,4 +1553,5 @@ _GL_CXXALIASWARN (write);
 _GL_INLINE_HEADER_END
 
 #endif /* _@GUARD_PREFIX@_UNISTD_H */
+#endif /* _GL_INCLUDING_UNISTD_H */
 #endif /* _@GUARD_PREFIX@_UNISTD_H */
