@@ -1,4 +1,25 @@
-AC_INIT(libpreludedb, 1.2.6rc1)
+m4_define([libpreludedb_major_version], [1])
+m4_define([libpreludedb_minor_version], [2])
+m4_define([libpreludedb_micro_version], [6])
+m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_RC])
+m4_define([libpreludedb_serial_version], [1])
+
+m4_define([serial_string], ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_ALPHA, alpha,
+                                  ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_BETA, beta,
+                                  ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_RC, rc))))
+m4_append([serial_string], ifelse(serial_string, [],
+                                  ifelse(libpreludedb_serial_version, 0, , .libpreludedb_serial_version),
+                                  ifelse(libpreludedb_serial_version, 0, [m4_fatal(Release level 'serial_string' and serial 'libpreludedb_serial_version' are incompatible)], libpreludedb_serial_version)))
+
+AC_INIT(libpreludedb, m4_join([.], [libpreludedb_major_version],
+                                   [libpreludedb_minor_version],
+                                   m4_join([], libpreludedb_micro_version, serial_string)))
+
+LIBPRELUDEDB_MAJOR_VERSION=libpreludedb_major_version
+LIBPRELUDEDB_MINOR_VERSION=libpreludedb_minor_version
+LIBPRELUDEDB_MICRO_VERSION=libpreludedb_micro_version
+LIBPRELUDEDB_LEVEL_VERSION=libpreludedb_level_version
+LIBPRELUDEDB_SERIAL_VERSION=libpreludedb_serial_version
 
 dnl **********************************************************
 dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
@@ -299,6 +320,12 @@ AC_SUBST(db_plugin_dir)
 AC_SUBST(sql_plugin_dir)
 AC_SUBST(format_plugin_dir)
 AC_SUBST(format_schema_dir)
+AC_SUBST(LIBPRELUDEDB_VERSION)
+AC_SUBST(LIBPRELUDEDB_MAJOR_VERSION)
+AC_SUBST(LIBPRELUDEDB_MINOR_VERSION)
+AC_SUBST(LIBPRELUDEDB_MICRO_VERSION)
+AC_SUBST(LIBPRELUDEDB_LEVEL_VERSION)
+AC_SUBST(LIBPRELUDEDB_SERIAL_VERSION)
 
 
 AC_CONFIG_FILES([
