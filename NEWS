@@ -1,3 +1,24 @@
+* 2014-09-16, libpreludedb-1.2.6rc1:
+
+Author: Yoann Vandoorselaere
+
+- UPDATE API support
+
+    Introduce 3 new public functions in the API to support UPDATE commands,
+    using the provided list of paths and their respective values.
+
+	The _update_from_list and _update_from_result_idents functions
+	apply the update to messages identified by the provided idents,
+	and the _update function to any event matching the provided
+	criteria / order / limit / offset.
+
+    preludedb-admin is also updated so that the update commands
+	can be used from the command line.
+
+- Support for retrieving database type and server version
+
+
+
 * 2014-07-07, libpreludedb-1.2.5:
 
 - Use new libprelude PRELUDE_SCN* definition

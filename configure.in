@@ -1,11 +1,11 @@
-AC_INIT(libpreludedb, 1.2.5)
+AC_INIT(libpreludedb, 1.2.6rc1)
 
 dnl **********************************************************
 dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
 dnl **********************************************************
-libpreludedb_current=4
-libpreludedb_revision=11
-libpreludedb_age=4
+libpreludedb_current=5
+libpreludedb_revision=0
+libpreludedb_age=5
 LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 
 AC_PREREQ(2.59)
@@ -97,7 +97,7 @@ dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
 
-AM_PATH_LIBPRELUDE(1.2.5, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
+AM_PATH_LIBPRELUDE(1.2.6rc1, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
 
 
 dnl ***************************************************
