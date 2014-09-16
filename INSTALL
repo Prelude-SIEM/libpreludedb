@@ -9,6 +9,21 @@ are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.  This file is offered as-is,
 without warranty of any kind.
 
+Dependencies
+============
+
+   Libprelude must be installed first.
+
+   For Redhat based systems (CentOS, Fedora, etc.)
+       MySQL Plugin        :    mysql-devel
+       PostgresSQL Plugin  :    postgresql-devel
+       SQLite Plugin       :    sqlite-devel
+
+   For Debian systems
+       MySQL Plugin        :    libmysqlclient-dev
+       PostgresSQL Plugin  :    libpq-dev
+       SQLite Plugin       :    libsqlite3-dev
+
 Basic Installation
 ==================
 
