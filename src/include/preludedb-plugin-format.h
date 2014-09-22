@@ -72,13 +72,13 @@ typedef int (*preludedb_plugin_format_get_values_func_t)(preludedb_sql_t *sql, p
 typedef int (*preludedb_plugin_format_get_next_values_func_t)(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values);
 typedef void (*preludedb_plugin_format_destroy_values_resource_func_t)(void *res);
 
-typedef int (*preludedb_plugin_format_update_func_t)(preludedb_sql_t *sql, const char * const *paths, const char * const *values, size_t pvsize,
+typedef int (*preludedb_plugin_format_update_func_t)(preludedb_sql_t *sql, const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                                                      idmef_criteria_t *criteria, preludedb_path_selection_t *order, int limit, int offset);
 
-typedef int (*preludedb_plugin_format_update_from_list_func_t)(preludedb_sql_t *sql, const char * const *paths, const char * const *values, size_t pvsize,
+typedef int (*preludedb_plugin_format_update_from_list_func_t)(preludedb_sql_t *sql, const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                                                                uint64_t *idents, size_t size);
 
-typedef int (*preludedb_plugin_format_update_from_result_idents_func_t)(preludedb_sql_t *sql, const char * const *paths, const char * const *values, size_t pvsize,
+typedef int (*preludedb_plugin_format_update_from_result_idents_func_t)(preludedb_sql_t *sql, const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                                                                         preludedb_result_idents_t *results);
 
 void preludedb_plugin_format_set_check_schema_version_func(preludedb_plugin_format_t *plugin,

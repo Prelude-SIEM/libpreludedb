@@ -321,7 +321,7 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
                 return NULL;
 };
 
-%typemap(in) (const char * const *paths, const char * const *values, size_t pvsize) {
+%typemap(in) (const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize) {
         size_t i = 0;
 
         if ( ! PyList_Check($input) ) {
@@ -331,11 +331,11 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
 
         $3 = PyList_Size($input);
 
-        $1 = malloc($3 * sizeof(const char *));
+        $1 = malloc($3 * sizeof(const idmef_path_t *));
         if ( !$1 )
                 return NULL;
 
-        $2 = malloc($3 * sizeof(const char *));
+        $2 = malloc($3 * sizeof(const idmef_value_t *));
         if ( !$2 ) {
                 free($1);
                 return NULL;
@@ -349,13 +349,28 @@ int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
                         return NULL;
                 }
 
-                $1[i] = PyString_AsString(PyTuple_GetItem(l, 0));
-                $2[i] = PyString_AsString(PyTuple_GetItem(l, 1));
+                idmef_path_new_fast(&$1[i], PyString_AsString(PyTuple_GetItem(l, 0)));
+                const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
+                if ( val )
+                        idmef_value_new_from_string(&$2[i], idmef_path_get_value_type($1[i], -1), val);
+                else
+                        $2[i] = NULL;
         }
 }
 
-%typemap(freearg) (const char * const *paths, const char * const *values, size_t pvsize) {
+%typemap(freearg) (const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize) {
+   size_t i;
+
+   for ( i = 0; i < $3; i++ )
+        idmef_path_destroy($1[i]);
+
    free($1);
+
+   for ( i = 0; i < $3; i++ ) {
+        if ( $2[i] )
+                idmef_value_destroy($2[i]);
+   }
+
    free($2);
 }
 

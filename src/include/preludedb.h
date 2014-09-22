@@ -123,15 +123,15 @@ int preludedb_get_values(preludedb_t *db, preludedb_path_selection_t *path_selec
                          preludedb_result_values_t **result);
 
 ssize_t preludedb_update_from_list(preludedb_t *db,
-                                   const char * const *paths, const char * const *values, size_t pvsize,
+                                   const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                                    uint64_t *idents, size_t isize);
 
 ssize_t preludedb_update_from_result_idents(preludedb_t *db,
-                                            const char * const *paths, const char * const *values, size_t pvsize,
+                                            const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                                             preludedb_result_idents_t *results);
 
 int preludedb_update(preludedb_t *db,
-                     const char * const *paths, const char * const *values, size_t pvsize,
+                     const idmef_path_t **paths, const idmef_value_t **values, size_t pvsize,
                      idmef_criteria_t *criteria, preludedb_path_selection_t *order, int limit, int offset);
 
 int preludedb_transaction_start(preludedb_t *db);

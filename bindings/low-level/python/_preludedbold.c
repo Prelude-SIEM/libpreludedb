@@ -2926,45 +2926,46 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_long_long swig_types[13]
 #define SWIGTYPE_p_p_char swig_types[14]
 #define SWIGTYPE_p_p_idmef_message swig_types[15]
-#define SWIGTYPE_p_p_idmef_value swig_types[16]
-#define SWIGTYPE_p_p_p_idmef_value swig_types[17]
-#define SWIGTYPE_p_p_preludedb swig_types[18]
-#define SWIGTYPE_p_p_preludedb_path_selection swig_types[19]
-#define SWIGTYPE_p_p_preludedb_result_idents swig_types[20]
-#define SWIGTYPE_p_p_preludedb_result_values swig_types[21]
-#define SWIGTYPE_p_p_preludedb_selected_path swig_types[22]
-#define SWIGTYPE_p_p_preludedb_sql swig_types[23]
-#define SWIGTYPE_p_p_preludedb_sql_field swig_types[24]
-#define SWIGTYPE_p_p_preludedb_sql_row swig_types[25]
-#define SWIGTYPE_p_p_preludedb_sql_settings swig_types[26]
-#define SWIGTYPE_p_p_preludedb_sql_table swig_types[27]
-#define SWIGTYPE_p_p_unsigned_char swig_types[28]
-#define SWIGTYPE_p_p_void swig_types[29]
-#define SWIGTYPE_p_prelude_bool_t swig_types[30]
-#define SWIGTYPE_p_prelude_string swig_types[31]
-#define SWIGTYPE_p_preludedb swig_types[32]
-#define SWIGTYPE_p_preludedb_error_code_t swig_types[33]
-#define SWIGTYPE_p_preludedb_path_selection swig_types[34]
-#define SWIGTYPE_p_preludedb_result_idents swig_types[35]
-#define SWIGTYPE_p_preludedb_result_idents_order_t swig_types[36]
-#define SWIGTYPE_p_preludedb_result_values swig_types[37]
-#define SWIGTYPE_p_preludedb_selected_path swig_types[38]
-#define SWIGTYPE_p_preludedb_selected_path_flags_t swig_types[39]
-#define SWIGTYPE_p_preludedb_sql swig_types[40]
-#define SWIGTYPE_p_preludedb_sql_field swig_types[41]
-#define SWIGTYPE_p_preludedb_sql_row swig_types[42]
-#define SWIGTYPE_p_preludedb_sql_settings swig_types[43]
-#define SWIGTYPE_p_preludedb_sql_table swig_types[44]
-#define SWIGTYPE_p_preludedb_sql_time_constraint_type_t swig_types[45]
-#define SWIGTYPE_p_size_t swig_types[46]
-#define SWIGTYPE_p_uint16_t swig_types[47]
-#define SWIGTYPE_p_uint8_t swig_types[48]
-#define SWIGTYPE_p_unsigned_char swig_types[49]
-#define SWIGTYPE_p_unsigned_int swig_types[50]
-#define SWIGTYPE_p_unsigned_long_long swig_types[51]
-#define SWIGTYPE_p_void swig_types[52]
-static swig_type_info *swig_types[54];
-static swig_module_info swig_module = {swig_types, 53, 0, 0, 0, 0};
+#define SWIGTYPE_p_p_idmef_path swig_types[16]
+#define SWIGTYPE_p_p_idmef_value swig_types[17]
+#define SWIGTYPE_p_p_p_idmef_value swig_types[18]
+#define SWIGTYPE_p_p_preludedb swig_types[19]
+#define SWIGTYPE_p_p_preludedb_path_selection swig_types[20]
+#define SWIGTYPE_p_p_preludedb_result_idents swig_types[21]
+#define SWIGTYPE_p_p_preludedb_result_values swig_types[22]
+#define SWIGTYPE_p_p_preludedb_selected_path swig_types[23]
+#define SWIGTYPE_p_p_preludedb_sql swig_types[24]
+#define SWIGTYPE_p_p_preludedb_sql_field swig_types[25]
+#define SWIGTYPE_p_p_preludedb_sql_row swig_types[26]
+#define SWIGTYPE_p_p_preludedb_sql_settings swig_types[27]
+#define SWIGTYPE_p_p_preludedb_sql_table swig_types[28]
+#define SWIGTYPE_p_p_unsigned_char swig_types[29]
+#define SWIGTYPE_p_p_void swig_types[30]
+#define SWIGTYPE_p_prelude_bool_t swig_types[31]
+#define SWIGTYPE_p_prelude_string swig_types[32]
+#define SWIGTYPE_p_preludedb swig_types[33]
+#define SWIGTYPE_p_preludedb_error_code_t swig_types[34]
+#define SWIGTYPE_p_preludedb_path_selection swig_types[35]
+#define SWIGTYPE_p_preludedb_result_idents swig_types[36]
+#define SWIGTYPE_p_preludedb_result_idents_order_t swig_types[37]
+#define SWIGTYPE_p_preludedb_result_values swig_types[38]
+#define SWIGTYPE_p_preludedb_selected_path swig_types[39]
+#define SWIGTYPE_p_preludedb_selected_path_flags_t swig_types[40]
+#define SWIGTYPE_p_preludedb_sql swig_types[41]
+#define SWIGTYPE_p_preludedb_sql_field swig_types[42]
+#define SWIGTYPE_p_preludedb_sql_row swig_types[43]
+#define SWIGTYPE_p_preludedb_sql_settings swig_types[44]
+#define SWIGTYPE_p_preludedb_sql_table swig_types[45]
+#define SWIGTYPE_p_preludedb_sql_time_constraint_type_t swig_types[46]
+#define SWIGTYPE_p_size_t swig_types[47]
+#define SWIGTYPE_p_uint16_t swig_types[48]
+#define SWIGTYPE_p_uint8_t swig_types[49]
+#define SWIGTYPE_p_unsigned_char swig_types[50]
+#define SWIGTYPE_p_unsigned_int swig_types[51]
+#define SWIGTYPE_p_unsigned_long_long swig_types[52]
+#define SWIGTYPE_p_void swig_types[53]
+static swig_type_info *swig_types[55];
+static swig_module_info swig_module = {swig_types, 54, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -9001,8 +9002,8 @@ fail:
 SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_t *arg1 = (preludedb_t *) 0 ;
-  char **arg2 = (char **) 0 ;
-  char **arg3 = (char **) 0 ;
+  idmef_path_t **arg2 = (idmef_path_t **) 0 ;
+  idmef_value_t **arg3 = (idmef_value_t **) 0 ;
   size_t arg4 ;
   uint64_t *arg5 = (uint64_t *) 0 ;
   size_t arg6 ;
@@ -9029,11 +9030,11 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
     
     arg4 = PyList_Size(obj1);
     
-    arg2 = malloc(arg4 * sizeof(const char *));
+    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
     if ( !arg2 )
     return NULL;
     
-    arg3 = malloc(arg4 * sizeof(const char *));
+    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
     if ( !arg3 ) {
       free(arg2);
       return NULL;
@@ -9047,8 +9048,12 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
         return NULL;
       }
       
-      arg2[i] = PyString_AsString(PyTuple_GetItem(l, 0));
-      arg3[i] = PyString_AsString(PyTuple_GetItem(l, 1));
+      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
+      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
+      if ( val )
+      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
+      else
+      arg3[i] = NULL;
     }
   }
   {
@@ -9070,7 +9075,7 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = preludedb_update_from_list(arg1,(char const *const *)arg2,(char const *const *)arg3,arg4,arg5,arg6);
+    result = preludedb_update_from_list(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5,arg6);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9087,13 +9092,35 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
     resultobj = PyLong_FromLongLong(result);
   }
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return resultobj;
 fail:
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return NULL;
@@ -9103,8 +9130,8 @@ fail:
 SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_t *arg1 = (preludedb_t *) 0 ;
-  char **arg2 = (char **) 0 ;
-  char **arg3 = (char **) 0 ;
+  idmef_path_t **arg2 = (idmef_path_t **) 0 ;
+  idmef_value_t **arg3 = (idmef_value_t **) 0 ;
   size_t arg4 ;
   preludedb_result_idents_t *arg5 = (preludedb_result_idents_t *) 0 ;
   PyObject * obj0 = 0 ;
@@ -9130,11 +9157,11 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
     
     arg4 = PyList_Size(obj1);
     
-    arg2 = malloc(arg4 * sizeof(const char *));
+    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
     if ( !arg2 )
     return NULL;
     
-    arg3 = malloc(arg4 * sizeof(const char *));
+    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
     if ( !arg3 ) {
       free(arg2);
       return NULL;
@@ -9148,8 +9175,12 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
         return NULL;
       }
       
-      arg2[i] = PyString_AsString(PyTuple_GetItem(l, 0));
-      arg3[i] = PyString_AsString(PyTuple_GetItem(l, 1));
+      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
+      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
+      if ( val )
+      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
+      else
+      arg3[i] = NULL;
     }
   }
   {
@@ -9161,7 +9192,7 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = preludedb_update_from_result_idents(arg1,(char const *const *)arg2,(char const *const *)arg3,arg4,arg5);
+    result = preludedb_update_from_result_idents(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9178,13 +9209,35 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
     resultobj = PyLong_FromLongLong(result);
   }
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return resultobj;
 fail:
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return NULL;
@@ -9194,8 +9247,8 @@ fail:
 SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_t *arg1 = (preludedb_t *) 0 ;
-  char **arg2 = (char **) 0 ;
-  char **arg3 = (char **) 0 ;
+  idmef_path_t **arg2 = (idmef_path_t **) 0 ;
+  idmef_value_t **arg3 = (idmef_value_t **) 0 ;
   size_t arg4 ;
   idmef_criteria_t *arg5 = (idmef_criteria_t *) 0 ;
   preludedb_path_selection_t *arg6 = (preludedb_path_selection_t *) 0 ;
@@ -9233,11 +9286,11 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
     
     arg4 = PyList_Size(obj1);
     
-    arg2 = malloc(arg4 * sizeof(const char *));
+    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
     if ( !arg2 )
     return NULL;
     
-    arg3 = malloc(arg4 * sizeof(const char *));
+    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
     if ( !arg3 ) {
       free(arg2);
       return NULL;
@@ -9251,8 +9304,12 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
         return NULL;
       }
       
-      arg2[i] = PyString_AsString(PyTuple_GetItem(l, 0));
-      arg3[i] = PyString_AsString(PyTuple_GetItem(l, 1));
+      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
+      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
+      if ( val )
+      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
+      else
+      arg3[i] = NULL;
     }
   }
   res5 = SWIG_ConvertPtr(obj2, &argp5,SWIGTYPE_p_idmef_criteria, 0 |  0 );
@@ -9276,7 +9333,7 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
   arg8 = (int)(val8);
   {
     Py_BEGIN_ALLOW_THREADS
-    result = (int)preludedb_update(arg1,(char const *const *)arg2,(char const *const *)arg3,arg4,arg5,arg6,arg7,arg8);
+    result = (int)preludedb_update(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5,arg6,arg7,arg8);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9293,13 +9350,35 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
     resultobj = PyInt_FromLong(result);
   }
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return resultobj;
 fail:
   {
+    size_t i;
+    
+    for ( i = 0; i < arg4; i++ )
+    idmef_path_destroy(arg2[i]);
+    
     free(arg2);
+    
+    for ( i = 0; i < arg4; i++ ) {
+      if ( arg3[i] )
+      idmef_value_destroy(arg3[i]);
+    }
+    
     free(arg3);
   }
   return NULL;
@@ -10279,6 +10358,7 @@ static swig_type_info _swigt__p_int8_t = {"_p_int8_t", "int8_t *", 0, 0, (void*)
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "int64_t *|long long *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_idmef_message = {"_p_p_idmef_message", "idmef_message_t **|struct idmef_message **", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_p_idmef_path = {"_p_p_idmef_path", "idmef_path_t **|struct idmef_path **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_idmef_value = {"_p_p_idmef_value", "idmef_value_t **|struct idmef_value **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_p_idmef_value = {"_p_p_p_idmef_value", "struct idmef_value ***|idmef_value_t ***", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_preludedb = {"_p_p_preludedb", "preludedb_t **|struct preludedb **", 0, 0, (void*)0, 0};
@@ -10334,6 +10414,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_long_long,
   &_swigt__p_p_char,
   &_swigt__p_p_idmef_message,
+  &_swigt__p_p_idmef_path,
   &_swigt__p_p_idmef_value,
   &_swigt__p_p_p_idmef_value,
   &_swigt__p_p_preludedb,
@@ -10389,6 +10470,7 @@ static swig_cast_info _swigc__p_int8_t[] = {  {&_swigt__p_int8_t, 0, 0, 0},{0, 0
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_idmef_message[] = {  {&_swigt__p_p_idmef_message, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_p_idmef_path[] = {  {&_swigt__p_p_idmef_path, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_idmef_value[] = {  {&_swigt__p_p_idmef_value, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_p_idmef_value[] = {  {&_swigt__p_p_p_idmef_value, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_preludedb[] = {  {&_swigt__p_p_preludedb, 0, 0, 0},{0, 0, 0, 0}};
@@ -10444,6 +10526,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_long_long,
   _swigc__p_p_char,
   _swigc__p_p_idmef_message,
+  _swigc__p_p_idmef_path,
   _swigc__p_p_idmef_value,
   _swigc__p_p_p_idmef_value,
   _swigc__p_p_preludedb,
