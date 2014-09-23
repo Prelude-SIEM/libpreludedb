@@ -28,7 +28,7 @@ void swig_python_raise_exception(int error, const char *strerror)
         PyObject *exception_class;
         PyObject *exception;
 
-        module = PyImport_ImportModule("preludedb");
+        module = PyImport_ImportModule("preludedbold");
         exception_class = PyObject_GetAttrString(module, "PreludeDBError");
         exception = PyObject_CallFunction(exception_class, "is", error, strerror);
 
