@@ -1,3 +1,28 @@
+* 2014-09-23, libpreludedb-1.2.6rc2:
+
+Author: Yoann Vandoorselaere
+
+- Change update API so that it uses idmef_path_t and idmef_value_t
+  This allows the backend to handle the escaping of passed value.
+
+- Move old C based bindings to bindings/low-level directory
+
+- Update GnuLib code
+
+- Change preludedb_strerror() so that it never returns NULL
+
+- PreludeDB ResultValues / ResultIdents API update
+
+    - Make it possible to retrieve a specific row/field located at a given index
+    - Update the preludedb_path_selection API, so that it use an array to store element
+    - Refcounting support
+
+- SQL API / Plugin rework
+
+- Provide more version number information (major, minor, micro, level, serial)
+
+
+
 * 2014-09-16, libpreludedb-1.2.6rc1:
 
 Author: Yoann Vandoorselaere
