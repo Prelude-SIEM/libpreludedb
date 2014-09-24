@@ -18,7 +18,8 @@ clean-local:
 
 _preludedbold.c: $(top_srcdir)/bindings/low-level/libpreludedb.i libpreludedb-python.i
 if HAVE_SWIG
-	$(SWIG) -I$(top_srcdir)/src/include @LIBPRELUDE_CFLAGS@ -o $@ -python -noproxy -interface _preludedbold -module _preludedbold $(top_srcdir)/bindings/low-level/libpreludedb.i
+# Force -I/usr/include because some distribution like CentOS doesn't set it by default for swig
+	$(SWIG) -I/usr/include -I$(top_srcdir)/src/include @LIBPRELUDE_CFLAGS@ -o $@ -python -noproxy -interface _preludedbold -module _preludedbold $(top_srcdir)/bindings/low-level/libpreludedb.i
 endif
 
 endif
