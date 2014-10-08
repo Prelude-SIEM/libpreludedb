@@ -545,11 +545,13 @@ static void classic_destroy_values_resource(void *res)
 static int classic_check_schema_version(const char *version)
 {
         double d;
+        char *eptr;
 
         if ( ! version )
                 return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
-        if ( sscanf(version, "%lf", &d) <= 0 )
+        d = prelude_simple_strtod(version, &eptr);
+        if ( *eptr != 0 )
                 return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
         if ( d > CLASSIC_SCHEMA_VERSION )
