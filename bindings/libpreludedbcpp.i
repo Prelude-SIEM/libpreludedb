@@ -30,6 +30,8 @@
 %include "std_vector.i"
 
 %import "libpreludecpp.i"
+%feature("nothread", 0);
+
 
 %template() std::vector<uint64_t>;
 %template() std::vector<unsigned long long>;

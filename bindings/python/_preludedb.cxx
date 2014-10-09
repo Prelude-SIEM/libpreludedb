@@ -6289,7 +6289,11 @@ SWIGINTERN PyObject *_wrap_checkVersion(PyObject *SWIGUNUSEDPARM(self), PyObject
   }
   {
     try {
-      result = (char *)PreludeDB::checkVersion((char const *)arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)PreludeDB::checkVersion((char const *)arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6323,7 +6327,11 @@ SWIGINTERN PyObject *_wrap_delete_DB(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6359,7 +6367,11 @@ SWIGINTERN PyObject *_wrap_new_DB(PyObject *SWIGUNUSEDPARM(self), PyObject *args
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
     try {
-      result = (PreludeDB::DB *)new PreludeDB::DB(*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB *)new PreludeDB::DB(*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6455,7 +6467,11 @@ SWIGINTERN PyObject *_wrap_DB_getAlertIdents(PyObject *SWIGUNUSEDPARM(self), PyO
   }
   {
     try {
-      result = (arg1)->getAlertIdents(arg2,arg3,arg4,arg5);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getAlertIdents(arg2,arg3,arg4,arg5);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6559,7 +6575,11 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeatIdents(PyObject *SWIGUNUSEDPARM(self),
   }
   {
     try {
-      result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,arg5);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,arg5);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6690,7 +6710,11 @@ SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject
   }
   {
     try {
-      result = (arg1)->getValues(*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getValues(*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6739,7 +6763,11 @@ SWIGINTERN PyObject *_wrap_DB_getFormatName(PyObject *SWIGUNUSEDPARM(self), PyOb
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
     try {
-      result = (arg1)->getFormatName();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getFormatName();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6772,7 +6800,11 @@ SWIGINTERN PyObject *_wrap_DB_getFormatVersion(PyObject *SWIGUNUSEDPARM(self), P
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
     try {
-      result = (arg1)->getFormatVersion();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getFormatVersion();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6816,7 +6848,11 @@ SWIGINTERN PyObject *_wrap_DB_insert(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   arg2 = reinterpret_cast< Prelude::IDMEF * >(argp2);
   {
     try {
-      (arg1)->insert(*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->insert(*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6858,7 +6894,11 @@ SWIGINTERN PyObject *_wrap_DB_getAlert(PyObject *SWIGUNUSEDPARM(self), PyObject 
   arg2 = static_cast< uint64_t >(val2);
   {
     try {
-      result = (arg1)->getAlert(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getAlert(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6900,7 +6940,11 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeat(PyObject *SWIGUNUSEDPARM(self), PyObj
   arg2 = static_cast< uint64_t >(val2);
   {
     try {
-      result = (arg1)->getHeartbeat(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->getHeartbeat(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6941,7 +6985,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_0(PyObject *SWIGUNUSEDPARM(self)
   arg2 = static_cast< uint64_t >(val2);
   {
     try {
-      (arg1)->deleteAlert(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteAlert(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -6985,7 +7033,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
   arg2 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp2);
   {
     try {
-      (arg1)->deleteAlert(*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteAlert(*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7028,7 +7080,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_2(PyObject *SWIGUNUSEDPARM(self)
   }
   {
     try {
-      (arg1)->deleteAlert(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteAlert(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7132,7 +7188,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_0(PyObject *SWIGUNUSEDPARM(s
   arg2 = static_cast< uint64_t >(val2);
   {
     try {
-      (arg1)->deleteHeartbeat(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteHeartbeat(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7176,7 +7236,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_1(PyObject *SWIGUNUSEDPARM(s
   arg2 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp2);
   {
     try {
-      (arg1)->deleteHeartbeat(*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteHeartbeat(*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7219,7 +7283,11 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_2(PyObject *SWIGUNUSEDPARM(s
   }
   {
     try {
-      (arg1)->deleteHeartbeat(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->deleteHeartbeat(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7354,7 +7422,11 @@ SWIGINTERN PyObject *_wrap_DB__updateFromList__SWIG_0(PyObject *SWIGUNUSEDPARM(s
   arg4 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp4);
   {
     try {
-      (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,*arg4);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,*arg4);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7429,7 +7501,11 @@ SWIGINTERN PyObject *_wrap_DB__updateFromList__SWIG_1(PyObject *SWIGUNUSEDPARM(s
   }
   {
     try {
-      (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7619,7 +7695,11 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
   }
   {
     try {
-      (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(PreludeDB::PathSelection const *)arg5,arg6,arg7);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(PreludeDB::PathSelection const *)arg5,arg6,arg7);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7677,7 +7757,11 @@ SWIGINTERN PyObject *_wrap_ResultIdents__result_set(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ResultIdents__result_set" "', argument " "2"" of type '" "preludedb_result_idents_t *""'"); 
   }
   arg2 = reinterpret_cast< preludedb_result_idents_t * >(argp2);
-  if (arg1) (arg1)->_result = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->_result = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7699,7 +7783,11 @@ SWIGINTERN PyObject *_wrap_ResultIdents__result_get(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIdents__result_get" "', argument " "1"" of type '" "PreludeDB::DB::ResultIdents *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
-  result = (preludedb_result_idents_t *) ((arg1)->_result);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (preludedb_result_idents_t *) ((arg1)->_result);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_preludedb_result_idents_t, 0 |  0 );
   return resultobj;
 fail:
@@ -7726,7 +7814,11 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_0(PyObject *SWIGUNUSEDPARM(sel
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
   {
     try {
-      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents((PreludeDB::DB::ResultIdents const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents((PreludeDB::DB::ResultIdents const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7768,7 +7860,11 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_1(PyObject *SWIGUNUSEDPARM(sel
   arg2 = reinterpret_cast< preludedb_result_idents_t * >(argp2);
   {
     try {
-      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents(arg1,arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents(arg1,arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7792,7 +7888,11 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_2(PyObject *SWIGUNUSEDPARM(sel
   if (!PyArg_ParseTuple(args,(char *)":new_ResultIdents")) SWIG_fail;
   {
     try {
-      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7870,7 +7970,11 @@ SWIGINTERN PyObject *_wrap_delete_ResultIdents(PyObject *SWIGUNUSEDPARM(self), P
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7903,7 +8007,11 @@ SWIGINTERN PyObject *_wrap_ResultIdents_getCount(PyObject *SWIGUNUSEDPARM(self),
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7936,7 +8044,11 @@ SWIGINTERN PyObject *_wrap_ResultIdents___len__(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->count();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->count();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -7983,7 +8095,11 @@ SWIGINTERN PyObject *_wrap_ResultIdents_get(PyObject *SWIGUNUSEDPARM(self), PyOb
   }
   {
     try {
-      result = (uint64_t)(arg1)->get(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (uint64_t)(arg1)->get(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8029,7 +8145,11 @@ SWIGINTERN PyObject *_wrap_ResultValues__result_set(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ResultValues__result_set" "', argument " "2"" of type '" "preludedb_result_values_t *""'"); 
   }
   arg2 = reinterpret_cast< preludedb_result_values_t * >(argp2);
-  if (arg1) (arg1)->_result = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->_result = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -8051,7 +8171,11 @@ SWIGINTERN PyObject *_wrap_ResultValues__result_get(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValues__result_get" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  result = (preludedb_result_values_t *) ((arg1)->_result);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (preludedb_result_values_t *) ((arg1)->_result);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_preludedb_result_values_t, 0 |  0 );
   return resultobj;
 fail:
@@ -8078,7 +8202,11 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_0(PyObject *SWIGUNUSEDPARM(sel
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
   {
     try {
-      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues((PreludeDB::DB::ResultValues const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues((PreludeDB::DB::ResultValues const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8111,7 +8239,11 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_1(PyObject *SWIGUNUSEDPARM(sel
   arg1 = reinterpret_cast< preludedb_result_values_t * >(argp1);
   {
     try {
-      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues(arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues(arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8135,7 +8267,11 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_2(PyObject *SWIGUNUSEDPARM(sel
   if (!PyArg_ParseTuple(args,(char *)":new_ResultValues")) SWIG_fail;
   {
     try {
-      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8208,7 +8344,11 @@ SWIGINTERN PyObject *_wrap_delete_ResultValues(PyObject *SWIGUNUSEDPARM(self), P
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8241,7 +8381,11 @@ SWIGINTERN PyObject *_wrap_ResultValues_getCount(PyObject *SWIGUNUSEDPARM(self),
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8274,7 +8418,11 @@ SWIGINTERN PyObject *_wrap_ResultValues_getFieldCount(PyObject *SWIGUNUSEDPARM(s
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getFieldCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getFieldCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8307,7 +8455,11 @@ SWIGINTERN PyObject *_wrap_ResultValues___len__(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->count();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->count();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8354,7 +8506,11 @@ SWIGINTERN PyObject *_wrap_ResultValues_get(PyObject *SWIGUNUSEDPARM(self), PyOb
   }
   {
     try {
-      result = (arg1)->get(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->get(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8397,7 +8553,11 @@ SWIGINTERN PyObject *_wrap_new_ResultValuesRow__SWIG_0(PyObject *SWIGUNUSEDPARM(
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
   {
     try {
-      result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow((PreludeDB::DB::ResultValues::ResultValuesRow const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow((PreludeDB::DB::ResultValues::ResultValuesRow const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8437,7 +8597,11 @@ SWIGINTERN PyObject *_wrap_new_ResultValuesRow__SWIG_1(PyObject *SWIGUNUSEDPARM(
   }
   {
     try {
-      result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow(arg1,arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow(arg1,arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8511,7 +8675,11 @@ SWIGINTERN PyObject *_wrap_delete_ResultValuesRow(PyObject *SWIGUNUSEDPARM(self)
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8553,7 +8721,11 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow_get(PyObject *SWIGUNUSEDPARM(self), P
   arg2 = static_cast< int >(val2);
   {
     try {
-      result = (arg1)->get(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->get(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8600,7 +8772,11 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow_getFieldCount(PyObject *SWIGUNUSEDPAR
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getFieldCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getFieldCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8633,7 +8809,11 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow___len__(PyObject *SWIGUNUSEDPARM(self
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->count();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->count();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8673,7 +8853,11 @@ SWIGINTERN PyObject *_wrap_new_PreludeDBError__SWIG_0(PyObject *SWIGUNUSEDPARM(s
   arg1 = static_cast< int >(val1);
   {
     try {
-      result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError(arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError(arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8711,7 +8895,11 @@ SWIGINTERN PyObject *_wrap_new_PreludeDBError__SWIG_1(PyObject *SWIGUNUSEDPARM(s
   }
   {
     try {
-      result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError((std::string const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError((std::string const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8783,7 +8971,11 @@ SWIGINTERN PyObject *_wrap_delete_PreludeDBError(PyObject *SWIGUNUSEDPARM(self),
   arg1 = reinterpret_cast< PreludeDB::PreludeDBError * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8822,7 +9014,11 @@ SWIGINTERN PyObject *_wrap_delete_SQL(PyObject *SWIGUNUSEDPARM(self), PyObject *
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8856,7 +9052,11 @@ SWIGINTERN PyObject *_wrap_new_SQL__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   arg1 = reinterpret_cast< char * >(buf1);
   {
     try {
-      result = (PreludeDB::SQL *)new PreludeDB::SQL((char const *)arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL *)new PreludeDB::SQL((char const *)arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8896,7 +9096,11 @@ SWIGINTERN PyObject *_wrap_new_SQL__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
   }
   {
     try {
-      result = (PreludeDB::SQL *)new PreludeDB::SQL((std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL *)new PreludeDB::SQL((std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -8981,7 +9185,11 @@ SWIGINTERN PyObject *_wrap_SQL_query(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   }
   {
     try {
-      result = (arg1)->query((std::string const &)*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->query((std::string const &)*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9015,7 +9223,11 @@ SWIGINTERN PyObject *_wrap_SQL_transactionStart(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
     try {
-      (arg1)->transactionStart();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->transactionStart();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9047,7 +9259,11 @@ SWIGINTERN PyObject *_wrap_SQL_transactionEnd(PyObject *SWIGUNUSEDPARM(self), Py
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
     try {
-      (arg1)->transactionEnd();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->transactionEnd();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9079,7 +9295,11 @@ SWIGINTERN PyObject *_wrap_SQL_transactionAbort(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
     try {
-      (arg1)->transactionAbort();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        (arg1)->transactionAbort();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9122,7 +9342,11 @@ SWIGINTERN PyObject *_wrap_SQL_escape(PyObject *SWIGUNUSEDPARM(self), PyObject *
   arg2 = reinterpret_cast< char * >(buf2);
   {
     try {
-      result = (arg1)->escape((char const *)arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->escape((char const *)arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9171,7 +9395,11 @@ SWIGINTERN PyObject *_wrap_SQL_escapeBinary(PyObject *SWIGUNUSEDPARM(self), PyOb
   }
   {
     try {
-      result = (arg1)->escapeBinary((std::string const &)*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->escapeBinary((std::string const &)*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9212,7 +9440,11 @@ SWIGINTERN PyObject *_wrap_delete_Table(PyObject *SWIGUNUSEDPARM(self), PyObject
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9245,7 +9477,11 @@ SWIGINTERN PyObject *_wrap_new_Table__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyO
   arg1 = reinterpret_cast< preludedb_sql_table_t * >(argp1);
   {
     try {
-      result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table(arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table(arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9281,7 +9517,11 @@ SWIGINTERN PyObject *_wrap_new_Table__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyO
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table((PreludeDB::SQL::Table const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table((PreludeDB::SQL::Table const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9360,7 +9600,11 @@ SWIGINTERN PyObject *_wrap_Table_getColumnName(PyObject *SWIGUNUSEDPARM(self), P
   arg2 = static_cast< unsigned int >(val2);
   {
     try {
-      result = (char *)(arg1)->getColumnName(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)(arg1)->getColumnName(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9407,7 +9651,11 @@ SWIGINTERN PyObject *_wrap_Table_getColumnNum(PyObject *SWIGUNUSEDPARM(self), Py
   }
   {
     try {
-      result = (int)(arg1)->getColumnNum((std::string const &)*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (int)(arg1)->getColumnNum((std::string const &)*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9442,7 +9690,11 @@ SWIGINTERN PyObject *_wrap_Table_getColumnCount(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getColumnCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getColumnCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9475,7 +9727,11 @@ SWIGINTERN PyObject *_wrap_Table_getRowCount(PyObject *SWIGUNUSEDPARM(self), PyO
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getRowCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getRowCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9508,7 +9764,11 @@ SWIGINTERN PyObject *_wrap_Table___len__(PyObject *SWIGUNUSEDPARM(self), PyObjec
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->count();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->count();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9541,7 +9801,11 @@ SWIGINTERN PyObject *_wrap_Table_fetch(PyObject *SWIGUNUSEDPARM(self), PyObject 
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
   {
     try {
-      result = (arg1)->fetch();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->fetch();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9583,7 +9847,11 @@ SWIGINTERN PyObject *_wrap_Table_get(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   arg2 = static_cast< unsigned int >(val2);
   {
     try {
-      result = (arg1)->get(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (arg1)->get(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9622,7 +9890,11 @@ SWIGINTERN PyObject *_wrap_delete_Row(PyObject *SWIGUNUSEDPARM(self), PyObject *
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9646,7 +9918,11 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   if (!PyArg_ParseTuple(args,(char *)":new_Row")) SWIG_fail;
   {
     try {
-      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9679,7 +9955,11 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
   arg1 = reinterpret_cast< preludedb_sql_row_t * >(argp1);
   {
     try {
-      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row(arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row(arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9715,7 +9995,11 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObj
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
   {
     try {
-      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row((PreludeDB::SQL::Table::Row const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row((PreludeDB::SQL::Table::Row const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9789,7 +10073,11 @@ SWIGINTERN PyObject *_wrap_Row_getFieldCount(PyObject *SWIGUNUSEDPARM(self), PyO
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->getFieldCount();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->getFieldCount();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9822,7 +10110,11 @@ SWIGINTERN PyObject *_wrap_Row___len__(PyObject *SWIGUNUSEDPARM(self), PyObject 
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
   {
     try {
-      result = (unsigned int)(arg1)->count();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (unsigned int)(arg1)->count();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9864,7 +10156,11 @@ SWIGINTERN PyObject *_wrap_Row_getField__SWIG_0(PyObject *SWIGUNUSEDPARM(self), 
   arg2 = static_cast< unsigned int >(val2);
   {
     try {
-      result = (char *)(arg1)->getField(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)(arg1)->getField(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -9911,7 +10207,11 @@ SWIGINTERN PyObject *_wrap_Row_getField__SWIG_1(PyObject *SWIGUNUSEDPARM(self), 
   }
   {
     try {
-      result = (char *)(arg1)->getField((std::string const &)*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)(arg1)->getField((std::string const &)*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10003,7 +10303,11 @@ SWIGINTERN PyObject *_wrap_Row_get__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   arg2 = static_cast< unsigned int >(val2);
   {
     try {
-      result = (char *)(arg1)->get(arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)(arg1)->get(arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10050,7 +10354,11 @@ SWIGINTERN PyObject *_wrap_Row_get__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
   }
   {
     try {
-      result = (char *)(arg1)->get((std::string const &)*arg2);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (char *)(arg1)->get((std::string const &)*arg2);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10139,7 +10447,11 @@ SWIGINTERN PyObject *_wrap_delete_PathSelection(PyObject *SWIGUNUSEDPARM(self), 
   arg1 = reinterpret_cast< PreludeDB::PathSelection * >(argp1);
   {
     try {
-      delete arg1;
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        delete arg1;
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10163,7 +10475,11 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_0(PyObject *SWIGUNUSEDPARM(se
   if (!PyArg_ParseTuple(args,(char *)":new_PathSelection")) SWIG_fail;
   {
     try {
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection();
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection();
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10214,7 +10530,11 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_1(PyObject *SWIGUNUSEDPARM(se
   }
   {
     try {
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((PreludeDB::PathSelection const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((PreludeDB::PathSelection const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
@@ -10260,7 +10580,11 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_2(PyObject *SWIGUNUSEDPARM(se
   }
   {
     try {
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((std::vector< std::string,std::allocator< std::string > > const &)*arg1);
+      {
+        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((std::vector< std::string,std::allocator< std::string > > const &)*arg1);
+        SWIG_PYTHON_THREAD_END_ALLOW;
+      }
     } catch(PreludeDB::PreludeDBError &e) {
       if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
       SWIG_exception(SWIG_IndexError, e.what());
