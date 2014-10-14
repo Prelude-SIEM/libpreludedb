@@ -104,7 +104,7 @@ int classic_sql_select_add_field(classic_sql_select_t *select, const char *field
                 { PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT, "COUNT" }
         };
         unsigned int i;
-        const char *function_name = NULL;
+        const char *function_name = NULL, *ptr;
         int ret;
 
         if ( ! prelude_string_is_empty(select->fields) ) {
@@ -153,6 +153,12 @@ int classic_sql_select_add_field(classic_sql_select_t *select, const char *field
                                              (flags & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC) ? "ASC" : "DESC");
                 if ( ret < 0 )
                         return ret;
+        }
+
+        ptr = field_name;
+        while ( (ptr = strchr(ptr, ',')) ) {
+                select->field_count++;
+                ptr++;
         }
 
         return 0;
