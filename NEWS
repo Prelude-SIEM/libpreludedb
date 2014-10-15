@@ -1,3 +1,27 @@
+* 2014-10-15, libpreludedb-1.2.6rc3:
+
+Author: Yoann Vandoorselaere
+
+- Unlock Python GIL before calling libpreludedb function
+
+  Some libpreludeDB function are blocking, so we don't want long
+  request to completly lock the interpreter.
+
+- Prevent version check failure in case of localisation change
+
+- Use --lgpl=2 when invoking GnuLib, remove obsolete GnuLib files
+
+- PreludeDB high level C++ and Python bindings
+
+  Implemented high level Python2 and 3 bindings for libpreludedb.
+  The main API, DB and SQL are supported.
+
+Author: Thomas Andrejak
+
+- Some distribution like CentOS do not use default include path from the system, force it for swig
+
+
+
 * 2014-09-23, libpreludedb-1.2.6rc2:
 
 Author: Yoann Vandoorselaere
