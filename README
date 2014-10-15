@@ -12,11 +12,28 @@ and to access the database independently of the type/format of the database.
 
 
 
+Dependencies
+============
+
+   Libprelude must be installed first.
+
+   For Redhat based systems (CentOS, Fedora, etc.)
+       MySQL Plugin        :    mysql-devel
+       PostgresSQL Plugin  :    postgresql-devel
+       SQLite Plugin       :    sqlite-devel
+
+   For Debian systems
+       MySQL Plugin        :    libmysqlclient-dev
+       PostgresSQL Plugin  :    libpq-dev
+       SQLite Plugin       :    libsqlite3-dev
+
+
+
 IRC
 ===
 
-If there's something you just can't find out elsewhere, you want to 
-give feedback directly to the authors or you're just bored, visit 
+If there's something you just can't find out elsewhere, you want to
+give feedback directly to the authors or you're just bored, visit
 #prelude on irc.freenode.net
 
 
@@ -40,13 +57,13 @@ Help development
 1. SUBMITTING PATCHES
 
 The Prelude source is constantly changing. If you want to submit a patch,
-please do so from the most recent CVS source tree, subscribe to the 
+please do so from the most recent CVS source tree, subscribe to the
 prelude-devel mailing list by sending a mail to:
 
         prelude-devel-subscribe@prelude-ids.org
 
 and post your patch with a description of functionality.
-You can also attach patches to bugs on 
+You can also attach patches to bugs on
 
         https://www.prelude-ids.org
 
@@ -78,7 +95,7 @@ newly created directory. Then type :
 
 	./configure
 	make
-	
+
 If everything works, su to root and type:
 
 	make install
