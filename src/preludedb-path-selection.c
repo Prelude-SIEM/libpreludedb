@@ -31,25 +31,30 @@
 #include <libprelude/prelude-list.h>
 #include <libprelude/prelude-log.h>
 
+#include "preludedb.h"
 #include "preludedb-error.h"
 #include "preludedb-path-selection.h"
+#include "preludedb-plugin-format.h"
+#include "preludedb-plugin-format-prv.h"
 
 struct preludedb_selected_path {
         idmef_path_t *path;
         preludedb_selected_path_flags_t flags;
+        unsigned int idx;
         unsigned int position;
 };
 
 struct preludedb_path_selection {
+        preludedb_t *db;
         preludedb_selected_path_t **selecteds;
         unsigned int count;
+        unsigned int numpos;
         int refcount;
 };
 
+preludedb_plugin_format_t *_preludedb_get_plugin_format(preludedb_t *db);
 
-
-int preludedb_selected_path_new(preludedb_selected_path_t **selected_path,
-                                idmef_path_t *path, int flags)
+int preludedb_selected_path_new(preludedb_selected_path_t **selected_path, idmef_path_t *path, int flags)
 {
         *selected_path = calloc(1, sizeof (**selected_path));
         if ( ! *selected_path )
@@ -213,7 +218,7 @@ preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_sele
 }
 
 
-int preludedb_selected_path_get_index(preludedb_selected_path_t *selected)
+int preludedb_selected_path_get_column_index(preludedb_selected_path_t *selected)
 {
         return selected->position;
 }
@@ -230,15 +235,15 @@ int preludedb_path_selection_get_selected(preludedb_path_selection_t *selection,
 
 
 
-int preludedb_path_selection_new(preludedb_path_selection_t **path_selection)
+int preludedb_path_selection_new(preludedb_t *db, preludedb_path_selection_t **path_selection)
 {
         *path_selection = calloc(1, sizeof(**path_selection));
         if ( ! *path_selection )
                 return preludedb_error_from_errno(errno);
 
         (*path_selection)->selecteds = NULL;
-        (*path_selection)->count = 0;
         (*path_selection)->refcount = 1;
+        (*path_selection)->db = preludedb_ref(db);
 
         return 0;
 }
@@ -255,6 +260,7 @@ void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection
         for ( i = 0; i < path_selection->count; i++ )
                 preludedb_selected_path_destroy(path_selection->selecteds[i]);
 
+        preludedb_destroy(path_selection->db);
         free(path_selection->selecteds);
         free(path_selection);
 }
@@ -269,16 +275,25 @@ preludedb_path_selection_t *preludedb_path_selection_ref(preludedb_path_selectio
 
 
 
-void preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
-                                  preludedb_selected_path_t *selected_path)
+int preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
+                                 preludedb_selected_path_t *selected_path)
 {
-        selected_path->position = path_selection->count++;
+        preludedb_plugin_format_t *format = _preludedb_get_plugin_format(path_selection->db);
+
+        selected_path->idx = path_selection->count++;
+        selected_path->position = path_selection->numpos;
+
+        path_selection->numpos += format->get_path_column_count(selected_path);
+        if ( selected_path->position < 0 )
+                return selected_path->position;
 
         path_selection->selecteds = realloc(path_selection->selecteds, sizeof(*path_selection->selecteds) * path_selection->count);
         if ( ! path_selection->selecteds )
-                return;
+                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-        path_selection->selecteds[selected_path->position] = selected_path;
+        path_selection->selecteds[path_selection->count - 1] = selected_path;
+
+        return 0;
 }
 
 
@@ -291,7 +306,7 @@ preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_sele
         preludedb_selected_path_t *selected;
 
         if ( selected_path )
-                pos = selected_path->position + 1;
+                pos = selected_path->idx + 1;
 
         ret = preludedb_path_selection_get_selected(path_selection, &selected, pos);
         if ( ret <= 0 )

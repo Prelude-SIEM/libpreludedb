@@ -81,6 +81,8 @@ typedef int (*preludedb_plugin_format_update_from_list_func_t)(preludedb_sql_t *
 typedef int (*preludedb_plugin_format_update_from_result_idents_func_t)(preludedb_sql_t *sql, const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                                                                         preludedb_result_idents_t *results);
 
+typedef int (*preludedb_plugin_format_get_path_column_count_func_t)(preludedb_selected_path_t *selected);
+
 void preludedb_plugin_format_set_check_schema_version_func(preludedb_plugin_format_t *plugin,
                                                            preludedb_plugin_format_check_schema_version_func_t func);
 
@@ -161,6 +163,9 @@ void preludedb_plugin_format_set_update_from_list_func(preludedb_plugin_format_t
 
 void preludedb_plugin_format_set_update_from_result_idents_func(preludedb_plugin_format_t *plugin,
                                                                 preludedb_plugin_format_update_from_result_idents_func_t func);
+
+void preludedb_plugin_format_set_get_path_column_count_func(preludedb_plugin_format_t *plugin,
+                                                            preludedb_plugin_format_get_path_column_count_func_t func);
 
 void preludedb_plugin_format_set_destroy_values_resource_func(preludedb_plugin_format_t *plugin,
                                                               preludedb_plugin_format_destroy_values_resource_func_t func);

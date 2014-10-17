@@ -159,7 +159,23 @@
 
 @p: 
 
+<!-- ##### USER_FUNCTION preludedb_plugin_sql_resource_destroy_func_t ##### -->
+<para>
+
+</para>
+
+@session: 
+@resource: 
+
 <!-- ##### FUNCTION preludedb_plugin_sql_set_get_error_func ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@func: 
+
+<!-- ##### FUNCTION preludedb_plugin_sql_set_resource_destroy_func ##### -->
 <para>
 
 </para>

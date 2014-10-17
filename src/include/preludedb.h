@@ -30,7 +30,6 @@
 #include "preludedb-sql-settings.h"
 #include "preludedb-sql.h"
 #include "preludedb-error.h"
-#include "preludedb-path-selection.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -38,6 +37,8 @@
 
 
 typedef struct preludedb preludedb_t;
+
+#include "preludedb-path-selection.h"
 
 typedef struct preludedb_result_idents preludedb_result_idents_t;
 typedef struct preludedb_result_values preludedb_result_values_t;

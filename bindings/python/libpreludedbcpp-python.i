@@ -130,8 +130,9 @@ def python2_unicode_patch(cl):
                 paths, values = self.__convertPV(paths, values)
                 return self._updateFromList(paths, values, identlist)
 
-        def update(self, paths, values, criteria=None, order=None, limit=-1, offset=-1):
+        def update(self, paths, values, criteria=None, order=[], limit=-1, offset=-1):
                 paths, values = self.__convertPV(paths, values)
                 return self._update(paths, values, criteria, order, limit, offset)
     }
 }
+

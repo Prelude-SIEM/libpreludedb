@@ -25,6 +25,36 @@ const char *PreludeDB::checkVersion(const char *wanted)
 }
 
 
+static preludedb_path_selection_t *_getSelection(preludedb_t *db, const std::vector<std::string> &selection)
+{
+        int ret;
+        preludedb_selected_path_t *selected;
+        preludedb_path_selection_t *cselection;
+
+        if ( selection.size() == 0 )
+                return NULL;
+
+        ret = preludedb_path_selection_new(db, &cselection);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+
+        for ( std::vector<std::string>::const_iterator iter = selection.begin(); iter != selection.end(); iter++) {
+                ret = preludedb_selected_path_new_string(&selected, (*iter).c_str());
+                if ( ret < 0 ) {
+                        preludedb_path_selection_destroy(cselection);
+                        throw PreludeDBError(ret);
+                }
+
+                ret = preludedb_path_selection_add(cselection, selected);
+                if ( ret < 0 ) {
+                        preludedb_path_selection_destroy(cselection);
+                        throw PreludeDBError(ret);
+                }
+        }
+
+        return cselection;
+}
+
 
 /**/
 
@@ -242,18 +272,28 @@ DB::~DB()
 
 
 
-DB::ResultValues DB::getValues(PathSelection &selection, const Prelude::IDMEFCriteria *criteria, bool distinct, int limit, int offset)
+DB::ResultValues DB::getValues(const std::vector<std::string> &selection, const Prelude::IDMEFCriteria *criteria, bool distinct, int limit, int offset)
 {
         int ret;
+        preludedb_selected_path_t *selected;
+        preludedb_path_selection_t *c_selection;
         preludedb_result_values_t *res;
         idmef_criteria_t *crit = NULL;
 
         if ( criteria )
                 crit = *criteria;
 
-        ret = preludedb_get_values(_db, selection, crit, (prelude_bool_t) distinct, limit, offset, &res);
+        ret = preludedb_path_selection_new(_db, &c_selection);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
+
+        c_selection = _getSelection(_db, selection);
+
+        ret = preludedb_get_values(_db, c_selection, crit, (prelude_bool_t) distinct, limit, offset, &res);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+
+        preludedb_path_selection_destroy(c_selection);
 
         return ResultValues((ret == 0) ? NULL : res);
 }
@@ -452,9 +492,10 @@ void DB::updateFromList(const std::vector<Prelude::IDMEFPath> &paths, const std:
 
 
 void DB::update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<Prelude::IDMEFValue> &values,
-                Prelude::IDMEFCriteria *criteria, const PreludeDB::PathSelection *order, int limit, int offset)
+                Prelude::IDMEFCriteria *criteria, const std::vector<std::string> &order, int limit, int offset)
 {
         int ret;
+        preludedb_selected_path_t *selected;
         preludedb_path_selection_t *corder = NULL;
         idmef_criteria_t *ccriteria = NULL;
         size_t i;
@@ -464,9 +505,6 @@ void DB::update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<
         if ( criteria )
                 ccriteria = *criteria;
 
-        if ( order )
-                corder = *order;
-
         if ( paths.size() != values.size() )
                 throw PreludeDBError("Paths size does not match value size");
 
@@ -475,7 +513,13 @@ void DB::update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<
                 cvals[i] = values[i];
         }
 
+        corder = _getSelection(_db, order);
+
         ret = preludedb_update(_db, cpath, cvals, paths.size(), ccriteria, corder, limit, offset);
+
+        if ( corder )
+                preludedb_path_selection_destroy(corder);
+
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 }

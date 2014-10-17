@@ -64,7 +64,7 @@ struct preludedb_result_values {
         void *res;
 };
 
-
+preludedb_plugin_format_t *_preludedb_get_plugin_format(preludedb_t *db);
 int _preludedb_sql_transaction_start(preludedb_sql_t *sql);
 int _preludedb_sql_transaction_end(preludedb_sql_t *sql);
 int _preludedb_sql_transaction_abort(preludedb_sql_t *sql);
@@ -904,4 +904,10 @@ int preludedb_transaction_abort(preludedb_t *db)
                 return ret;
 
         return ret;
+}
+
+
+preludedb_plugin_format_t *_preludedb_get_plugin_format(preludedb_t *db)
+{
+        return db->plugin;
 }

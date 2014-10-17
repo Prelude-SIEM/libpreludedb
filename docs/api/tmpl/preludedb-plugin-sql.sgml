@@ -32,7 +32,7 @@ preludedb-plugin-sql
 </para>
 
 @session: 
-@resource: 
+@table: 
 @column_num: 
 @Returns: 
 
@@ -99,18 +99,9 @@ preludedb-plugin-sql
 </para>
 
 @session: 
-@resource: 
+@table: 
 @column_name: 
 @Returns: 
-
-
-<!-- ##### USER_FUNCTION preludedb_plugin_sql_resource_destroy_func_t ##### -->
-<para>
-
-</para>
-
-@session: 
-@resource: 
 
 
 <!-- ##### USER_FUNCTION preludedb_plugin_sql_build_timestamp_string_func_t ##### -->
@@ -173,11 +164,10 @@ preludedb-plugin-sql
 </para>
 
 @session: 
-@resource: 
+@table: 
 @row: 
 @column_num: 
-@value: 
-@len: 
+@field: 
 @Returns: 
 
 
@@ -230,7 +220,8 @@ preludedb-plugin-sql
 </para>
 
 @session: 
-@resource: 
+@table: 
+@row_index: 
 @row: 
 @Returns: 
 
@@ -326,15 +317,6 @@ preludedb-plugin-sql
 
 
 <!-- ##### FUNCTION preludedb_plugin_sql_set_get_column_num_func ##### -->
-<para>
-
-</para>
-
-@plugin: 
-@func: 
-
-
-<!-- ##### FUNCTION preludedb_plugin_sql_set_resource_destroy_func ##### -->
 <para>
 
 </para>

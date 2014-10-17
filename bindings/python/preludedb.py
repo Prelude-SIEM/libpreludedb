@@ -156,7 +156,7 @@ class DB(_object):
             paths, values = self.__convertPV(paths, values)
             return self._updateFromList(paths, values, identlist)
 
-    def update(self, paths, values, criteria=None, order=None, limit=-1, offset=-1):
+    def update(self, paths, values, criteria=None, order=[], limit=-1, offset=-1):
             paths, values = self.__convertPV(paths, values)
             return self._update(paths, values, criteria, order, limit, offset)
 
@@ -347,21 +347,6 @@ class Row(_object):
 
 Row_swigregister = _preludedb.Row_swigregister
 Row_swigregister(Row)
-
-class PathSelection(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, PathSelection, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, PathSelection, name)
-    __repr__ = _swig_repr
-    __swig_destroy__ = _preludedb.delete_PathSelection
-    __del__ = lambda self : None;
-    def __init__(self, *args): 
-        this = _preludedb.new_PathSelection(*args)
-        try: self.this.append(this)
-        except: self.this = this
-PathSelection_swigregister = _preludedb.PathSelection_swigregister
-PathSelection_swigregister(PathSelection)
 
 python2_unicode_patch(PreludeDBError)
 

@@ -4,7 +4,6 @@
 #include "preludedb.h"
 #include "preludedb-sql.hxx"
 #include "preludedb-error.hxx"
-#include "preludedb-path-selection.hxx"
 
 
 namespace PreludeDB {
@@ -77,7 +76,7 @@ namespace PreludeDB {
 
                 ResultIdents getAlertIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, ResultIdentsOrderByEnum order=ORDER_BY_CREATE_TIME_DESC);
                 ResultIdents getHeartbeatIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, ResultIdentsOrderByEnum order=ORDER_BY_CREATE_TIME_DESC);
-                ResultValues getValues(PreludeDB::PathSelection &selection, const Prelude::IDMEFCriteria *criteria=NULL, bool distinct=0, int limit=-1, int offset=-1);
+                ResultValues getValues(const std::vector<std::string> &selection, const Prelude::IDMEFCriteria *criteria=NULL, bool distinct=0, int limit=-1, int offset=-1);
 
                 std::string getFormatName(void);
                 std::string getFormatVersion(void);
@@ -112,7 +111,7 @@ namespace PreludeDB {
                                     const std::vector<_VECTOR_UINT64_TYPE> idents);
 
                 void update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<Prelude::IDMEFValue> &values,
-                            Prelude::IDMEFCriteria *criteria=NULL, const PreludeDB::PathSelection *order=NULL,
+                            Prelude::IDMEFCriteria *criteria=NULL, const std::vector<std::string> &order=std::vector<std::string>(),
                             int limit=-1, int offset=-1);
         };
 };

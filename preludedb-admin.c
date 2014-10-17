@@ -1140,7 +1140,7 @@ static int cmd_count(int argc, char **argv)
         if ( ret < 0 )
                 return ret;
 
-        ret = preludedb_path_selection_new(&ps);
+        ret = preludedb_path_selection_new(db, &ps);
         if ( ret < 0 ) {
                 preludedb_destroy(db);
                 return ret;
@@ -1178,36 +1178,15 @@ err:
 
 
 
-static preludedb_path_selection_t *selection = NULL;
+static char *update_order = NULL;
 
 static int set_order(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
-        int ret;
-        preludedb_selected_path_t *selected;
+        if ( update_order )
+                free(update_order);
 
-        ret = preludedb_selected_path_new_string(&selected, optarg);
-        if ( ret < 0 )
-                return ret;
-
-        ret = preludedb_selected_path_get_flags(selected);
-        if ( !(ret & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC) && ! (ret & PRELUDEDB_SELECTED_OBJECT_ORDER_DESC) ) {
-                fprintf(stderr, "Invalid order specified : require use of 'order_asc' or 'order_desc' flags.\n");
-                return -1;
-        }
-
-        if ( ! selection ) {
-                ret = preludedb_path_selection_new(&selection);
-                if ( ret < 0 )
-                        return ret;
-        }
-
-        preludedb_path_selection_add(selection, selected);
-
-
-        ret = preludedb_selected_path_new_string(&selected, "alert.create_time/order_asc");
-        preludedb_path_selection_add(selection, selected);
-
-        return ret;
+        update_order = strdup(optarg);
+        return 0;
 }
 
 
@@ -1219,6 +1198,7 @@ static int cmd_update(int argc, char **argv)
         int i, j = 0;
         idmef_path_t **paths;
         idmef_value_t **values;
+        preludedb_path_selection_t *selection = NULL;
 
         prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 0, "order",
                            NULL, PRELUDE_OPTION_ARGUMENT_REQUIRED, set_order, NULL);
@@ -1233,6 +1213,23 @@ static int cmd_update(int argc, char **argv)
         ret = db_new_from_string(&db, argv[idx++]);
         if ( ret < 0 )
                 return ret;
+
+        if ( update_order ) {
+                char *ptr;
+                preludedb_selected_path_t *selected;
+
+                preludedb_path_selection_new(db, &selection);
+
+                while ( (ptr = strsep(&update_order, ",")) ) {
+                        ret = preludedb_selected_path_new_string(&selected, ptr);
+                        if ( ret < 0 ) {
+                                fprintf(stderr, "Invalid update order path: '%s'.\n", preludedb_strerror(ret));
+                                return ret;
+                        }
+
+                        preludedb_path_selection_add(selection, selected);
+                }
+        }
 
         paths = malloc((argc - idx) * sizeof(idmef_path_t *));
         values = malloc((argc - idx) * sizeof(idmef_value_t *));

@@ -51,6 +51,7 @@
 
 int classic_LTX_prelude_plugin_version(void);
 int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
+int classic_get_path_column_count(preludedb_selected_path_t *selected);
 
 
 struct db_value_info {
@@ -373,8 +374,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
         preludedb_sql_field_t *field;
         const char *char_val;
         unsigned int retrieved = 1;
-        int ret;
-        prelude_bool_t multiple_time_field = FALSE;
+        int ret, num_field;
 
         flags = preludedb_selected_path_get_flags(selected);
         path = preludedb_selected_path_get_path(selected);
@@ -384,14 +384,10 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
         if ( ret < 0 )
                 return ret;
 
-        if ( type == IDMEF_VALUE_TYPE_TIME &&
-             ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-                         PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD)) )
-                multiple_time_field = TRUE;
-
+        num_field = classic_get_path_column_count(selected);
         if ( ret == 0 ) {
                 *value = NULL;
-                return (multiple_time_field) ? 3 : 1;
+                return num_field;
         }
 
         char_val = preludedb_sql_field_get_value(field);
@@ -417,8 +413,8 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                 int32_t gmtoff = 0;
                 idmef_time_t *time;
 
-                if ( multiple_time_field ) {
-                        preludedb_sql_field_t *gmtoff_field, *usec_field;
+                if ( num_field > 1 ) {
+                        preludedb_sql_field_t *gmtoff_field;
 
                         ret = preludedb_sql_row_get_field(row, cnt + 1, &gmtoff_field);
                         if ( ret < 0 )
@@ -429,6 +425,10 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                                 if ( ret < 0 )
                                         return ret;
                         }
+                }
+
+                if ( num_field > 2 ) {
+                        preludedb_sql_field_t *usec_field;
 
                         ret = preludedb_sql_row_get_field(row, cnt + 2, &usec_field);
                         if ( ret < 0 )
@@ -515,7 +515,7 @@ static int classic_get_result_values_field(preludedb_result_values_t *results, v
 {
         unsigned int cnum;
 
-        cnum = preludedb_selected_path_get_index(selected);
+        cnum = preludedb_selected_path_get_column_index(selected);
         if ( cnum < 0 )
                 return cnum;
 
@@ -538,6 +538,28 @@ static int classic_get_result_values_count(preludedb_result_values_t *results)
 static void classic_destroy_values_resource(void *res)
 {
         preludedb_sql_table_destroy(res);
+}
+
+
+int classic_get_path_column_count(preludedb_selected_path_t *selected)
+{
+        idmef_path_t *path;
+        idmef_value_type_id_t type;
+        preludedb_sql_time_constraint_type_t tc;
+        preludedb_selected_path_flags_t flags;
+
+        path = preludedb_selected_path_get_path(selected);
+        tc = preludedb_selected_path_get_time_constraint(selected);
+        flags = preludedb_selected_path_get_flags(selected);
+        type = idmef_path_get_value_type(path, -1);
+
+        if ( type == IDMEF_VALUE_TYPE_TIME && ! tc &&
+             ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+                         PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
+                         PRELUDEDB_SELECTED_OBJECT_GROUP_BY|PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT)) )
+                return idmef_path_get_depth(path) == 2 ? 3 : 2;
+
+        return 1;
 }
 
 
@@ -607,6 +629,7 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_format_set_get_result_values_count_func(plugin, classic_get_result_values_count);
 
         preludedb_plugin_format_set_destroy_values_resource_func(plugin, classic_destroy_values_resource);
+        preludedb_plugin_format_set_get_path_column_count_func(plugin, classic_get_path_column_count);
 
         return 0;
 }

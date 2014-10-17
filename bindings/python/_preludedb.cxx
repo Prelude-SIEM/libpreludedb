@@ -2945,40 +2945,39 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_PreludeDB__DB__ResultIdents swig_types[1]
 #define SWIGTYPE_p_PreludeDB__DB__ResultValues swig_types[2]
 #define SWIGTYPE_p_PreludeDB__DB__ResultValues__ResultValuesRow swig_types[3]
-#define SWIGTYPE_p_PreludeDB__PathSelection swig_types[4]
-#define SWIGTYPE_p_PreludeDB__PreludeDBError swig_types[5]
-#define SWIGTYPE_p_PreludeDB__SQL swig_types[6]
-#define SWIGTYPE_p_PreludeDB__SQL__Table swig_types[7]
-#define SWIGTYPE_p_PreludeDB__SQL__Table__Row swig_types[8]
-#define SWIGTYPE_p_Prelude__IDMEF swig_types[9]
-#define SWIGTYPE_p_Prelude__IDMEFCriteria swig_types[10]
-#define SWIGTYPE_p_Prelude__IDMEFTime swig_types[11]
-#define SWIGTYPE_p_Prelude__PreludeError swig_types[12]
-#define SWIGTYPE_p_allocator_type swig_types[13]
-#define SWIGTYPE_p_char swig_types[14]
-#define SWIGTYPE_p_const_reference swig_types[15]
-#define SWIGTYPE_p_difference_type swig_types[16]
-#define SWIGTYPE_p_int swig_types[17]
-#define SWIGTYPE_p_key_type swig_types[18]
-#define SWIGTYPE_p_long_long swig_types[19]
-#define SWIGTYPE_p_mapped_type swig_types[20]
-#define SWIGTYPE_p_preludedb_result_idents_t swig_types[21]
-#define SWIGTYPE_p_preludedb_result_values_t swig_types[22]
-#define SWIGTYPE_p_preludedb_sql_row_t swig_types[23]
-#define SWIGTYPE_p_preludedb_sql_table_t swig_types[24]
-#define SWIGTYPE_p_reference swig_types[25]
-#define SWIGTYPE_p_short swig_types[26]
-#define SWIGTYPE_p_size_type swig_types[27]
-#define SWIGTYPE_p_std__exception swig_types[28]
-#define SWIGTYPE_p_std__invalid_argument swig_types[29]
-#define SWIGTYPE_p_swig__SwigPyIterator swig_types[30]
-#define SWIGTYPE_p_unsigned_char swig_types[31]
-#define SWIGTYPE_p_unsigned_int swig_types[32]
-#define SWIGTYPE_p_unsigned_long_long swig_types[33]
-#define SWIGTYPE_p_unsigned_short swig_types[34]
-#define SWIGTYPE_p_value_type swig_types[35]
-static swig_type_info *swig_types[37];
-static swig_module_info swig_module = {swig_types, 36, 0, 0, 0, 0};
+#define SWIGTYPE_p_PreludeDB__PreludeDBError swig_types[4]
+#define SWIGTYPE_p_PreludeDB__SQL swig_types[5]
+#define SWIGTYPE_p_PreludeDB__SQL__Table swig_types[6]
+#define SWIGTYPE_p_PreludeDB__SQL__Table__Row swig_types[7]
+#define SWIGTYPE_p_Prelude__IDMEF swig_types[8]
+#define SWIGTYPE_p_Prelude__IDMEFCriteria swig_types[9]
+#define SWIGTYPE_p_Prelude__IDMEFTime swig_types[10]
+#define SWIGTYPE_p_Prelude__PreludeError swig_types[11]
+#define SWIGTYPE_p_allocator_type swig_types[12]
+#define SWIGTYPE_p_char swig_types[13]
+#define SWIGTYPE_p_const_reference swig_types[14]
+#define SWIGTYPE_p_difference_type swig_types[15]
+#define SWIGTYPE_p_int swig_types[16]
+#define SWIGTYPE_p_key_type swig_types[17]
+#define SWIGTYPE_p_long_long swig_types[18]
+#define SWIGTYPE_p_mapped_type swig_types[19]
+#define SWIGTYPE_p_preludedb_result_idents_t swig_types[20]
+#define SWIGTYPE_p_preludedb_result_values_t swig_types[21]
+#define SWIGTYPE_p_preludedb_sql_row_t swig_types[22]
+#define SWIGTYPE_p_preludedb_sql_table_t swig_types[23]
+#define SWIGTYPE_p_reference swig_types[24]
+#define SWIGTYPE_p_short swig_types[25]
+#define SWIGTYPE_p_size_type swig_types[26]
+#define SWIGTYPE_p_std__exception swig_types[27]
+#define SWIGTYPE_p_std__invalid_argument swig_types[28]
+#define SWIGTYPE_p_swig__SwigPyIterator swig_types[29]
+#define SWIGTYPE_p_unsigned_char swig_types[30]
+#define SWIGTYPE_p_unsigned_int swig_types[31]
+#define SWIGTYPE_p_unsigned_long_long swig_types[32]
+#define SWIGTYPE_p_unsigned_short swig_types[33]
+#define SWIGTYPE_p_value_type swig_types[34]
+static swig_type_info *swig_types[36];
+static swig_module_info swig_module = {swig_types, 35, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -4640,16 +4639,51 @@ SWIG_AsVal_int (PyObject * obj, int *val)
 
 
 SWIGINTERN int
-SWIG_AsVal_bool (PyObject *obj, bool *val)
+SWIG_AsPtr_std_string (PyObject * obj, std::string **val) 
 {
-  int r;
-  if (!PyBool_Check(obj))
-    return SWIG_ERROR;
-  r = PyObject_IsTrue(obj);
-  if (r == -1)
-    return SWIG_ERROR;
-  if (val) *val = r ? true : false;
-  return SWIG_OK;
+  char* buf = 0 ; size_t size = 0; int alloc = SWIG_OLDOBJ;
+  if (SWIG_IsOK((SWIG_AsCharPtrAndSize(obj, &buf, &size, &alloc)))) {
+    if (buf) {
+      if (val) *val = new std::string(buf, size - 1);
+      if (alloc == SWIG_NEWOBJ) delete[] buf;
+      return SWIG_NEWOBJ;
+    } else {
+      if (val) *val = 0;
+      return SWIG_OLDOBJ;
+    }
+  } else {
+    static int init = 0;
+    static swig_type_info* descriptor = 0;
+    if (!init) {
+      descriptor = SWIG_TypeQuery("std::string" " *");
+      init = 1;
+    }
+    if (descriptor) {
+      std::string *vptr;
+      int res = SWIG_ConvertPtr(obj, (void**)&vptr, descriptor, 0);
+      if (SWIG_IsOK(res) && val) *val = vptr;
+      return res;
+    }
+  }
+  return SWIG_ERROR;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_std_string (PyObject * obj, std::string *val)
+{
+  std::string* v = (std::string *) 0;
+  int res = SWIG_AsPtr_std_string (obj, &v);
+  if (!SWIG_IsOK(res)) return res;
+  if (v) {
+    if (val) *val = *v;
+    if (SWIG_IsNewObj(res)) {
+      delete v;
+      res = SWIG_DelNewMask(res);
+    }
+    return res;
+  }
+  return SWIG_ERROR;
 }
 
 
@@ -4660,73 +4694,21 @@ SWIG_From_std_string  (const std::string& s)
 }
 
 
-SWIGINTERN int
-SWIG_AsVal_unsigned_SS_long_SS_long (PyObject *obj, unsigned long long *val)
-{
-  int res = SWIG_TypeError;
-  if (PyLong_Check(obj)) {
-    unsigned long long v = PyLong_AsUnsignedLongLong(obj);
-    if (!PyErr_Occurred()) {
-      if (val) *val = v;
-      return SWIG_OK;
-    } else {
-      PyErr_Clear();
-    }
-  } else {
-    unsigned long v;
-    res = SWIG_AsVal_unsigned_SS_long (obj,&v);
-    if (SWIG_IsOK(res)) {
-      if (val) *val = v;
-      return res;
-    }
-  }
-#ifdef SWIG_PYTHON_CAST_MODE
-  {
-    const double mant_max = 1LL << DBL_MANT_DIG;
-    double d;
-    res = SWIG_AsVal_double (obj,&d);
-    if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, mant_max)) {
-      if (val) *val = (unsigned long long)(d);
-      return SWIG_AddCast(res);
-    }
-    res = SWIG_TypeError;
-  }
-#endif
-  return res;
-}
-
-
-SWIGINTERNINLINE PyObject* 
-SWIG_From_long_SS_long  (long long value)
-{
-  return ((value < LONG_MIN) || (value > LONG_MAX)) ?
-    PyLong_FromLongLong(value) : PyLong_FromLong(static_cast< long >(value)); 
-}
-
-
-SWIGINTERNINLINE PyObject* 
-SWIG_From_unsigned_SS_long_SS_long  (unsigned long long value)
-{
-  return (value > LONG_MAX) ?
-    PyLong_FromUnsignedLongLong(value) : PyLong_FromLong(static_cast< long >(value)); 
-}
-
-
 namespace swig {
-  template <> struct traits<unsigned long long > {
+  template <> struct traits<std::string > {
     typedef value_category category;
-    static const char* type_name() { return"unsigned long long"; }
+    static const char* type_name() { return"std::string"; }
   };  
-  template <>  struct traits_asval<unsigned long long > {   
-    typedef unsigned long long value_type;
+  template <>  struct traits_asval<std::string > {   
+    typedef std::string value_type;
     static int asval(PyObject *obj, value_type *val) { 
-      return SWIG_AsVal_unsigned_SS_long_SS_long (obj, val);
+      return SWIG_AsVal_std_string (obj, val);
     }
   };
-  template <>  struct traits_from<unsigned long long > {
-    typedef unsigned long long value_type;
+  template <>  struct traits_from<std::string > {
+    typedef std::string value_type;
     static PyObject *from(const value_type& val) {
-      return SWIG_From_unsigned_SS_long_SS_long  (val);
+      return SWIG_From_std_string  (val);
     }
   };
 }
@@ -4828,6 +4810,102 @@ namespace swig {
       }
     };
   }
+
+
+      namespace swig {
+	template <>  struct traits<std::vector<std::string, std::allocator< std::string > > > {
+	  typedef pointer_category category;
+	  static const char* type_name() {
+	    return "std::vector<" "std::string" "," "std::allocator< std::string >" " >";
+	  }
+	};
+      }
+    
+
+SWIGINTERN int
+SWIG_AsVal_bool (PyObject *obj, bool *val)
+{
+  int r;
+  if (!PyBool_Check(obj))
+    return SWIG_ERROR;
+  r = PyObject_IsTrue(obj);
+  if (r == -1)
+    return SWIG_ERROR;
+  if (val) *val = r ? true : false;
+  return SWIG_OK;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long_SS_long (PyObject *obj, unsigned long long *val)
+{
+  int res = SWIG_TypeError;
+  if (PyLong_Check(obj)) {
+    unsigned long long v = PyLong_AsUnsignedLongLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+    }
+  } else {
+    unsigned long v;
+    res = SWIG_AsVal_unsigned_SS_long (obj,&v);
+    if (SWIG_IsOK(res)) {
+      if (val) *val = v;
+      return res;
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    const double mant_max = 1LL << DBL_MANT_DIG;
+    double d;
+    res = SWIG_AsVal_double (obj,&d);
+    if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, mant_max)) {
+      if (val) *val = (unsigned long long)(d);
+      return SWIG_AddCast(res);
+    }
+    res = SWIG_TypeError;
+  }
+#endif
+  return res;
+}
+
+
+SWIGINTERNINLINE PyObject* 
+SWIG_From_long_SS_long  (long long value)
+{
+  return ((value < LONG_MIN) || (value > LONG_MAX)) ?
+    PyLong_FromLongLong(value) : PyLong_FromLong(static_cast< long >(value)); 
+}
+
+
+SWIGINTERNINLINE PyObject* 
+SWIG_From_unsigned_SS_long_SS_long  (unsigned long long value)
+{
+  return (value > LONG_MAX) ?
+    PyLong_FromUnsignedLongLong(value) : PyLong_FromLong(static_cast< long >(value)); 
+}
+
+
+namespace swig {
+  template <> struct traits<unsigned long long > {
+    typedef value_category category;
+    static const char* type_name() { return"unsigned long long"; }
+  };  
+  template <>  struct traits_asval<unsigned long long > {   
+    typedef unsigned long long value_type;
+    static int asval(PyObject *obj, value_type *val) { 
+      return SWIG_AsVal_unsigned_SS_long_SS_long (obj, val);
+    }
+  };
+  template <>  struct traits_from<unsigned long long > {
+    typedef unsigned long long value_type;
+    static PyObject *from(const value_type& val) {
+      return SWIG_From_unsigned_SS_long_SS_long  (val);
+    }
+  };
+}
 
 
       namespace swig {
@@ -5032,75 +5110,6 @@ int IDMEFValue_to_SWIG(const Prelude::IDMEFValue &result, void *extra, TARGET_LA
         else return -1;
 
         return 1;
-}
-
-
-SWIGINTERN int
-SWIG_AsPtr_std_string (PyObject * obj, std::string **val) 
-{
-  char* buf = 0 ; size_t size = 0; int alloc = SWIG_OLDOBJ;
-  if (SWIG_IsOK((SWIG_AsCharPtrAndSize(obj, &buf, &size, &alloc)))) {
-    if (buf) {
-      if (val) *val = new std::string(buf, size - 1);
-      if (alloc == SWIG_NEWOBJ) delete[] buf;
-      return SWIG_NEWOBJ;
-    } else {
-      if (val) *val = 0;
-      return SWIG_OLDOBJ;
-    }
-  } else {
-    static int init = 0;
-    static swig_type_info* descriptor = 0;
-    if (!init) {
-      descriptor = SWIG_TypeQuery("std::string" " *");
-      init = 1;
-    }
-    if (descriptor) {
-      std::string *vptr;
-      int res = SWIG_ConvertPtr(obj, (void**)&vptr, descriptor, 0);
-      if (SWIG_IsOK(res) && val) *val = vptr;
-      return res;
-    }
-  }
-  return SWIG_ERROR;
-}
-
-
-SWIGINTERN int
-SWIG_AsVal_std_string (PyObject * obj, std::string *val)
-{
-  std::string* v = (std::string *) 0;
-  int res = SWIG_AsPtr_std_string (obj, &v);
-  if (!SWIG_IsOK(res)) return res;
-  if (v) {
-    if (val) *val = *v;
-    if (SWIG_IsNewObj(res)) {
-      delete v;
-      res = SWIG_DelNewMask(res);
-    }
-    return res;
-  }
-  return SWIG_ERROR;
-}
-
-
-namespace swig {
-  template <> struct traits<std::string > {
-    typedef value_category category;
-    static const char* type_name() { return"std::string"; }
-  };  
-  template <>  struct traits_asval<std::string > {   
-    typedef std::string value_type;
-    static int asval(PyObject *obj, value_type *val) { 
-      return SWIG_AsVal_std_string (obj, val);
-    }
-  };
-  template <>  struct traits_from<std::string > {
-    typedef std::string value_type;
-    static PyObject *from(const value_type& val) {
-      return SWIG_From_std_string  (val);
-    }
-  };
 }
 
 
@@ -5408,16 +5417,6 @@ namespace swig {
 	  typedef pointer_category category;
 	  static const char* type_name() {
 	    return "std::map<" "std::string" "," "std::string" "," "std::less< std::string >" "," "std::allocator< std::pair< std::string const,std::string > >" " >";
-	  }
-	};
-      }
-    
-
-      namespace swig {
-	template <>  struct traits<std::vector<std::string, std::allocator< std::string > > > {
-	  typedef pointer_category category;
-	  static const char* type_name() {
-	    return "std::vector<" "std::string" "," "std::allocator< std::string >" " >";
 	  }
 	};
       }
@@ -6624,13 +6623,14 @@ fail:
 SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject *args, PyObject *kwargs) {
   PyObject *resultobj = 0;
   PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
-  PreludeDB::PathSelection *arg2 = 0 ;
+  std::vector< std::string,std::allocator< std::string > > *arg2 = 0 ;
   Prelude::IDMEFCriteria *arg3 = (Prelude::IDMEFCriteria *) NULL ;
   bool arg4 = (bool) 0 ;
   int arg5 = (int) -1 ;
   int arg6 = (int) -1 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
   bool val4 ;
   int ecode4 = 0 ;
   int val5 ;
@@ -6655,29 +6655,15 @@ SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
-    int ret;
-    void *tmp = NULL;
-    std::vector<std::string> *ptr = NULL;
-    
-    ret = SWIG_ConvertPtr(obj1, &tmp, SWIGTYPE_p_PreludeDB__PathSelection, 0);
-    if ( SWIG_IsOK(ret) && tmp )
-    arg2 = new PreludeDB::PathSelection(*(PreludeDB::PathSelection *) tmp);
-    else {
-      ret = swig::asptr(obj1, &ptr);
-      if ( ! SWIG_IsOK(ret) || ! ptr )
-      SWIG_exception_fail(SWIG_ArgError(ret), "Input should be 'PreludeDB::PathSelection' object or string");
-      
-      try {
-        arg2 = new PreludeDB::PathSelection(*ptr);
-        if ( SWIG_IsNewObj(ret) )
-        delete ptr;
-      } catch (PreludeDB::PreludeDBError &e) {
-        if ( SWIG_IsNewObj(ret) )
-        delete ptr;
-        
-        SWIG_exception_fail(SWIG_ArgError(ret), e);
-      }
+    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
+    res2 = swig::asptr(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "DB_getValues" "', argument " "2"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
     }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_getValues" "', argument " "2"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+    }
+    arg2 = ptr;
   }
   if (obj2) {
     {
@@ -6729,7 +6715,7 @@ SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject
   try {
     {
       SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (arg1)->getValues(*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
+      result = (arg1)->getValues((std::vector< std::string,std::allocator< std::string > > const &)*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
       SWIG_PYTHON_THREAD_END_ALLOW;
     }
   } catch (PreludeDBError &e) {
@@ -6745,20 +6731,14 @@ SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject
   }
   
   resultobj = SWIG_NewPointerObj((new PreludeDB::DB::ResultValues(static_cast< const PreludeDB::DB::ResultValues& >(result))), SWIGTYPE_p_PreludeDB__DB__ResultValues, SWIG_POINTER_OWN |  0 );
-  {
-    if ( arg2 )
-    delete(arg2);
-  }
+  if (SWIG_IsNewObj(res2)) delete arg2;
   {
     if ( arg3 )
     delete(arg3);
   }
   return resultobj;
 fail:
-  {
-    if ( arg2 )
-    delete(arg2);
-  }
+  if (SWIG_IsNewObj(res2)) delete arg2;
   {
     if ( arg3 )
     delete(arg3);
@@ -7654,15 +7634,15 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
   std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > *arg2 = 0 ;
   std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *arg3 = 0 ;
   Prelude::IDMEFCriteria *arg4 = (Prelude::IDMEFCriteria *) NULL ;
-  PreludeDB::PathSelection *arg5 = (PreludeDB::PathSelection *) NULL ;
+  std::vector< std::string,std::allocator< std::string > > const &arg5_defvalue = std::vector< std::string >() ;
+  std::vector< std::string,std::allocator< std::string > > *arg5 = (std::vector< std::string,std::allocator< std::string > > *) &arg5_defvalue ;
   int arg6 = (int) -1 ;
   int arg7 = (int) -1 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int res2 = SWIG_OLDOBJ ;
   int res3 = SWIG_OLDOBJ ;
-  void *argp5 = 0 ;
-  int res5 = 0 ;
+  int res5 = SWIG_OLDOBJ ;
   int val6 ;
   int ecode6 = 0 ;
   int val7 ;
@@ -7732,11 +7712,17 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
     }
   }
   if (obj4) {
-    res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_PreludeDB__PathSelection, 0 |  0 );
-    if (!SWIG_IsOK(res5)) {
-      SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "DB__update" "', argument " "5"" of type '" "PreludeDB::PathSelection const *""'"); 
+    {
+      std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
+      res5 = swig::asptr(obj4, &ptr);
+      if (!SWIG_IsOK(res5)) {
+        SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "DB__update" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB__update" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      arg5 = ptr;
     }
-    arg5 = reinterpret_cast< PreludeDB::PathSelection * >(argp5);
   }
   if (obj5) {
     ecode6 = SWIG_AsVal_int(obj5, &val6);
@@ -7756,7 +7742,7 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
   try {
     {
       SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(PreludeDB::PathSelection const *)arg5,arg6,arg7);
+      (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(std::vector< std::string,std::allocator< std::string > > const &)*arg5,arg6,arg7);
       SWIG_PYTHON_THREAD_END_ALLOW;
     }
   } catch (PreludeDBError &e) {
@@ -7778,6 +7764,7 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
     if ( arg4 )
     delete(arg4);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return resultobj;
 fail:
   if (SWIG_IsNewObj(res2)) delete arg2;
@@ -7786,6 +7773,7 @@ fail:
     if ( arg4 )
     delete(arg4);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return NULL;
 }
 
@@ -10653,236 +10641,6 @@ SWIGINTERN PyObject *Row_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *
   return SWIG_Py_Void();
 }
 
-SWIGINTERN PyObject *_wrap_delete_PathSelection(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  PreludeDB::PathSelection *arg1 = (PreludeDB::PathSelection *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_PathSelection",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_PathSelection" "', argument " "1"" of type '" "PreludeDB::PathSelection *""'"); 
-  }
-  arg1 = reinterpret_cast< PreludeDB::PathSelection * >(argp1);
-  
-  try {
-    {
-      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      delete arg1;
-      SWIG_PYTHON_THREAD_END_ALLOW;
-    }
-  } catch (PreludeDBError &e) {
-    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-    SWIG_exception(SWIG_IndexError, e.what());
-    else {
-      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
-          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
-        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-    }
-    
-    SWIG_fail;
-  }
-  
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  PreludeDB::PathSelection *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_PathSelection")) SWIG_fail;
-  
-  try {
-    {
-      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection();
-      SWIG_PYTHON_THREAD_END_ALLOW;
-    }
-  } catch (PreludeDBError &e) {
-    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-    SWIG_exception(SWIG_IndexError, e.what());
-    else {
-      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
-          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
-        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-    }
-    
-    SWIG_fail;
-  }
-  
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  PreludeDB::PathSelection *arg1 = 0 ;
-  PyObject * obj0 = 0 ;
-  PreludeDB::PathSelection *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:new_PathSelection",&obj0)) SWIG_fail;
-  {
-    int ret;
-    void *tmp = NULL;
-    std::vector<std::string> *ptr = NULL;
-    
-    ret = SWIG_ConvertPtr(obj0, &tmp, SWIGTYPE_p_PreludeDB__PathSelection, 0);
-    if ( SWIG_IsOK(ret) && tmp )
-    arg1 = new PreludeDB::PathSelection(*(PreludeDB::PathSelection *) tmp);
-    else {
-      ret = swig::asptr(obj0, &ptr);
-      if ( ! SWIG_IsOK(ret) || ! ptr )
-      SWIG_exception_fail(SWIG_ArgError(ret), "Input should be 'PreludeDB::PathSelection' object or string");
-      
-      try {
-        arg1 = new PreludeDB::PathSelection(*ptr);
-        if ( SWIG_IsNewObj(ret) )
-        delete ptr;
-      } catch (PreludeDB::PreludeDBError &e) {
-        if ( SWIG_IsNewObj(ret) )
-        delete ptr;
-        
-        SWIG_exception_fail(SWIG_ArgError(ret), e);
-      }
-    }
-  }
-  
-  try {
-    {
-      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((PreludeDB::PathSelection const &)*arg1);
-      SWIG_PYTHON_THREAD_END_ALLOW;
-    }
-  } catch (PreludeDBError &e) {
-    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-    SWIG_exception(SWIG_IndexError, e.what());
-    else {
-      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
-          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
-        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-    }
-    
-    SWIG_fail;
-  }
-  
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
-  {
-    if ( arg1 )
-    delete(arg1);
-  }
-  return resultobj;
-fail:
-  {
-    if ( arg1 )
-    delete(arg1);
-  }
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  std::vector< std::string,std::allocator< std::string > > *arg1 = 0 ;
-  int res1 = SWIG_OLDOBJ ;
-  PyObject * obj0 = 0 ;
-  PreludeDB::PathSelection *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:new_PathSelection",&obj0)) SWIG_fail;
-  {
-    std::vector<std::string,std::allocator< std::string > > *ptr = (std::vector<std::string,std::allocator< std::string > > *)0;
-    res1 = swig::asptr(obj0, &ptr);
-    if (!SWIG_IsOK(res1)) {
-      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_PathSelection" "', argument " "1"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
-    }
-    if (!ptr) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_PathSelection" "', argument " "1"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
-    }
-    arg1 = ptr;
-  }
-  
-  try {
-    {
-      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((std::vector< std::string,std::allocator< std::string > > const &)*arg1);
-      SWIG_PYTHON_THREAD_END_ALLOW;
-    }
-  } catch (PreludeDBError &e) {
-    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-    SWIG_exception(SWIG_IndexError, e.what());
-    else {
-      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
-          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
-        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-    }
-    
-    SWIG_fail;
-  }
-  
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
-  if (SWIG_IsNewObj(res1)) delete arg1;
-  return resultobj;
-fail:
-  if (SWIG_IsNewObj(res1)) delete arg1;
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_new_PathSelection(PyObject *self, PyObject *args) {
-  int argc;
-  PyObject *argv[2];
-  int ii;
-  
-  if (!PyTuple_Check(args)) SWIG_fail;
-  argc = args ? (int)PyObject_Length(args) : 0;
-  for (ii = 0; (ii < 1) && (ii < argc); ii++) {
-    argv[ii] = PyTuple_GET_ITEM(args,ii);
-  }
-  if (argc == 0) {
-    return _wrap_new_PathSelection__SWIG_0(self, args);
-  }
-  if (argc == 1) {
-    int _v;
-    int res = SWIG_ConvertPtr(argv[0], 0, SWIGTYPE_p_PreludeDB__PathSelection, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      return _wrap_new_PathSelection__SWIG_1(self, args);
-    }
-  }
-  if (argc == 1) {
-    int _v;
-    int res = swig::asptr(argv[0], (std::vector<std::string,std::allocator< std::string > >**)(0));
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      return _wrap_new_PathSelection__SWIG_2(self, args);
-    }
-  }
-  
-fail:
-  SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_PathSelection'.\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    PreludeDB::PathSelection::PathSelection()\n"
-    "    PreludeDB::PathSelection::PathSelection(PreludeDB::PathSelection const &)\n"
-    "    PreludeDB::PathSelection::PathSelection(std::vector< std::string,std::allocator< std::string > > const &)\n");
-  return 0;
-}
-
-
-SWIGINTERN PyObject *PathSelection_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_PreludeDB__PathSelection, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"delete_SwigPyIterator", _wrap_delete_SwigPyIterator, METH_VARARGS, NULL},
@@ -10971,9 +10729,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Row_getField", _wrap_Row_getField, METH_VARARGS, NULL},
 	 { (char *)"Row_get", _wrap_Row_get, METH_VARARGS, NULL},
 	 { (char *)"Row_swigregister", Row_swigregister, METH_VARARGS, NULL},
-	 { (char *)"delete_PathSelection", _wrap_delete_PathSelection, METH_VARARGS, NULL},
-	 { (char *)"new_PathSelection", _wrap_new_PathSelection, METH_VARARGS, NULL},
-	 { (char *)"PathSelection_swigregister", PathSelection_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
@@ -10993,7 +10748,6 @@ static swig_type_info _swigt__p_PreludeDB__DB = {"_p_PreludeDB__DB", "PreludeDB:
 static swig_type_info _swigt__p_PreludeDB__DB__ResultIdents = {"_p_PreludeDB__DB__ResultIdents", "PreludeDB::DB::ResultIdents *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__DB__ResultValues = {"_p_PreludeDB__DB__ResultValues", "PreludeDB::DB::ResultValues *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__DB__ResultValues__ResultValuesRow = {"_p_PreludeDB__DB__ResultValues__ResultValuesRow", "PreludeDB::DB::ResultValues::ResultValuesRow *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_PreludeDB__PathSelection = {"_p_PreludeDB__PathSelection", "PreludeDB::PathSelection *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__PreludeDBError = {"_p_PreludeDB__PreludeDBError", "PreludeDB::PreludeDBError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__SQL = {"_p_PreludeDB__SQL", "PreludeDB::SQL *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__SQL__Table = {"_p_PreludeDB__SQL__Table", "PreludeDB::SQL::Table *", 0, 0, (void*)0, 0};
@@ -11031,7 +10785,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_PreludeDB__DB__ResultIdents,
   &_swigt__p_PreludeDB__DB__ResultValues,
   &_swigt__p_PreludeDB__DB__ResultValues__ResultValuesRow,
-  &_swigt__p_PreludeDB__PathSelection,
   &_swigt__p_PreludeDB__PreludeDBError,
   &_swigt__p_PreludeDB__SQL,
   &_swigt__p_PreludeDB__SQL__Table,
@@ -11069,7 +10822,6 @@ static swig_cast_info _swigc__p_PreludeDB__DB[] = {  {&_swigt__p_PreludeDB__DB, 
 static swig_cast_info _swigc__p_PreludeDB__DB__ResultIdents[] = {  {&_swigt__p_PreludeDB__DB__ResultIdents, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PreludeDB__DB__ResultValues[] = {  {&_swigt__p_PreludeDB__DB__ResultValues, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PreludeDB__DB__ResultValues__ResultValuesRow[] = {  {&_swigt__p_PreludeDB__DB__ResultValues__ResultValuesRow, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_PreludeDB__PathSelection[] = {  {&_swigt__p_PreludeDB__PathSelection, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PreludeDB__PreludeDBError[] = {  {&_swigt__p_PreludeDB__PreludeDBError, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PreludeDB__SQL[] = {  {&_swigt__p_PreludeDB__SQL, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_PreludeDB__SQL__Table[] = {  {&_swigt__p_PreludeDB__SQL__Table, 0, 0, 0},{0, 0, 0, 0}};
@@ -11107,7 +10859,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_PreludeDB__DB__ResultIdents,
   _swigc__p_PreludeDB__DB__ResultValues,
   _swigc__p_PreludeDB__DB__ResultValues__ResultValuesRow,
-  _swigc__p_PreludeDB__PathSelection,
   _swigc__p_PreludeDB__PreludeDBError,
   _swigc__p_PreludeDB__SQL,
   _swigc__p_PreludeDB__SQL__Table,

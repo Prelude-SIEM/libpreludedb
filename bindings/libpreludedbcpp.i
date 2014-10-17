@@ -100,37 +100,6 @@ using namespace PreludeDB;
 %ignore PreludeDB::SQL::escape(const std::string &str);
 
 
-%typemap(in) PreludeDB::PathSelection & {
-        int ret;
-        void *tmp = NULL;
-        std::vector<std::string> *ptr = NULL;
-
-        ret = SWIG_ConvertPtr($input, &tmp, $descriptor(PreludeDB::PathSelection *), 0);
-        if ( SWIG_IsOK(ret) && tmp )
-                $1 = new PreludeDB::PathSelection(*(PreludeDB::PathSelection *) tmp);
-        else {
-                ret = swig::asptr($input, &ptr);
-                if ( ! SWIG_IsOK(ret) || ! ptr )
-                        SWIG_exception_fail(SWIG_ArgError(ret), "Input should be 'PreludeDB::PathSelection' object or string");
-
-                try {
-                        $1 = new PreludeDB::PathSelection(*ptr);
-                        if ( SWIG_IsNewObj(ret) )
-                                delete ptr;
-                } catch (PreludeDB::PreludeDBError &e) {
-                        if ( SWIG_IsNewObj(ret) )
-                                delete ptr;
-
-                        SWIG_exception_fail(SWIG_ArgError(ret), e);
-                }
-        }
-}
-
-%typemap(freearg) PreludeDB::PathSelection & {
-        if ( $1 )
-                delete($1);
-}
-
 %typemap(in) Prelude::IDMEFCriteria * {
         int ret, alloc = 0;
         void *crit = NULL;
@@ -166,7 +135,6 @@ using namespace PreludeDB;
 %include preludedb.hxx
 %include preludedb-error.hxx
 %include preludedb-sql.hxx
-%include preludedb-path-selection.hxx
 
 #ifdef SWIGPYTHON
 %pythoncode %{

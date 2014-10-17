@@ -203,6 +203,14 @@ void preludedb_plugin_format_set_update_func(preludedb_plugin_format_t *plugin,
 }
 
 
+void preludedb_plugin_format_set_get_path_column_count_func(preludedb_plugin_format_t *plugin,
+                                                            preludedb_plugin_format_get_path_column_count_func_t func)
+{
+        plugin->get_path_column_count = func;
+}
+
+
+
 int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
 {
         *ret = calloc(1, sizeof(**ret));

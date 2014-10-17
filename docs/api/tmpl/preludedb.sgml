@@ -264,7 +264,7 @@ preludedb
 
 @db: 
 @idents: 
-@size: 
+@isize: 
 @Returns: 
 
 
@@ -285,7 +285,7 @@ preludedb
 
 @db: 
 @idents: 
-@size: 
+@isize: 
 @Returns: 
 
 

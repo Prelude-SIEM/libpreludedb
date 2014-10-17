@@ -115,7 +115,7 @@ static int time_without_usec_field_name_resolver(const idmef_path_t *path, int f
         const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
 
         if ( field_context == FIELD_CONTEXT_SELECT )
-                return prelude_string_sprintf(output, "%s.%s, %s.%s_gmtoff, 0",
+                return prelude_string_sprintf(output, "%s.%s, %s.%s_gmtoff",
                                               table_name, child_name, table_name, child_name);
 
         return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
