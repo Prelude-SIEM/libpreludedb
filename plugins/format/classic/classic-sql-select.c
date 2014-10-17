@@ -91,7 +91,7 @@ void classic_sql_select_destroy(classic_sql_select_t *select)
 
 
 int classic_sql_select_add_field(classic_sql_select_t *select, const char *field_name,
-                                 preludedb_selected_path_flags_t flags)
+                                 preludedb_selected_path_flags_t flags, unsigned int num_field)
 {
         static const struct {
                 int flag;
@@ -103,9 +103,8 @@ int classic_sql_select_add_field(classic_sql_select_t *select, const char *field
                 { PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD, "STD" },
                 { PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT, "COUNT" }
         };
-        unsigned int i;
-        const char *function_name = NULL, *ptr;
-        int ret;
+        int i, ret;
+        const char *function_name = NULL;
 
         if ( ! prelude_string_is_empty(select->fields) ) {
                 ret = prelude_string_cat(select->fields, ", ");
@@ -128,38 +127,35 @@ int classic_sql_select_add_field(classic_sql_select_t *select, const char *field
         if ( ret < 0 )
                 return ret;
 
-        select->field_count++;
 
-        if ( flags & PRELUDEDB_SELECTED_OBJECT_GROUP_BY ) {
-                if ( ! prelude_string_is_empty(select->group_by) ) {
-                        ret = prelude_string_cat(select->group_by, ", ");
-                        if ( ret < 0 )
-                                return ret;
-                }
-
-                ret = prelude_string_sprintf(select->group_by, "%d", select->field_count);
-                if ( ret < 0 )
-                        return ret;
-        }
-
-        if ( flags & (PRELUDEDB_SELECTED_OBJECT_ORDER_ASC|PRELUDEDB_SELECTED_OBJECT_ORDER_DESC) ) {
-                if ( ! prelude_string_is_empty(select->order_by) ) {
-                        ret = prelude_string_cat(select->order_by, ", ");
-                        if ( ret < 0 )
-                                return ret;
-                }
-
-                ret = prelude_string_sprintf(select->order_by, "%d %s", select->field_count,
-                                             (flags & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC) ? "ASC" : "DESC");
-                if ( ret < 0 )
-                        return ret;
-        }
-
-        ptr = field_name;
-        while ( (ptr = strchr(ptr, ',')) ) {
+        do {
                 select->field_count++;
-                ptr++;
-        }
+
+                if ( flags & PRELUDEDB_SELECTED_OBJECT_GROUP_BY ) {
+                        if ( ! prelude_string_is_empty(select->group_by) ) {
+                                ret = prelude_string_cat(select->group_by, ", ");
+                                if ( ret < 0 )
+                                        return ret;
+                        }
+
+                        ret = prelude_string_sprintf(select->group_by, "%d", select->field_count);
+                        if ( ret < 0 )
+                                return ret;
+                }
+
+                if ( flags & (PRELUDEDB_SELECTED_OBJECT_ORDER_ASC|PRELUDEDB_SELECTED_OBJECT_ORDER_DESC) ) {
+                        if ( ! prelude_string_is_empty(select->order_by) ) {
+                                ret = prelude_string_cat(select->order_by, ", ");
+                                if ( ret < 0 )
+                                        return ret;
+                        }
+
+                        ret = prelude_string_sprintf(select->order_by, "%d %s", select->field_count,
+                                                     (flags & PRELUDEDB_SELECTED_OBJECT_ORDER_ASC) ? "ASC" : "DESC");
+                        if ( ret < 0 )
+                                return ret;
+                }
+        } while ( --num_field );
 
         return 0;
 }

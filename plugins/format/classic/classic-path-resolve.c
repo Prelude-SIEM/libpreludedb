@@ -42,7 +42,7 @@
 #define FIELD_CONTEXT_SELECT   2
 #define FIELD_CONTEXT_FUNCTION 3
 
-
+int classic_get_path_column_count(preludedb_selected_path_t *selected);
 
 static int default_table_name_resolver(const idmef_path_t *path, char **table_name)
 {
@@ -325,6 +325,7 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
         prelude_string_t *field_name;
         int ret;
         int field_context;
+        unsigned int num_field;
 
         ret = prelude_string_new(&field_name);
         if ( ret < 0 )
@@ -332,12 +333,14 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
 
         path = preludedb_selected_path_get_path(selected);
         flags = preludedb_selected_path_get_flags(selected);
+        num_field = classic_get_path_column_count(selected);
 
         if ( flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
-                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT) )
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT|
+                      PRELUDEDB_SELECTED_OBJECT_GROUP_BY) )
                 field_context = FIELD_CONTEXT_FUNCTION;
         else
                 field_context = FIELD_CONTEXT_SELECT;
@@ -346,7 +349,7 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
         if ( ret < 0 )
                 goto error;
 
-        ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags);
+        ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags, num_field);
 
  error:
         prelude_string_destroy(field_name);

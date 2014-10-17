@@ -31,7 +31,7 @@ typedef struct classic_sql_select classic_sql_select_t;
 int classic_sql_select_new(classic_sql_select_t **select);
 void classic_sql_select_destroy(classic_sql_select_t *select);
 int classic_sql_select_add_field(classic_sql_select_t *select, const char *field_name,
-			     preludedb_selected_path_flags_t flags);
+			     preludedb_selected_path_flags_t flags, unsigned int num_field);
 int classic_sql_select_fields_to_string(classic_sql_select_t *select, prelude_string_t *output);
 int classic_sql_select_modifiers_to_string(classic_sql_select_t *select, prelude_string_t *output);
 

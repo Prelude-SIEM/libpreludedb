@@ -50,6 +50,7 @@
 
 
 int classic_LTX_prelude_plugin_version(void);
+int classic_get_path_column_count(preludedb_selected_path_t *selected);
 int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
 int classic_get_path_column_count(preludedb_selected_path_t *selected);
 
@@ -131,7 +132,7 @@ static int get_message_idents(preludedb_sql_t *sql, idmef_class_id_t message_typ
 
         classic_sql_join_set_top_class(join, message_type);
 
-        ret = classic_sql_select_add_field(select, "DISTINCT(top_table._ident)", 0);
+        ret = classic_sql_select_add_field(select, "DISTINCT(top_table._ident)", 0, 1);
         if ( ret < 0 )
                 goto error;
 
