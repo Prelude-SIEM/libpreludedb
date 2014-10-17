@@ -174,8 +174,10 @@ int preludedb_sql_new(preludedb_sql_t **new, const char *type, preludedb_sql_set
 
         if ( ! type ) {
                 type = preludedb_sql_settings_get_type(settings);
-                if ( ! type )
+                if ( ! type ) {
+                        free(*new);
                         return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_SETTINGS_STRING, "No database type specified");
+                }
         }
 
         (*new)->type = strdup(type);
