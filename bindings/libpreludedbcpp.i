@@ -83,6 +83,7 @@ using namespace PreludeDB;
 %include python/libpreludedbcpp-python.i
 #endif
 
+%feature("exceptionclass") PreludeDB::PreludeDBError;
 %feature("kwargs") PreludeDB::DB::ResultIdents::get;
 %feature("kwargs") PreludeDB::DB::ResultValues::get;
 %feature("kwargs") PreludeDB::DB::getAlertIdents;
@@ -161,6 +162,7 @@ using namespace PreludeDB;
 }
 
 
+%import(module="prelude") <libprelude/prelude-error.hxx>
 %include preludedb.hxx
 %include preludedb-error.hxx
 %include preludedb-sql.hxx

@@ -9,6 +9,21 @@
 #define TARGET_LANGUAGE_OUTPUT_TYPE PyObject **
 %}
 
+%exception %{
+        try {
+                $action
+        } catch (PreludeDBError &e) {
+                if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+                        SWIG_exception(SWIG_IndexError, e.what());
+                else {
+                        SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+                                                             SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+                                          "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+                }
+
+                SWIG_fail;
+        }
+%}
 
 %insert("python") %{
 import itertools

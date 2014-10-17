@@ -2953,30 +2953,32 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_Prelude__IDMEF swig_types[9]
 #define SWIGTYPE_p_Prelude__IDMEFCriteria swig_types[10]
 #define SWIGTYPE_p_Prelude__IDMEFTime swig_types[11]
-#define SWIGTYPE_p_allocator_type swig_types[12]
-#define SWIGTYPE_p_char swig_types[13]
-#define SWIGTYPE_p_const_reference swig_types[14]
-#define SWIGTYPE_p_difference_type swig_types[15]
-#define SWIGTYPE_p_int swig_types[16]
-#define SWIGTYPE_p_key_type swig_types[17]
-#define SWIGTYPE_p_long_long swig_types[18]
-#define SWIGTYPE_p_mapped_type swig_types[19]
-#define SWIGTYPE_p_preludedb_result_idents_t swig_types[20]
-#define SWIGTYPE_p_preludedb_result_values_t swig_types[21]
-#define SWIGTYPE_p_preludedb_sql_row_t swig_types[22]
-#define SWIGTYPE_p_preludedb_sql_table_t swig_types[23]
-#define SWIGTYPE_p_reference swig_types[24]
-#define SWIGTYPE_p_short swig_types[25]
-#define SWIGTYPE_p_size_type swig_types[26]
-#define SWIGTYPE_p_std__invalid_argument swig_types[27]
-#define SWIGTYPE_p_swig__SwigPyIterator swig_types[28]
-#define SWIGTYPE_p_unsigned_char swig_types[29]
-#define SWIGTYPE_p_unsigned_int swig_types[30]
-#define SWIGTYPE_p_unsigned_long_long swig_types[31]
-#define SWIGTYPE_p_unsigned_short swig_types[32]
-#define SWIGTYPE_p_value_type swig_types[33]
-static swig_type_info *swig_types[35];
-static swig_module_info swig_module = {swig_types, 34, 0, 0, 0, 0};
+#define SWIGTYPE_p_Prelude__PreludeError swig_types[12]
+#define SWIGTYPE_p_allocator_type swig_types[13]
+#define SWIGTYPE_p_char swig_types[14]
+#define SWIGTYPE_p_const_reference swig_types[15]
+#define SWIGTYPE_p_difference_type swig_types[16]
+#define SWIGTYPE_p_int swig_types[17]
+#define SWIGTYPE_p_key_type swig_types[18]
+#define SWIGTYPE_p_long_long swig_types[19]
+#define SWIGTYPE_p_mapped_type swig_types[20]
+#define SWIGTYPE_p_preludedb_result_idents_t swig_types[21]
+#define SWIGTYPE_p_preludedb_result_values_t swig_types[22]
+#define SWIGTYPE_p_preludedb_sql_row_t swig_types[23]
+#define SWIGTYPE_p_preludedb_sql_table_t swig_types[24]
+#define SWIGTYPE_p_reference swig_types[25]
+#define SWIGTYPE_p_short swig_types[26]
+#define SWIGTYPE_p_size_type swig_types[27]
+#define SWIGTYPE_p_std__exception swig_types[28]
+#define SWIGTYPE_p_std__invalid_argument swig_types[29]
+#define SWIGTYPE_p_swig__SwigPyIterator swig_types[30]
+#define SWIGTYPE_p_unsigned_char swig_types[31]
+#define SWIGTYPE_p_unsigned_int swig_types[32]
+#define SWIGTYPE_p_unsigned_long_long swig_types[33]
+#define SWIGTYPE_p_unsigned_short swig_types[34]
+#define SWIGTYPE_p_value_type swig_types[35]
+static swig_type_info *swig_types[37];
+static swig_module_info swig_module = {swig_types, 36, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -6287,22 +6289,25 @@ SWIGINTERN PyObject *_wrap_checkVersion(PyObject *SWIGUNUSEDPARM(self), PyObject
     }
     arg1 = reinterpret_cast< char * >(buf1);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)PreludeDB::checkVersion((char const *)arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)PreludeDB::checkVersion((char const *)arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -6325,22 +6330,25 @@ SWIGINTERN PyObject *_wrap_delete_DB(PyObject *SWIGUNUSEDPARM(self), PyObject *a
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_DB" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -6365,22 +6373,25 @@ SWIGINTERN PyObject *_wrap_new_DB(PyObject *SWIGUNUSEDPARM(self), PyObject *args
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_DB" "', argument " "1"" of type '" "PreludeDB::SQL &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB *)new PreludeDB::DB(*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB *)new PreludeDB::DB(*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -6465,22 +6476,25 @@ SWIGINTERN PyObject *_wrap_DB_getAlertIdents(PyObject *SWIGUNUSEDPARM(self), PyO
     } 
     arg5 = static_cast< PreludeDB::DB::ResultIdentsOrderByEnum >(val5);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getAlertIdents(arg2,arg3,arg4,arg5);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getAlertIdents(arg2,arg3,arg4,arg5);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::DB::ResultIdents(static_cast< const PreludeDB::DB::ResultIdents& >(result))), SWIGTYPE_p_PreludeDB__DB__ResultIdents, SWIG_POINTER_OWN |  0 );
   {
     if ( arg2 )
@@ -6573,22 +6587,25 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeatIdents(PyObject *SWIGUNUSEDPARM(self),
     } 
     arg5 = static_cast< PreludeDB::DB::ResultIdentsOrderByEnum >(val5);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,arg5);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,arg5);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::DB::ResultIdents(static_cast< const PreludeDB::DB::ResultIdents& >(result))), SWIGTYPE_p_PreludeDB__DB__ResultIdents, SWIG_POINTER_OWN |  0 );
   {
     if ( arg2 )
@@ -6708,22 +6725,25 @@ SWIGINTERN PyObject *_wrap_DB_getValues(PyObject *SWIGUNUSEDPARM(self), PyObject
     } 
     arg6 = static_cast< int >(val6);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getValues(*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getValues(*arg2,(Prelude::IDMEFCriteria const *)arg3,arg4,arg5,arg6);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::DB::ResultValues(static_cast< const PreludeDB::DB::ResultValues& >(result))), SWIGTYPE_p_PreludeDB__DB__ResultValues, SWIG_POINTER_OWN |  0 );
   {
     if ( arg2 )
@@ -6761,22 +6781,25 @@ SWIGINTERN PyObject *_wrap_DB_getFormatName(PyObject *SWIGUNUSEDPARM(self), PyOb
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_getFormatName" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getFormatName();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getFormatName();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   return resultobj;
 fail:
@@ -6798,22 +6821,25 @@ SWIGINTERN PyObject *_wrap_DB_getFormatVersion(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_getFormatVersion" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getFormatVersion();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getFormatVersion();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   return resultobj;
 fail:
@@ -6846,22 +6872,25 @@ SWIGINTERN PyObject *_wrap_DB_insert(PyObject *SWIGUNUSEDPARM(self), PyObject *a
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_insert" "', argument " "2"" of type '" "Prelude::IDMEF &""'"); 
   }
   arg2 = reinterpret_cast< Prelude::IDMEF * >(argp2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->insert(*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->insert(*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -6892,22 +6921,25 @@ SWIGINTERN PyObject *_wrap_DB_getAlert(PyObject *SWIGUNUSEDPARM(self), PyObject 
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "DB_getAlert" "', argument " "2"" of type '" "uint64_t""'");
   } 
   arg2 = static_cast< uint64_t >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getAlert(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getAlert(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new Prelude::IDMEF(static_cast< const Prelude::IDMEF& >(result))), SWIGTYPE_p_Prelude__IDMEF, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -6938,22 +6970,25 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeat(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "DB_getHeartbeat" "', argument " "2"" of type '" "uint64_t""'");
   } 
   arg2 = static_cast< uint64_t >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->getHeartbeat(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->getHeartbeat(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new Prelude::IDMEF(static_cast< const Prelude::IDMEF& >(result))), SWIGTYPE_p_Prelude__IDMEF, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -6983,22 +7018,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_0(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "DB_deleteAlert" "', argument " "2"" of type '" "uint64_t""'");
   } 
   arg2 = static_cast< uint64_t >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteAlert(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteAlert(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7031,22 +7069,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_deleteAlert" "', argument " "2"" of type '" "PreludeDB::DB::ResultIdents &""'"); 
   }
   arg2 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteAlert(*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteAlert(*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7078,22 +7119,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_2(PyObject *SWIGUNUSEDPARM(self)
     arg2 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteAlert(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteAlert(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7186,22 +7230,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_0(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "DB_deleteHeartbeat" "', argument " "2"" of type '" "uint64_t""'");
   } 
   arg2 = static_cast< uint64_t >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteHeartbeat(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteHeartbeat(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7234,22 +7281,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_1(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_deleteHeartbeat" "', argument " "2"" of type '" "PreludeDB::DB::ResultIdents &""'"); 
   }
   arg2 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteHeartbeat(*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteHeartbeat(*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7281,22 +7331,25 @@ SWIGINTERN PyObject *_wrap_DB_deleteHeartbeat__SWIG_2(PyObject *SWIGUNUSEDPARM(s
     arg2 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->deleteHeartbeat(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->deleteHeartbeat(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -7420,22 +7473,25 @@ SWIGINTERN PyObject *_wrap_DB__updateFromList__SWIG_0(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB__updateFromList" "', argument " "4"" of type '" "PreludeDB::DB::ResultIdents &""'"); 
   }
   arg4 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp4);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,*arg4);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,*arg4);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   if (SWIG_IsNewObj(res3)) delete arg3;
@@ -7499,22 +7555,25 @@ SWIGINTERN PyObject *_wrap_DB__updateFromList__SWIG_1(PyObject *SWIGUNUSEDPARM(s
     arg4 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->updateFromList((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   if (SWIG_IsNewObj(res3)) delete arg3;
@@ -7693,22 +7752,25 @@ SWIGINTERN PyObject *_wrap_DB__update(PyObject *SWIGUNUSEDPARM(self), PyObject *
     } 
     arg7 = static_cast< int >(val7);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(PreludeDB::PathSelection const *)arg5,arg6,arg7);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->update((std::vector< Prelude::IDMEFPath,std::allocator< Prelude::IDMEFPath > > const &)*arg2,(std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > const &)*arg3,arg4,(PreludeDB::PathSelection const *)arg5,arg6,arg7);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   if (SWIG_IsNewObj(res2)) delete arg2;
   if (SWIG_IsNewObj(res3)) delete arg3;
@@ -7812,22 +7874,25 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_0(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultIdents" "', argument " "1"" of type '" "PreludeDB::DB::ResultIdents const &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents((PreludeDB::DB::ResultIdents const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents((PreludeDB::DB::ResultIdents const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultIdents, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -7858,22 +7923,25 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_1(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_ResultIdents" "', argument " "2"" of type '" "preludedb_result_idents_t *""'"); 
   }
   arg2 = reinterpret_cast< preludedb_result_idents_t * >(argp2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents(arg1,arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents(arg1,arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultIdents, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -7886,22 +7954,25 @@ SWIGINTERN PyObject *_wrap_new_ResultIdents__SWIG_2(PyObject *SWIGUNUSEDPARM(sel
   PreludeDB::DB::ResultIdents *result = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)":new_ResultIdents")) SWIG_fail;
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultIdents *)new PreludeDB::DB::ResultIdents();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultIdents, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -7968,22 +8039,25 @@ SWIGINTERN PyObject *_wrap_delete_ResultIdents(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultIdents" "', argument " "1"" of type '" "PreludeDB::DB::ResultIdents *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -8005,22 +8079,25 @@ SWIGINTERN PyObject *_wrap_ResultIdents_getCount(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIdents_getCount" "', argument " "1"" of type '" "PreludeDB::DB::ResultIdents *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8042,22 +8119,25 @@ SWIGINTERN PyObject *_wrap_ResultIdents___len__(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultIdents___len__" "', argument " "1"" of type '" "PreludeDB::DB::ResultIdents *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultIdents * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->count();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->count();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8093,22 +8173,25 @@ SWIGINTERN PyObject *_wrap_ResultIdents_get(PyObject *SWIGUNUSEDPARM(self), PyOb
     } 
     arg2 = static_cast< unsigned int >(val2);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (uint64_t)(arg1)->get(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (uint64_t)(arg1)->get(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_long_SS_long(static_cast< unsigned long long >(result));
   return resultobj;
 fail:
@@ -8200,22 +8283,25 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_0(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultValues" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues const &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues((PreludeDB::DB::ResultValues const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues((PreludeDB::DB::ResultValues const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultValues, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8237,22 +8323,25 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_1(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_ResultValues" "', argument " "1"" of type '" "preludedb_result_values_t *""'"); 
   }
   arg1 = reinterpret_cast< preludedb_result_values_t * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues(arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues(arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultValues, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8265,22 +8354,25 @@ SWIGINTERN PyObject *_wrap_new_ResultValues__SWIG_2(PyObject *SWIGUNUSEDPARM(sel
   PreludeDB::DB::ResultValues *result = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)":new_ResultValues")) SWIG_fail;
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultValues *)new PreludeDB::DB::ResultValues();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultValues, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8342,22 +8434,25 @@ SWIGINTERN PyObject *_wrap_delete_ResultValues(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultValues" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -8379,22 +8474,25 @@ SWIGINTERN PyObject *_wrap_ResultValues_getCount(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValues_getCount" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8416,22 +8514,25 @@ SWIGINTERN PyObject *_wrap_ResultValues_getFieldCount(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValues_getFieldCount" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getFieldCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getFieldCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8453,22 +8554,25 @@ SWIGINTERN PyObject *_wrap_ResultValues___len__(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValues___len__" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->count();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->count();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8504,22 +8608,25 @@ SWIGINTERN PyObject *_wrap_ResultValues_get(PyObject *SWIGUNUSEDPARM(self), PyOb
     } 
     arg2 = static_cast< unsigned int >(val2);
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->get(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->get(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::DB::ResultValues::ResultValuesRow(static_cast< const PreludeDB::DB::ResultValues::ResultValuesRow& >(result))), SWIGTYPE_p_PreludeDB__DB__ResultValues__ResultValuesRow, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -8551,22 +8658,25 @@ SWIGINTERN PyObject *_wrap_new_ResultValuesRow__SWIG_0(PyObject *SWIGUNUSEDPARM(
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_ResultValuesRow" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues::ResultValuesRow const &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow((PreludeDB::DB::ResultValues::ResultValuesRow const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow((PreludeDB::DB::ResultValues::ResultValuesRow const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultValues__ResultValuesRow, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8595,22 +8705,25 @@ SWIGINTERN PyObject *_wrap_new_ResultValuesRow__SWIG_1(PyObject *SWIGUNUSEDPARM(
   if (!SWIG_IsOK(res2)) {
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_ResultValuesRow" "', argument " "2"" of type '" "void *""'"); 
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow(arg1,arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::DB::ResultValues::ResultValuesRow *)new PreludeDB::DB::ResultValues::ResultValuesRow(arg1,arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__DB__ResultValues__ResultValuesRow, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8673,22 +8786,25 @@ SWIGINTERN PyObject *_wrap_delete_ResultValuesRow(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ResultValuesRow" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues::ResultValuesRow *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -8719,22 +8835,25 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow_get(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ResultValuesRow_get" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->get(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->get(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   {
     int ret;
     
@@ -8770,22 +8889,25 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow_getFieldCount(PyObject *SWIGUNUSEDPAR
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValuesRow_getFieldCount" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues::ResultValuesRow *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getFieldCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getFieldCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8807,22 +8929,25 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow___len__(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ResultValuesRow___len__" "', argument " "1"" of type '" "PreludeDB::DB::ResultValues::ResultValuesRow *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::DB::ResultValues::ResultValuesRow * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->count();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->count();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -8851,22 +8976,25 @@ SWIGINTERN PyObject *_wrap_new_PreludeDBError__SWIG_0(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_PreludeDBError" "', argument " "1"" of type '" "int""'");
   } 
   arg1 = static_cast< int >(val1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError(arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError(arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -8893,22 +9021,25 @@ SWIGINTERN PyObject *_wrap_new_PreludeDBError__SWIG_1(PyObject *SWIGUNUSEDPARM(s
     }
     arg1 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError((std::string const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::PreludeDBError *)new PreludeDB::PreludeDBError((std::string const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res1)) delete arg1;
   return resultobj;
@@ -8969,22 +9100,25 @@ SWIGINTERN PyObject *_wrap_delete_PreludeDBError(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_PreludeDBError" "', argument " "1"" of type '" "PreludeDB::PreludeDBError *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::PreludeDBError * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9012,22 +9146,25 @@ SWIGINTERN PyObject *_wrap_delete_SQL(PyObject *SWIGUNUSEDPARM(self), PyObject *
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_SQL" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9050,22 +9187,25 @@ SWIGINTERN PyObject *_wrap_new_SQL__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_SQL" "', argument " "1"" of type '" "char const *""'");
   }
   arg1 = reinterpret_cast< char * >(buf1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL *)new PreludeDB::SQL((char const *)arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL *)new PreludeDB::SQL((char const *)arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL, SWIG_POINTER_NEW |  0 );
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -9094,22 +9234,25 @@ SWIGINTERN PyObject *_wrap_new_SQL__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
     }
     arg1 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL *)new PreludeDB::SQL((std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL *)new PreludeDB::SQL((std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res1)) delete arg1;
   return resultobj;
@@ -9183,22 +9326,25 @@ SWIGINTERN PyObject *_wrap_SQL_query(PyObject *SWIGUNUSEDPARM(self), PyObject *a
     }
     arg2 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->query((std::string const &)*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->query((std::string const &)*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::SQL::Table(static_cast< const PreludeDB::SQL::Table& >(result))), SWIGTYPE_p_PreludeDB__SQL__Table, SWIG_POINTER_OWN |  0 );
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -9221,22 +9367,25 @@ SWIGINTERN PyObject *_wrap_SQL_transactionStart(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_transactionStart" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->transactionStart();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->transactionStart();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9257,22 +9406,25 @@ SWIGINTERN PyObject *_wrap_SQL_transactionEnd(PyObject *SWIGUNUSEDPARM(self), Py
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_transactionEnd" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->transactionEnd();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->transactionEnd();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9293,22 +9445,25 @@ SWIGINTERN PyObject *_wrap_SQL_transactionAbort(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_transactionAbort" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        (arg1)->transactionAbort();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      (arg1)->transactionAbort();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9340,22 +9495,25 @@ SWIGINTERN PyObject *_wrap_SQL_escape(PyObject *SWIGUNUSEDPARM(self), PyObject *
     SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "SQL_escape" "', argument " "2"" of type '" "char const *""'");
   }
   arg2 = reinterpret_cast< char * >(buf2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->escape((char const *)arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->escape((char const *)arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return resultobj;
@@ -9393,22 +9551,25 @@ SWIGINTERN PyObject *_wrap_SQL_escapeBinary(PyObject *SWIGUNUSEDPARM(self), PyOb
     }
     arg2 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->escapeBinary((std::string const &)*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->escapeBinary((std::string const &)*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -9438,22 +9599,25 @@ SWIGINTERN PyObject *_wrap_delete_Table(PyObject *SWIGUNUSEDPARM(self), PyObject
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Table" "', argument " "1"" of type '" "PreludeDB::SQL::Table *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9475,22 +9639,25 @@ SWIGINTERN PyObject *_wrap_new_Table__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_Table" "', argument " "1"" of type '" "preludedb_sql_table_t *""'"); 
   }
   arg1 = reinterpret_cast< preludedb_sql_table_t * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table(arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table(arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL__Table, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -9515,22 +9682,25 @@ SWIGINTERN PyObject *_wrap_new_Table__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_Table" "', argument " "1"" of type '" "PreludeDB::SQL::Table const &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table((PreludeDB::SQL::Table const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL::Table *)new PreludeDB::SQL::Table((PreludeDB::SQL::Table const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL__Table, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -9598,22 +9768,25 @@ SWIGINTERN PyObject *_wrap_Table_getColumnName(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Table_getColumnName" "', argument " "2"" of type '" "unsigned int""'");
   } 
   arg2 = static_cast< unsigned int >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)(arg1)->getColumnName(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)(arg1)->getColumnName(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -9649,22 +9822,25 @@ SWIGINTERN PyObject *_wrap_Table_getColumnNum(PyObject *SWIGUNUSEDPARM(self), Py
     }
     arg2 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (int)(arg1)->getColumnNum((std::string const &)*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (int)(arg1)->getColumnNum((std::string const &)*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -9688,22 +9864,25 @@ SWIGINTERN PyObject *_wrap_Table_getColumnCount(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Table_getColumnCount" "', argument " "1"" of type '" "PreludeDB::SQL::Table *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getColumnCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getColumnCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -9725,22 +9904,25 @@ SWIGINTERN PyObject *_wrap_Table_getRowCount(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Table_getRowCount" "', argument " "1"" of type '" "PreludeDB::SQL::Table *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getRowCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getRowCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -9762,22 +9944,25 @@ SWIGINTERN PyObject *_wrap_Table___len__(PyObject *SWIGUNUSEDPARM(self), PyObjec
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Table___len__" "', argument " "1"" of type '" "PreludeDB::SQL::Table *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->count();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->count();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -9799,22 +9984,25 @@ SWIGINTERN PyObject *_wrap_Table_fetch(PyObject *SWIGUNUSEDPARM(self), PyObject 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Table_fetch" "', argument " "1"" of type '" "PreludeDB::SQL::Table *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->fetch();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->fetch();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::SQL::Table::Row(static_cast< const PreludeDB::SQL::Table::Row& >(result))), SWIGTYPE_p_PreludeDB__SQL__Table__Row, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -9845,22 +10033,25 @@ SWIGINTERN PyObject *_wrap_Table_get(PyObject *SWIGUNUSEDPARM(self), PyObject *a
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Table_get" "', argument " "2"" of type '" "unsigned int""'");
   } 
   arg2 = static_cast< unsigned int >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (arg1)->get(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (arg1)->get(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj((new PreludeDB::SQL::Table::Row(static_cast< const PreludeDB::SQL::Table::Row& >(result))), SWIGTYPE_p_PreludeDB__SQL__Table__Row, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -9888,22 +10079,25 @@ SWIGINTERN PyObject *_wrap_delete_Row(PyObject *SWIGUNUSEDPARM(self), PyObject *
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Row" "', argument " "1"" of type '" "PreludeDB::SQL::Table::Row *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9916,22 +10110,25 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
   PreludeDB::SQL::Table::Row *result = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)":new_Row")) SWIG_fail;
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL__Table__Row, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -9953,22 +10150,25 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_Row" "', argument " "1"" of type '" "preludedb_sql_row_t *""'"); 
   }
   arg1 = reinterpret_cast< preludedb_sql_row_t * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row(arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row(arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL__Table__Row, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -9993,22 +10193,25 @@ SWIGINTERN PyObject *_wrap_new_Row__SWIG_2(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_Row" "', argument " "1"" of type '" "PreludeDB::SQL::Table::Row const &""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row((PreludeDB::SQL::Table::Row const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::SQL::Table::Row *)new PreludeDB::SQL::Table::Row((PreludeDB::SQL::Table::Row const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL__Table__Row, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -10071,22 +10274,25 @@ SWIGINTERN PyObject *_wrap_Row_getFieldCount(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Row_getFieldCount" "', argument " "1"" of type '" "PreludeDB::SQL::Table::Row *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->getFieldCount();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->getFieldCount();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -10108,22 +10314,25 @@ SWIGINTERN PyObject *_wrap_Row___len__(PyObject *SWIGUNUSEDPARM(self), PyObject 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Row___len__" "', argument " "1"" of type '" "PreludeDB::SQL::Table::Row *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::SQL::Table::Row * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (unsigned int)(arg1)->count();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (unsigned int)(arg1)->count();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -10154,22 +10363,25 @@ SWIGINTERN PyObject *_wrap_Row_getField__SWIG_0(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Row_getField" "', argument " "2"" of type '" "unsigned int""'");
   } 
   arg2 = static_cast< unsigned int >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)(arg1)->getField(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)(arg1)->getField(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -10205,22 +10417,25 @@ SWIGINTERN PyObject *_wrap_Row_getField__SWIG_1(PyObject *SWIGUNUSEDPARM(self), 
     }
     arg2 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)(arg1)->getField((std::string const &)*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)(arg1)->getField((std::string const &)*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -10301,22 +10516,25 @@ SWIGINTERN PyObject *_wrap_Row_get__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObj
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Row_get" "', argument " "2"" of type '" "unsigned int""'");
   } 
   arg2 = static_cast< unsigned int >(val2);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)(arg1)->get(arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)(arg1)->get(arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -10352,22 +10570,25 @@ SWIGINTERN PyObject *_wrap_Row_get__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObj
     }
     arg2 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (char *)(arg1)->get((std::string const &)*arg2);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (char *)(arg1)->get((std::string const &)*arg2);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_FromCharPtr((const char *)result);
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
@@ -10445,22 +10666,25 @@ SWIGINTERN PyObject *_wrap_delete_PathSelection(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_PathSelection" "', argument " "1"" of type '" "PreludeDB::PathSelection *""'"); 
   }
   arg1 = reinterpret_cast< PreludeDB::PathSelection * >(argp1);
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        delete arg1;
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      delete arg1;
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -10473,22 +10697,25 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_0(PyObject *SWIGUNUSEDPARM(se
   PreludeDB::PathSelection *result = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)":new_PathSelection")) SWIG_fail;
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection();
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection();
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -10528,22 +10755,25 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_1(PyObject *SWIGUNUSEDPARM(se
       }
     }
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((PreludeDB::PathSelection const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((PreludeDB::PathSelection const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
   {
     if ( arg1 )
@@ -10578,22 +10808,25 @@ SWIGINTERN PyObject *_wrap_new_PathSelection__SWIG_2(PyObject *SWIGUNUSEDPARM(se
     }
     arg1 = ptr;
   }
-  {
-    try {
-      {
-        SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-        result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((std::vector< std::string,std::allocator< std::string > > const &)*arg1);
-        SWIG_PYTHON_THREAD_END_ALLOW;
-      }
-    } catch(PreludeDB::PreludeDBError &e) {
-      if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-      SWIG_exception(SWIG_IndexError, e.what());
-      else
-      SWIG_exception(SWIG_RuntimeError, e.what());
-      
-      SWIG_fail;
+  
+  try {
+    {
+      SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+      result = (PreludeDB::PathSelection *)new PreludeDB::PathSelection((std::vector< std::string,std::allocator< std::string > > const &)*arg1);
+      SWIG_PYTHON_THREAD_END_ALLOW;
     }
+  } catch (PreludeDBError &e) {
+    if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
+    SWIG_exception(SWIG_IndexError, e.what());
+    else {
+      SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+          SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+        "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    }
+    
+    SWIG_fail;
   }
+  
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__PathSelection, SWIG_POINTER_NEW |  0 );
   if (SWIG_IsNewObj(res1)) delete arg1;
   return resultobj;
@@ -10747,6 +10980,15 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static void *_p_PreludeDB__PreludeDBErrorTo_p_Prelude__PreludeError(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((Prelude::PreludeError *)  ((PreludeDB::PreludeDBError *) x));
+}
+static void *_p_Prelude__PreludeErrorTo_p_std__exception(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((std::exception *)  ((Prelude::PreludeError *) x));
+}
+static void *_p_PreludeDB__PreludeDBErrorTo_p_std__exception(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((std::exception *) (Prelude::PreludeError *) ((PreludeDB::PreludeDBError *) x));
+}
 static swig_type_info _swigt__p_PreludeDB__DB = {"_p_PreludeDB__DB", "PreludeDB::DB *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__DB__ResultIdents = {"_p_PreludeDB__DB__ResultIdents", "PreludeDB::DB::ResultIdents *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_PreludeDB__DB__ResultValues = {"_p_PreludeDB__DB__ResultValues", "PreludeDB::DB::ResultValues *", 0, 0, (void*)0, 0};
@@ -10759,6 +11001,7 @@ static swig_type_info _swigt__p_PreludeDB__SQL__Table__Row = {"_p_PreludeDB__SQL
 static swig_type_info _swigt__p_Prelude__IDMEF = {"_p_Prelude__IDMEF", "Prelude::IDMEF *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Prelude__IDMEFCriteria = {"_p_Prelude__IDMEFCriteria", "Prelude::IDMEFCriteria *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Prelude__IDMEFTime = {"_p_Prelude__IDMEFTime", "Prelude::IDMEFTime *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Prelude__PreludeError = {"_p_Prelude__PreludeError", "Prelude::PreludeError *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_allocator_type = {"_p_allocator_type", "allocator_type *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *|int8_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_const_reference = {"_p_const_reference", "const_reference *", 0, 0, (void*)0, 0};
@@ -10774,6 +11017,7 @@ static swig_type_info _swigt__p_preludedb_sql_table_t = {"_p_preludedb_sql_table
 static swig_type_info _swigt__p_reference = {"_p_reference", "reference *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_short = {"_p_short", "short *|int16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_size_type = {"_p_size_type", "size_type *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__exception = {"_p_std__exception", "std::exception *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__invalid_argument = {"_p_std__invalid_argument", "std::invalid_argument *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_swig__SwigPyIterator = {"_p_swig__SwigPyIterator", "swig::SwigPyIterator *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|uint8_t *", 0, 0, (void*)0, 0};
@@ -10795,6 +11039,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Prelude__IDMEF,
   &_swigt__p_Prelude__IDMEFCriteria,
   &_swigt__p_Prelude__IDMEFTime,
+  &_swigt__p_Prelude__PreludeError,
   &_swigt__p_allocator_type,
   &_swigt__p_char,
   &_swigt__p_const_reference,
@@ -10810,6 +11055,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_reference,
   &_swigt__p_short,
   &_swigt__p_size_type,
+  &_swigt__p_std__exception,
   &_swigt__p_std__invalid_argument,
   &_swigt__p_swig__SwigPyIterator,
   &_swigt__p_unsigned_char,
@@ -10831,6 +11077,7 @@ static swig_cast_info _swigc__p_PreludeDB__SQL__Table__Row[] = {  {&_swigt__p_Pr
 static swig_cast_info _swigc__p_Prelude__IDMEF[] = {  {&_swigt__p_Prelude__IDMEF, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Prelude__IDMEFCriteria[] = {  {&_swigt__p_Prelude__IDMEFCriteria, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Prelude__IDMEFTime[] = {  {&_swigt__p_Prelude__IDMEFTime, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Prelude__PreludeError[] = {  {&_swigt__p_Prelude__PreludeError, 0, 0, 0},  {&_swigt__p_PreludeDB__PreludeDBError, _p_PreludeDB__PreludeDBErrorTo_p_Prelude__PreludeError, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_allocator_type[] = {  {&_swigt__p_allocator_type, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_const_reference[] = {  {&_swigt__p_const_reference, 0, 0, 0},{0, 0, 0, 0}};
@@ -10846,6 +11093,7 @@ static swig_cast_info _swigc__p_preludedb_sql_table_t[] = {  {&_swigt__p_prelude
 static swig_cast_info _swigc__p_reference[] = {  {&_swigt__p_reference, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_short[] = {  {&_swigt__p_short, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_size_type[] = {  {&_swigt__p_size_type, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__exception[] = {  {&_swigt__p_std__exception, 0, 0, 0},  {&_swigt__p_Prelude__PreludeError, _p_Prelude__PreludeErrorTo_p_std__exception, 0, 0},  {&_swigt__p_PreludeDB__PreludeDBError, _p_PreludeDB__PreludeDBErrorTo_p_std__exception, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__invalid_argument[] = {  {&_swigt__p_std__invalid_argument, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_swig__SwigPyIterator[] = {  {&_swigt__p_swig__SwigPyIterator, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
@@ -10867,6 +11115,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Prelude__IDMEF,
   _swigc__p_Prelude__IDMEFCriteria,
   _swigc__p_Prelude__IDMEFTime,
+  _swigc__p_Prelude__PreludeError,
   _swigc__p_allocator_type,
   _swigc__p_char,
   _swigc__p_const_reference,
@@ -10882,6 +11131,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_reference,
   _swigc__p_short,
   _swigc__p_size_type,
+  _swigc__p_std__exception,
   _swigc__p_std__invalid_argument,
   _swigc__p_swig__SwigPyIterator,
   _swigc__p_unsigned_char,

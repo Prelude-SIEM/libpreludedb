@@ -251,10 +251,12 @@ class ResultValuesRow(_object):
 ResultValuesRow_swigregister = _preludedb.ResultValuesRow_swigregister
 ResultValuesRow_swigregister(ResultValuesRow)
 
-class PreludeDBError(_object):
+class PreludeDBError(prelude.PreludeError):
     __swig_setmethods__ = {}
+    for _s in [prelude.PreludeError]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
     __setattr__ = lambda self, name, value: _swig_setattr(self, PreludeDBError, name, value)
     __swig_getmethods__ = {}
+    for _s in [prelude.PreludeError]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, PreludeDBError, name)
     __repr__ = _swig_repr
     def __init__(self, *args): 
