@@ -959,7 +959,7 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
                 return table->nrow;
 
         ret = _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table);
-        if ( ret >= 0 || (ret < 0 && prelude_error_get_code(ret) != ENOTSUP) )
+        if ( ret >= 0 || (ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_ENOSYS) )
                 return ret;
 
         prelude_log(PRELUDE_LOG_WARN, "SQL plugin '%s' emulate row-count before fetch: this is a slow operation.\n", preludedb_sql_get_type(table->sql));

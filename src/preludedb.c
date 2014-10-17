@@ -41,6 +41,7 @@
 
 
 #define PRELUDEDB_PLUGIN_SYMBOL "preludedb_plugin_init"
+#define PRELUDEDB_ENOTSUP(x) preludedb_error_verbose(prelude_error_code_from_errno(ENOSYS), "Database format does not support '%s' operation", x)
 
 
 struct preludedb {
@@ -785,7 +786,7 @@ ssize_t preludedb_update_from_list(preludedb_t *db,
                                    uint64_t *idents, size_t isize)
 {
        if ( ! db->plugin->update_from_list )
-                return preludedb_error_from_errno(ENOTSUP);
+                return preludedb_error_from_errno(ENOSYS);
 
         return db->plugin->update_from_list(db->sql, paths, values, pvsize, idents, isize);
 }
@@ -796,7 +797,7 @@ ssize_t preludedb_update_from_result_idents(preludedb_t *db,
                                             preludedb_result_idents_t *result)
 {
         if ( ! db->plugin->update_from_result_idents )
-                return preludedb_error_from_errno(ENOTSUP);
+                return PRELUDEDB_ENOTSUP("update_from_result_ident");
 
         return db->plugin->update_from_result_idents(db->sql, paths, values, pvsize, result);
 }
@@ -825,7 +826,7 @@ int preludedb_update(preludedb_t *db,
                      int limit, int offset)
 {
         if ( ! db->plugin->update )
-                return preludedb_error_from_errno(ENOTSUP);
+                return PRELUDEDB_ENOTSUP("update");
 
         return db->plugin->update(db->sql, paths, values, pvsize, criteria, order, limit, offset);
 }
