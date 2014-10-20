@@ -407,60 +407,68 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
 }
 
 
+static int sql_build_time_extract_string(prelude_string_t *output, const char *field, preludedb_sql_time_constraint_type_t type, int gmt_offset)
+{
+        int ret;
+        char buf[128];
+
+        if ( ! gmt_offset )
+                ret = snprintf(buf, sizeof(buf), "%s", field);
+        else
+                ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
+
+        if ( ret < 0 || (size_t) ret >= sizeof(buf) )
+                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+
+        switch ( type ) {
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
+                return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
+                return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
+                return prelude_string_sprintf(output, "DAYOFYEAR(%s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
+                return prelude_string_sprintf(output, "DAYOFMONTH(%s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
+                return prelude_string_sprintf(output, "DAYOFWEEK(%s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
+                return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
+                return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
+                return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s)", buf);
+        }
+
+        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+}
+
 
 static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type,
                                             idmef_criterion_operator_t operator, int value, int gmt_offset)
 {
-        char buf[128];
         const char *sql_operator;
         int ret;
 
-        ret = snprintf(buf, sizeof(buf), "DATE_ADD(%s, INTERVAL %d HOUR)", field, gmt_offset / 3600);
-        if ( ret < 0 || (size_t) ret >= sizeof(buf) )
-                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        ret = sql_build_time_extract_string(output, field, type, gmt_offset);
+        if ( ret < 0 )
+                return ret;
 
         sql_operator = get_operator_string(operator);
         if ( ! sql_operator )
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 
-        switch ( type ) {
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
-                return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s) %s '%d'",
-                                              buf, sql_operator, value);
+        if ( type == PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY )
+                value = value % 7 + 1;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
-                return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s) %s '%d'",
-                                               buf, sql_operator, value);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY:
-                return prelude_string_sprintf(output, "DAYOFYEAR(%s) %s '%d'",
-                                              buf, sql_operator, value);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
-                return prelude_string_sprintf(output, "DAYOFMONTH(%s) %s '%d'",
-                                              buf, sql_operator, value);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
-                return prelude_string_sprintf(output, "DAYOFWEEK(%s) %s '%d'",
-                                              buf, sql_operator, value % 7 + 1);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
-                return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s) %s '%d'",
-                                              buf, sql_operator, value);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
-                return prelude_string_sprintf(output, "EXTRACT(MINUTE FROM %s) %s '%d'",
-                                              buf, sql_operator, value);
-
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
-                return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s) %s '%d'",
-                                              buf, sql_operator, value);
-        }
-
-        /* not reached */
-
-        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        return prelude_string_sprintf(output, " %s '%d'", sql_operator, value);
 }
 
 
@@ -541,6 +549,7 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_row_destroy_func(plugin, sql_destroy_row);
         preludedb_plugin_sql_set_fetch_field_func(plugin, sql_fetch_field);
         preludedb_plugin_sql_set_build_constraint_string_func(plugin, sql_build_constraint_string);
+        preludedb_plugin_sql_set_build_time_extract_string_func(plugin, sql_build_time_extract_string);
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);

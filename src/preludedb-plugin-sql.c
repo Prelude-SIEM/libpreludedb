@@ -50,6 +50,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_table_destroy_func_t table_destroy;
         preludedb_plugin_sql_fetch_row_func_t fetch_row;
         preludedb_plugin_sql_fetch_field_func_t fetch_field;
+        preludedb_plugin_sql_build_time_extract_string_func_t build_time_extract_string;
         preludedb_plugin_sql_build_time_constraint_string_func_t build_time_constraint_string;
         preludedb_plugin_sql_build_time_interval_string_func_t build_time_interval_string;
         preludedb_plugin_sql_build_limit_offset_string_func_t build_limit_offset_string;
@@ -302,6 +303,27 @@ int _preludedb_plugin_sql_fetch_field(preludedb_plugin_sql_t *plugin,
 
         return plugin->fetch_field(session, table, row, column_num, field);
 }
+
+
+void preludedb_plugin_sql_set_build_time_extract_string_func(preludedb_plugin_sql_t *plugin,
+                                                             preludedb_plugin_sql_build_time_extract_string_func_t func)
+{
+        plugin->build_time_extract_string = func;
+}
+
+
+
+int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plugin,
+                                                    prelude_string_t *output, const char *field,
+                                                    preludedb_sql_time_constraint_type_t type,
+                                                   int gmt_offset)
+{
+        if ( ! plugin->build_time_extract_string )
+                return PRELUDEDB_ENOTSUP("build_time_extract_string");
+
+        return plugin->build_time_extract_string(output, field, type, gmt_offset);
+}
+
 
 
 void preludedb_plugin_sql_set_build_time_constraint_string_func(preludedb_plugin_sql_t *plugin,

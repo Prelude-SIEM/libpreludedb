@@ -148,6 +148,9 @@ int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value);
 int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
 
+int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
+                                            preludedb_sql_time_constraint_type_t type, int gmt_offset);
+
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                          prelude_string_t *output,
                                          const char *field,

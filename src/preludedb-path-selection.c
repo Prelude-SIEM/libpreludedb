@@ -39,6 +39,7 @@
 
 struct preludedb_selected_path {
         idmef_path_t *path;
+        preludedb_sql_time_constraint_type_t time_filter;
         preludedb_selected_path_flags_t flags;
         unsigned int idx;
         unsigned int position;
@@ -138,12 +139,56 @@ static int parse_function(const char *str)
 }
 
 
-static int parse_path(const char *str, size_t len, idmef_path_t **path)
+
+static int parse_time_filter(const char *str)
 {
-        char buf[len + 1];
+        unsigned int i;
+        struct {
+                const char *name;
+                size_t len;
+                int flag;
+        } time_filter_table[] = {
+                { "year",   4, PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR        },
+                { "month",  5, PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH       },
+                { "yday",   4, PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY        },
+                { "mday",   4, PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY        },
+                { "wday",   4, PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY        },
+                { "hour",   4, PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR        },
+                { "min",    3, PRELUDEDB_SQL_TIME_CONSTRAINT_MIN         },
+                { "sec",    3, PRELUDEDB_SQL_TIME_CONSTRAINT_SEC         }
+        };
+
+        for ( i = 0; i < sizeof(time_filter_table) / sizeof(*time_filter_table); i++ ) {
+                if ( strncmp(str, time_filter_table[i].name, time_filter_table[i].len) == 0 )
+                        return time_filter_table[i].flag;
+        }
+
+        return -1;
+}
+
+
+static int parse_path(const char *str, size_t len, idmef_path_t **path, int *filter)
+{
+        char buf[len + 1], *ptr;
 
         if ( len + 1 < len )
                 return -1;
+
+        /*
+         * go beyond any path specified index that may contain the ':' character
+         */
+        ptr = memrchr(str, ')', len);
+        if ( ! ptr )
+                ptr = str;
+
+        ptr = strrchr(ptr, ':');
+        if ( ptr ) {
+                *filter = parse_time_filter(ptr + 1);
+                if ( *filter < 0 )
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Unknown path filter : '%s'", str);
+
+                *ptr = 0;
+        }
 
         memcpy(buf, str, len);
         buf[len] = 0;
@@ -154,7 +199,7 @@ static int parse_path(const char *str, size_t len, idmef_path_t **path)
 
 int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path, const char *str)
 {
-        int ret, flags = 0;
+        int ret, flags = 0, time_filter = 0;
         idmef_path_t *path;
         const char *filters, *start, *end;
 
@@ -177,12 +222,12 @@ int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path
                 if ( ! (start = strchr(str, '(')) || ! (end = strrchr(str, ')')) )
                         return preludedb_error(PRELUDEDB_ERROR_INVALID_SELECTED_OBJECT_STRING);
 
-                ret = parse_path(start + 1, end - (start + 1), &path);
+                ret = parse_path(start + 1, end - (start + 1), &path, &time_filter);
         } else {
                 if ( filters )
-                        ret = parse_path(str, filters - str, &path);
+                        ret = parse_path(str, filters - str, &path, &time_filter);
                 else
-                        ret = idmef_path_new_fast(&path, str);
+                        ret = parse_path(str, strlen(str), &path, &time_filter);
         }
 
         if ( ret < 0 )
@@ -191,6 +236,8 @@ int preludedb_selected_path_new_string(preludedb_selected_path_t **selected_path
         ret = preludedb_selected_path_new(selected_path, path, flags);
         if ( ret < 0 )
                 idmef_path_destroy(path);
+
+        (*selected_path)->time_filter = time_filter;
 
         return ret;
 }
@@ -216,6 +263,14 @@ preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_sele
 {
         return selected_path->flags;
 }
+
+
+
+preludedb_sql_time_constraint_type_t preludedb_selected_path_get_time_constraint(preludedb_selected_path_t *selected_path)
+{
+        return selected_path->time_filter;
+}
+
 
 
 int preludedb_selected_path_get_column_index(preludedb_selected_path_t *selected)

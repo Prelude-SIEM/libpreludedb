@@ -50,6 +50,9 @@ typedef int (*preludedb_plugin_sql_fetch_row_func_t)(void *session, preludedb_sq
 typedef int (*preludedb_plugin_sql_fetch_field_func_t)(void *session, preludedb_sql_table_t *table, preludedb_sql_row_t *row,
                                                        unsigned int column_num, preludedb_sql_field_t **field);
 
+typedef int (*preludedb_plugin_sql_build_time_extract_string_func_t)(prelude_string_t *output, const char *field,
+                                                                     preludedb_sql_time_constraint_type_t type, int gmt_offset);
+
 typedef int (*preludedb_plugin_sql_build_time_constraint_string_func_t)(prelude_string_t *output, const char *field,
                                                                         preludedb_sql_time_constraint_type_t type,
                                                                         idmef_criterion_operator_t operator, int value, int gmt_offset);
@@ -131,6 +134,14 @@ void preludedb_plugin_sql_set_fetch_field_func(preludedb_plugin_sql_t *plugin, p
 int _preludedb_plugin_sql_fetch_field(preludedb_plugin_sql_t *plugin,
                                       void *session, preludedb_sql_table_t *table, void *row,
                                       unsigned int column_num, preludedb_sql_field_t **field);
+
+void preludedb_plugin_sql_set_build_time_extract_string_func(preludedb_plugin_sql_t *plugin,
+                                                             preludedb_plugin_sql_build_time_extract_string_func_t func);
+
+
+int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plugin,
+                                                    prelude_string_t *output, const char *field,
+                                                    preludedb_sql_time_constraint_type_t type, int gmt_offset);
 
 void preludedb_plugin_sql_set_build_time_constraint_string_func(preludedb_plugin_sql_t *plugin,
                                                                 preludedb_plugin_sql_build_time_constraint_string_func_t func);

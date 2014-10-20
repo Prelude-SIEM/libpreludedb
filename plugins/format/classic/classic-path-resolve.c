@@ -322,9 +322,9 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
 {
         idmef_path_t *path;
         preludedb_selected_path_flags_t flags;
-        prelude_string_t *field_name;
+        prelude_string_t *field_name, *tfs;
         int ret;
-        int field_context;
+        int field_context, time_constraint;
         unsigned int num_field;
 
         ret = prelude_string_new(&field_name);
@@ -334,8 +334,10 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
         path = preludedb_selected_path_get_path(selected);
         flags = preludedb_selected_path_get_flags(selected);
         num_field = classic_get_path_column_count(selected);
+        time_constraint = preludedb_selected_path_get_time_constraint(selected);
 
-        if ( flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
+        if ( time_constraint ||
+             flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|
                       PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
@@ -348,6 +350,21 @@ int classic_path_resolve_selected(preludedb_sql_t *sql,
         ret = classic_path_resolve(path, field_context, join, field_name);
         if ( ret < 0 )
                 goto error;
+
+        if ( time_constraint ) {
+                ret = prelude_string_new(&tfs);
+                if ( ret < 0 )
+                        goto error;
+
+                ret = preludedb_sql_build_time_extract_string(sql, tfs, prelude_string_get_string(field_name), time_constraint, 0);
+                if ( ret < 0 ) {
+                        prelude_string_destroy(tfs);
+                        goto error;
+                }
+
+                prelude_string_destroy(field_name);
+                field_name = tfs;
+        }
 
         ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags, num_field);
 

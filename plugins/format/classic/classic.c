@@ -375,7 +375,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
         preludedb_sql_field_t *field;
         const char *char_val;
         unsigned int retrieved = 1;
-        int ret, num_field;
+        int ret, num_field, time_constraint;
 
         flags = preludedb_selected_path_get_flags(selected);
         path = preludedb_selected_path_get_path(selected);
@@ -393,7 +393,7 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
 
         char_val = preludedb_sql_field_get_value(field);
 
-        if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ) {
+        if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT || time_constraint ) {
                uint32_t count;
 
                ret = preludedb_sql_field_to_uint32(field, &count);

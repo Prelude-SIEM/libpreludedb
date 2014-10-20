@@ -1526,6 +1526,13 @@ static int build_criterion_regex(preludedb_sql_t *sql, prelude_string_t *output,
 
 
 
+int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
+                                            preludedb_sql_time_constraint_type_t type, int gmt_offset)
+{
+        return _preludedb_plugin_sql_build_time_extract_string(sql->plugin, output, field, type, gmt_offset);
+}
+
+
 /**
  * preludedb_sql_build_criterion_string:
  * @sql: Pointer to a sql object.
