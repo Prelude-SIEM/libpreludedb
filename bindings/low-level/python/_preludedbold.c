@@ -7071,6 +7071,89 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_preludedb_sql_build_time_extract_string(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  preludedb_sql_t *arg1 = (preludedb_sql_t *) 0 ;
+  prelude_string_t *arg2 = (prelude_string_t *) 0 ;
+  char *arg3 = (char *) 0 ;
+  preludedb_sql_time_constraint_type_t arg4 ;
+  int arg5 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  {
+    int ret;
+    
+    ret = prelude_string_new(&(arg2));
+    if ( ret < 0 ) {
+      swig_python_raise_exception(ret, NULL);
+      return NULL;
+    }
+  }
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:preludedb_sql_build_time_extract_string",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  {
+    if ( obj0 == Py_None )
+    return NULL;
+    
+    if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb_sql, SWIG_POINTER_EXCEPTION|0) )
+    return NULL;
+  }
+  {
+    if ( obj1 == Py_None )
+    arg3 = NULL;
+    else if ( PyString_Check(obj1) )
+    arg3 = PyString_AsString(obj1);
+    else {
+      PyErr_Format(PyExc_TypeError,
+        "expected None or string, %s found", obj1->ob_type->tp_name);
+      return NULL;
+    }
+  }
+  ecode4 = SWIG_AsVal_int(obj2, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "preludedb_sql_build_time_extract_string" "', argument " "4"" of type '" "preludedb_sql_time_constraint_type_t""'");
+  } 
+  arg4 = (preludedb_sql_time_constraint_type_t)(val4);
+  ecode5 = SWIG_AsVal_int(obj3, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "preludedb_sql_build_time_extract_string" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  {
+    Py_BEGIN_ALLOW_THREADS
+    result = (int)preludedb_sql_build_time_extract_string(arg1,arg2,(char const *)arg3,arg4,arg5);
+    Py_END_ALLOW_THREADS
+  }
+  {
+    if ( result < 0 ) {
+      swig_python_raise_exception(result, NULL);
+      return NULL;
+    }
+    
+    /*
+             * swig workaround: we want to access ret from some argout typemap when ret can
+             * contain the number of results for example, but the C result is not reachable
+             * from argout
+             */
+    resultobj = PyInt_FromLong(result);
+  }
+  {
+    resultobj = PyString_FromStringAndSize(prelude_string_get_string(arg2), prelude_string_get_len(arg2));
+    prelude_string_destroy(arg2);
+  }
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_preludedb_sql_build_criterion_string(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_sql_t *arg1 = (preludedb_sql_t *) 0 ;
@@ -9033,12 +9116,20 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
   size_t arg4 ;
   uint64_t *arg5 = (uint64_t *) 0 ;
   size_t arg6 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  size_t val4 ;
+  int ecode4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   ssize_t result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:preludedb_update_from_list",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:preludedb_update_from_list",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   {
     if ( obj0 == Py_None )
     return NULL;
@@ -9046,62 +9137,41 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
     if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb, SWIG_POINTER_EXCEPTION|0) )
     return NULL;
   }
-  {
-    size_t i = 0;
-    
-    if ( ! PyList_Check(obj1) ) {
-      PyErr_SetString(PyExc_TypeError, "not a list");
-      return NULL;
-    }
-    
-    arg4 = PyList_Size(obj1);
-    
-    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
-    if ( !arg2 )
-    return NULL;
-    
-    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
-    if ( !arg3 ) {
-      free(arg2);
-      return NULL;
-    }
-    
-    for ( i = 0; i < arg4; i++ ) {
-      PyObject *l = PyList_GetItem(obj1, i);
-      
-      if ( ! PyTuple_Check(l) ) {
-        PyErr_SetString(PyExc_TypeError, "not a tuple");
-        return NULL;
-      }
-      
-      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
-      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
-      if ( val )
-      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
-      else
-      arg3[i] = NULL;
-    }
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_p_idmef_path, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "preludedb_update_from_list" "', argument " "2"" of type '" "idmef_path_t const *const *""'"); 
   }
+  arg2 = (idmef_path_t **)(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_idmef_value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "preludedb_update_from_list" "', argument " "3"" of type '" "idmef_value_t const *const *""'"); 
+  }
+  arg3 = (idmef_value_t **)(argp3);
+  ecode4 = SWIG_AsVal_size_t(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "preludedb_update_from_list" "', argument " "4"" of type '" "size_t""'");
+  } 
+  arg4 = (size_t)(val4);
   {
     int i = 0;
     
-    if ( ! PyList_Check(obj2) ) {
+    if ( ! PyList_Check(obj4) ) {
       PyErr_SetString(PyExc_TypeError,"not a list");
       return NULL;
     }
     
-    arg6 = PyList_Size(obj2);
+    arg6 = PyList_Size(obj4);
     
     arg5 = malloc(arg6 * sizeof(uint64_t));
     if ( !arg5 )
     return NULL;
     
     for ( i = 0; i < arg6; i++ )
-    arg5[i] = (uint64_t) PyLong_AsUnsignedLongLong(PyList_GetItem(obj2, i));
+    arg5[i] = (uint64_t) PyLong_AsUnsignedLongLong(PyList_GetItem(obj4, i));
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = preludedb_update_from_list(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5,arg6);
+    result = preludedb_update_from_list(arg1,(struct idmef_path const *const *)arg2,(struct idmef_value const *const *)arg3,arg4,arg5,arg6);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9117,38 +9187,8 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_list(PyObject *SWIGUNUSEDPARM(s
              */
     resultobj = PyLong_FromLongLong(result);
   }
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return resultobj;
 fail:
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return NULL;
 }
 
@@ -9160,12 +9200,20 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
   idmef_value_t **arg3 = (idmef_value_t **) 0 ;
   size_t arg4 ;
   preludedb_result_idents_t *arg5 = (preludedb_result_idents_t *) 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  size_t val4 ;
+  int ecode4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   ssize_t result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:preludedb_update_from_result_idents",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:preludedb_update_from_result_idents",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   {
     if ( obj0 == Py_None )
     return NULL;
@@ -9173,52 +9221,31 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
     if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb, SWIG_POINTER_EXCEPTION|0) )
     return NULL;
   }
-  {
-    size_t i = 0;
-    
-    if ( ! PyList_Check(obj1) ) {
-      PyErr_SetString(PyExc_TypeError, "not a list");
-      return NULL;
-    }
-    
-    arg4 = PyList_Size(obj1);
-    
-    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
-    if ( !arg2 )
-    return NULL;
-    
-    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
-    if ( !arg3 ) {
-      free(arg2);
-      return NULL;
-    }
-    
-    for ( i = 0; i < arg4; i++ ) {
-      PyObject *l = PyList_GetItem(obj1, i);
-      
-      if ( ! PyTuple_Check(l) ) {
-        PyErr_SetString(PyExc_TypeError, "not a tuple");
-        return NULL;
-      }
-      
-      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
-      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
-      if ( val )
-      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
-      else
-      arg3[i] = NULL;
-    }
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_p_idmef_path, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "preludedb_update_from_result_idents" "', argument " "2"" of type '" "idmef_path_t const *const *""'"); 
   }
+  arg2 = (idmef_path_t **)(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_idmef_value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "preludedb_update_from_result_idents" "', argument " "3"" of type '" "idmef_value_t const *const *""'"); 
+  }
+  arg3 = (idmef_value_t **)(argp3);
+  ecode4 = SWIG_AsVal_size_t(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "preludedb_update_from_result_idents" "', argument " "4"" of type '" "size_t""'");
+  } 
+  arg4 = (size_t)(val4);
   {
-    if ( obj2 == Py_None )
+    if ( obj4 == Py_None )
     return NULL;
     
-    if ( SWIG_ConvertPtr(obj2, (void **)&arg5, SWIGTYPE_p_preludedb_result_idents, SWIG_POINTER_EXCEPTION|0) )
+    if ( SWIG_ConvertPtr(obj4, (void **)&arg5, SWIGTYPE_p_preludedb_result_idents, SWIG_POINTER_EXCEPTION|0) )
     return NULL;
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = preludedb_update_from_result_idents(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5);
+    result = preludedb_update_from_result_idents(arg1,(struct idmef_path const *const *)arg2,(struct idmef_value const *const *)arg3,arg4,arg5);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9234,38 +9261,8 @@ SWIGINTERN PyObject *_wrap_preludedb_update_from_result_idents(PyObject *SWIGUNU
              */
     resultobj = PyLong_FromLongLong(result);
   }
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return resultobj;
 fail:
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return NULL;
 }
 
@@ -9280,6 +9277,12 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
   preludedb_path_selection_t *arg6 = (preludedb_path_selection_t *) 0 ;
   int arg7 ;
   int arg8 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  size_t val4 ;
+  int ecode4 = 0 ;
   void *argp5 = 0 ;
   int res5 = 0 ;
   int val7 ;
@@ -9292,9 +9295,11 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
   PyObject * obj3 = 0 ;
   PyObject * obj4 = 0 ;
   PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:preludedb_update",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOO:preludedb_update",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) SWIG_fail;
   {
     if ( obj0 == Py_None )
     return NULL;
@@ -9302,64 +9307,43 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
     if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb, SWIG_POINTER_EXCEPTION|0) )
     return NULL;
   }
-  {
-    size_t i = 0;
-    
-    if ( ! PyList_Check(obj1) ) {
-      PyErr_SetString(PyExc_TypeError, "not a list");
-      return NULL;
-    }
-    
-    arg4 = PyList_Size(obj1);
-    
-    arg2 = malloc(arg4 * sizeof(const idmef_path_t *));
-    if ( !arg2 )
-    return NULL;
-    
-    arg3 = malloc(arg4 * sizeof(const idmef_value_t *));
-    if ( !arg3 ) {
-      free(arg2);
-      return NULL;
-    }
-    
-    for ( i = 0; i < arg4; i++ ) {
-      PyObject *l = PyList_GetItem(obj1, i);
-      
-      if ( ! PyTuple_Check(l) ) {
-        PyErr_SetString(PyExc_TypeError, "not a tuple");
-        return NULL;
-      }
-      
-      idmef_path_new_fast(&arg2[i], PyString_AsString(PyTuple_GetItem(l, 0)));
-      const char *val = PyString_AsString(PyTuple_GetItem(l, 1));
-      if ( val )
-      idmef_value_new_from_string(&arg3[i], idmef_path_get_value_type(arg2[i], -1), val);
-      else
-      arg3[i] = NULL;
-    }
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_p_idmef_path, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "preludedb_update" "', argument " "2"" of type '" "idmef_path_t const *const *""'"); 
   }
-  res5 = SWIG_ConvertPtr(obj2, &argp5,SWIGTYPE_p_idmef_criteria, 0 |  0 );
+  arg2 = (idmef_path_t **)(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_idmef_value, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "preludedb_update" "', argument " "3"" of type '" "idmef_value_t const *const *""'"); 
+  }
+  arg3 = (idmef_value_t **)(argp3);
+  ecode4 = SWIG_AsVal_size_t(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "preludedb_update" "', argument " "4"" of type '" "size_t""'");
+  } 
+  arg4 = (size_t)(val4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_idmef_criteria, 0 |  0 );
   if (!SWIG_IsOK(res5)) {
     SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "preludedb_update" "', argument " "5"" of type '" "idmef_criteria_t *""'"); 
   }
   arg5 = (idmef_criteria_t *)(argp5);
   {
-    if ( SWIG_ConvertPtr(obj3, (void **)&arg6, SWIGTYPE_p_preludedb_path_selection, SWIG_POINTER_EXCEPTION|0) )
+    if ( SWIG_ConvertPtr(obj5, (void **)&arg6, SWIGTYPE_p_preludedb_path_selection, SWIG_POINTER_EXCEPTION|0) )
     return NULL;
   }
-  ecode7 = SWIG_AsVal_int(obj4, &val7);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
   if (!SWIG_IsOK(ecode7)) {
     SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "preludedb_update" "', argument " "7"" of type '" "int""'");
   } 
   arg7 = (int)(val7);
-  ecode8 = SWIG_AsVal_int(obj5, &val8);
+  ecode8 = SWIG_AsVal_int(obj7, &val8);
   if (!SWIG_IsOK(ecode8)) {
     SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "preludedb_update" "', argument " "8"" of type '" "int""'");
   } 
   arg8 = (int)(val8);
   {
     Py_BEGIN_ALLOW_THREADS
-    result = (int)preludedb_update(arg1,(struct idmef_path const **)arg2,(struct idmef_value const **)arg3,arg4,arg5,arg6,arg7,arg8);
+    result = (int)preludedb_update(arg1,(struct idmef_path const *const *)arg2,(struct idmef_value const *const *)arg3,arg4,arg5,arg6,arg7,arg8);
     Py_END_ALLOW_THREADS
   }
   {
@@ -9375,38 +9359,8 @@ SWIGINTERN PyObject *_wrap_preludedb_update(PyObject *SWIGUNUSEDPARM(self), PyOb
              */
     resultobj = PyInt_FromLong(result);
   }
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return resultobj;
 fail:
-  {
-    size_t i;
-    
-    for ( i = 0; i < arg4; i++ )
-    idmef_path_destroy(arg2[i]);
-    
-    free(arg2);
-    
-    for ( i = 0; i < arg4; i++ ) {
-      if ( arg3[i] )
-      idmef_value_destroy(arg3[i]);
-    }
-    
-    free(arg3);
-  }
   return NULL;
 }
 
@@ -9813,13 +9767,13 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_preludedb_selected_path_get_index(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_preludedb_selected_path_get_column_index(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   preludedb_selected_path_t *arg1 = (preludedb_selected_path_t *) 0 ;
   PyObject * obj0 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:preludedb_selected_path_get_index",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:preludedb_selected_path_get_column_index",&obj0)) SWIG_fail;
   {
     if ( obj0 == Py_None )
     return NULL;
@@ -9829,7 +9783,7 @@ SWIGINTERN PyObject *_wrap_preludedb_selected_path_get_index(PyObject *SWIGUNUSE
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = (int)preludedb_selected_path_get_index(arg1);
+    result = (int)preludedb_selected_path_get_column_index(arg1);
     Py_END_ALLOW_THREADS
   }
   {
@@ -10059,19 +10013,54 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_preludedb_selected_path_get_time_constraint(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  preludedb_selected_path_t *arg1 = (preludedb_selected_path_t *) 0 ;
+  PyObject * obj0 = 0 ;
+  preludedb_sql_time_constraint_type_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:preludedb_selected_path_get_time_constraint",&obj0)) SWIG_fail;
+  {
+    if ( obj0 == Py_None )
+    return NULL;
+    
+    if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb_selected_path, SWIG_POINTER_EXCEPTION|0) )
+    return NULL;
+  }
+  {
+    Py_BEGIN_ALLOW_THREADS
+    result = (preludedb_sql_time_constraint_type_t)preludedb_selected_path_get_time_constraint(arg1);
+    Py_END_ALLOW_THREADS
+  }
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_preludedb_path_selection_new(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  preludedb_path_selection_t **arg1 = (preludedb_path_selection_t **) 0 ;
-  preludedb_path_selection_t *tmp1 ;
+  preludedb_t *arg1 = (preludedb_t *) 0 ;
+  preludedb_path_selection_t **arg2 = (preludedb_path_selection_t **) 0 ;
+  preludedb_path_selection_t *tmp2 ;
+  PyObject * obj0 = 0 ;
   int result;
   
   {
-    arg1 = (preludedb_path_selection_t **) &tmp1;
+    arg2 = (preludedb_path_selection_t **) &tmp2;
   }
-  if (!PyArg_ParseTuple(args,(char *)":preludedb_path_selection_new")) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:preludedb_path_selection_new",&obj0)) SWIG_fail;
+  {
+    if ( obj0 == Py_None )
+    return NULL;
+    
+    if ( SWIG_ConvertPtr(obj0, (void **)&arg1, SWIGTYPE_p_preludedb, SWIG_POINTER_EXCEPTION|0) )
+    return NULL;
+  }
   {
     Py_BEGIN_ALLOW_THREADS
-    result = (int)preludedb_path_selection_new(arg1);
+    result = (int)preludedb_path_selection_new(arg1,arg2);
     Py_END_ALLOW_THREADS
   }
   {
@@ -10088,7 +10077,7 @@ SWIGINTERN PyObject *_wrap_preludedb_path_selection_new(PyObject *SWIGUNUSEDPARM
     resultobj = PyInt_FromLong(result);
   }
   {
-    resultobj = SWIG_NewPointerObj((void *) * arg1, SWIGTYPE_p_preludedb_path_selection, 0);
+    resultobj = SWIG_NewPointerObj((void *) * arg2, SWIGTYPE_p_preludedb_path_selection, 0);
   }
   return resultobj;
 fail:
@@ -10127,6 +10116,7 @@ SWIGINTERN PyObject *_wrap_preludedb_path_selection_add(PyObject *SWIGUNUSEDPARM
   preludedb_selected_path_t *arg2 = (preludedb_selected_path_t *) 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  int result;
   
   if (!PyArg_ParseTuple(args,(char *)"OO:preludedb_path_selection_add",&obj0,&obj1)) SWIG_fail;
   {
@@ -10145,10 +10135,22 @@ SWIGINTERN PyObject *_wrap_preludedb_path_selection_add(PyObject *SWIGUNUSEDPARM
   }
   {
     Py_BEGIN_ALLOW_THREADS
-    preludedb_path_selection_add(arg1,arg2);
+    result = (int)preludedb_path_selection_add(arg1,arg2);
     Py_END_ALLOW_THREADS
   }
-  resultobj = SWIG_Py_Void();
+  {
+    if ( result < 0 ) {
+      swig_python_raise_exception(result, NULL);
+      return NULL;
+    }
+    
+    /*
+             * swig workaround: we want to access ret from some argout typemap when ret can
+             * contain the number of results for example, but the C result is not reachable
+             * from argout
+             */
+    resultobj = PyInt_FromLong(result);
+  }
   return resultobj;
 fail:
   return NULL;
@@ -10296,6 +10298,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"preludedb_sql_field_to_float", _wrap_preludedb_sql_field_to_float, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_field_to_double", _wrap_preludedb_sql_field_to_double, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_field_to_string", _wrap_preludedb_sql_field_to_string, METH_VARARGS, NULL},
+	 { (char *)"preludedb_sql_build_time_extract_string", _wrap_preludedb_sql_build_time_extract_string, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_build_criterion_string", _wrap_preludedb_sql_build_criterion_string, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_time_from_timestamp", _wrap_preludedb_sql_time_from_timestamp, METH_VARARGS, NULL},
 	 { (char *)"preludedb_sql_time_to_timestamp", _wrap_preludedb_sql_time_to_timestamp, METH_VARARGS, NULL},
@@ -10351,13 +10354,14 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"preludedb_strerror", _wrap_preludedb_strerror, METH_VARARGS, NULL},
 	 { (char *)"preludedb_check_version", _wrap_preludedb_check_version, METH_VARARGS, NULL},
 	 { (char *)"preludedb_path_selection_get_selected", _wrap_preludedb_path_selection_get_selected, METH_VARARGS, NULL},
-	 { (char *)"preludedb_selected_path_get_index", _wrap_preludedb_selected_path_get_index, METH_VARARGS, NULL},
+	 { (char *)"preludedb_selected_path_get_column_index", _wrap_preludedb_selected_path_get_column_index, METH_VARARGS, NULL},
 	 { (char *)"preludedb_selected_path_new", _wrap_preludedb_selected_path_new, METH_VARARGS, NULL},
 	 { (char *)"preludedb_selected_path_new_string", _wrap_preludedb_selected_path_new_string, METH_VARARGS, NULL},
 	 { (char *)"preludedb_selected_path_destroy", _wrap_preludedb_selected_path_destroy, METH_VARARGS, NULL},
 	 { (char *)"preludedb_path_selection_ref", _wrap_preludedb_path_selection_ref, METH_VARARGS, NULL},
 	 { (char *)"preludedb_selected_path_get_path", _wrap_preludedb_selected_path_get_path, METH_VARARGS, NULL},
 	 { (char *)"preludedb_selected_path_get_flags", _wrap_preludedb_selected_path_get_flags, METH_VARARGS, NULL},
+	 { (char *)"preludedb_selected_path_get_time_constraint", _wrap_preludedb_selected_path_get_time_constraint, METH_VARARGS, NULL},
 	 { (char *)"preludedb_path_selection_new", _wrap_preludedb_path_selection_new, METH_VARARGS, NULL},
 	 { (char *)"preludedb_path_selection_destroy", _wrap_preludedb_path_selection_destroy, METH_VARARGS, NULL},
 	 { (char *)"preludedb_path_selection_add", _wrap_preludedb_path_selection_add, METH_VARARGS, NULL},
@@ -11329,8 +11333,8 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_MINOR_VERSION",SWIG_From_int((int)(2)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_MICRO_VERSION",SWIG_From_int((int)(6)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_LEVEL_VERSION",SWIG_From_int((int)(0xc)));
-  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_SERIAL_VERSION",SWIG_From_int((int)(1)));
-  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_HEXVERSION",SWIG_From_int((int)(((1 << 24)|(2 << 16)|(6 << 8)|(0xc << 4)|(1 << 0)))));
+  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_SERIAL_VERSION",SWIG_From_int((int)(3)));
+  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_HEXVERSION",SWIG_From_int((int)(((1 << 24)|(2 << 16)|(6 << 8)|(0xc << 4)|(3 << 0)))));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG)));
