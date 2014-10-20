@@ -1,5 +1,7 @@
-/* Copyright (C) 1991, 1993, 1996-1997, 1999-2000, 2003-2004, 2006, 2008-2014
-   Free Software Foundation, Inc.
+/* memrchr -- find the last occurrence of a byte in a memory block
+
+   Copyright (C) 1991, 1993, 1996-1997, 1999-2000, 2003-2014 Free Software
+   Foundation, Inc.
 
    Based on strlen implementation by Torbjorn Granlund (tege@sics.se),
    with help from Dan Sahlin (dan@sics.se) and
@@ -7,56 +9,41 @@
    adaptation to memchr suggested by Dick Karpinski (dick@cca.ucsf.edu),
    and implemented by Roland McGrath (roland@ai.mit.edu).
 
-NOTE: The canonical source of this file is maintained with the GNU C Library.
-Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
-This program is free software: you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 3 of the License, or any
-later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
-
-#ifndef _LIBC
-# include <config.h>
-#endif
-
-#include <string.h>
-
-#include <stddef.h>
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #if defined _LIBC
 # include <memcopy.h>
 #else
+# include <config.h>
 # define reg_char char
 #endif
 
+#include <string.h>
 #include <limits.h>
 
-#if HAVE_BP_SYM_H || defined _LIBC
-# include <bp-sym.h>
-#else
-# define BP_SYM(sym) sym
-#endif
-
-#undef __memchr
+#undef __memrchr
 #ifdef _LIBC
-# undef memchr
+# undef memrchr
 #endif
 
 #ifndef weak_alias
-# define __memchr memchr
+# define __memrchr memrchr
 #endif
 
 /* Search no more than N bytes of S for C.  */
 void *
-__memchr (void const *s, int c_in, size_t n)
+__memrchr (void const *s, int c_in, size_t n)
 {
   /* On 32-bit hardware, choosing longword to be a 32-bit unsigned
      long instead of a 64-bit uintmax_t tends to give better
@@ -73,12 +60,12 @@ __memchr (void const *s, int c_in, size_t n)
 
   c = (unsigned char) c_in;
 
-  /* Handle the first few bytes by reading one byte at a time.
+  /* Handle the last few bytes by reading one byte at a time.
      Do this until CHAR_PTR is aligned on a longword boundary.  */
-  for (char_ptr = (const unsigned char *) s;
+  for (char_ptr = (const unsigned char *) s + n;
        n > 0 && (size_t) char_ptr % sizeof (longword) != 0;
-       --n, ++char_ptr)
-    if (*char_ptr == c)
+       --n)
+    if (*--char_ptr == c)
       return (void *) char_ptr;
 
   longword_ptr = (const longword *) char_ptr;
@@ -141,12 +128,14 @@ __memchr (void const *s, int c_in, size_t n)
 
   while (n >= sizeof (longword))
     {
-      longword longword1 = *longword_ptr ^ repeated_c;
+      longword longword1 = *--longword_ptr ^ repeated_c;
 
       if ((((longword1 - repeated_one) & ~longword1)
            & (repeated_one << 7)) != 0)
-        break;
-      longword_ptr++;
+        {
+          longword_ptr++;
+          break;
+        }
       n -= sizeof (longword);
     }
 
@@ -159,14 +148,14 @@ __memchr (void const *s, int c_in, size_t n)
      iteration.  But this does not work on big-endian machines.  Choose code
      that works in both cases.  */
 
-  for (; n > 0; --n, ++char_ptr)
+  while (n-- > 0)
     {
-      if (*char_ptr == c)
+      if (*--char_ptr == c)
         return (void *) char_ptr;
     }
 
   return NULL;
 }
 #ifdef weak_alias
-weak_alias (__memchr, BP_SYM (memchr))
+weak_alias (__memrchr, memrchr)
 #endif

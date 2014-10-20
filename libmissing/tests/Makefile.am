@@ -243,6 +243,14 @@ EXTRA_DIST += test-memchr.c zerosize-ptr.h signature.h macros.h
 
 ## end   gnulib module memchr-tests
 
+## begin gnulib module memrchr-tests
+
+TESTS += test-memrchr
+check_PROGRAMS += test-memrchr
+EXTRA_DIST += test-memrchr.c zerosize-ptr.h signature.h macros.h
+
+## end   gnulib module memrchr-tests
+
 ## begin gnulib module msvc-inval
 
 

@@ -73,6 +73,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module malloc-posix:
   # Code from module memchr:
   # Code from module memchr-tests:
+  # Code from module memrchr:
+  # Code from module memrchr-tests:
   # Code from module msvc-inval:
   # Code from module multiarch:
   # Code from module size_max:
@@ -169,6 +171,12 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_MEMCHR
   fi
   gl_STRING_MODULE_INDICATOR([memchr])
+  gl_FUNC_MEMRCHR
+  if test $ac_cv_func_memrchr = no; then
+    AC_LIBOBJ([memrchr])
+    gl_PREREQ_MEMRCHR
+  fi
+  gl_STRING_MODULE_INDICATOR([memrchr])
   gl_MULTIARCH
   gl_SIZE_MAX
   gl_FUNC_SNPRINTF
@@ -275,6 +283,9 @@ changequote([, ])dnl
   gl_INTTYPES_H
   gl_INTTYPES_INCOMPLETE
   dnl Check for prerequisites for memory fence checks.
+  gl_FUNC_MMAP_ANON
+  AC_CHECK_HEADERS_ONCE([sys/mman.h])
+  AC_CHECK_FUNCS_ONCE([mprotect])
   gl_FUNC_MMAP_ANON
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
@@ -402,6 +413,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/malloc.c
   lib/memchr.c
   lib/memchr.valgrind
+  lib/memrchr.c
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-parse.c
@@ -455,6 +467,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/malloc.m4
   m4/math_h.m4
   m4/memchr.m4
+  m4/memrchr.m4
   m4/mmap-anon.m4
   m4/msvc-inval.m4
   m4/multiarch.m4
@@ -507,6 +520,7 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-inttypes.c
   tests/test-lock.c
   tests/test-memchr.c
+  tests/test-memrchr.c
   tests/test-snprintf.c
   tests/test-stdbool.c
   tests/test-stddef.c
