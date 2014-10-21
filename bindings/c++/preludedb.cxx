@@ -400,6 +400,9 @@ void DB::deleteAlert(DB::ResultIdents &idents)
 {
         int ret;
 
+        if ( ! idents._result )
+                return;
+
         ret = preludedb_delete_alert_from_result_idents(_db, idents._result);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
@@ -430,6 +433,9 @@ void DB::deleteHeartbeat(DB::ResultIdents &idents)
 {
         int ret;
 
+        if ( ! idents._result )
+                return;
+
         ret = preludedb_delete_heartbeat_from_result_idents(_db, idents._result);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
@@ -453,6 +459,9 @@ void DB::updateFromList(const std::vector<Prelude::IDMEFPath> &paths, const std:
         size_t i;
         const idmef_path_t *cpath[paths.size()];
         const idmef_value_t *cvals[values.size()];
+
+        if ( ! idents._result )
+                return;
 
         if ( paths.size() != values.size() )
                 throw PreludeDBError("Paths size does not match value size");
