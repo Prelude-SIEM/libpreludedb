@@ -273,6 +273,7 @@ void preludedb_destroy(preludedb_t *db)
  */
 const char *preludedb_get_format_name(preludedb_t *db)
 {
+        prelude_return_val_if_fail(db, NULL);
         return prelude_plugin_get_name(db->plugin);
 }
 
@@ -286,6 +287,7 @@ const char *preludedb_get_format_name(preludedb_t *db)
  */
 const char *preludedb_get_format_version(preludedb_t *db)
 {
+        prelude_return_val_if_fail(db, NULL);
         return db->format_version;
 }
 
@@ -302,6 +304,8 @@ const char *preludedb_get_format_version(preludedb_t *db)
  */
 int preludedb_set_format(preludedb_t *db, const char *format_name)
 {
+        prelude_return_val_if_fail(db && format_name, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         db->plugin = (preludedb_plugin_format_t *) prelude_plugin_search_by_name(&plugin_format_list, format_name);
         if ( ! db->plugin )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN,
@@ -320,6 +324,7 @@ int preludedb_set_format(preludedb_t *db, const char *format_name)
  */
 preludedb_sql_t *preludedb_get_sql(preludedb_t *db)
 {
+        prelude_return_val_if_fail(db, NULL);
         return db->sql;
 }
 
@@ -366,6 +371,8 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
  */
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 {
+        prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         return db->plugin->insert_message(db->sql, message);
 }
 
@@ -373,6 +380,8 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 
 preludedb_result_idents_t *preludedb_result_idents_ref(preludedb_result_idents_t *results)
 {
+        prelude_return_val_if_fail(results, NULL);
+
         results->refcount++;
         return results;
 }
@@ -386,6 +395,8 @@ preludedb_result_idents_t *preludedb_result_idents_ref(preludedb_result_idents_t
  */
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 {
+        prelude_return_if_fail(result);
+
         if ( --result->refcount != 0 )
                 return;
 
@@ -408,6 +419,7 @@ void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
  */
 int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident)
 {
+        prelude_return_val_if_fail(result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return result->db->plugin->get_next_message_ident(result->res, ident);
 }
 
@@ -426,6 +438,8 @@ int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t
  */
 int preludedb_result_idents_get(preludedb_result_idents_t *result, unsigned int row_index, uint64_t *ident)
 {
+        prelude_return_val_if_fail(result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! result->db->plugin->get_message_ident )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement ident retrieval by index");
 
@@ -435,6 +449,8 @@ int preludedb_result_idents_get(preludedb_result_idents_t *result, unsigned int 
 
 unsigned int preludedb_result_idents_get_count(preludedb_result_idents_t *result)
 {
+        prelude_return_val_if_fail(result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! result->db->plugin->get_message_ident_count )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement ident count retrieval");
 
@@ -451,6 +467,8 @@ unsigned int preludedb_result_idents_get_count(preludedb_result_idents_t *result
  */
 void preludedb_result_values_destroy(preludedb_result_values_t *result)
 {
+        prelude_return_if_fail(result);
+
         if ( --result->refcount != 0 )
                 return;
 
@@ -465,6 +483,7 @@ void preludedb_result_values_destroy(preludedb_result_values_t *result)
 
 preludedb_path_selection_t *preludedb_result_values_get_selection(preludedb_result_values_t *result)
 {
+        prelude_return_val_if_fail(result, NULL);
         return result->selection;
 }
 
@@ -481,6 +500,8 @@ preludedb_path_selection_t *preludedb_result_values_get_selection(preludedb_resu
  */
 int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values)
 {
+        prelude_return_val_if_fail(result && values, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! result->db->plugin->get_next_values )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value iteration");
 
@@ -491,6 +512,8 @@ int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_va
 
 int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned int rownum, void **row)
 {
+        prelude_return_val_if_fail(result && row, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! result->db->plugin->get_result_values_row )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
 
@@ -500,6 +523,8 @@ int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned 
 
 int preludedb_result_values_get_field(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected, idmef_value_t **field)
 {
+        prelude_return_val_if_fail(result && row && field, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! result->db->plugin->get_result_values_field )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
 
@@ -555,6 +580,7 @@ int preludedb_get_alert_idents(preludedb_t *db,
                                preludedb_result_idents_order_t order,
                                preludedb_result_idents_t **result)
 {
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
 }
 
@@ -576,6 +602,7 @@ int preludedb_get_heartbeat_idents(preludedb_t *db,
                                    preludedb_result_idents_order_t order,
                                    preludedb_result_idents_t **result)
 {
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return preludedb_get_message_idents(db, criteria, db->plugin->get_heartbeat_idents, limit, offset, order, result);
 }
 
@@ -591,6 +618,7 @@ int preludedb_get_heartbeat_idents(preludedb_t *db,
  */
 int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
+        prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
         return db->plugin->get_alert(db->sql, ident, message);
 }
 
@@ -606,6 +634,7 @@ int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **messa
  */
 int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
+        prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
         return db->plugin->get_heartbeat(db->sql, ident, message);
 }
 
@@ -621,6 +650,7 @@ int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **m
  */
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 {
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
         return db->plugin->delete_alert(db->sql, ident);
 }
 
@@ -637,6 +667,8 @@ int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
  */
 ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size_t isize)
 {
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( isize == 0 )
                 return 0;
 
@@ -655,6 +687,7 @@ ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size
  */
 ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db->sql, result);
 }
 
@@ -671,6 +704,7 @@ ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_res
  */
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
         return db->plugin->delete_heartbeat(db->sql, ident);
 }
 
@@ -687,6 +721,8 @@ int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
  */
 ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, size_t isize)
 {
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( isize == 0 )
                 return 0;
 
@@ -706,6 +742,7 @@ ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, 
  */
 ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db->sql, result);
 }
 
@@ -732,6 +769,8 @@ int preludedb_get_values(preludedb_t *db,
 {
         int ret;
 
+        prelude_return_val_if_fail(db && path_selection && result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         *result = calloc(1, sizeof (**result));
         if ( ! *result )
                 return preludedb_error_from_errno(errno);
@@ -753,6 +792,7 @@ int preludedb_get_values(preludedb_t *db,
 
 void *preludedb_result_values_get_data(preludedb_result_values_t *results)
 {
+        prelude_return_val_if_fail(results, NULL);
         return results->res;
 }
 
@@ -760,6 +800,8 @@ void *preludedb_result_values_get_data(preludedb_result_values_t *results)
 
 int preludedb_result_values_get_count(preludedb_result_values_t *results)
 {
+        prelude_return_val_if_fail(results, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! results->db->plugin->get_result_values_count )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value count retrieval");
 
@@ -770,6 +812,8 @@ int preludedb_result_values_get_count(preludedb_result_values_t *results)
 
 preludedb_result_values_t *preludedb_result_values_ref(preludedb_result_values_t *results)
 {
+        prelude_return_val_if_fail(results, NULL);
+
         results->refcount++;
         return results;
 }
@@ -777,6 +821,7 @@ preludedb_result_values_t *preludedb_result_values_ref(preludedb_result_values_t
 
 unsigned int preludedb_result_values_get_field_count(preludedb_result_values_t *results)
 {
+        prelude_return_val_if_fail(results, prelude_error(PRELUDE_ERROR_ASSERTION));
         return preludedb_path_selection_get_count(results->selection);
 }
 
@@ -785,7 +830,9 @@ ssize_t preludedb_update_from_list(preludedb_t *db,
                                    const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                                    uint64_t *idents, size_t isize)
 {
-       if ( ! db->plugin->update_from_list )
+        prelude_return_val_if_fail(db && paths && values, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        if ( ! db->plugin->update_from_list )
                 return preludedb_error_from_errno(ENOSYS);
 
         return db->plugin->update_from_list(db->sql, paths, values, pvsize, idents, isize);
@@ -796,6 +843,8 @@ ssize_t preludedb_update_from_result_idents(preludedb_t *db,
                                             const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                                             preludedb_result_idents_t *result)
 {
+        prelude_return_val_if_fail(db && paths && values && result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! db->plugin->update_from_result_idents )
                 return PRELUDEDB_ENOTSUP("update_from_result_ident");
 
@@ -825,6 +874,8 @@ int preludedb_update(preludedb_t *db,
                      preludedb_path_selection_t *order,
                      int limit, int offset)
 {
+        prelude_return_val_if_fail(db && paths && values, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         if ( ! db->plugin->update )
                 return PRELUDEDB_ENOTSUP("update");
 
@@ -846,6 +897,8 @@ int preludedb_update(preludedb_t *db,
 int preludedb_transaction_start(preludedb_t *db)
 {
         int ret;
+
+        prelude_return_val_if_fail(db && db->sql, prelude_error(PRELUDE_ERROR_ASSERTION));
 
         ret = _preludedb_sql_transaction_start(db->sql);
         if ( ret < 0 )
@@ -872,6 +925,8 @@ int preludedb_transaction_end(preludedb_t *db)
 {
         int ret;
 
+        prelude_return_val_if_fail(db && db->sql, prelude_error(PRELUDE_ERROR_ASSERTION));
+
         ret = _preludedb_sql_transaction_end(db->sql);
         _preludedb_sql_enable_internal_transaction(db->sql);
 
@@ -896,6 +951,8 @@ int preludedb_transaction_end(preludedb_t *db)
 int preludedb_transaction_abort(preludedb_t *db)
 {
         int ret;
+
+        prelude_return_val_if_fail(db && db->sql, prelude_error(PRELUDE_ERROR_ASSERTION));
 
         ret = _preludedb_sql_transaction_abort(db->sql);
         _preludedb_sql_enable_internal_transaction(db->sql);
