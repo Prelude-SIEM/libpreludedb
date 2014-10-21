@@ -6,6 +6,7 @@
 %rename (__len__) *::count();
 
 %begin %{
+#define TARGET_LANGUAGE_SELF PyObject *
 #define TARGET_LANGUAGE_OUTPUT_TYPE PyObject **
 %}
 
