@@ -843,7 +843,7 @@ int preludedb_sql_row_new_field(preludedb_sql_row_t *row, preludedb_sql_field_t 
                                 int num, char *value, size_t len)
 {
         if ( ! row->fields ) {
-                row->fields = calloc(preludedb_sql_table_get_column_count(row->table), sizeof(**field));
+                row->fields = calloc(preludedb_sql_table_get_column_count(row->table), sizeof(*field));
                 if ( ! row->fields )
                         return preludedb_error_from_errno(errno);
         }
