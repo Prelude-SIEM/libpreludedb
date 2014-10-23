@@ -283,17 +283,14 @@ DB::ResultValues DB::getValues(const std::vector<std::string> &selection, const 
         if ( criteria )
                 crit = *criteria;
 
-        ret = preludedb_path_selection_new(_db, &c_selection);
-        if ( ret < 0 )
-                throw PreludeDBError(ret);
-
         c_selection = _getSelection(_db, selection);
 
         ret = preludedb_get_values(_db, c_selection, crit, (prelude_bool_t) distinct, limit, offset, &res);
-        if ( ret < 0 )
-                throw PreludeDBError(ret);
 
         preludedb_path_selection_destroy(c_selection);
+
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
 
         return ResultValues((ret == 0) ? NULL : res);
 }
