@@ -747,7 +747,8 @@ void preludedb_sql_table_destroy(preludedb_sql_table_t *table)
                 return;
 
         for ( i = 0; i < table->nrow; i++ )
-                preludedb_sql_row_destroy(table->rows[i]);
+                if ( table->rows[i] )
+                        preludedb_sql_row_destroy(table->rows[i]);
 
         free(table->rows);
 
