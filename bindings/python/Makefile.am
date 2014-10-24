@@ -39,7 +39,7 @@ endif
 
 _preludedb.cxx preludedb.py: $(top_srcdir)/bindings/c++/include/*.hxx $(top_srcdir)/bindings/libpreludedbcpp.i libpreludedbcpp-python.i
 if HAVE_SWIG
-	$(SWIG) -c++ @LIBPRELUDE_CFLAGS@ -I$(top_srcdir)/bindings -I$(top_srcdir)/bindings/python -I@LIBPRELUDE_PREFIX@/share/libprelude/swig -I$(top_srcdir)/bindings/c++/include -python -threads -o $@ ../libpreludedbcpp.i
+	$(SWIG) -c++ @LIBPRELUDE_CFLAGS@ -I/usr/include -I$(top_srcdir)/bindings -I$(top_srcdir)/bindings/python -I@LIBPRELUDE_PREFIX@/share/libprelude/swig -I$(top_srcdir)/bindings/c++/include -python -threads -o $@ ../libpreludedbcpp.i
 endif
 
 endif
