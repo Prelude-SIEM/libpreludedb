@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -59,7 +60,7 @@
 
 typedef struct {
         MYSQL_ROW *row;
-        unsigned long *lengths;
+        unsigned long lengths[1];
 } mysql_row_data_t;
 
 
@@ -294,7 +295,10 @@ static int sql_fetch_row(void *session, preludedb_sql_table_t *table, unsigned i
         void *row;
         mysql_row_data_t *myrow;
         unsigned long *lengths;
+        unsigned int column_count, i;
         MYSQL_RES *result = preludedb_sql_table_get_data(table);
+
+        column_count = preludedb_sql_table_get_column_count(table);
 
         while ( preludedb_sql_table_get_fetched_row_count(table) <= row_index ) {
                 row = mysql_fetch_row(result);
@@ -314,14 +318,16 @@ static int sql_fetch_row(void *session, preludedb_sql_table_t *table, unsigned i
                 if ( ret < 0 )
                         return ret;
 
-                myrow = malloc(sizeof(*myrow));
+                myrow = malloc(offsetof(mysql_row_data_t, lengths) + column_count * (sizeof(unsigned long)));
                 if ( ! myrow ) {
                         preludedb_sql_row_destroy(*rrow);
                         return preludedb_error_from_errno(errno);
                 }
 
+                for ( i = 0; i < column_count; i++ )
+                        myrow->lengths[i] = lengths[i];
+
                 myrow->row = row;
-                myrow->lengths = lengths;
                 preludedb_sql_row_set_data(*rrow, myrow);
         }
 
