@@ -114,22 +114,21 @@ struct preludedb_sql_table {
 };
 
 
+struct preludedb_sql_field {
+        char *value;
+        uint32_t len;
+        uint32_t index;
+};
+
+
 struct preludedb_sql_row {
         preludedb_sql_table_t *table;
-        preludedb_sql_field_t **fields;
         void *data;
-        uint16_t refcount;
+        uint32_t index;
+        uint32_t refcount;
+        preludedb_sql_field_t fields[1];
 };
 
-
-struct preludedb_sql_field {
-        preludedb_sql_row_t *row;
-
-        char *value;
-        size_t len;
-
-        uint16_t refcount;
-};
 
 
 int _preludedb_sql_transaction_start(preludedb_sql_t *sql);
@@ -142,6 +141,10 @@ void _preludedb_sql_disable_internal_transaction(preludedb_sql_t *sql);
 extern prelude_list_t _sql_plugin_list;
 
 
+static inline preludedb_sql_row_t *field2row(preludedb_sql_field_t *field)
+{
+        return (preludedb_sql_row_t *) ((unsigned char *) field - (sizeof(*field) * field->index + offsetof(preludedb_sql_row_t, fields)));
+}
 
 
 static inline void update_sql_from_errno(preludedb_sql_t *sql, preludedb_error_t error)
@@ -767,8 +770,10 @@ int preludedb_sql_table_new_row(preludedb_sql_table_t *table, preludedb_sql_row_
 {
         unsigned int i;
         unsigned int nindex = MAX(row_index, table->nrow) + 1;
+        size_t fieldsize = preludedb_sql_table_get_column_count(table) * sizeof(preludedb_sql_field_t);
 
         if ( row_index >= table->nrow ) {
+
                 table->rows = realloc(table->rows, sizeof(*table->rows) * nindex);
                 if ( ! table->rows )
                         return preludedb_error_from_errno(errno);
@@ -779,14 +784,13 @@ int preludedb_sql_table_new_row(preludedb_sql_table_t *table, preludedb_sql_row_
                 table->nrow = nindex;
         }
 
-        *row = malloc(sizeof(**row));
+        *row = table->rows[row_index] = calloc(1, offsetof(preludedb_sql_row_t, fields) + fieldsize);
         if ( ! *row )
                 return preludedb_error_from_errno(errno);
 
-        (*row)->fields = NULL;
         (*row)->refcount = 1;
         (*row)->table = table;
-        table->rows[row_index] = *row;
+        (*row)->index = row_index;
 
         return 0;
 }
@@ -812,8 +816,10 @@ unsigned int preludedb_sql_row_get_field_count(preludedb_sql_row_t *row)
 
 preludedb_sql_row_t *preludedb_sql_row_ref(preludedb_sql_row_t *row)
 {
+        if ( row->refcount == 1 )
+                preludedb_sql_table_ref(row->table);
+
         row->refcount++;
-        preludedb_sql_table_ref(row->table);
         return row;
 }
 
@@ -823,51 +829,39 @@ void preludedb_sql_row_destroy(preludedb_sql_row_t *row)
 {
         unsigned int i;
 
-        if ( --row->refcount != 0 ) {
-                preludedb_sql_table_destroy(row->table);
+        if ( --row->refcount > 0 ) {
+                if ( row->refcount == 1 )
+                        preludedb_sql_table_destroy(row->table);
                 return;
         }
 
         _preludedb_plugin_sql_row_destroy(row->table->sql->plugin, row->table->sql->session, row->table, row);
 
-        if ( row->fields ) {
-                for ( i = 0; i < preludedb_sql_table_get_column_count(row->table); i++ ) {
-                        if ( row->fields[i] )
-                                preludedb_sql_field_destroy(row->fields[i]);
-                }
-
-                free(row->fields);
+        for ( i = 0; i < preludedb_sql_table_get_column_count(row->table); i++ ) {
+                if ( row->fields[i].value )
+                        preludedb_sql_field_destroy(&(row->fields[i]));
         }
 
+        row->table->rows[row->index] = NULL;
         free(row);
 }
-
 
 
 int preludedb_sql_row_new_field(preludedb_sql_row_t *row, preludedb_sql_field_t **field,
                                 int num, char *value, size_t len)
 {
-        if ( ! row->fields ) {
-                row->fields = calloc(preludedb_sql_table_get_column_count(row->table), sizeof(*field));
-                if ( ! row->fields )
-                        return preludedb_error_from_errno(errno);
-        }
+        preludedb_sql_field_t *ftbl = row->fields;
 
         if ( ! value ) {
                 *field = NULL;
-                row->fields[num] = SQL_NULL_FIELD;
+                ftbl[num].value = SQL_NULL_FIELD;
                 return 0;
         }
 
-        *field = malloc(sizeof(**field));
-        if ( ! *field )
-                return preludedb_error_from_errno(errno);
-
-        (*field)->refcount = 1;
-        (*field)->row = row;
-        (*field)->value = value;
-        (*field)->len = len;
-        row->fields[num] = *field;
+        ftbl[num].index = num;
+        ftbl[num].value = value;
+        ftbl[num].len = len;
+        *field = &ftbl[num];
 
         return 1;
 }
@@ -876,27 +870,24 @@ int preludedb_sql_row_new_field(preludedb_sql_row_t *row, preludedb_sql_field_t 
 
 preludedb_sql_field_t *preludedb_sql_field_ref(preludedb_sql_field_t *field)
 {
-        field->refcount++;
-        preludedb_sql_row_ref(field->row);
-
+        preludedb_sql_row_ref(field2row(field));
         return field;
 }
 
 
 void preludedb_sql_field_destroy(preludedb_sql_field_t *field)
 {
-        if ( field == SQL_NULL_FIELD )
+        preludedb_sql_row_t *row;
+
+        if ( field->value == SQL_NULL_FIELD )
                 return;
 
-        if ( --field->refcount != 0 ) {
-                preludedb_sql_row_destroy(field->row);
-                return;
-        }
+        row = field2row(field);
 
-        _preludedb_plugin_sql_field_destroy(field->row->table->sql->plugin, field->row->table->sql->session,
-                                            field->row->table, field->row, field);
-
-        free(field);
+        if ( row->refcount == 0 )
+                _preludedb_plugin_sql_field_destroy(row->table->sql->plugin, row->table->sql->session, row->table, row, field);
+        else
+                preludedb_sql_row_destroy(row);
 }
 
 
@@ -1090,13 +1081,13 @@ int preludedb_sql_row_get_field(preludedb_sql_row_t *row, int column_num, prelud
         if ( column_num >= ccount )
                 return prelude_error_verbose(PRELUDEDB_ERROR_INDEX, "Attempt to access invalid column `%d` (max is `%d`)", column_num, ccount);
 
-        if ( column_num < ccount && row->fields && row->fields[column_num] ) {
-                *field = row->fields[column_num];
-                if ( *field == SQL_NULL_FIELD ) {
+        if ( row->fields[column_num].value ) {
+                if ( row->fields[column_num].value == SQL_NULL_FIELD ) {
                         *field = NULL;
                         return 0;
                 }
 
+                *field = &(row->fields[column_num]);
                 return 1;
         }
 
