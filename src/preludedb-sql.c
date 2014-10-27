@@ -106,6 +106,8 @@ struct preludedb_sql_table {
 
         preludedb_sql_row_t **rows;
         unsigned int nrow;
+        unsigned int row_count;
+        unsigned int column_count;
 
         uint16_t refcount;
         uint8_t done;
@@ -313,6 +315,8 @@ int preludedb_sql_table_new(preludedb_sql_table_t **new, void *data)
 
         (*new)->rows = NULL;
         (*new)->nrow = 0;
+        (*new)->row_count = 0;
+        (*new)->column_count = 0;
         (*new)->done = FALSE;
         (*new)->refcount = 1;
         (*new)->data = data;
@@ -939,7 +943,10 @@ int preludedb_sql_table_get_column_num(preludedb_sql_table_t *table, const char 
  */
 unsigned int preludedb_sql_table_get_column_count(preludedb_sql_table_t *table)
 {
-        return _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table);
+        if ( ! table->column_count )
+                table->column_count = _preludedb_plugin_sql_get_column_count(table->sql->plugin, table->sql->session, table);
+
+        return table->column_count;
 }
 
 
@@ -958,11 +965,16 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
         int ret;
         preludedb_sql_row_t *row;
 
-        if ( table->done )
-                return table->nrow;
+        if ( table->row_count )
+                return table->row_count;
 
         ret = _preludedb_plugin_sql_get_row_count(table->sql->plugin, table->sql->session, table);
-        if ( ret >= 0 || (ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_ENOSYS) )
+        if ( ret >= 0 ) {
+                table->row_count = ret;
+                return ret;
+        }
+
+        else if ( ret < 0 && prelude_error_get_code(ret) != PRELUDE_ERROR_ENOSYS )
                 return ret;
 
         prelude_log(PRELUDE_LOG_WARN, "SQL plugin '%s' emulate row-count before fetch: this is a slow operation.\n", preludedb_sql_get_type(table->sql));
@@ -971,7 +983,9 @@ unsigned int preludedb_sql_table_get_row_count(preludedb_sql_table_t *table)
                 ret = preludedb_sql_table_fetch_row(table, &row);
         } while ( ret > 0 );
 
-        return table->nrow;
+        table->row_count = table->nrow;
+
+        return table->row_count;
 }
 
 
