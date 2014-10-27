@@ -1,3 +1,47 @@
+* 2014-10-27, libpreludedb-1.2.6rc4:
+
+Author: Yoann Vandoorselaere
+
+- MySQL: fix invalid field length
+
+- Fix possible NULL pointer dereference
+
+- Fix memory leaks
+
+- Fix memory (over) allocation for SQL fields
+
+- Support self argument to IDMEFValue_to_SWIG for future builtin compatibility
+
+- Add API safety checks
+
+- Make sure the results are not empty when calling db backend function
+
+- Update GnuLib code to include memrchr
+
+- Support time extraction on selected fields
+
+- When there are multiple fields, apply order/group_by to each field
+
+    Additionally, when a GROUP BY occur on create_time, ignore
+    gmtoff and usec fields, since the result wouldn't be reliable.
+
+- Fix issues with fields internally expanded to multiples fields
+
+    Fix a problem with invalid fields returned, in query on specific
+    fields that were expanded to multiple fields.
+
+- Correctly throw PreludeDB exception in Python
+
+- Error checking fixes, use ENOSYS in place of ENOTSUP
+
+Author: Antoine Luong
+
+- Force default include path for high-level Python binding
+
+- Fix #436: allow serial_version to be 0 when level_version is final
+
+
+
 * 2014-10-15, libpreludedb-1.2.6rc3:
 
 Author: Yoann Vandoorselaere

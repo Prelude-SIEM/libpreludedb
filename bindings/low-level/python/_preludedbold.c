@@ -11324,7 +11324,7 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN",SWIG_From_int((int)(PRELUDEDB_ERROR_CANNOT_LOAD_SQL_PLUGIN)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN",SWIG_From_int((int)(PRELUDEDB_ERROR_CANNOT_LOAD_FORMAT_PLUGIN)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_ERROR_INDEX",SWIG_From_int((int)(PRELUDEDB_ERROR_INDEX)));
-  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_VERSION",SWIG_FromCharPtr("1.2.6rc3"));
+  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_VERSION",SWIG_FromCharPtr("1.2.6rc4"));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_RELEASE_LEVEL_ALPHA",SWIG_From_int((int)(0xa)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_RELEASE_LEVEL_BETA",SWIG_From_int((int)(0xb)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_RELEASE_LEVEL_RC",SWIG_From_int((int)(0xc)));
@@ -11333,8 +11333,8 @@ SWIG_init(void) {
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_MINOR_VERSION",SWIG_From_int((int)(2)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_MICRO_VERSION",SWIG_From_int((int)(6)));
   SWIG_Python_SetConstant(d, "LIBPRELUDEDB_LEVEL_VERSION",SWIG_From_int((int)(0xc)));
-  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_SERIAL_VERSION",SWIG_From_int((int)(3)));
-  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_HEXVERSION",SWIG_From_int((int)(((1 << 24)|(2 << 16)|(6 << 8)|(0xc << 4)|(3 << 0)))));
+  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_SERIAL_VERSION",SWIG_From_int((int)(4)));
+  SWIG_Python_SetConstant(d, "LIBPRELUDEDB_HEXVERSION",SWIG_From_int((int)(((1 << 24)|(2 << 16)|(6 << 8)|(0xc << 4)|(4 << 0)))));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX)));
   SWIG_Python_SetConstant(d, "PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG",SWIG_From_int((int)(PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG)));
