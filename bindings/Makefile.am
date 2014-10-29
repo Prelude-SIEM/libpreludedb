@@ -1,4 +1,4 @@
-SUBDIRS = c++ low-level python
+SUBDIRS = c++ python
 
 EXTRA_DIST = libpreludedbcpp.i
 

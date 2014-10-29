@@ -598,8 +598,9 @@ static int copy_iterate(preludedb_t *src, preludedb_t *dst,
         idmef_message_t *msg;
         size_t delete_index = 0;
         uint64_t delete_tbl[1024];
+        unsigned int ident_idx = 0;
 
-        while ( (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+        while ( (ret = preludedb_result_idents_get(idents, ident_idx++, &ident)) > 0 ) {
 
                 stat_compute(stat_fetch, ret = get_message(src, ident, &msg), 1);
                 if ( ret < 0 ) {
@@ -787,8 +788,9 @@ static int save_iterate_message(preludedb_t *db, preludedb_result_idents_t *iden
         int ret = 0;
         uint64_t ident;
         idmef_message_t *message;
+        unsigned int ident_idx = 0;
 
-        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+        while ( ! stop_processing && (ret = preludedb_result_idents_get(idents, ident_idx++, &ident)) > 0 ) {
 
                 stat_compute(stat_fetch, ret = get_message(db, ident, &message), 1);
                 if ( ret < 0 ) {
@@ -1032,9 +1034,10 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
 {
         int ret = 0;
         uint64_t ident;
+        unsigned int ident_idx = 0;
         idmef_message_t *idmef;
 
-        while ( ! stop_processing && (ret = preludedb_result_idents_get_next(idents, &ident)) > 0 ) {
+        while ( ! stop_processing && (ret = preludedb_result_idents_get(idents, ident_idx++, &ident)) > 0 ) {
 
                 stat_compute(stat_fetch, ret = get_message(db, ident, &idmef), 1);
                 if ( ret < 0 ) {
@@ -1117,7 +1120,8 @@ static int cmd_count(int argc, char **argv)
         char buf[128];
         int ret, idx;
         preludedb_t *db;
-        idmef_value_t **values;
+        idmef_value_t *value;
+        void *row;
         preludedb_result_values_t *results;
         preludedb_path_selection_t *ps;
         preludedb_selected_path_t *sp;
@@ -1161,12 +1165,16 @@ static int cmd_count(int argc, char **argv)
                 goto err;
         }
 
-        ret = preludedb_result_values_get_next(results, &values);
+        ret = preludedb_result_values_get_row(results, 0, &row);
         if ( ret < 0 )
                 goto err;
 
-        printf("COUNT: %u\n", idmef_value_get_uint32(values[0]));
-        idmef_value_destroy(values[0]);
+        ret = preludedb_result_values_get_field(results, row, sp, &value);
+        if ( ret < 0 )
+                return ret;
+
+        printf("COUNT: %u\n", idmef_value_get_uint32(value));
+        idmef_value_destroy(value);
 
 err:
         preludedb_path_selection_destroy(ps);

@@ -54,9 +54,16 @@ typedef enum {
 
 int preludedb_result_values_get_count(preludedb_result_values_t *results);
 
+preludedb_t *preludedb_result_values_get_db(preludedb_result_values_t *results);
+
 void *preludedb_result_values_get_data(preludedb_result_values_t *results);
 
 int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned int rownum, void **row);
+
+typedef int (*preludedb_result_values_get_field_cb_func_t)(void **out, void *data, size_t size, idmef_value_type_id_t type);
+
+int preludedb_result_values_get_field_direct(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected,
+                                             preludedb_result_values_get_field_cb_func_t cb, void **out);
 
 int preludedb_result_values_get_field(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected, idmef_value_t **field);
 
@@ -82,12 +89,10 @@ preludedb_sql_t *preludedb_get_sql(preludedb_t *db);
 
 void preludedb_result_idents_destroy(preludedb_result_idents_t *result);
 int preludedb_result_idents_get(preludedb_result_idents_t *result, unsigned int row_index, uint64_t *ident);
-int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident);
 unsigned int preludedb_result_idents_get_count(preludedb_result_idents_t *result);
 preludedb_result_idents_t *preludedb_result_idents_ref(preludedb_result_idents_t *results);
 
 void preludedb_result_values_destroy(preludedb_result_values_t *result);
-int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values);
 
 char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf, size_t size) PRELUDE_DEPRECATED;
 

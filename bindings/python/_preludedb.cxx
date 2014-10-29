@@ -5028,7 +5028,6 @@ PyObject *IDMEFValueList_to_SWIG(TARGET_LANGUAGE_SELF self, const Prelude::IDMEF
 
 int IDMEFValue_to_SWIG(TARGET_LANGUAGE_SELF self, const Prelude::IDMEFValue &result, void *extra, TARGET_LANGUAGE_OUTPUT_TYPE ret)
 {
-        std::stringstream s;
         idmef_value_t *value = result;
         Prelude::IDMEFValue::IDMEFValueTypeEnum type = result.getType();
 
@@ -8853,9 +8852,10 @@ SWIGINTERN PyObject *_wrap_ResultValuesRow_get(PyObject *SWIGUNUSEDPARM(self), P
       ret = IDMEFValue_to_SWIG(NULL, result, NULL, &resultobj);
       
       if ( ret < 0 ) {
-        std::stringstream s;
-        s << "IDMEFValue typemap does not handle value of type '" << idmef_value_type_to_string((idmef_value_type_id_t) (&result)->getType()) << "'";
-        SWIG_exception_fail(SWIG_ValueError, s.str().c_str());
+        std::string s = "IDMEFValue typemap does not handle value of type '";
+        s += idmef_value_type_to_string((idmef_value_type_id_t) (&result)->getType());
+        s += "'";
+        SWIG_exception_fail(SWIG_ValueError, s.c_str());
       }
     }
   }

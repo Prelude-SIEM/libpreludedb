@@ -369,10 +369,6 @@ bindings/c++/Makefile
 bindings/c++/include/Makefile
 bindings/python/Makefile
 bindings/python/setup.py
-bindings/low-level/Makefile
-bindings/low-level/python/Makefile
-bindings/low-level/python/setup.py
-
 ])
 AC_CONFIG_COMMANDS([default],[[ chmod +x libpreludedb-config ]],[[]])
 AC_OUTPUT

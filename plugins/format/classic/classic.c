@@ -229,27 +229,6 @@ static size_t classic_get_message_ident_count(void *res)
 
 
 
-static int classic_get_next_message_ident(void *res, uint64_t *ident)
-{
-        preludedb_sql_row_t *row;
-        preludedb_sql_field_t *field;
-        int ret;
-
-        ret = preludedb_sql_table_fetch_row(res, &row);
-        if ( ret <= 0 )
-                return ret;
-
-        ret = preludedb_sql_row_get_field(row, 0, &field);
-        if ( ret <= 0 )
-                return ret;
-
-        ret = preludedb_sql_field_to_uint64(field, ident);
-
-        return (ret < 0) ? ret : 1;
-}
-
-
-
 static int classic_get_message_ident(void *res, unsigned int row_index, uint64_t *ident)
 {
         preludedb_sql_row_t *row;
@@ -366,153 +345,110 @@ static int classic_get_values(preludedb_sql_t *sql, preludedb_path_selection_t *
 }
 
 
-
-static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_t *selected, idmef_value_t **value)
+static int get_value_time(preludedb_selected_path_t *selected,
+                          preludedb_sql_row_t *row, preludedb_sql_field_t *field, int cnt, idmef_time_t **time)
 {
-        preludedb_selected_path_flags_t flags;
-        idmef_path_t *path;
-        idmef_value_type_id_t type;
-        preludedb_sql_field_t *field;
-        const char *char_val;
-        unsigned int retrieved = 1;
-        int ret, num_field, time_constraint;
+        int ret;
+        uint32_t usec = 0;
+        int32_t gmtoff = 0;
+        int retrieved = 1;
+        unsigned int num_field;
 
-        flags = preludedb_selected_path_get_flags(selected);
-        path = preludedb_selected_path_get_path(selected);
-        type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
+        num_field = classic_get_path_column_count(selected);
+
+        if ( num_field > 1 ) {
+                preludedb_sql_field_t *gmtoff_field;
+
+                ret = preludedb_sql_row_get_field(row, cnt + 1, &gmtoff_field);
+                if ( ret < 0 )
+                        return ret;
+
+                if ( ret > 0 ) {
+                        ret = preludedb_sql_field_to_int32(gmtoff_field, &gmtoff);
+                        if ( ret < 0 )
+                                return ret;
+                }
+
+                retrieved++;
+        }
+
+        if ( num_field > 2 ) {
+                preludedb_sql_field_t *usec_field;
+
+                ret = preludedb_sql_row_get_field(row, cnt + 2, &usec_field);
+                if ( ret < 0 )
+                        return ret;
+
+                if ( ret > 0 ) {
+                        if ( preludedb_sql_field_to_uint32(usec_field, &usec) < 0 )
+                                return ret;
+                }
+
+                retrieved ++;
+        }
+
+        ret = idmef_time_new(time);
+        if ( ret < 0 )
+                return ret;
+
+        preludedb_sql_time_from_timestamp(*time, preludedb_sql_field_get_value(field), gmtoff, usec);
+        return retrieved;
+}
+
+
+static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_t *selected, preludedb_result_values_get_field_cb_func_t cb, void **out)
+{
+        idmef_path_t *path;
+        char *char_val;
+        size_t len;
+        preludedb_sql_field_t *field;
+        idmef_value_type_id_t type;
+        unsigned int retrieved = 1;
+        int ret;
 
         ret = preludedb_sql_row_get_field(row, cnt, &field);
         if ( ret < 0 )
                 return ret;
 
-        num_field = classic_get_path_column_count(selected);
-        if ( ret == 0 ) {
-                *value = NULL;
-                return num_field;
-        }
+        if ( ret == 0 )
+                return cb(out, NULL, 0, 0);
 
+        if ( preludedb_selected_path_get_flags(selected) & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT ||
+             preludedb_selected_path_get_time_constraint(selected) )
+                return cb(out, preludedb_sql_field_get_value(field), 0, IDMEF_VALUE_TYPE_UINT32);
+
+        path = preludedb_selected_path_get_path(selected);
+        type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
         char_val = preludedb_sql_field_get_value(field);
+        len = preludedb_sql_field_get_len(field);
 
-        if ( flags & PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT || time_constraint ) {
-               uint32_t count;
-
-               ret = preludedb_sql_field_to_uint32(field, &count);
-               if ( ret < 0 )
-                       return ret;
-
-               ret = idmef_value_new_uint32(value, count);
-               if ( ret < 0 )
-                       return ret;
-
-               return 1;
-        }
-
+        if ( type == IDMEF_VALUE_TYPE_ENUM )
+                type = IDMEF_VALUE_TYPE_STRING;
 
         switch ( type ) {
         case IDMEF_VALUE_TYPE_TIME: {
-                uint32_t usec = 0;
-                int32_t gmtoff = 0;
                 idmef_time_t *time;
 
-                if ( num_field > 1 ) {
-                        preludedb_sql_field_t *gmtoff_field;
-
-                        ret = preludedb_sql_row_get_field(row, cnt + 1, &gmtoff_field);
-                        if ( ret < 0 )
-                                return ret;
-
-                        if ( ret > 0 ) {
-                                ret = preludedb_sql_field_to_int32(gmtoff_field, &gmtoff);
-                                if ( ret < 0 )
-                                        return ret;
-                        }
-                }
-
-                if ( num_field > 2 ) {
-                        preludedb_sql_field_t *usec_field;
-
-                        ret = preludedb_sql_row_get_field(row, cnt + 2, &usec_field);
-                        if ( ret < 0 )
-                                return ret;
-
-                        if ( ret > 0 ) {
-                                if ( preludedb_sql_field_to_uint32(usec_field, &usec) < 0 )
-                                        return ret;
-                        }
-
-                        retrieved += 2;
-                }
-
-                ret = idmef_time_new(&time);
+                ret = get_value_time(selected, row, field, cnt, &time);
                 if ( ret < 0 )
                         return ret;
+                retrieved += ret;
 
-                preludedb_sql_time_from_timestamp(time, char_val, gmtoff, usec);
-
-                ret = idmef_value_new_time(value, time);
-                if ( ret < 0 ) {
-                        idmef_time_destroy(time);
-                        return ret;
-                }
-
+                ret = cb(out, time, 0, type);
+                idmef_time_destroy(time);
                 break;
         }
+
         default:
-                ret = idmef_value_new_from_path(value, path, char_val);
-                if ( ret < 0 )
-                        return ret;
+                ret = cb(out, char_val, len, type);
+                break;
         }
 
-        return retrieved;
+        return (ret < 0) ? ret : retrieved;
 }
 
 
-
-static int classic_get_next_values(void *res, preludedb_path_selection_t *selection, idmef_value_t ***values)
-{
-        preludedb_sql_row_t *row;
-        preludedb_selected_path_t *selected;
-        unsigned int sql_cnt, value_cnt;
-        unsigned int column_count;
-        int ret;
-
-        ret = preludedb_sql_table_fetch_row(res, &row);
-        if ( ret <= 0 )
-                return ret;
-
-        column_count = preludedb_path_selection_get_count(selection);
-
-        *values = malloc(column_count * sizeof (**values));
-        if ( ! *values )
-                return preludedb_error_from_errno(errno);
-
-        selected = NULL;
-        sql_cnt = 0;
-        for ( value_cnt = 0; value_cnt < column_count; value_cnt++ ) {
-                selected = preludedb_path_selection_get_next(selection, selected);
-
-                ret = get_value(row, sql_cnt, selected, *values + value_cnt);
-                if ( ret < 0 )
-                        break;
-
-                sql_cnt += ret;
-        }
-
-        if ( ret < 0 ) {
-                unsigned int cnt;
-
-                for ( cnt = 0; cnt < value_cnt; cnt++ )
-                        idmef_value_destroy((*values)[cnt]);
-
-                free(*values);
-                return ret;
-        }
-
-        return value_cnt;
-}
-
-
-static int classic_get_result_values_field(preludedb_result_values_t *results, void *row, preludedb_selected_path_t *selected, idmef_value_t **values)
+static int classic_get_result_values_field(preludedb_result_values_t *results, void *row, preludedb_selected_path_t *selected, preludedb_result_values_get_field_cb_func_t cb, void **out)
 {
         unsigned int cnum;
 
@@ -520,7 +456,7 @@ static int classic_get_result_values_field(preludedb_result_values_t *results, v
         if ( cnum < 0 )
                 return cnum;
 
-        return get_value(row, cnum, selected, values);
+        return get_value(row, cnum, selected, cb, out);
 }
 
 
@@ -609,7 +545,6 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_format_set_get_heartbeat_idents_func(plugin, classic_get_heartbeat_idents);
         preludedb_plugin_format_set_get_message_ident_count_func(plugin, classic_get_message_ident_count);
         preludedb_plugin_format_set_get_message_ident_func(plugin, classic_get_message_ident);
-        preludedb_plugin_format_set_get_next_message_ident_func(plugin, classic_get_next_message_ident);
         preludedb_plugin_format_set_destroy_message_idents_resource_func(plugin,
                                                                          classic_destroy_message_idents_resource);
         preludedb_plugin_format_set_get_alert_func(plugin, classic_get_alert);
@@ -623,8 +558,6 @@ int classic_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
 
         preludedb_plugin_format_set_insert_message_func(plugin, classic_insert);
         preludedb_plugin_format_set_get_values_func(plugin, classic_get_values);
-        preludedb_plugin_format_set_get_next_values_func(plugin, classic_get_next_values);
-
         preludedb_plugin_format_set_get_result_values_row_func(plugin, classic_get_result_values_row);
         preludedb_plugin_format_set_get_result_values_field_func(plugin, classic_get_result_values_field);
         preludedb_plugin_format_set_get_result_values_count_func(plugin, classic_get_result_values_count);

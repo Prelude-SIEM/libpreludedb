@@ -168,8 +168,8 @@ static ssize_t get_string_from_ident_list(prelude_string_t **out, uint64_t *iden
 static ssize_t get_string_from_result_ident(prelude_string_t **out, preludedb_result_idents_t *res)
 {
         int ret;
-        size_t i = 0;
         uint64_t ident;
+        unsigned int i = 0;
         prelude_bool_t need_sep = FALSE;
 
         ret = prelude_string_new(out);
@@ -180,7 +180,7 @@ static ssize_t get_string_from_result_ident(prelude_string_t **out, preludedb_re
         if ( ret < 0 )
                 goto err;
 
-        while ( preludedb_result_idents_get_next(res, &ident) ) {
+        while ( preludedb_result_idents_get(res, i, &ident) ) {
 
                 ret = prelude_string_sprintf(*out, "%s%" PRELUDE_PRIu64, (need_sep) ? ", " : "", ident);
                 if ( ret < 0 )

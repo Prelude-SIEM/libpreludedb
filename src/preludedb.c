@@ -407,23 +407,6 @@ void preludedb_result_idents_destroy(preludedb_result_idents_t *result)
 }
 
 
-/**
- * preludedb_result_idents_get_next:
- * @result: Pointer to an idents result object.
- * @ident: Pointer to an ident where the next ident will be stored.
- *
- * Retrieve the next ident from the idents result object.
- *
- * Returns: 1 if an ident is available, 0 if there is no more idents available or
- * a negative value if an error occur.
- */
-int preludedb_result_idents_get_next(preludedb_result_idents_t *result, uint64_t *ident)
-{
-        prelude_return_val_if_fail(result, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return result->db->plugin->get_next_message_ident(result->res, ident);
-}
-
-
 
 /**
  * preludedb_result_idents_get:
@@ -488,28 +471,6 @@ preludedb_path_selection_t *preludedb_result_values_get_selection(preludedb_resu
 }
 
 
-/**
- * preludedb_result_values_get_next:
- * @result: Pointer to a values result object.
- * @values: Pointer to a values array where the next row of values will be stored.
- *
- * Retrieve the next values row from the values result object.
- *
- * Returns: the number of returned values, 0 if there are no values or a negative value if an
- * error occur.
- */
-int preludedb_result_values_get_next(preludedb_result_values_t *result, idmef_value_t ***values)
-{
-        prelude_return_val_if_fail(result && values, prelude_error(PRELUDE_ERROR_ASSERTION));
-
-        if ( ! result->db->plugin->get_next_values )
-                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value iteration");
-
-        return result->db->plugin->get_next_values(result->res, result->selection, values);
-}
-
-
-
 int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned int rownum, void **row)
 {
         prelude_return_val_if_fail(result && row, prelude_error(PRELUDE_ERROR_ASSERTION));
@@ -521,6 +482,21 @@ int preludedb_result_values_get_row(preludedb_result_values_t *result, unsigned 
 }
 
 
+
+static int internal_value_cb(void **out, void *data, size_t size, idmef_value_type_id_t type)
+{
+        if ( ! type && ! data ) {
+                *out = NULL;
+                return 0;
+        }
+
+        else if ( type == IDMEF_VALUE_TYPE_TIME )
+                return idmef_value_new_time((idmef_value_t **) out, idmef_time_ref(data));
+
+        return idmef_value_new_from_string((idmef_value_t **) out, type, data);
+}
+
+
 int preludedb_result_values_get_field(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected, idmef_value_t **field)
 {
         prelude_return_val_if_fail(result && row && field, prelude_error(PRELUDE_ERROR_ASSERTION));
@@ -528,9 +504,20 @@ int preludedb_result_values_get_field(preludedb_result_values_t *result, void *r
         if ( ! result->db->plugin->get_result_values_field )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
 
-        return result->db->plugin->get_result_values_field(result, row, selected, field);
+        return result->db->plugin->get_result_values_field(result, row, selected, internal_value_cb, (void **) field);
 }
 
+
+int preludedb_result_values_get_field_direct(preludedb_result_values_t *result, void *row, preludedb_selected_path_t *selected,
+                                             preludedb_result_values_get_field_cb_func_t cb, void **out)
+{
+        prelude_return_val_if_fail(result && row && cb && out, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        if ( ! result->db->plugin->get_result_values_field )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "format plugin doesn't implement value selection");
+
+        return result->db->plugin->get_result_values_field(result, row, selected, cb, out);
+}
 
 
 static int
@@ -796,6 +783,13 @@ void *preludedb_result_values_get_data(preludedb_result_values_t *results)
         return results->res;
 }
 
+
+
+preludedb_t *preludedb_result_values_get_db(preludedb_result_values_t *results)
+{
+        prelude_return_val_if_fail(results, NULL);
+        return results->db;
+}
 
 
 int preludedb_result_values_get_count(preludedb_result_values_t *results)
