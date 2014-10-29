@@ -745,7 +745,7 @@ ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb
  * @offset: Offset in results or -1 if no offset.
  * @result: Values result.
  *
- * Returns: the number of result or a negative value if an error occured.
+ * Returns: 1 if there are result, 0 if there are none, or a negative value if an error occured.
  */
 int preludedb_get_values(preludedb_t *db,
                          preludedb_path_selection_t *path_selection,
@@ -765,6 +765,7 @@ int preludedb_get_values(preludedb_t *db,
         ret = db->plugin->get_values(db->sql, path_selection, criteria, distinct, limit, offset, &(*result)->res);
         if ( ret <= 0 ) {
                 free(*result);
+                *result = NULL;
                 return ret;
         }
 

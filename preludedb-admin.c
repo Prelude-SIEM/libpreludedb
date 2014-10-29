@@ -288,6 +288,10 @@ static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents
         local_limit = (limit_copy < 0) ? events_per_transaction : MIN(events_per_transaction, limit_copy);
 
         count = get_message_idents(db, criteria, (int) local_limit, (int) offset + ((no_increment) ? 0 : cur_count), 0, result);
+        if ( count <= 0 )
+                return count;
+
+        count = preludedb_result_idents_get_count(*result);
         if ( count < 0 )
                 return db_error(db, count, "retrieving alert ident failed");
 
@@ -1038,7 +1042,6 @@ static int print_iterate_message(preludedb_t *db, preludedb_result_idents_t *ide
         idmef_message_t *idmef;
 
         while ( ! stop_processing && (ret = preludedb_result_idents_get(idents, ident_idx++, &ident)) > 0 ) {
-
                 stat_compute(stat_fetch, ret = get_message(db, ident, &idmef), 1);
                 if ( ret < 0 ) {
                         db_error(db, ret, "Error retrieving message ident %" PRELUDE_PRIu64, ident);
@@ -1122,7 +1125,7 @@ static int cmd_count(int argc, char **argv)
         preludedb_t *db;
         idmef_value_t *value;
         void *row;
-        preludedb_result_values_t *results;
+        preludedb_result_values_t *results = NULL;
         preludedb_path_selection_t *ps;
         preludedb_selected_path_t *sp;
 
@@ -1160,8 +1163,9 @@ static int cmd_count(int argc, char **argv)
         preludedb_path_selection_add(ps, sp);
 
         ret = preludedb_get_values(db, ps, criteria, FALSE, (int) limit, (int) offset, &results);
-        if ( ret < 0 ) {
-                ret = db_error(db, ret, "error retrieving database count");
+        if ( ret <= 0 ) {
+                if ( ret == 0 )
+                        ret = db_error(db, ret, "error retrieving database count");
                 goto err;
         }
 
@@ -1178,7 +1182,10 @@ static int cmd_count(int argc, char **argv)
 
 err:
         preludedb_path_selection_destroy(ps);
-        preludedb_result_values_destroy(results);
+
+        if ( results )
+                preludedb_result_values_destroy(results);
+
         preludedb_destroy(db);
 
         return ret;
