@@ -1708,13 +1708,13 @@ static int get_additional_data(preludedb_sql_t *sql,
                 }
 
                 case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER: {
-                        uint32_t value;
+                        int64_t value;
 
-                        ret = sscanf(svalue, "%" PRELUDE_SCNu32, &value);
+                        ret = sscanf(svalue, "%" PRELUDE_SCNd64, &value);
                         if ( ret <= 0 )
                                 break;
 
-                        idmef_data_set_uint32(data, value);
+                        idmef_data_set_int(data, value);
                         break;
                 }
 
@@ -1725,7 +1725,7 @@ static int get_additional_data(preludedb_sql_t *sql,
                         if ( ret <= 0 )
                                 break;
 
-                        idmef_data_set_uint64(data, value);
+                        idmef_data_set_int(data, value);
                         break;
                 }
 
