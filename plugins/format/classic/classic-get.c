@@ -1593,7 +1593,7 @@ static int get_additional_data(preludedb_sql_t *sql,
         int ret = 0;
         char *svalue = NULL;
         size_t svalue_size;
-        prelude_bool_t svalue_need_free = TRUE;
+        prelude_bool_t svalue_need_free;
         preludedb_sql_table_t *table;
         preludedb_sql_row_t *row;
         idmef_additional_data_type_t type;
@@ -1639,6 +1639,7 @@ static int get_additional_data(preludedb_sql_t *sql,
                 if ( ret < 0 )
                         break;
 
+                svalue_need_free = TRUE;
                 switch ( type ) {
                 case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER: {
                         idmef_data_set_char(data, (char) *svalue);
@@ -1718,12 +1719,12 @@ static int get_additional_data(preludedb_sql_t *sql,
                         ret = -1;
                 }
 
+                if ( svalue_need_free )
+                        free(svalue);
+
                 if ( ret < 0 )
                         goto error;
         }
-
-        if ( svalue_need_free )
-                free(svalue);
 
  error:
         preludedb_sql_table_destroy(table);
