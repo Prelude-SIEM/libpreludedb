@@ -97,7 +97,6 @@ static int default_field_name_resolver(const idmef_path_t *path, int field_conte
 }
 
 
-
 static int time_with_usec_field_name_resolver(const idmef_path_t *path, int field_context,
                                               const char *table_name, prelude_string_t *output)
 {
@@ -240,6 +239,21 @@ static int file_field_name_resolver(const idmef_path_t *path, int field_context,
 }
 
 
+
+static int addata_field_name_resolver(const idmef_path_t *path, int field_context, const char *table_name,
+                                    prelude_string_t *output)
+{
+        const char *child_name = idmef_path_get_name(path, idmef_path_get_depth(path) - 1);
+
+        if (  field_context == FIELD_CONTEXT_SELECT && strcmp(child_name, "data") == 0 )
+                return prelude_string_sprintf(output, "%s.%s, %s.type",
+                                              table_name, child_name, table_name);
+
+        return prelude_string_sprintf(output, "%s.%s", table_name, child_name);
+}
+
+
+
 typedef struct classic_idmef_class {
         idmef_class_id_t id;
         int (*resolve_table_name)(const idmef_path_t *path, char **table_name);
@@ -257,6 +271,7 @@ static const classic_idmef_class_t classes[] = {
         { IDMEF_CLASS_ID_CHECKSUM, default_table_name_resolver, checksum_field_name_resolver },
         { IDMEF_CLASS_ID_FILE, default_table_name_resolver, file_field_name_resolver },
         { IDMEF_CLASS_ID_FILE_ACCESS, file_access_table_name_resolver, default_field_name_resolver },
+        { IDMEF_CLASS_ID_ADDITIONAL_DATA, default_table_name_resolver, addata_field_name_resolver },
 };
 
 

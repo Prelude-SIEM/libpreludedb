@@ -66,6 +66,48 @@ struct db_result {
         unsigned int value_count;
 };
 
+int classic_unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *field,
+                                 idmef_additional_data_type_t type, unsigned char **output, size_t *outsize);
+
+int classic_unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *field,
+                                 idmef_additional_data_type_t type, unsigned char **output, size_t *outsize)
+{
+        int ret;
+        size_t size;
+        unsigned char *value;
+
+        ret = preludedb_sql_unescape_binary(sql,
+                                            preludedb_sql_field_get_value(field),
+                                            preludedb_sql_field_get_len(field),
+                                            (unsigned char **) &value, &size);
+        if ( ret < 0 )
+                return ret;
+
+
+        if ( type == IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER || type == IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING ) {
+                /*
+                 * These are the only two case where we don't need to append a terminating 0
+                 */
+                *outsize = size;
+                *output = value;
+        }
+        else {
+                if ( (size + 1) < size )
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Value is too big");
+
+                *output = malloc(size + 1);
+                if ( ! *output )
+                        return preludedb_error_from_errno(errno);
+
+                memcpy(*output, value, size);
+                (*output)[size] = 0;
+                *outsize = size;
+
+                free(value);
+        }
+
+        return 0;
+}
 
 
 static int get_message_idents_set_order(preludedb_sql_t *sql,
@@ -396,13 +438,65 @@ static int get_value_time(preludedb_selected_path_t *selected,
 }
 
 
-static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_t *selected, preludedb_result_values_get_field_cb_func_t cb, void **out)
+static int get_data(preludedb_sql_t *sql, preludedb_sql_row_t *row, preludedb_sql_field_t *field, int cnt,
+                    preludedb_selected_path_t *selected, idmef_value_type_id_t *type, unsigned char **unescaped, size_t *len)
+{
+        int ret;
+        preludedb_sql_field_t *typefield;
+        idmef_additional_data_type_t dtype;
+
+        ret = preludedb_sql_row_get_field(row, cnt + 1, &typefield);
+        if ( ret <= 0 )
+                return ret;
+
+        dtype = idmef_class_enum_to_numeric(IDMEF_CLASS_ID_ADDITIONAL_DATA_TYPE, preludedb_sql_field_get_value(typefield));
+        if ( dtype < 0 )
+                return dtype;
+
+        switch(dtype) {
+                case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
+                case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER:
+                case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
+                case IDMEF_ADDITIONAL_DATA_TYPE_XML:
+                        *type = IDMEF_VALUE_TYPE_STRING;
+                        break;
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_REAL:
+                        *type = IDMEF_VALUE_TYPE_FLOAT;
+                        break;
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER:
+                case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN:
+                case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP:
+                        *type = IDMEF_VALUE_TYPE_INT64;
+                        break;
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
+                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
+                        *type = IDMEF_VALUE_TYPE_DATA;
+                        break;
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
+                        *type = IDMEF_VALUE_TYPE_TIME;
+                        break;
+
+                case IDMEF_ADDITIONAL_DATA_TYPE_ERROR:
+                        return -1;
+        }
+
+        ret = classic_unescape_binary_safe(sql, field, dtype, unescaped, len);
+        return (ret < 0) ? ret : 1;
+}
+
+
+static int get_value(preludedb_sql_t *sql, preludedb_sql_row_t *row, int cnt, preludedb_selected_path_t *selected, preludedb_result_values_get_field_cb_func_t cb, void **out)
 {
         idmef_path_t *path;
         char *char_val;
+        unsigned char *unescaped = NULL;
         size_t len;
         preludedb_sql_field_t *field;
-        idmef_value_type_id_t type;
+        idmef_value_type_id_t type, orig_type;
         unsigned int retrieved = 1;
         int ret;
 
@@ -418,22 +512,35 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                 return cb(out, preludedb_sql_field_get_value(field), 0, IDMEF_VALUE_TYPE_UINT32);
 
         path = preludedb_selected_path_get_path(selected);
-        type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
+        orig_type = type = idmef_path_get_value_type(path, idmef_path_get_depth(path) - 1);
         char_val = preludedb_sql_field_get_value(field);
         len = preludedb_sql_field_get_len(field);
 
-        if ( type == IDMEF_VALUE_TYPE_ENUM )
+        if ( type == IDMEF_VALUE_TYPE_DATA ) {
+                ret = get_data(sql, row, field, cnt, selected, &type, &unescaped, &len);
+                if ( ret < 0 )
+                        return ret;
+
+                retrieved += ret;
+                char_val = (char *) unescaped;
+        }
+
+        else if ( type == IDMEF_VALUE_TYPE_ENUM )
                 type = IDMEF_VALUE_TYPE_STRING;
 
         switch ( type ) {
         case IDMEF_VALUE_TYPE_TIME: {
                 idmef_time_t *time;
 
-                ret = get_value_time(selected, row, field, cnt, &time);
+                if ( orig_type == IDMEF_VALUE_TYPE_DATA )
+                        ret = idmef_time_new_from_string(&time, char_val);
+                else
+                        ret = get_value_time(selected, row, field, cnt, &time);
+
                 if ( ret < 0 )
                         return ret;
-                retrieved += ret;
 
+                retrieved += ret;
                 ret = cb(out, time, 0, type);
                 idmef_time_destroy(time);
                 break;
@@ -443,6 +550,9 @@ static int get_value(preludedb_sql_row_t *row, int cnt, preludedb_selected_path_
                 ret = cb(out, char_val, len, type);
                 break;
         }
+
+        if ( unescaped )
+                free(unescaped);
 
         return (ret < 0) ? ret : retrieved;
 }
@@ -456,7 +566,7 @@ static int classic_get_result_values_field(preludedb_result_values_t *results, v
         if ( cnum < 0 )
                 return cnum;
 
-        return get_value(row, cnum, selected, cb, out);
+        return get_value(preludedb_get_sql(preludedb_result_values_get_db(results)), row, cnum, selected, cb, out);
 }
 
 
@@ -489,6 +599,10 @@ int classic_get_path_column_count(preludedb_selected_path_t *selected)
         tc = preludedb_selected_path_get_time_constraint(selected);
         flags = preludedb_selected_path_get_flags(selected);
         type = idmef_path_get_value_type(path, -1);
+
+        if ( idmef_path_get_class(path, idmef_path_get_depth(path) - 2) == IDMEF_CLASS_ID_ADDITIONAL_DATA &&
+             type == IDMEF_VALUE_TYPE_DATA )
+                return 2;
 
         if ( type == IDMEF_VALUE_TYPE_TIME && ! tc &&
              ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|

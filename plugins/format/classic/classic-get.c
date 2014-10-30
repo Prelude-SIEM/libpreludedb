@@ -80,6 +80,8 @@ get_(float, float)
         _get_float(sql, row, index, parent, (int (*)(void *, float **)) parent_new_child)
 
 
+int classic_unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *field,
+                                 idmef_additional_data_type_t type, unsigned char **output, size_t *outsize);
 
 
 static int _get_string(preludedb_sql_t *sql, preludedb_sql_row_t *row,
@@ -1582,47 +1584,6 @@ static int get_target(preludedb_sql_t *sql,
 }
 
 
-static int unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *field,
-                                idmef_additional_data_type_t type, unsigned char **output, size_t *outsize)
-{
-        int ret;
-        size_t size;
-        unsigned char *value;
-
-        ret = preludedb_sql_unescape_binary(sql,
-                                            preludedb_sql_field_get_value(field),
-                                            preludedb_sql_field_get_len(field),
-                                            (unsigned char **) &value, &size);
-        if ( ret < 0 )
-                return ret;
-
-
-        if ( type == IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER || type == IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING ) {
-                /*
-                 * These are the only two case where we don't need to append a terminating 0
-                 */
-                *outsize = size;
-                *output = value;
-        }
-        else {
-                *outsize = size + 1;
-                if ( *outsize < size )
-                        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Value is too big");
-
-                *output = malloc(*outsize);
-                if ( ! *output )
-                        return preludedb_error_from_errno(errno);
-
-                memcpy(*output, value, size);
-                (*output)[size] = 0;
-
-                free(value);
-        }
-
-        return 0;
-}
-
-
 static int get_additional_data(preludedb_sql_t *sql,
                                uint64_t message_ident,
                                char parent_type,
@@ -1674,7 +1635,7 @@ static int get_additional_data(preludedb_sql_t *sql,
 
                 type = idmef_additional_data_get_type(additional_data);
 
-                ret = unescape_binary_safe(sql, field, type, (unsigned char **) &svalue, &svalue_size);
+                ret = classic_unescape_binary_safe(sql, field, type, (unsigned char **) &svalue, &svalue_size);
                 if ( ret < 0 )
                         break;
 
@@ -1730,17 +1691,26 @@ static int get_additional_data(preludedb_sql_t *sql,
                 }
 
                 case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
-                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME:
+                        svalue_need_free = FALSE;
+                        ret = idmef_data_set_byte_string_nodup(data, (unsigned char *) svalue, svalue_size);
+                        break;
+
                 case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
                 case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
                 case IDMEF_ADDITIONAL_DATA_TYPE_XML: {
                         svalue_need_free = FALSE;
+                        ret = idmef_data_set_char_string_nodup_fast(data, (char *) svalue, svalue_size);
+                        break;
+                }
 
-                        if ( type == IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING )
-                                ret = idmef_data_set_byte_string_nodup(data, (unsigned char *) svalue, svalue_size);
-                        else
-                                ret = idmef_data_set_char_string_nodup_fast(data, (char *) svalue, svalue_size - 1);
+                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME: {
+                        idmef_time_t *time;
 
+                        ret = idmef_time_new_from_string(&time, svalue);
+                        if ( ret < 0 )
+                                return ret;
+
+                        idmef_data_set_time(data, time);
                         break;
                 }
 

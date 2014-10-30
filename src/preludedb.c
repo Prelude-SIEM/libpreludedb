@@ -490,6 +490,17 @@ static int internal_value_cb(void **out, void *data, size_t size, idmef_value_ty
                 return 0;
         }
 
+        else if ( type == IDMEF_VALUE_TYPE_STRING ) {
+                int ret;
+                prelude_string_t *str;
+
+                ret = prelude_string_new_dup_fast(&str, data, size);
+                if ( ret < 0 )
+                        return ret;
+
+                return idmef_value_new_string((idmef_value_t **) out, str);
+        }
+
         else if ( type == IDMEF_VALUE_TYPE_TIME )
                 return idmef_value_new_time((idmef_value_t **) out, idmef_time_ref(data));
 
