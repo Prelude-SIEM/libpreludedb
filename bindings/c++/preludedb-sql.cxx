@@ -244,6 +244,18 @@ SQL::SQL(const char *settings)
 }
 
 
+SQL &SQL::operator = (const SQL &sql)
+{
+        if ( this != &sql && _sql != sql._sql ) {
+                if ( _sql )
+                        preludedb_sql_destroy(_sql);
+
+                _sql = (sql._sql) ? preludedb_sql_ref(sql._sql) : NULL;
+        }
+
+        return *this;
+}
+
 
 SQL::~SQL()
 {

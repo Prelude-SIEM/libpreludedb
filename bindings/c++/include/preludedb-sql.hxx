@@ -71,6 +71,7 @@ namespace PreludeDB {
                 };
 
                 ~SQL();
+                SQL &operator = (const SQL &sql);
                 SQL(const char *settings);
                 SQL(const std::map<std::string,std::string> &settings);
 

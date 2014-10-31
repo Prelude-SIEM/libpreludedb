@@ -142,7 +142,7 @@ DB::ResultValues::ResultValuesRow::ResultValuesRow(const ResultValuesRow &row)
 
 DB::ResultValues::ResultValuesRow &DB::ResultValues::ResultValuesRow::operator = (const DB::ResultValues::ResultValuesRow &row)
 {
-        if ( this != &row && _row != row._row ) {
+        if ( this != &row && _row != row._row && _result != row._result ) {
                 if ( _result )
                         preludedb_result_values_destroy(_result);
 
@@ -270,6 +270,18 @@ DB::~DB()
         preludedb_destroy(_db);
 }
 
+
+DB &DB::operator = (const DB &db)
+{
+        if ( this != &db && _db != db._db ) {
+                if ( _db )
+                        preludedb_destroy(_db);
+
+                _db = (db._db) ? preludedb_ref(db._db) : NULL;
+        }
+
+        return *this;
+}
 
 
 DB::ResultValues DB::getValues(const std::vector<std::string> &selection, const Prelude::IDMEFCriteria *criteria, bool distinct, int limit, int offset)

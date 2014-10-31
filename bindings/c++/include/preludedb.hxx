@@ -71,7 +71,7 @@ namespace PreludeDB {
                 };
 
                 ~DB();
-
+                DB &operator = (const DB &db);
                 DB(PreludeDB::SQL &sql);
 
                 ResultIdents getAlertIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, ResultIdentsOrderByEnum order=ORDER_BY_CREATE_TIME_DESC);
