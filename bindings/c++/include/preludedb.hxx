@@ -30,7 +30,7 @@ namespace PreludeDB {
                         ~ResultIdents(void);
                         unsigned int getCount(void);
                         unsigned int count() { return getCount(); };
-                        uint64_t get(unsigned int row_index=(unsigned int) -1);
+                        uint64_t *get(unsigned int row_index=(unsigned int) -1);
 
                         ResultIdents &operator = (const ResultIdents &result);
                 };
@@ -45,12 +45,15 @@ namespace PreludeDB {
                                         preludedb_result_values_t *_result;
 
                                 public:
+                                        ResultValuesRow() { _row = NULL; _result = NULL; };
                                         ResultValuesRow(const ResultValuesRow &row);
                                         ResultValuesRow(preludedb_result_values_t *result, void *row);
                                         ~ResultValuesRow(void);
-                                        Prelude::IDMEFValue get(int col);
+                                        void *get(int col, preludedb_result_values_get_field_cb_func_t cb);
+                                        Prelude::IDMEFValue *get(int col);
                                         unsigned int getFieldCount(void);
                                         unsigned int count() { return getFieldCount(); };
+                                        std::string toString(void);
                                         ResultValuesRow &operator = (const ResultValuesRow &row);
                         };
 
@@ -62,11 +65,12 @@ namespace PreludeDB {
                         ResultValues(void);
                         ~ResultValues(void);
 
+                        std::string toString(void);
                         unsigned int getCount(void);
                         unsigned int getFieldCount(void);
                         unsigned int count(void) { return getCount(); };
-                        ResultValuesRow get(unsigned int row=(unsigned int)-1);
-
+                        ResultValuesRow *get(unsigned int row=(unsigned int)-1);
+                        ResultValuesRow *getRow(unsigned int row) { return get(row); };
                         ResultValues &operator = (const ResultValues &result);
                 };
 

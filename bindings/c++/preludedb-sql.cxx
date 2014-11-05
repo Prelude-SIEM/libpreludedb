@@ -55,6 +55,31 @@ SQL::Table::Row &SQL::Table::Row::operator = (const SQL::Table::Row &row)
 }
 
 
+std::string SQL::Table::Row::toString(void)
+{
+        size_t i;
+        std::string s;
+
+        s = "Row(";
+
+        for ( i = 0; i < count(); i++ ) {
+                if ( i > 0 )
+                        s += ", ";
+
+                const char *v = get(i);
+                if ( v ) {
+                        s += "'";
+                        s += v;
+                        s += "'";
+                } else
+                        s += "NULL";
+        }
+
+        s += ")";
+
+        return s;
+}
+
 
 const char *SQL::Table::Row::getField(unsigned int num)
 {
@@ -111,6 +136,31 @@ SQL::Table::~Table()
 }
 
 
+std::string SQL::Table::toString(void)
+{
+        std::string s;
+        size_t i;
+        Row *row;
+
+        s = "Table(\n";
+
+        for ( i = 0; i < count(); i++ ) {
+                if ( i > 0 )
+                        s += ",\n";
+
+                s += " ";
+                row = get(i);
+                s += row->toString();
+
+                delete(row);
+        }
+
+        s += "\n)";
+
+        return s;
+}
+
+
 const char *SQL::Table::getColumnName(unsigned int column_num)
 {
         if ( ! _table )
@@ -154,7 +204,7 @@ unsigned int SQL::Table::getRowCount()
 
 
 
-SQL::Table::Row SQL::Table::get(unsigned int row_index)
+SQL::Table::Row *SQL::Table::get(unsigned int row_index)
 {
         int ret;
         SQL::Table::Row r;
@@ -167,12 +217,12 @@ SQL::Table::Row SQL::Table::get(unsigned int row_index)
         if ( ret <= 0 )
                 throw PreludeDBError(ret ? ret : preludedb_error(PRELUDEDB_ERROR_INDEX));
 
-        return SQL::Table::Row(row);
+        return new SQL::Table::Row(row);
 }
 
 
 
-SQL::Table::Row SQL::Table::fetch(void)
+SQL::Table::Row *SQL::Table::fetch(void)
 {
         int ret;
         SQL::Table::Row r;
@@ -185,7 +235,7 @@ SQL::Table::Row SQL::Table::fetch(void)
         if ( ret <= 0 )
                 throw PreludeDBError(ret ? ret : preludedb_error(PRELUDEDB_ERROR_INDEX));
 
-        return SQL::Table::Row(row);
+        return new SQL::Table::Row(row);
 }
 
 

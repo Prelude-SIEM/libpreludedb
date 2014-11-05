@@ -43,6 +43,8 @@ namespace PreludeDB {
 
                                 SQL::Table::Row &operator = (const SQL::Table::Row &row);
 
+                                std::string toString(void);
+
                                 const char *operator[] (unsigned int num) {
                                         return get(num);
                                 };
@@ -55,6 +57,7 @@ namespace PreludeDB {
                         ~Table();
                         Table(preludedb_sql_table_t *table);
                         Table(const Table &table);
+                        Table(void) { _table = NULL; };
 
                         const char *getColumnName(unsigned int column_num);
                         int getColumnNum(const std::string &column_name);
@@ -63,8 +66,10 @@ namespace PreludeDB {
                         unsigned int getRowCount();
                         unsigned int count() { return getRowCount(); };
 
-                        SQL::Table::Row fetch(void);
-                        SQL::Table::Row get(unsigned int row_index);
+                        SQL::Table::Row *fetch(void);
+                        SQL::Table::Row *get(unsigned int row_index);
+
+                        std::string toString(void);
 
                         SQL::Table &operator = (const SQL::Table &table);
 

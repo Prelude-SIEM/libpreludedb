@@ -6,6 +6,7 @@
 
 
 
+import prelude
 
 
 from sys import version_info
@@ -30,6 +31,7 @@ if version_info >= (2,6,0):
 else:
     import _preludedb
 del version_info
+from _preludedb import *
 try:
     _swig_property = property
 except NameError:
@@ -69,287 +71,30 @@ except AttributeError:
     _newclass = 0
 
 
-class SwigPyIterator(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SwigPyIterator, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SwigPyIterator, name)
-    def __init__(self, *args, **kwargs): raise AttributeError("No constructor defined - class is abstract")
-    __repr__ = _swig_repr
-    __swig_destroy__ = _preludedb.delete_SwigPyIterator
-    __del__ = lambda self : None;
-    def value(self): return _preludedb.SwigPyIterator_value(self)
-    def incr(self, n=1): return _preludedb.SwigPyIterator_incr(self, n)
-    def decr(self, n=1): return _preludedb.SwigPyIterator_decr(self, n)
-    def distance(self, *args): return _preludedb.SwigPyIterator_distance(self, *args)
-    def equal(self, *args): return _preludedb.SwigPyIterator_equal(self, *args)
-    def copy(self): return _preludedb.SwigPyIterator_copy(self)
-    def next(self): return _preludedb.SwigPyIterator_next(self)
-    def __next__(self): return _preludedb.SwigPyIterator___next__(self)
-    def previous(self): return _preludedb.SwigPyIterator_previous(self)
-    def advance(self, *args): return _preludedb.SwigPyIterator_advance(self, *args)
-    def __eq__(self, *args): return _preludedb.SwigPyIterator___eq__(self, *args)
-    def __ne__(self, *args): return _preludedb.SwigPyIterator___ne__(self, *args)
-    def __iadd__(self, *args): return _preludedb.SwigPyIterator___iadd__(self, *args)
-    def __isub__(self, *args): return _preludedb.SwigPyIterator___isub__(self, *args)
-    def __add__(self, *args): return _preludedb.SwigPyIterator___add__(self, *args)
-    def __sub__(self, *args): return _preludedb.SwigPyIterator___sub__(self, *args)
-    def __iter__(self): return self
-SwigPyIterator_swigregister = _preludedb.SwigPyIterator_swigregister
-SwigPyIterator_swigregister(SwigPyIterator)
-
-import prelude
-import itertools
-import sys
-
-def python2_unicode_patch(cl):
-    if cl.__str__ is object.__str__:
-        return cl
-
-    if sys.version_info < (3, 0):
-         cl.__unicode__ = lambda self: self.__str__().decode('utf-8')
-
-    cl.__repr__ = lambda self: self.__class__.__name__ + "(" + repr(str(self)) + ")"
-    return cl
+def _swig_setattr_nondynamic_method(set):
+    def set_attr(self,name,value):
+        if (name == "thisown"): return self.this.own(value)
+        if hasattr(self,name) or (name == "this"):
+            set(self,name,value)
+        else:
+            raise AttributeError("You cannot add attributes to %s" % self)
+    return set_attr
 
 
-def checkVersion(wanted=None):
-  return _preludedb.checkVersion(wanted)
-checkVersion = _preludedb.checkVersion
-class DB(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, DB, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, DB, name)
-    __repr__ = _swig_repr
-    NONE = _preludedb.DB_NONE
-    ORDER_BY_CREATE_TIME_ASC = _preludedb.DB_ORDER_BY_CREATE_TIME_ASC
-    ORDER_BY_CREATE_TIME_DESC = _preludedb.DB_ORDER_BY_CREATE_TIME_DESC
-    __swig_destroy__ = _preludedb.delete_DB
-    __del__ = lambda self : None;
-    def __init__(self, *args): 
-        this = _preludedb.new_DB(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    def getAlertIdents(self, *args, **kwargs): return _preludedb.DB_getAlertIdents(self, *args, **kwargs)
-    def getHeartbeatIdents(self, *args, **kwargs): return _preludedb.DB_getHeartbeatIdents(self, *args, **kwargs)
-    def getValues(self, *args, **kwargs): return _preludedb.DB_getValues(self, *args, **kwargs)
-    def getFormatName(self): return _preludedb.DB_getFormatName(self)
-    def getFormatVersion(self): return _preludedb.DB_getFormatVersion(self)
-    def insert(self, *args): return _preludedb.DB_insert(self, *args)
-    def getAlert(self, *args): return _preludedb.DB_getAlert(self, *args)
-    def getHeartbeat(self, *args): return _preludedb.DB_getHeartbeat(self, *args)
-    def deleteAlert(self, *args): return _preludedb.DB_deleteAlert(self, *args)
-    def deleteHeartbeat(self, *args): return _preludedb.DB_deleteHeartbeat(self, *args)
-    def _updateFromList(self, *args): return _preludedb.DB__updateFromList(self, *args)
-    def _update(self, *args, **kwargs): return _preludedb.DB__update(self, *args, **kwargs)
-    def __convertPV(self, paths, values):
-            if not isinstance(paths[0], prelude.IDMEFPath):
-                    paths = [ prelude.IDMEFPath(path) for path in paths ]
 
-            if not isinstance(values[0], prelude.IDMEFValue):
-                    values = [ prelude.IDMEFValue(value) for value in values ]
 
-            return (paths, values)
 
-    def updateFromList(self, paths, values, identlist):
-            paths, values = self.__convertPV(paths, values)
-            return self._updateFromList(paths, values, identlist)
 
-    def update(self, paths, values, criteria=None, order=[], limit=-1, offset=-1):
-            paths, values = self.__convertPV(paths, values)
-            return self._update(paths, values, criteria, order, limit, offset)
 
-DB_swigregister = _preludedb.DB_swigregister
-DB_swigregister(DB)
 
-class ResultIdents(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultIdents, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, ResultIdents, name)
-    __repr__ = _swig_repr
-    __swig_setmethods__["_result"] = _preludedb.ResultIdents__result_set
-    __swig_getmethods__["_result"] = _preludedb.ResultIdents__result_get
-    if _newclass:_result = _swig_property(_preludedb.ResultIdents__result_get, _preludedb.ResultIdents__result_set)
-    def __init__(self, *args): 
-        this = _preludedb.new_ResultIdents(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _preludedb.delete_ResultIdents
-    __del__ = lambda self : None;
-    def getCount(self): return _preludedb.ResultIdents_getCount(self)
-    def __len__(self): return _preludedb.ResultIdents___len__(self)
-    def get(self, *args, **kwargs): return _preludedb.ResultIdents_get(self, *args, **kwargs)
-    def __getitem__(self, key):
-            if isinstance(key, slice):
-                    return itertools.islice(self, key.start, key.stop, key.step)
 
-            return self.get(key)
 
-    def __repr__(self):
-            return "ResultIdents(\n  " + ",\n  ".join([repr(i) for i in self]) + "\n)"
 
-ResultIdents_swigregister = _preludedb.ResultIdents_swigregister
-ResultIdents_swigregister(ResultIdents)
 
-class ResultValues(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultValues, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, ResultValues, name)
-    __repr__ = _swig_repr
-    __swig_setmethods__["_result"] = _preludedb.ResultValues__result_set
-    __swig_getmethods__["_result"] = _preludedb.ResultValues__result_get
-    if _newclass:_result = _swig_property(_preludedb.ResultValues__result_get, _preludedb.ResultValues__result_set)
-    def __init__(self, *args): 
-        this = _preludedb.new_ResultValues(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _preludedb.delete_ResultValues
-    __del__ = lambda self : None;
-    def getCount(self): return _preludedb.ResultValues_getCount(self)
-    def getFieldCount(self): return _preludedb.ResultValues_getFieldCount(self)
-    def __len__(self): return _preludedb.ResultValues___len__(self)
-    def get(self, *args, **kwargs): return _preludedb.ResultValues_get(self, *args, **kwargs)
-    def __getitem__(self, key):
-            if isinstance(key, slice):
-                    return itertools.islice(self, key.start, key.stop, key.step)
 
-            return self.get(key)
 
-    def __repr__(self):
-            return "ResultValues(\n  " + ",\n  ".join([repr(i) for i in self]) + "\n)"
 
-ResultValues_swigregister = _preludedb.ResultValues_swigregister
-ResultValues_swigregister(ResultValues)
 
-class ResultValuesRow(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, ResultValuesRow, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, ResultValuesRow, name)
-    __repr__ = _swig_repr
-    def __init__(self, *args): 
-        this = _preludedb.new_ResultValuesRow(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _preludedb.delete_ResultValuesRow
-    __del__ = lambda self : None;
-    def get(self, *args): return _preludedb.ResultValuesRow_get(self, *args)
-    def getFieldCount(self): return _preludedb.ResultValuesRow_getFieldCount(self)
-    def __len__(self): return _preludedb.ResultValuesRow___len__(self)
-    def __getitem__(self, key):
-            if isinstance(key, slice):
-                    return itertools.islice(self, key.start, key.stop, key.step)
 
-            return self.get(key)
-
-    def __repr__(self):
-            return "ResultValuesRow(" + repr([i for i in self]) + ")"
-
-ResultValuesRow_swigregister = _preludedb.ResultValuesRow_swigregister
-ResultValuesRow_swigregister(ResultValuesRow)
-
-class PreludeDBError(prelude.PreludeError):
-    __swig_setmethods__ = {}
-    for _s in [prelude.PreludeError]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
-    __setattr__ = lambda self, name, value: _swig_setattr(self, PreludeDBError, name, value)
-    __swig_getmethods__ = {}
-    for _s in [prelude.PreludeError]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
-    __getattr__ = lambda self, name: _swig_getattr(self, PreludeDBError, name)
-    __repr__ = _swig_repr
-    def __init__(self, *args): 
-        this = _preludedb.new_PreludeDBError(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    __swig_destroy__ = _preludedb.delete_PreludeDBError
-    __del__ = lambda self : None;
-PreludeDBError_swigregister = _preludedb.PreludeDBError_swigregister
-PreludeDBError_swigregister(PreludeDBError)
-
-class SQL(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SQL, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SQL, name)
-    __repr__ = _swig_repr
-    __swig_destroy__ = _preludedb.delete_SQL
-    __del__ = lambda self : None;
-    def __init__(self, *args): 
-        this = _preludedb.new_SQL(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    def query(self, *args): return _preludedb.SQL_query(self, *args)
-    def transactionStart(self): return _preludedb.SQL_transactionStart(self)
-    def transactionEnd(self): return _preludedb.SQL_transactionEnd(self)
-    def transactionAbort(self): return _preludedb.SQL_transactionAbort(self)
-    def escape(self, *args): return _preludedb.SQL_escape(self, *args)
-    def escapeBinary(self, *args): return _preludedb.SQL_escapeBinary(self, *args)
-SQL_swigregister = _preludedb.SQL_swigregister
-SQL_swigregister(SQL)
-
-class Table(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Table, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Table, name)
-    __repr__ = _swig_repr
-    __swig_destroy__ = _preludedb.delete_Table
-    __del__ = lambda self : None;
-    def __init__(self, *args): 
-        this = _preludedb.new_Table(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    def getColumnName(self, *args): return _preludedb.Table_getColumnName(self, *args)
-    def getColumnNum(self, *args): return _preludedb.Table_getColumnNum(self, *args)
-    def getColumnCount(self): return _preludedb.Table_getColumnCount(self)
-    def getRowCount(self): return _preludedb.Table_getRowCount(self)
-    def __len__(self): return _preludedb.Table___len__(self)
-    def fetch(self): return _preludedb.Table_fetch(self)
-    def get(self, *args): return _preludedb.Table_get(self, *args)
-    def __getitem__(self, key):
-            if isinstance(key, slice):
-                    return itertools.islice(self, key.start, key.stop, key.step)
-
-            return self.get(key)
-
-    def __repr__(self):
-            return "Table(\n  " + ",\n  ".join([repr(i) for i in self]) + "\n)"
-
-Table_swigregister = _preludedb.Table_swigregister
-Table_swigregister(Table)
-
-class Row(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Row, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Row, name)
-    __repr__ = _swig_repr
-    __swig_destroy__ = _preludedb.delete_Row
-    __del__ = lambda self : None;
-    def __init__(self, *args): 
-        this = _preludedb.new_Row(*args)
-        try: self.this.append(this)
-        except: self.this = this
-    def getFieldCount(self): return _preludedb.Row_getFieldCount(self)
-    def __len__(self): return _preludedb.Row___len__(self)
-    def getField(self, *args): return _preludedb.Row_getField(self, *args)
-    def get(self, *args): return _preludedb.Row_get(self, *args)
-    def __getitem__(self, key):
-            if isinstance(key, slice):
-                    return itertools.islice(self, key.start, key.stop, key.step)
-
-            return self.get(key)
-
-    def __repr__(self):
-            return "Row(" + repr([i for i in self]) + ")"
-
-Row_swigregister = _preludedb.Row_swigregister
-Row_swigregister(Row)
-
-python2_unicode_patch(PreludeDBError)
-
-# This file is compatible with both classic and new-style classes.
 
 

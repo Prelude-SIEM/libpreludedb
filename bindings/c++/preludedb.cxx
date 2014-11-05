@@ -89,7 +89,7 @@ unsigned int DB::ResultIdents::getCount()
 }
 
 
-uint64_t DB::ResultIdents::get(unsigned int row_index)
+uint64_t *DB::ResultIdents::get(unsigned int row_index)
 {
         int ret;
         uint64_t ident;
@@ -101,7 +101,7 @@ uint64_t DB::ResultIdents::get(unsigned int row_index)
         if ( ret <= 0 )
                 throw PreludeDBError(ret ? ret : preludedb_error(PRELUDEDB_ERROR_INDEX));
 
-        return ident;
+        return new uint64_t(ident);
 }
 
 
@@ -129,7 +129,8 @@ DB::ResultValues::ResultValuesRow::ResultValuesRow(preludedb_result_values_t *rv
 
 DB::ResultValues::ResultValuesRow::~ResultValuesRow()
 {
-        preludedb_result_values_destroy(_result);
+        if ( _result )
+                preludedb_result_values_destroy(_result);
 }
 
 
@@ -160,11 +161,43 @@ unsigned int DB::ResultValues::ResultValuesRow::getFieldCount(void)
 }
 
 
+std::string DB::ResultValues::ResultValuesRow::toString(void)
+{
+        size_t i;
+        std::string s;
 
-Prelude::IDMEFValue DB::ResultValues::ResultValuesRow::get(int col)
+        s = "ResultValuesRow(";
+
+        for ( i = 0; i < count(); i++ ) {
+                if ( i > 0 )
+                        s += ", ";
+
+                Prelude::IDMEFValue *v = get(i);
+                if ( v && ! v->isNull() ) {
+                        if ( v->getType() == Prelude::IDMEFValue::TYPE_STRING )
+                                s += "'";
+
+                        s += v->toString();
+
+                        if ( v->getType() == Prelude::IDMEFValue::TYPE_STRING )
+                                s += "'";
+                } else
+                        s += "NULL";
+
+                delete(v);
+        }
+
+        s += ")";
+
+        return s;
+}
+
+
+
+Prelude::IDMEFValue *DB::ResultValues::ResultValuesRow::get(int col)
 {
         int ret, i;
-        idmef_value_t *value;
+        idmef_value_t *out = NULL;
         preludedb_selected_path_t *selected;
 
         if ( ! _result )
@@ -177,12 +210,38 @@ Prelude::IDMEFValue DB::ResultValues::ResultValuesRow::get(int col)
         if ( ret <= 0 )
                 throw PreludeDBError(ret);
 
-        ret = preludedb_result_values_get_field(_result, _row, selected, &value);
+        ret = preludedb_result_values_get_field(_result, _row, selected, (idmef_value_t **) &out);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 
-        return Prelude::IDMEFValue(value);
+        return new Prelude::IDMEFValue(out);
 }
+
+
+
+void *DB::ResultValues::ResultValuesRow::get(int col, preludedb_result_values_get_field_cb_func_t cb)
+{
+        int ret, i;
+        void *out = NULL;
+        preludedb_selected_path_t *selected;
+
+        if ( ! _result )
+                throw PreludeDBError(preludedb_error(PRELUDEDB_ERROR_INDEX));
+
+        if ( col < 0 )
+                col = getFieldCount() - (-col);
+
+        ret = preludedb_path_selection_get_selected(preludedb_result_values_get_selection(_result), &selected, col);
+        if ( ret <= 0 )
+                throw PreludeDBError(ret);
+
+        ret = preludedb_result_values_get_field_direct(_result, _row, selected, cb, &out);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+
+        return out;
+}
+
 
 
 /* */
@@ -212,7 +271,32 @@ DB::ResultValues::ResultValues(const DB::ResultValues &result)
 }
 
 
-DB::ResultValues::ResultValuesRow DB::ResultValues::get(unsigned int rownum)
+std::string DB::ResultValues::toString(void)
+{
+        std::string s;
+        unsigned int i;
+        ResultValuesRow *row;
+
+        s = "ResultValues(\n";
+
+        for ( i = 0; i < count(); i++ ) {
+                if ( i > 0 )
+                        s += ",\n";
+
+                s += " ";
+
+                row = get(i);
+                s += row->toString();
+                delete(row);
+        }
+
+        s += "\n)";
+
+        return s;
+}
+
+
+DB::ResultValues::ResultValuesRow *DB::ResultValues::get(unsigned int rownum)
 {
         int ret;
         void *row;
@@ -224,7 +308,7 @@ DB::ResultValues::ResultValuesRow DB::ResultValues::get(unsigned int rownum)
         if ( ret <= 0 )
                 throw PreludeDBError(ret ? ret : preludedb_error(PRELUDEDB_ERROR_INDEX));
 
-        return DB::ResultValues::ResultValuesRow(_result, row);
+        return new DB::ResultValues::ResultValuesRow(_result, row);
 }
 
 

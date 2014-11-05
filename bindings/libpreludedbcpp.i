@@ -30,7 +30,7 @@
 %include "std_vector.i"
 
 %import "libpreludecpp.i"
-%feature("nothread", 0);
+//%feature("nothread", 0);
 
 
 %template() std::vector<uint64_t>;
@@ -57,19 +57,6 @@ using namespace PreludeDB;
 
 #define SWIG_Prelude_NewPointerObj SWIG_NewPointerObj
 
-%exception {
-        try {
-                $action
-        } catch(PreludeDB::PreludeDBError &e) {
-                if ( e.getCode() == PRELUDEDB_ERROR_INDEX )
-                        SWIG_exception(SWIG_IndexError, e.what());
-                else
-                        SWIG_exception(SWIG_RuntimeError, e.what());
-
-                SWIG_fail;
-        }
-}
-
 %init {
         int ret;
 
@@ -91,6 +78,19 @@ using namespace PreludeDB;
 %feature("kwargs") PreludeDB::DB::getValues;
 %feature("kwargs") PreludeDB::DB::update;
 %feature("kwargs") PreludeDB::checkVersion;
+
+%feature("nothread", "0") PreludeDB::SQL::query;
+%feature("nothread", "0") PreludeDB::DB::getAlert;
+%feature("nothread", "0") PreludeDB::DB::getAlertIdents;
+%feature("nothread", "0") PreludeDB::DB::deleteAlert;
+%feature("nothread", "0") PreludeDB::DB::getHeartbeat;
+%feature("nothread", "0") PreludeDB::DB::getHeartbeatIdents;
+%feature("nothread", "0") PreludeDB::DB::deleteHeartbeat;
+%feature("nothread", "0") PreludeDB::DB::getValues;
+%feature("nothread", "0") PreludeDB::DB::update;
+%feature("nothread", "0") PreludeDB::DB::updateFromList;
+
+
 
 %ignore preludedb_t;
 %ignore preludedb_sql_t;
@@ -135,9 +135,3 @@ using namespace PreludeDB;
 %include preludedb.hxx
 %include preludedb-error.hxx
 %include preludedb-sql.hxx
-
-#ifdef SWIGPYTHON
-%pythoncode %{
-python2_unicode_patch(PreludeDBError)
-%}
-#endif
