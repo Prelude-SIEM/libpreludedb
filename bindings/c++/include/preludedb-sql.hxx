@@ -87,6 +87,7 @@ namespace PreludeDB {
                 std::string escape(const char *str);
                 std::string escape(const std::string &str);
                 std::string escapeBinary(const std::string &str);
+                std::string getType(void) { return preludedb_sql_get_type(_sql); };
 
                 operator preludedb_sql_t *() const;
         };
