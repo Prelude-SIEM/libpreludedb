@@ -445,6 +445,9 @@ static int get_data(preludedb_sql_t *sql, preludedb_sql_row_t *row, preludedb_sq
         preludedb_sql_field_t *typefield;
         idmef_additional_data_type_t dtype;
 
+        if ( classic_get_path_column_count(selected) != 2 )
+                return 0;
+
         ret = preludedb_sql_row_get_field(row, cnt + 1, &typefield);
         if ( ret <= 0 )
                 return ret;
@@ -522,7 +525,8 @@ static int get_value(preludedb_sql_t *sql, preludedb_sql_row_t *row, int cnt, pr
                         return ret;
 
                 retrieved += ret;
-                char_val = (char *) unescaped;
+                if ( ret )
+                        char_val = (char *) unescaped;
         }
 
         else if ( type == IDMEF_VALUE_TYPE_ENUM )
@@ -600,14 +604,16 @@ int classic_get_path_column_count(preludedb_selected_path_t *selected)
         flags = preludedb_selected_path_get_flags(selected);
         type = idmef_path_get_value_type(path, -1);
 
+        if ( flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
+                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
+                      PRELUDEDB_SELECTED_OBJECT_GROUP_BY|PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT) )
+                      return 1;
+
         if ( idmef_path_get_class(path, idmef_path_get_depth(path) - 2) == IDMEF_CLASS_ID_ADDITIONAL_DATA &&
              type == IDMEF_VALUE_TYPE_DATA )
                 return 2;
 
-        if ( type == IDMEF_VALUE_TYPE_TIME && ! tc &&
-             ! (flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-                         PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
-                         PRELUDEDB_SELECTED_OBJECT_GROUP_BY|PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT)) )
+        if ( type == IDMEF_VALUE_TYPE_TIME && ! tc )
                 return idmef_path_get_depth(path) == 2 ? 3 : 2;
 
         return 1;
