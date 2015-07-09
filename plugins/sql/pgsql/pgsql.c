@@ -130,6 +130,10 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 
         *session = conn;
 
+        ret = sql_query(conn, "SET standard_conforming_strings=on", NULL);
+        if ( ret < 0 )
+                return ret;
+
         return sql_query(conn, "SET DATESTYLE TO 'ISO'", NULL);
 }
 
@@ -172,57 +176,39 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 }
 
 
-/*
- * Follow PostgreSQL directive for escaping binary data :
- * http://www.postgresql.org/docs/7.3/static/datatype-binary.html
- */
 static int sql_escape_binary(void *session, const unsigned char *input, size_t input_size, char **output)
 {
-
         int ret;
-        prelude_string_t *s;
-        const unsigned char *ptr, *end;
+        size_t dummy;
+        unsigned char *ptr;
+        prelude_string_t *string;
 
-        ret = prelude_string_new(&s);
+        ret = prelude_string_new(&string);
         if ( ret < 0 )
                 return ret;
 
-        ret = prelude_string_cat(s, "E'");
-        if ( ret < 0 )
-                goto error;
-
-        end = input + input_size;
-        for ( ptr = input; ptr < end; ptr++ ) {
-                switch (*ptr) {
-                        case 39: /* single quote */
-                                ret = prelude_string_cat(s, "\\\\047");
-                                break;
-
-                        case 92: /* backslash */
-                                ret = prelude_string_cat(s, "\\\\134");
-                                break;
-
-                        default: /* non-printable octets */
-                                if ( (*ptr >= 0 && *ptr <= 31) || (*ptr >= 127 && *ptr <= 255) )
-                                        ret = prelude_string_sprintf(s, "\\\\%03o", *ptr);
-                                else
-                                        ret = prelude_string_ncat(s, (const char *) ptr, 1);
-                                break;
-                }
-
-                if ( ret < 0 )
-                        goto error;
+#ifdef HAVE_PQESCAPEBYTEACONN
+        ptr = PQescapeByteaConn(session, input, input_size, &dummy);
+#else
+        ptr = PQescapeBytea(input, input_size, &dummy);
+#endif
+        if ( ! ptr ) {
+                prelude_string_destroy(string);
+                return -1;
         }
 
-        ret = prelude_string_cat(s, "'");
-        if ( ret < 0 )
-                goto error;
+        ret = prelude_string_sprintf(string, "'%s'", ptr);
+        free(ptr);
 
-        ret = prelude_string_get_string_released(s, output);
+        if ( ret < 0 ) {
+                prelude_string_destroy(string);
+                return ret;
+        }
 
-    error:
-        prelude_string_destroy(s);
-        return ret;
+        ret = prelude_string_get_string_released(string, output);
+        prelude_string_destroy(string);
+
+        return 0;
 }
 
 
