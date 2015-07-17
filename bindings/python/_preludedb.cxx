@@ -6922,6 +6922,7 @@ SWIGPY_BINARYFUNC_CLOSURE(_wrap_SwigPyIterator___sub__)
                         break;
 
                 case IDMEF_VALUE_TYPE_STRING:
+                case IDMEF_VALUE_TYPE_DATA:
                         *ret = SWIG_FromCharPtrAndSize((const char *) data, size);
                         break;
 

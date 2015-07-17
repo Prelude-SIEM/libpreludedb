@@ -160,6 +160,7 @@
                         break;
 
                 case IDMEF_VALUE_TYPE_STRING:
+                case IDMEF_VALUE_TYPE_DATA:
                         *ret = SWIG_FromCharPtrAndSize((const char *) data, size);
                         break;
 
