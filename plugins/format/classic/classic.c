@@ -46,7 +46,7 @@
 #include "classic-path-resolve.h"
 
 
-#define CLASSIC_SCHEMA_VERSION 14.7
+#define CLASSIC_SCHEMA_VERSION "14.7"
 
 
 int classic_LTX_prelude_plugin_version(void);
@@ -623,25 +623,29 @@ int classic_get_path_column_count(preludedb_selected_path_t *selected)
 
 static int classic_check_schema_version(const char *version)
 {
-        double d;
-        char *eptr;
+        int ret;
+        unsigned int schema_version, code_version;
 
         if ( ! version )
                 return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
 
-        d = prelude_simple_strtod(version, &eptr);
-        if ( *eptr != 0 )
-                return preludedb_error(PRELUDEDB_ERROR_SCHEMA_VERSION_INVALID);
+        ret = prelude_parse_version(version, &schema_version);
+        if ( ret < 0 )
+                return ret;
 
-        if ( d > CLASSIC_SCHEMA_VERSION )
+        ret = prelude_parse_version(CLASSIC_SCHEMA_VERSION, &code_version);
+        if ( ret < 0 )
+                return ret;
+
+        if ( schema_version > code_version )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_RECENT,
-                                               "Database schema version %g is too recent (%g required)",
-                                               d, CLASSIC_SCHEMA_VERSION);
+                                               "Database schema version %s is too recent (%s required)",
+                                               version, CLASSIC_SCHEMA_VERSION);
 
-        if ( d < CLASSIC_SCHEMA_VERSION )
+        if ( schema_version < code_version )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_SCHEMA_VERSION_TOO_OLD,
-                                               "Database schema version %g is too old (%g required)",
-                                               d, CLASSIC_SCHEMA_VERSION);
+                                               "Database schema version %s is too old (%s required)",
+                                               version, CLASSIC_SCHEMA_VERSION);
 
         return 0;
 }
