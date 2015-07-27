@@ -1,3 +1,47 @@
+* 2015-07-27, libpreludedb-1.2.6rc5:
+
+Author: Yoann Vandoorselaere
+
+- Remove deprecated API
+
+    Remove deprecated old *_get_next_* functions.
+    Remove deprecated low-level bindings.
+
+- Performance improvements
+
+    - SWIG Python now uses builtin mode (massive performance improvements)
+
+    - Optimisation work: reduce the number of allocations when fetching rows
+
+    - Cache preludedb_sql_table_get_(row|column)_count()
+
+    - New value fetch mode: use of preludedb_result_values_get_field_direct()
+      by bindings optimizes translation from C to target language value
+
+- AdditionalData fixes
+
+    - Fix memory leak on AdditionalData retrieval
+
+    - [#628] Fix AdditionalData retrieval failure
+
+    - Correctly retrieve the AdditionalData type from database
+
+- Other
+
+    - Add missing C++ operator
+
+    - Add getType() wrapper for preludedb_sql_get_type() function
+
+    - [#723] Fix version checking on 32 bits system
+
+    - [#650, #ext608] Fix warnings with PostgreSQL string insertion
+
+    - [#593] Year extraction was not working
+
+    - [#723] Fix version checking on 32 bits system
+
+
+
 * 2014-10-27, libpreludedb-1.2.6rc4:
 
 Author: Yoann Vandoorselaere
