@@ -230,7 +230,7 @@ const char *preludedb_sql_settings_get_ ## name(const preludedb_sql_settings_t *
 
 
 
-convenient_functions(host, PRELUDEDB_SQL_SETTING_HOST, "localhost")
+convenient_functions(host, PRELUDEDB_SQL_SETTING_HOST, NULL)
 convenient_functions(port, PRELUDEDB_SQL_SETTING_PORT, NULL)
 convenient_functions(name, PRELUDEDB_SQL_SETTING_NAME, "prelude")
 convenient_functions(user, PRELUDEDB_SQL_SETTING_USER, NULL)
