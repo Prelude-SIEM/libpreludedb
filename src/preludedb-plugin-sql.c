@@ -58,6 +58,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_get_operator_string_func_t get_operator_string;
         preludedb_plugin_sql_build_timestamp_string_func_t build_timestamp_string;
         preludedb_plugin_sql_get_server_version_func_t get_server_version;
+        preludedb_plugin_sql_get_last_insert_ident_func_t get_last_insert_ident;
 };
 
 
@@ -169,6 +170,18 @@ int _preludedb_plugin_sql_unescape_binary(preludedb_plugin_sql_t *plugin, void *
         *output_size = input_size;
 
         return 0;
+}
+
+
+void preludedb_plugin_sql_set_get_last_insert_ident_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_last_insert_ident_func_t func)
+{
+        plugin->get_last_insert_ident = func;
+}
+
+
+int _preludedb_plugin_sql_get_last_insert_ident(preludedb_plugin_sql_t *plugin, void *session, uint64_t *ident)
+{
+        return plugin->get_last_insert_ident(session, ident);
 }
 
 

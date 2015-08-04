@@ -109,6 +109,35 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
 }
 
 
+
+static int sql_get_last_insert_ident(void *session, uint64_t *ident)
+{
+        int ret;
+        char *value;
+        PGresult *result;
+
+        result = PQexec(session, "SELECT lastval();");
+        if ( ! result )
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+
+        ret = PQresultStatus(result);
+        if ( ret != PGRES_TUPLES_OK || PQntuples(result) <= 0 )
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+
+        value = PQgetvalue(result, 0, 0);
+        if ( ! value )
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+
+        ret = sscanf(value, "%" PRELUDE_SCNu64, ident);
+        if ( ret <= 0 )
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+
+        PQclear(result);
+        return 0;
+}
+
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
@@ -536,6 +565,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
+        preludedb_plugin_sql_set_get_last_insert_ident_func(plugin, sql_get_last_insert_ident);
 
         return 0;
 }

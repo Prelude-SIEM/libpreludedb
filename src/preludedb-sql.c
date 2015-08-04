@@ -468,6 +468,26 @@ int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fi
 
 
 
+
+/**
+ * preludedb_sql_get_last_insert_ident:
+ * @sql: Pointer to a sql object.
+ * @ident: Where the retrieved ident is stored
+ *
+ * Return the last insert ident allocated by the database server when
+ * writing to a table with an auto increment field.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_get_last_insert_ident(preludedb_sql_t *sql, uint64_t *ident)
+{
+        return _preludedb_plugin_sql_get_last_insert_ident(sql->plugin, sql->session, ident);
+}
+
+
+
+
+
 /**
  * preludedb_sql_build_limit_offset_string:
  * @sql: Pointer to a sql object.
