@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -435,6 +436,9 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
         case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
                 return prelude_string_sprintf(output, "EXTRACT(YEAR FROM %s)", buf);
 
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_QUARTER:
+                return prelude_string_sprintf(output, "EXTRACT(QUARTER FROM %s)", buf);
+
         case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
                 return  prelude_string_sprintf(output, "EXTRACT(MONTH FROM %s)", buf);
 
@@ -455,6 +459,12 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
 
         case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
                 return prelude_string_sprintf(output, "EXTRACT(SECOND FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_MSEC:
+                return prelude_string_sprintf(output, "EXTRACT(MILLISECOND FROM %s)", buf);
+
+        case PRELUDEDB_SQL_TIME_CONSTRAINT_USEC:
+                return prelude_string_sprintf(output, "EXTRACT(MICROSECOND FROM %s)", buf);
         }
 
         /* not reached */
@@ -484,44 +494,49 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 }
 
 
-static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
-                                          char *buf, size_t size)
+static int sql_build_time_interval_string(prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
 {
-        char *type_str;
-        int ret;
+        char *end;
+        const char *sunit;
 
-        switch ( type ) {
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
-                type_str = "YEAR";
+        switch ( unit ) {
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_YEAR:
+                sunit = "YEAR";
                 break;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
-                type_str = "MONTH";
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_QUARTER:
+                sunit = "QUARTER";
                 break;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY:
-                type_str = "DAY";
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_MONTH:
+                sunit = "MONTH";
                 break;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
-                type_str = "HOUR";
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_DAY:
+                sunit = "DAY";
                 break;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_MIN:
-                type_str = "MINUTE";
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_HOUR:
+                sunit = "HOUR";
                 break;
 
-        case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
-                type_str = "SECOND";
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_MIN:
+                sunit = "MINUTE";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_SEC:
+                sunit = "SECOND";
                 break;
 
         default:
                 return preludedb_error(PRELUDEDB_ERROR_GENERIC);
         }
 
-        ret = snprintf(buf, size, "INTERVAL '%d %s'", value, type_str);
-
-        return (ret < 0 || (size_t) ret >= size) ? preludedb_error(PRELUDEDB_ERROR_GENERIC) : 0;
+        strtol(value, &end, 10);
+        if ( end )
+                return prelude_string_sprintf(output, "(%s + (%s * INTERVAL '1 %s'))", field, value, sunit);
+        else
+                return prelude_string_sprintf(output, "(%s + INTERVAL '%s %s')", field, value, sunit);
 }
 
 

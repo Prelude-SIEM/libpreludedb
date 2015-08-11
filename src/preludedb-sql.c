@@ -1559,6 +1559,15 @@ int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string
 }
 
 
+
+int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
+                                             const char *value, preludedb_selected_object_interval_t unit)
+{
+        return _preludedb_plugin_sql_build_time_interval_string(sql->plugin, output, field, value, unit);
+}
+
+
+
 /**
  * preludedb_sql_build_criterion_string:
  * @sql: Pointer to a sql object.

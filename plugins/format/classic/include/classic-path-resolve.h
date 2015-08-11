@@ -25,12 +25,8 @@
 #define _LIBPRELUDEDB_CLASSIC_PATH_RESOLVE_H
 
 
-int classic_path_resolve_selected(preludedb_sql_t *sql,
-				  preludedb_selected_path_t *selected,
-				  classic_sql_join_t *join, classic_sql_select_t *select);
-int classic_path_resolve_selection(preludedb_sql_t *sql,
-				   preludedb_path_selection_t *selection,
-				   classic_sql_join_t *join, classic_sql_select_t *select);
+int classic_path_resolve(preludedb_selected_path_t *selpath, preludedb_selected_object_t *object, void *data, prelude_string_t *output);
+
 int classic_path_resolve_criteria(preludedb_sql_t *sql,
 				  idmef_criteria_t *criteria,
 				  classic_sql_join_t *join, prelude_string_t *output);

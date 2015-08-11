@@ -27,12 +27,21 @@ libpreludedb_la_LDFLAGS =  \
 
 libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@ $(LTLIBTHREAD) ../libmissing/libmissing.la
 
+AM_YFLAGS = -d
+AM_LFLAGS = --header-file=preludedb-path-selection-parser.lex.h
+LEX_OUTPUT_ROOT = lex.yy
+
+noinst_HEADERS = preludedb-path-selection-parser.lex.h
+
 libpreludedb_la_SOURCES =		\
 	preludedb.c			\
 	preludedb-path-selection.c	\
+	preludedb-path-selection-parser.lex.l \
+	preludedb-path-selection-parser.yac.y \
 	preludedb-plugin-format.c	\
 	preludedb-plugin-sql.c		\
 	preludedb-sql.c			\
+	preludedb-sql-select.c		\
 	preludedb-sql-settings.c	\
 	preludedb-version.c		\
 	preludedb-error.c		

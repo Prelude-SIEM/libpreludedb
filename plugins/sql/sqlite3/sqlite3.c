@@ -383,6 +383,9 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR:
                         return prelude_string_sprintf(output, "STRFTIME('%%Y', %s) + 0", buf);
 
+                case PRELUDEDB_SQL_TIME_CONSTRAINT_QUARTER:
+                        return prelude_string_sprintf(output, "((STRFTIME('%%m', %s) + 2) / 3)", buf);
+
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH:
                         return  prelude_string_sprintf(output, "STRFTIME('%%m', %s) + 0", buf);
 
@@ -403,11 +406,13 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_SEC:
                         return prelude_string_sprintf(output, "STRFTIME('%%S', %s) + 0", buf);
+
+                case PRELUDEDB_SQL_TIME_CONSTRAINT_MSEC:
+                        return prelude_string_sprintf(output, "(STRFTIME('%%f', %s) - STRFTIME('%%S', %s)) * 1000", buf, buf);
+
+                default:
+                        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
         }
-
-        /* not reached */
-
-        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
 
 
@@ -433,12 +438,41 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 }
 
 
-static int sql_build_time_interval_string(preludedb_sql_time_constraint_type_t type, int value,
-                                          char *buf, size_t size)
-{
-        /* It's not clear where this would be used... */
 
-        return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+static int sql_build_time_interval_string(prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
+{
+        const char *sunit;
+
+        switch (unit) {
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_YEAR:
+                sunit = "years";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_MONTH:
+                sunit = "months";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_DAY:
+                sunit = "days";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_HOUR:
+                sunit = "hours";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_MIN:
+                sunit = "minutes";
+                break;
+
+        case PRELUDEDB_SELECTED_OBJECT_INTERVAL_SEC:
+                sunit = "seconds";
+                break;
+
+        default:
+                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+        }
+
+        return prelude_string_sprintf(output, "datetime(%s, %s || ' %s')", field, value, sunit);
 }
 
 

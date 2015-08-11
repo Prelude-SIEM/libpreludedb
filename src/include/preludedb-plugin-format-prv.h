@@ -53,6 +53,7 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_update_from_list_func_t update_from_list;
         preludedb_plugin_format_update_from_result_idents_func_t update_from_result_idents;
         preludedb_plugin_format_get_path_column_count_func_t get_path_column_count;
+        preludedb_plugin_format_path_resolve_func_t path_resolve;
 };
 
 #endif

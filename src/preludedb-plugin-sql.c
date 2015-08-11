@@ -366,13 +366,12 @@ void preludedb_plugin_sql_set_build_time_interval_string_func(preludedb_plugin_s
 }
 
 
-int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin,
-                                                     preludedb_sql_time_constraint_type_t type, int value, char *buf, size_t size)
+int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin, prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
 {
         if ( ! plugin->build_time_interval_string )
                 return PRELUDEDB_ENOTSUP("build_time_interval_string");
 
-        return plugin->build_time_interval_string(type, value, buf, size);
+        return plugin->build_time_interval_string(output, field, value, unit);
 }
 
 

@@ -4,7 +4,7 @@ AM_CPPFLAGS=@PCFLAGS@ -I$(top_srcdir)/src/include -I$(srcdir)/include -I$(top_sr
 
 classic_la_LIBADD  = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
 classic_la_LDFLAGS = -module -avoid-version @LIBPRELUDE_LDFLAGS@
-classic_la_SOURCES = classic.c classic-delete.c classic-get.c classic-insert.c classic-path-resolve.c classic-sql-join.c classic-sql-select.c
+classic_la_SOURCES = classic.c classic-delete.c classic-get.c classic-insert.c classic-path-resolve.c classic-sql-join.c
 classic_LTLIBRARIES = classic.la
 classicdir = $(format_plugin_dir)
 

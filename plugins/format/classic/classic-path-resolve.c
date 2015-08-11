@@ -35,7 +35,6 @@
 #include "preludedb-sql.h"
 
 #include "classic-sql-join.h"
-#include "classic-sql-select.h"
 #include "classic-path-resolve.h"
 
 #define FIELD_CONTEXT_WHERE    1
@@ -300,9 +299,22 @@ static const classic_idmef_class_t *search_path(const idmef_path_t *path)
 
 
 
-static int classic_path_resolve(const idmef_path_t *path, int field_context,
-                                classic_sql_join_t *join, prelude_string_t *output)
+static int get_field_context(preludedb_selected_path_t *selected)
 {
+        preludedb_selected_object_t *object;
+
+        object = preludedb_selected_path_get_object(selected);
+        if ( preludedb_selected_object_is_function(object) || preludedb_selected_path_get_flags(selected) & PRELUDEDB_SELECTED_PATH_FLAGS_GROUP_BY )
+                return FIELD_CONTEXT_FUNCTION;
+        else
+                return FIELD_CONTEXT_SELECT;
+}
+
+
+
+static int _classic_path_resolve(const idmef_path_t *path, int field_context, void *data, prelude_string_t *output)
+{
+        classic_sql_join_t *join = data;
         const classic_idmef_class_t *class;
         classic_sql_joined_table_t *table;
         char *table_name;
@@ -330,81 +342,10 @@ static int classic_path_resolve(const idmef_path_t *path, int field_context,
 }
 
 
-
-int classic_path_resolve_selected(preludedb_sql_t *sql,
-                                  preludedb_selected_path_t *selected,
-                                  classic_sql_join_t *join, classic_sql_select_t *select)
+int classic_path_resolve(preludedb_selected_path_t *selpath, preludedb_selected_object_t *object, void *data, prelude_string_t *output)
 {
-        idmef_path_t *path;
-        preludedb_selected_path_flags_t flags;
-        prelude_string_t *field_name, *tfs;
-        int ret;
-        int field_context, time_constraint;
-        unsigned int num_field;
-
-        ret = prelude_string_new(&field_name);
-        if ( ret < 0 )
-                return ret;
-
-        path = preludedb_selected_path_get_path(selected);
-        flags = preludedb_selected_path_get_flags(selected);
-        num_field = classic_get_path_column_count(selected);
-        time_constraint = preludedb_selected_path_get_time_constraint(selected);
-
-        if ( time_constraint ||
-             flags & (PRELUDEDB_SELECTED_OBJECT_FUNCTION_MIN|
-                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_MAX|
-                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_AVG|
-                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_STD|
-                      PRELUDEDB_SELECTED_OBJECT_FUNCTION_COUNT|
-                      PRELUDEDB_SELECTED_OBJECT_GROUP_BY) )
-                field_context = FIELD_CONTEXT_FUNCTION;
-        else
-                field_context = FIELD_CONTEXT_SELECT;
-
-        ret = classic_path_resolve(path, field_context, join, field_name);
-        if ( ret < 0 )
-                goto error;
-
-        if ( time_constraint ) {
-                ret = prelude_string_new(&tfs);
-                if ( ret < 0 )
-                        goto error;
-
-                ret = preludedb_sql_build_time_extract_string(sql, tfs, prelude_string_get_string(field_name), time_constraint, 0);
-                if ( ret < 0 ) {
-                        prelude_string_destroy(tfs);
-                        goto error;
-                }
-
-                prelude_string_destroy(field_name);
-                field_name = tfs;
-        }
-
-        ret = classic_sql_select_add_field(select, prelude_string_get_string(field_name), flags, num_field);
-
- error:
-        prelude_string_destroy(field_name);
-
-        return ret;
-}
-
-
-
-int classic_path_resolve_selection(preludedb_sql_t *sql,
-                                   preludedb_path_selection_t *selection,
-                                   classic_sql_join_t *join, classic_sql_select_t *select)
-{
-        preludedb_selected_path_t *selected = NULL;
-        int ret;
-
-        while ( (selected = preludedb_path_selection_get_next(selection, selected)) ) {
-                ret = classic_path_resolve_selected(sql, selected, join, select);
-                if ( ret < 0 )
-                        return ret;
-        }
-
-        return 0;
+        const idmef_path_t *path = preludedb_selected_object_get_data(object);
+        return _classic_path_resolve(path, get_field_context(selpath), data, output);
 }
 
 
@@ -420,7 +361,7 @@ static int classic_path_resolve_criterion(preludedb_sql_t *sql,
         if ( ret < 0 )
                 return ret;
 
-        ret = classic_path_resolve(idmef_criterion_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
+        ret = _classic_path_resolve(idmef_criterion_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
         if ( ret < 0 )
                 goto error;
 

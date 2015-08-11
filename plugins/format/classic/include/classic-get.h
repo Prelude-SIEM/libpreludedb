@@ -24,8 +24,8 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_GET_H
 #define _LIBPRELUDEDB_CLASSIC_GET_H
 
-int classic_get_alert(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
+int classic_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 
-int classic_get_heartbeat(preludedb_sql_t *sql, uint64_t ident, idmef_message_t **message);
+int classic_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 
 #endif /* ! _LIBPRELUDEDB_CLASSIC_GET_H  */

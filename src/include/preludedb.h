@@ -39,6 +39,7 @@
 typedef struct preludedb preludedb_t;
 
 #include "preludedb-path-selection.h"
+#include "preludedb-sql-select.h"
 
 typedef struct preludedb_result_idents preludedb_result_idents_t;
 typedef struct preludedb_result_values preludedb_result_values_t;

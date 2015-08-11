@@ -24,16 +24,16 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_DELETE_H
 #define _LIBPRELUDEDB_CLASSIC_DELETE_H
 
-int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident);
+int classic_delete_alert(preludedb_t *db, uint64_t ident);
 
-ssize_t classic_delete_alert_from_list(preludedb_sql_t *sql, uint64_t *ident, size_t size);
+ssize_t classic_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size);
 
-ssize_t classic_delete_alert_from_result_idents(preludedb_sql_t *sql, preludedb_result_idents_t *results);
+ssize_t classic_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results);
 
-int classic_delete_heartbeat(preludedb_sql_t *sql, uint64_t ident);
+int classic_delete_heartbeat(preludedb_t *db, uint64_t ident);
 
-ssize_t classic_delete_heartbeat_from_list(preludedb_sql_t *sql, uint64_t *ident, size_t size);
+ssize_t classic_delete_heartbeat_from_list(preludedb_t *db, uint64_t *ident, size_t size);
 
-ssize_t classic_delete_heartbeat_from_result_idents(preludedb_sql_t *sql, preludedb_result_idents_t *results);
+ssize_t classic_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_DELETE_H */

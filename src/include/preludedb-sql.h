@@ -57,8 +57,22 @@ typedef enum {
         PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY  = 4,
         PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR  = 5,
         PRELUDEDB_SQL_TIME_CONSTRAINT_MIN   = 6,
-        PRELUDEDB_SQL_TIME_CONSTRAINT_SEC   = 7
+        PRELUDEDB_SQL_TIME_CONSTRAINT_SEC   = 7,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_MSEC  = 9,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_USEC  = 10,
+        PRELUDEDB_SQL_TIME_CONSTRAINT_QUARTER = 11
 } preludedb_sql_time_constraint_type_t;
+
+
+typedef enum {
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_YEAR  = 1,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_QUARTER = 2,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_MONTH = 3,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_DAY  = 5,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_HOUR  = 6,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_MIN   = 7,
+        PRELUDEDB_SELECTED_OBJECT_INTERVAL_SEC   = 8,
+} preludedb_selected_object_interval_t;
 
 
 typedef struct preludedb_sql preludedb_sql_t;
@@ -149,6 +163,9 @@ int preludedb_sql_field_to_uint64(preludedb_sql_field_t *field, uint64_t *value)
 int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value);
 int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
+
+int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
+                                             const char *value, preludedb_selected_object_interval_t unit);
 
 int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type, int gmt_offset);

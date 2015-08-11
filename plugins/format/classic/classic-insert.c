@@ -32,8 +32,7 @@
 #include <libprelude/idmef-tree-wrap.h>
 #include <libprelude/prelude-plugin.h>
 
-#include "preludedb-sql-settings.h"
-#include "preludedb-sql.h"
+#include "preludedb.h"
 
 #include "classic-insert.h"
 
@@ -2031,9 +2030,10 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
 
 
 
-int classic_insert(preludedb_sql_t *sql, idmef_message_t *message)
+int classic_insert(preludedb_t *db, idmef_message_t *message)
 {
         int ret;
+        preludedb_sql_t *sql = preludedb_get_sql(db);
 
         if ( ! message )
                 return 0;

@@ -32,10 +32,10 @@
 
 #include "preludedb-error.h"
 #include "preludedb-sql-settings.h"
-#include "preludedb-sql.h"
 #include "preludedb-path-selection.h"
 
 #include "preludedb.h"
+#include "preludedb-sql.h"
 #include "preludedb-plugin-format.h"
 #include "preludedb-plugin-format-prv.h"
 
@@ -373,7 +373,7 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message)
 {
         prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
 
-        return db->plugin->insert_message(db->sql, message);
+        return db->plugin->insert_message(db, message);
 }
 
 
@@ -534,7 +534,7 @@ int preludedb_result_values_get_field_direct(preludedb_result_values_t *result, 
 static int
 preludedb_get_message_idents(preludedb_t *db,
                              idmef_criteria_t *criteria,
-                             int (*get_idents)(preludedb_sql_t *sql, idmef_criteria_t *criteria,
+                             int (*get_idents)(preludedb_t *db, idmef_criteria_t *criteria,
                                                int limit, int offset,
                                                preludedb_result_idents_order_t order,
                                                void **res),
@@ -548,7 +548,7 @@ preludedb_get_message_idents(preludedb_t *db,
         if ( ! *result )
                 return preludedb_error_from_errno(errno);
 
-        ret = get_idents(db->sql, criteria, limit, offset, order, &(*result)->res);
+        ret = get_idents(db, criteria, limit, offset, order, &(*result)->res);
         if ( ret <= 0 ) {
                 free(*result);
                 return ret;
@@ -617,7 +617,7 @@ int preludedb_get_heartbeat_idents(preludedb_t *db,
 int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
         prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return db->plugin->get_alert(db->sql, ident, message);
+        return db->plugin->get_alert(db, ident, message);
 }
 
 
@@ -633,7 +633,7 @@ int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **messa
 int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **message)
 {
         prelude_return_val_if_fail(db && message, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return db->plugin->get_heartbeat(db->sql, ident, message);
+        return db->plugin->get_heartbeat(db, ident, message);
 }
 
 
@@ -649,7 +649,7 @@ int preludedb_get_heartbeat(preludedb_t *db, uint64_t ident, idmef_message_t **m
 int preludedb_delete_alert(preludedb_t *db, uint64_t ident)
 {
         prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return db->plugin->delete_alert(db->sql, ident);
+        return db->plugin->delete_alert(db, ident);
 }
 
 
@@ -670,7 +670,7 @@ ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size
         if ( isize == 0 )
                 return 0;
 
-        return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db->sql, idents, isize);
+        return _preludedb_plugin_format_delete_alert_from_list(db->plugin, db, idents, isize);
 }
 
 
@@ -686,7 +686,7 @@ ssize_t preludedb_delete_alert_from_list(preludedb_t *db, uint64_t *idents, size
 ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
         prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db->sql, result);
+        return _preludedb_plugin_format_delete_alert_from_result_idents(db->plugin, db, result);
 }
 
 
@@ -703,7 +703,7 @@ ssize_t preludedb_delete_alert_from_result_idents(preludedb_t *db, preludedb_res
 int preludedb_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
         prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return db->plugin->delete_heartbeat(db->sql, ident);
+        return db->plugin->delete_heartbeat(db, ident);
 }
 
 
@@ -724,7 +724,7 @@ ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, 
         if ( isize == 0 )
                 return 0;
 
-        return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db->sql, idents, isize);
+        return _preludedb_plugin_format_delete_heartbeat_from_list(db->plugin, db, idents, isize);
 }
 
 
@@ -741,7 +741,7 @@ ssize_t preludedb_delete_heartbeat_from_list(preludedb_t *db, uint64_t *idents, 
 ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *result)
 {
         prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
-        return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db->sql, result);
+        return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db, result);
 }
 
 
@@ -773,7 +773,7 @@ int preludedb_get_values(preludedb_t *db,
         if ( ! *result )
                 return preludedb_error_from_errno(errno);
 
-        ret = db->plugin->get_values(db->sql, path_selection, criteria, distinct, limit, offset, &(*result)->res);
+        ret = db->plugin->get_values(db , path_selection, criteria, distinct, limit, offset, &(*result)->res);
         if ( ret <= 0 ) {
                 free(*result);
                 *result = NULL;
@@ -841,7 +841,7 @@ ssize_t preludedb_update_from_list(preludedb_t *db,
         if ( ! db->plugin->update_from_list )
                 return preludedb_error_from_errno(ENOSYS);
 
-        return db->plugin->update_from_list(db->sql, paths, values, pvsize, idents, isize);
+        return db->plugin->update_from_list(db, paths, values, pvsize, idents, isize);
 }
 
 
@@ -854,7 +854,7 @@ ssize_t preludedb_update_from_result_idents(preludedb_t *db,
         if ( ! db->plugin->update_from_result_idents )
                 return PRELUDEDB_ENOTSUP("update_from_result_ident");
 
-        return db->plugin->update_from_result_idents(db->sql, paths, values, pvsize, result);
+        return db->plugin->update_from_result_idents(db, paths, values, pvsize, result);
 }
 
 
@@ -885,7 +885,7 @@ int preludedb_update(preludedb_t *db,
         if ( ! db->plugin->update )
                 return PRELUDEDB_ENOTSUP("update");
 
-        return db->plugin->update(db->sql, paths, values, pvsize, criteria, order, limit, offset);
+        return db->plugin->update(db, paths, values, pvsize, criteria, order, limit, offset);
 }
 
 

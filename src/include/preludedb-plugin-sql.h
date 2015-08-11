@@ -57,8 +57,7 @@ typedef int (*preludedb_plugin_sql_build_time_constraint_string_func_t)(prelude_
                                                                         preludedb_sql_time_constraint_type_t type,
                                                                         idmef_criterion_operator_t operator, int value, int gmt_offset);
 
-typedef int (*preludedb_plugin_sql_build_time_interval_string_func_t)(preludedb_sql_time_constraint_type_t type, int value,
-                                                                      char *buf, size_t size);
+typedef int (*preludedb_plugin_sql_build_time_interval_string_func_t)(prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit);
 
 typedef int (*preludedb_plugin_sql_build_limit_offset_string_func_t)(void *session, int limit, int offset, prelude_string_t *output);
 typedef int (*preludedb_plugin_sql_build_constraint_string_func_t)(prelude_string_t *out, const char *field,
@@ -154,8 +153,8 @@ int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *p
 void preludedb_plugin_sql_set_build_time_interval_string_func(preludedb_plugin_sql_t *plugin,
                                                               preludedb_plugin_sql_build_time_interval_string_func_t func);
 
-int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin,
-                                                     preludedb_sql_time_constraint_type_t type, int value, char *buf, size_t size);
+int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin, prelude_string_t *output,
+                                                     const char *field, const char *value, preludedb_selected_object_interval_t unit);
 
 void preludedb_plugin_sql_set_build_limit_offset_string_func(preludedb_plugin_sql_t *plugin,
                                                              preludedb_plugin_sql_build_limit_offset_string_func_t func);

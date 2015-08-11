@@ -25,6 +25,6 @@
 #ifndef _LIBPRELUDEDB_CLASSIC_INSERT_H
 #define _LIBPRELUDEDB_CLASSIC_INSERT_H
 
-int classic_insert(preludedb_sql_t *sql, idmef_message_t *message);
+int classic_insert(preludedb_t *db, idmef_message_t *message);
 
 #endif /* _LIBPRELUDEDB_CLASSIC_INSERT_H */

@@ -197,6 +197,21 @@ void preludedb_plugin_format_set_get_path_column_count_func(preludedb_plugin_for
 
 
 
+/**
+ * preludedb_plugin_format_set_path_resolve_func
+ * @plugin: Plugin object the @func function applies to
+ * @func: Pointer to a path resolution function
+ *
+ * Setter for plugin supporting IDMEF path resolution
+ */
+void preludedb_plugin_format_set_path_resolve_func(preludedb_plugin_format_t *plugin,
+                                                    preludedb_plugin_format_path_resolve_func_t func)
+{
+        plugin->path_resolve = func;
+}
+
+
+
 int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
 {
         *ret = calloc(1, sizeof(**ret));
@@ -209,16 +224,16 @@ int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
 
 
 ssize_t _preludedb_plugin_format_delete_alert_from_list(preludedb_plugin_format_t *plugin,
-                                                        preludedb_sql_t *sql, uint64_t *idents, size_t size)
+                                                        preludedb_t *db, uint64_t *idents, size_t size)
 {
         size_t i;
         int ret = 0;
 
         if ( plugin->delete_alert_from_list )
-                return plugin->delete_alert_from_list(sql, idents, size);
+                return plugin->delete_alert_from_list(db, idents, size);
 
         for ( i = 0; i < size; i++ ) {
-                ret = plugin->delete_alert(sql, idents[i]);
+                ret = plugin->delete_alert(db, idents[i]);
                 if ( ret < 0 )
                         return ret;
         }
@@ -229,18 +244,18 @@ ssize_t _preludedb_plugin_format_delete_alert_from_list(preludedb_plugin_format_
 
 
 ssize_t _preludedb_plugin_format_delete_alert_from_result_idents(preludedb_plugin_format_t *plugin,
-                                                                 preludedb_sql_t *sql, preludedb_result_idents_t *result)
+                                                                 preludedb_t *db, preludedb_result_idents_t *result)
 {
         int ret;
         uint64_t ident;
         unsigned int count = 0;
 
         if ( plugin->delete_alert_from_result_idents )
-                return plugin->delete_alert_from_result_idents(sql, result);
+                return plugin->delete_alert_from_result_idents(db, result);
 
         while ( (ret = preludedb_result_idents_get(result, count, &ident)) ) {
 
-                ret = plugin->delete_alert(sql, ident);
+                ret = plugin->delete_alert(db, ident);
                 if ( ret < 0 )
                         return ret;
 
@@ -253,16 +268,16 @@ ssize_t _preludedb_plugin_format_delete_alert_from_result_idents(preludedb_plugi
 
 
 ssize_t _preludedb_plugin_format_delete_heartbeat_from_list(preludedb_plugin_format_t *plugin,
-                                                            preludedb_sql_t *sql, uint64_t *idents, size_t size)
+                                                            preludedb_t *db, uint64_t *idents, size_t size)
 {
         size_t i;
         int ret = 0;
 
         if ( plugin->delete_heartbeat_from_list )
-                return plugin->delete_heartbeat_from_list(sql, idents, size);
+                return plugin->delete_heartbeat_from_list(db, idents, size);
 
         for ( i = 0; i < size; i++ ) {
-                ret = plugin->delete_heartbeat(sql, idents[i]);
+                ret = plugin->delete_heartbeat(db, idents[i]);
                 if ( ret < 0 )
                         return ret;
         }
@@ -273,18 +288,18 @@ ssize_t _preludedb_plugin_format_delete_heartbeat_from_list(preludedb_plugin_for
 
 
 ssize_t _preludedb_plugin_format_delete_heartbeat_from_result_idents(preludedb_plugin_format_t *plugin,
-                                                                     preludedb_sql_t *sql, preludedb_result_idents_t *result)
+                                                                     preludedb_t *db, preludedb_result_idents_t *result)
 {
         int ret;
         uint64_t ident;
         unsigned int count = 0;
 
         if ( plugin->delete_heartbeat_from_result_idents )
-                return plugin->delete_heartbeat_from_result_idents(sql, result);
+                return plugin->delete_heartbeat_from_result_idents(db, result);
 
         while ( (ret = preludedb_result_idents_get(result, count, &ident)) ) {
 
-                ret = plugin->delete_heartbeat(sql, ident);
+                ret = plugin->delete_heartbeat(db, ident);
                 if ( ret < 0 )
                         return ret;
 

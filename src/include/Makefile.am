@@ -4,6 +4,7 @@ include_HEADERS = 			\
 	preludedb-path-selection.h	\
 	preludedb-plugin-sql.h		\
 	preludedb-plugin-format.h	\
+	preludedb-sql-select.h		\
 	preludedb-sql-settings.h	\
 	preludedb-sql.h			\
 	preludedb-version.h		\

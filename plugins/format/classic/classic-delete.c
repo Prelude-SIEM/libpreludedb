@@ -208,29 +208,29 @@ static ssize_t get_string_from_result_ident(prelude_string_t **out, preludedb_re
 
 
 
-int classic_delete_alert(preludedb_sql_t *sql, uint64_t ident)
+int classic_delete_alert(preludedb_t *db, uint64_t ident)
 {
         char buf[32];
 
         snprintf(buf, sizeof(buf), "= %" PRELUDE_PRIu64, ident);
 
-        return do_delete_alert(sql, buf);
+        return do_delete_alert(preludedb_get_sql(db), buf);
 }
 
 
 
-int classic_delete_heartbeat(preludedb_sql_t *sql, uint64_t ident)
+int classic_delete_heartbeat(preludedb_t *db, uint64_t ident)
 {
         char buf[32];
 
         snprintf(buf, sizeof(buf), "= %" PRELUDE_PRIu64, ident);
 
-        return do_delete_heartbeat(sql, buf);
+        return do_delete_heartbeat(preludedb_get_sql(db), buf);
 }
 
 
 
-ssize_t classic_delete_alert_from_result_idents(preludedb_sql_t *sql, preludedb_result_idents_t *results)
+ssize_t classic_delete_alert_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results)
 {
         int ret;
         ssize_t count;
@@ -240,14 +240,14 @@ ssize_t classic_delete_alert_from_result_idents(preludedb_sql_t *sql, preludedb_
         if ( count <= 0 )
                 return count;
 
-        ret = do_delete_alert(sql, prelude_string_get_string(buf));
+        ret = do_delete_alert(preludedb_get_sql(db), prelude_string_get_string(buf));
         prelude_string_destroy(buf);
 
         return (ret < 0) ? ret : count;
 }
 
 
-ssize_t classic_delete_alert_from_list(preludedb_sql_t *sql, uint64_t *ident, size_t size)
+ssize_t classic_delete_alert_from_list(preludedb_t *db, uint64_t *ident, size_t size)
 {
         int ret;
         ssize_t count;
@@ -257,7 +257,7 @@ ssize_t classic_delete_alert_from_list(preludedb_sql_t *sql, uint64_t *ident, si
         if ( count < 0 )
                 return count;
 
-        ret = do_delete_alert(sql, prelude_string_get_string(buf));
+        ret = do_delete_alert(preludedb_get_sql(db), prelude_string_get_string(buf));
         prelude_string_destroy(buf);
 
         return (ret < 0) ? ret : count;
@@ -265,7 +265,7 @@ ssize_t classic_delete_alert_from_list(preludedb_sql_t *sql, uint64_t *ident, si
 
 
 
-ssize_t classic_delete_heartbeat_from_result_idents(preludedb_sql_t *sql, preludedb_result_idents_t *results)
+ssize_t classic_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb_result_idents_t *results)
 {
         int ret;
         ssize_t count;
@@ -275,7 +275,7 @@ ssize_t classic_delete_heartbeat_from_result_idents(preludedb_sql_t *sql, prelud
         if ( count <= 0 )
                 return count;
 
-        ret = do_delete_heartbeat(sql, prelude_string_get_string(buf));
+        ret = do_delete_heartbeat(preludedb_get_sql(db), prelude_string_get_string(buf));
         prelude_string_destroy(buf);
 
         return (ret < 0) ? ret : count;
@@ -283,7 +283,7 @@ ssize_t classic_delete_heartbeat_from_result_idents(preludedb_sql_t *sql, prelud
 
 
 
-ssize_t classic_delete_heartbeat_from_list(preludedb_sql_t *sql, uint64_t *ident, size_t size)
+ssize_t classic_delete_heartbeat_from_list(preludedb_t *db, uint64_t *ident, size_t size)
 {
         int ret;
         ssize_t count;
@@ -293,7 +293,7 @@ ssize_t classic_delete_heartbeat_from_list(preludedb_sql_t *sql, uint64_t *ident
         if ( count < 0 )
                 return count;
 
-        ret = do_delete_heartbeat(sql, prelude_string_get_string(buf));
+        ret = do_delete_heartbeat(preludedb_get_sql(db), prelude_string_get_string(buf));
         prelude_string_destroy(buf);
 
         return (ret < 0) ? ret : count;
