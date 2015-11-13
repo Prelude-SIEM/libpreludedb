@@ -287,7 +287,13 @@ static const char *sql_get_column_name(void *session, preludedb_sql_table_t *tab
 
 static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const char *column_name)
 {
-        return PQfnumber(preludedb_sql_table_get_data(table), column_name);
+        int ret;
+
+        ret = PQfnumber(preludedb_sql_table_get_data(table), column_name);
+        if ( ret < 0 )
+                return prelude_error_verbose(PRELUDEDB_ERROR_GENERIC, "unknown column '%s'", column_name);
+
+        return ret;
 }
 
 

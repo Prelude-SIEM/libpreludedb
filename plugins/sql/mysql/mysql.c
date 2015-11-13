@@ -267,7 +267,7 @@ static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const
 
         fields = mysql_fetch_fields(result);
         if ( ! fields )
-                return -1;
+                return prelude_error_verbose(PRELUDEDB_ERROR_GENERIC, "mysql_fetch_fields() error while looking up column '%s'", column_name);
 
         fields_num = mysql_num_fields(result);
         for ( i = 0; i < fields_num; i++ ) {
@@ -275,7 +275,7 @@ static int sql_get_column_num(void *session, preludedb_sql_table_t *table, const
                         return i;
         }
 
-        return -1;
+        return prelude_error_verbose(PRELUDEDB_ERROR_GENERIC, "unknown column '%s'", column_name);
 }
 
 
