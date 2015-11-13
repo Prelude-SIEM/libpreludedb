@@ -122,7 +122,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
                                   preludedb_sql_settings_get_user(settings),
                                   preludedb_sql_settings_get_pass(settings),
                                   preludedb_sql_settings_get_name(settings),
-                                  port, NULL, 0) ) {
+                                  port, NULL, CLIENT_MULTI_STATEMENTS) ) {
 
                 ret = handle_error(*session, PRELUDEDB_ERROR_CONNECTION);
                 mysql_close(*session);
@@ -201,12 +201,34 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
         int ret;
         MYSQL_RES *result;
 
-        if ( mysql_query(session, query) != 0 )
+        ret = mysql_query(session, query);
+        if ( ret != 0 )
                 return handle_error(session, PRELUDEDB_ERROR_QUERY);
 
-        result = mysql_store_result(session);
+        do {
+                result = mysql_store_result(session);
+                if ( ! result && mysql_field_count(session) > 0 )
+                        return handle_error(session, PRELUDEDB_ERROR_QUERY);
+
+                /*
+                 * If there are multiple results, process only the last one.
+                 * 0 -> more results, -1 no more results, > 0 error.
+                 */
+                ret = mysql_next_result(session);
+                if ( ret != -1 ) {
+                        if ( result )
+                                mysql_free_result(result);
+
+                        if ( ret > 0 )
+                                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "mysql_next_result() error: %s", mysql_error(session));
+                }
+        } while ( ret == 0 );
+
+        /*
+         * Last result
+         */
         if ( ! result )
-                return mysql_errno(session) ? handle_error(session, PRELUDEDB_ERROR_QUERY) : 0;
+                return 0;
 
         if ( mysql_num_rows(result) == 0 ) {
                 mysql_free_result(result);
