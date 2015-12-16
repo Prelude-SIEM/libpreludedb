@@ -186,6 +186,8 @@ long preludedb_sql_get_server_version(const preludedb_sql_t *sql);
 
 const char *preludedb_sql_get_type(const preludedb_sql_t *sql);
 
+const preludedb_sql_settings_t *preludedb_sql_get_settings(const preludedb_sql_t *sql);
+
 
 /*
  * Deprecated, use preludedb_strerror()

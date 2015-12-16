@@ -1749,6 +1749,20 @@ const char *preludedb_sql_get_type(const preludedb_sql_t *sql)
 
 
 /**
+ * preludedb_sql_get_settings:
+ * @sql: Pointer to a sql object.
+ *
+ * Returns: The #preludedb_sql_settings_t object associated with @sql.
+ */
+const preludedb_sql_settings_t *preludedb_sql_get_settings(const preludedb_sql_t *sql)
+{
+        return sql->settings;
+}
+
+
+
+
+/**
  * preludedb_sql_get_plugin_error:
  * @sql: Pointer to a sql object.
  *
