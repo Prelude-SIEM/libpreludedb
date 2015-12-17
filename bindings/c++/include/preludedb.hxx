@@ -117,6 +117,8 @@ namespace PreludeDB {
                 void update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<Prelude::IDMEFValue> &values,
                             Prelude::IDMEFCriteria *criteria=NULL, const std::vector<std::string> &order=std::vector<std::string>(),
                             int limit=-1, int offset=-1);
+
+                void optimize(void);
         };
 };
 

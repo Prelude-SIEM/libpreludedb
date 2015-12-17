@@ -111,6 +111,14 @@ static stat_item_t *stat_item_new(const char *opname)
 
 
 
+static void stat_item_destroy(stat_item_t *st)
+{
+        prelude_list_del(&st->list);
+        free(st);
+}
+
+
+
 static void stat_dump_all(void)
 {
         stat_item_t *stat;
@@ -397,6 +405,18 @@ static void cmd_delete_help(void)
         fprintf(stderr, "Example: preludedb-admin delete alert \"type=mysql name=dbname user=prelude\"\n\n");
 
         fprintf(stderr, "Delete messages from <database>.\n\n");
+
+        cmd_generic_help();
+}
+
+
+
+static void cmd_optimize_help(void)
+{
+        fprintf(stderr, "Usage  : optimize <database>\n");
+        fprintf(stderr, "Example: preludedb-admin optimize \"type=mysql name=dbname user=prelude\"\n\n");
+
+        fprintf(stderr, "Perform optimization operation on <database>.\n\n");
 
         cmd_generic_help();
 }
@@ -729,6 +749,7 @@ static int cmd_delete(int argc, char **argv)
         unsigned int event_no = 0;
         preludedb_result_idents_t *idents;
         stat_item_t *stat_delete = stat_item_new("delete");
+        stat_item_t *stat_optimize = stat_item_new("optimize");
 
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc != 3 ) {
@@ -766,9 +787,49 @@ static int cmd_delete(int argc, char **argv)
 
         transaction_end(db, ret, event_no);
 
+        if ( ret >= 0 ) {
+                stat_compute(stat_optimize, ret = preludedb_optimize(db), 1);
+
+                if ( ret < 0 ) {
+                        if ( prelude_error_get_code(ret) != PRELUDE_ERROR_ENOSYS )
+                                db_error(db, ret, "error running optimize");
+                        else {
+                                ret = 0;
+                                stat_item_destroy(stat_optimize);
+                        }
+                }
+        }
+
         preludedb_destroy(db);
         return ret;
 }
+
+
+
+static int cmd_optimize(int argc, char **argv)
+{
+        int ret, idx;
+        preludedb_t *db;
+        stat_item_t *stat = stat_item_new("optimize");
+
+        idx = setup_generic_options(&argc, argv);
+        if ( idx < 0 || argc != 2 ) {
+                cmd_optimize_help();
+                exit(1);
+        }
+
+        ret = db_new_from_string(&db, argv[idx]);
+        if ( ret < 0 )
+                return ret;
+
+        stat_compute(stat, ret = preludedb_optimize(db), 1);
+        if ( ret < 0 )
+                db_error(db, ret, "error running optimize");
+
+        preludedb_destroy(db);
+        return ret;
+}
+
 
 
 
@@ -1287,14 +1348,15 @@ int main(int argc, char **argv)
                 char *name;
                 int (*run)(int argc, char **argv);
         } commands[] = {
-                { "count", cmd_count   },
-                { "copy", cmd_copy     },
-                { "delete", cmd_delete },
-                { "load", cmd_load     },
-                { "move", cmd_move     },
-                { "print", cmd_print   },
-                { "save", cmd_save     },
-                { "update", cmd_update },
+                { "count", cmd_count       },
+                { "copy", cmd_copy         },
+                { "delete", cmd_delete     },
+                { "load", cmd_load         },
+                { "move", cmd_move         },
+                { "print", cmd_print       },
+                { "save", cmd_save         },
+                { "update", cmd_update     },
+                { "optimize", cmd_optimize },
         };
 
         signal(SIGINT, handle_signal);

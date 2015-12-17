@@ -7,6 +7,7 @@
 using namespace PreludeDB;
 
 
+
 const char *PreludeDB::checkVersion(const char *wanted)
 {
         const char *ret;
@@ -622,6 +623,17 @@ void DB::update(const std::vector<Prelude::IDMEFPath> &paths, const std::vector<
         if ( corder )
                 preludedb_path_selection_destroy(corder);
 
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
+
+void DB::optimize(void)
+{
+        int ret;
+
+        ret = preludedb_optimize(_db);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 }

@@ -211,6 +211,33 @@ void preludedb_plugin_format_set_path_resolve_func(preludedb_plugin_format_t *pl
 }
 
 
+/**
+ * preludedb_plugin_format_set_init_func
+ * @plugin: Plugin object the @func function applies to
+ * @func: Pointer to an initialization function
+ *
+ * Setter for plugin supporting initialization
+ */
+void preludedb_plugin_format_set_init_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_init_func_t func)
+{
+        plugin->init = func;
+}
+
+
+
+/**
+ * preludedb_plugin_format_set_optimize_func
+ * @plugin: Plugin object the @func function applies to
+ * @func: Pointer to an optimization function
+ *
+ * Setter for plugin supporting optimization
+ */
+void preludedb_plugin_format_set_optimize_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_optimize_func_t func)
+{
+        plugin->optimize = func;
+}
+
+
 
 int preludedb_plugin_format_new(preludedb_plugin_format_t **ret)
 {

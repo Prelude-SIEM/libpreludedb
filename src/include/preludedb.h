@@ -141,6 +141,8 @@ int preludedb_update(preludedb_t *db,
                      const idmef_path_t * const *paths, const idmef_value_t * const *values, size_t pvsize,
                      idmef_criteria_t *criteria, preludedb_path_selection_t *order, int limit, int offset);
 
+int preludedb_optimize(preludedb_t *db);
+
 int preludedb_transaction_start(preludedb_t *db);
 
 

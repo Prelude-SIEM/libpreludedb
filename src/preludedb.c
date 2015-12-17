@@ -222,6 +222,9 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
         else
                 ret = preludedb_autodetect_format(*db);
 
+        if ( ret >= 0 && (*db)->plugin->init )
+                ret = (*db)->plugin->init(*db);
+
         if ( ret < 0 ) {
                 if ( errbuf )
                         preludedb_get_error(*db, ret, errbuf, size);
@@ -887,6 +890,27 @@ int preludedb_update(preludedb_t *db,
 
         return db->plugin->update(db, paths, values, pvsize, criteria, order, limit, offset);
 }
+
+
+
+/**
+ * preludedb_optimize:
+ * @db: Pointer to a db object.
+ *
+ * Call a database optimization function, if supported.
+ *
+ * Returns: 0 on success or a negative value if an error occurred.
+ */
+int preludedb_optimize(preludedb_t *db)
+{
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        if ( ! db->plugin->optimize )
+                return PRELUDEDB_ENOTSUP("optimize");
+
+        return db->plugin->optimize(db);
+}
+
 
 
 

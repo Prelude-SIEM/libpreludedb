@@ -83,6 +83,11 @@ typedef int (*preludedb_plugin_format_get_path_column_count_func_t)(preludedb_se
 
 typedef int (*preludedb_plugin_format_path_resolve_func_t)(preludedb_selected_path_t *selected, preludedb_selected_object_t *object, void *data, prelude_string_t *out);
 
+typedef int (*preludedb_plugin_format_init_func_t)(preludedb_t *db);
+
+typedef int (*preludedb_plugin_format_optimize_func_t)(preludedb_t *db);
+
+
 void preludedb_plugin_format_set_check_schema_version_func(preludedb_plugin_format_t *plugin,
                                                            preludedb_plugin_format_check_schema_version_func_t func);
 
@@ -166,6 +171,10 @@ void preludedb_plugin_format_set_path_resolve_func(preludedb_plugin_format_t *pl
 
 void preludedb_plugin_format_set_destroy_values_resource_func(preludedb_plugin_format_t *plugin,
                                                               preludedb_plugin_format_destroy_values_resource_func_t func);
+
+void preludedb_plugin_format_set_init_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_init_func_t func);
+
+void preludedb_plugin_format_set_optimize_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_optimize_func_t func);
 
 int preludedb_plugin_format_new(preludedb_plugin_format_t **ret);
 
