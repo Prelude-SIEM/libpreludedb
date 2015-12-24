@@ -493,9 +493,11 @@ int preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
         selected_path->idx = path_selection->count++;
         selected_path->position = path_selection->numpos;
 
-        selected_path->column_count = format->get_path_column_count(selected_path);
-        if ( selected_path->column_count < 0 )
-                return selected_path->column_count;
+        if ( selected_path->column_count == 1 ) {
+                selected_path->column_count = format->get_path_column_count(selected_path);
+                if ( selected_path->column_count < 0 )
+                        return selected_path->column_count;
+        }
 
         path_selection->numpos += selected_path->column_count;
         if ( selected_path->position < 0 )
@@ -558,4 +560,16 @@ unsigned int preludedb_path_selection_get_column_count(preludedb_path_selection_
 unsigned int preludedb_selected_path_get_column_count(preludedb_selected_path_t *selected_path)
 {
         return selected_path->column_count;
+}
+
+
+
+/**
+ * preludedb_selected_path_set_column_count:
+ * @selected_path: Pointer to the #preludedb_selected_path_t object
+ * @count: The number of columns this @selected_path holds
+ */
+void preludedb_selected_path_set_column_count(preludedb_selected_path_t *selected_path, unsigned int count)
+{
+        selected_path->column_count = count;
 }

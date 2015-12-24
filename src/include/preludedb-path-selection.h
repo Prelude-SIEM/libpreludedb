@@ -85,6 +85,7 @@ void preludedb_selected_path_set_flags(preludedb_selected_path_t *path, preluded
 preludedb_selected_object_t *preludedb_selected_path_get_object(preludedb_selected_path_t *selected_path);
 preludedb_selected_path_flags_t preludedb_selected_path_get_flags(preludedb_selected_path_t *selected_path);
 preludedb_sql_time_constraint_type_t preludedb_selected_path_get_time_constraint(preludedb_selected_path_t *selected_path);
+void preludedb_selected_path_set_column_count(preludedb_selected_path_t *selected_path, unsigned int count);
 unsigned int preludedb_selected_path_get_column_count(preludedb_selected_path_t *selected_path);
 
 int preludedb_path_selection_new(preludedb_t *db, preludedb_path_selection_t **path_selection);
