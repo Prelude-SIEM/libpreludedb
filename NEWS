@@ -1,3 +1,35 @@
+* 2016-01-11, libpreludedb-1.3.0alpha1:
+
+Author: Yoann Vandoorselaere
+
+- Performance improvements
+
+    - Support for format plugin initialization, optimize function
+
+    - MySQL support for multiple statement
+
+    - Use UNIX database connection by default
+
+    - New get_last_insert_ident() API
+
+- Implement missing preludedb_sql_get_settings()
+
+- Implement preludedb_path_selection_set_column_count()
+
+    Change to preludedb_path_selection_add_selected() so that the column count
+    is retrieved only if it has not been manually set.
+
+- getValues() improvement
+
+    Allow support for more complex request, with different level of code:
+    max(extract(alert.create_time, "hour"))
+
+    New public preludedb_sql_select_t API, deprecating classic_sql_select_t.
+
+- Improve error reporting
+
+
+
 * 2015-07-31, libpreludedb-1.2.6:
 
 No new changes.
