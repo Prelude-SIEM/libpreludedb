@@ -1225,46 +1225,61 @@ size_t preludedb_sql_field_get_len(preludedb_sql_field_t *field)
  *
  * Returns: 0 on success, -1 if the wanted type does not match the field type.
  */
-#define preludedb_sql_field_to(name, type_name, format)                                         \
-int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)             \
+#define preludedb_sql_field_to(name, rtype, func, min, max)                                     \
+int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, name ## _t *value)            \
 {                                                                                               \
-        int ret;                                                                                \
+        rtype tmp;                                                                              \
+        char *eptr = NULL;                                                                      \
                                                                                                 \
-        ret = sscanf(preludedb_sql_field_get_value(field), format, value);                      \
-        if ( ret <= 0 )                                                                         \
+        if ( min >= 0 && *field->value == '-' )                                                 \
                 return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
                                                                                                 \
+        errno = 0;                                                                              \
+                                                                                                \
+        tmp = func(field->value, &eptr, 10);                                                    \
+        if ( tmp < min || tmp > max || (eptr && *eptr) || errno == ERANGE )                     \
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
+                                                                                                \
+        *value = (name ## _t) tmp;                                                              \
         return 0;                                                                               \
 }
 
-#define preludedb_sql_field_to_int8(name, type_name, format, min, max)                          \
-int preludedb_sql_field_to_ ## name(preludedb_sql_field_t *field, type_name *value)             \
-{                                                                                               \
-        int tmp, ret;                                                                           \
-                                                                                                \
-        ret = sscanf(preludedb_sql_field_get_value(field), format, &tmp);                       \
-        if ( ret <= 0 || tmp < min || tmp > max )                                               \
-                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);                          \
-                                                                                                \
-        *value = (type_name) tmp;                                                               \
-                                                                                                \
-        return 0;                                                                               \
+preludedb_sql_field_to(int8, long, strtol, PRELUDE_INT8_MIN, PRELUDE_INT8_MAX)
+preludedb_sql_field_to(uint8, unsigned long, strtoul, 0, PRELUDE_UINT8_MAX)
+preludedb_sql_field_to(int16, long, strtol, PRELUDE_INT16_MIN, PRELUDE_INT16_MAX)
+preludedb_sql_field_to(uint16, unsigned long, strtoul, 0, PRELUDE_UINT16_MAX)
+preludedb_sql_field_to(int32, long, strtol, PRELUDE_INT32_MIN, PRELUDE_INT32_MAX)
+preludedb_sql_field_to(uint32, unsigned long, strtoul, 0, PRELUDE_UINT32_MAX)
+preludedb_sql_field_to(int64, long long, strtoll, PRELUDE_INT64_MIN, PRELUDE_INT64_MAX)
+preludedb_sql_field_to(uint64, unsigned long long, strtoull, 0, PRELUDE_UINT64_MAX)
+
+int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value)
+{
+        char *eptr = NULL;
+
+        errno = 0;
+
+        *value = strtof(preludedb_sql_field_get_value(field), &eptr);
+        if ( (eptr && *eptr) || errno == ERANGE )
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+
+        return 0;
 }
 
-/*
- * %hh is not a portable convertion specifier
- */
-preludedb_sql_field_to_int8(int8, int8_t, "%" PRELUDE_SCNd32, PRELUDE_INT8_MIN, PRELUDE_INT8_MAX)
-preludedb_sql_field_to_int8(uint8, uint8_t, "%" PRELUDE_SCNu32, 0, PRELUDE_UINT8_MAX)
-preludedb_sql_field_to(int16, int16_t, "%" PRELUDE_SCNd16)
-preludedb_sql_field_to(uint16, uint16_t, "%" PRELUDE_SCNu16)
-preludedb_sql_field_to(int32, int32_t, "%" PRELUDE_SCNd32)
-preludedb_sql_field_to(uint32, uint32_t, "%" PRELUDE_SCNu32)
-preludedb_sql_field_to(int64, int64_t, "%" PRELUDE_SCNd64)
-preludedb_sql_field_to(uint64, uint64_t, "%" PRELUDE_SCNu64)
-preludedb_sql_field_to(float, float, "%f")
-preludedb_sql_field_to(double, double, "%lf")
 
+
+int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value)
+{
+        char *eptr = NULL;
+
+        errno = 0;
+
+        *value = strtod(preludedb_sql_field_get_value(field), &eptr);
+        if ( (eptr && *eptr) || errno == ERANGE )
+                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+
+        return 0;
+}
 
 
 /**
