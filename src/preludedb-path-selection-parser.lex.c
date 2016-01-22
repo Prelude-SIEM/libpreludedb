@@ -8,7 +8,7 @@
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
 #define YY_FLEX_MINOR_VERSION 5
-#define YY_FLEX_SUBMINOR_VERSION 37
+#define YY_FLEX_SUBMINOR_VERSION 39
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
 #endif
@@ -180,6 +180,7 @@ typedef size_t yy_size_t;
 #define EOB_ACT_LAST_MATCH 2
 
     #define YY_LESS_LINENO(n)
+    #define YY_LINENO_REWIND_TO(ptr)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -537,6 +538,8 @@ static yyconst flex_int16_t yy_chk[269] =
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "preludedb-path-selection-parser.lex.l"
 #line 3 "preludedb-path-selection-parser.lex.l"
+  #include "config.h"
+
   #include <stdio.h>
   #include <string.h>
   #include "preludedb-path-selection.h"
@@ -544,7 +547,7 @@ static yyconst flex_int16_t yy_chk[269] =
 
   #define TOKEN(id) return t##id
 #define YY_NO_INPUT 1
-#line 548 "preludedb-path-selection-parser.lex.c"
+#line 551 "preludedb-path-selection-parser.lex.c"
 
 #define INITIAL 0
 
@@ -779,11 +782,6 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 17 "preludedb-path-selection-parser.lex.l"
-
-
-#line 786 "preludedb-path-selection-parser.lex.c"
-
     yylval = yylval_param;
 
 	if ( !yyg->yy_init )
@@ -812,6 +810,12 @@ YY_DECL
 		yy_load_buffer_state(yyscanner );
 		}
 
+	{
+#line 19 "preludedb-path-selection-parser.lex.l"
+
+
+#line 818 "preludedb-path-selection-parser.lex.c"
+
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
 		yy_cp = yyg->yy_c_buf_p;
@@ -828,7 +832,7 @@ YY_DECL
 yy_match:
 		do
 			{
-			register YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)];
+			register YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
 			if ( yy_accept[yy_current_state] )
 				{
 				yyg->yy_last_accepting_state = yy_current_state;
@@ -870,7 +874,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 19 "preludedb-path-selection-parser.lex.l"
+#line 21 "preludedb-path-selection-parser.lex.l"
 {
         int ret;
 
@@ -886,7 +890,7 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 31 "preludedb-path-selection-parser.lex.l"
+#line 33 "preludedb-path-selection-parser.lex.l"
 {
         int ret;
 
@@ -901,7 +905,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 43 "preludedb-path-selection-parser.lex.l"
+#line 45 "preludedb-path-selection-parser.lex.l"
 {
         int ret, num = atoi(yytext);
 
@@ -916,113 +920,113 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 55 "preludedb-path-selection-parser.lex.l"
+#line 57 "preludedb-path-selection-parser.lex.l"
 { TOKEN(MAX); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 56 "preludedb-path-selection-parser.lex.l"
+#line 58 "preludedb-path-selection-parser.lex.l"
 { TOKEN(COUNT); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 57 "preludedb-path-selection-parser.lex.l"
+#line 59 "preludedb-path-selection-parser.lex.l"
 { TOKEN(SUM); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 58 "preludedb-path-selection-parser.lex.l"
+#line 60 "preludedb-path-selection-parser.lex.l"
 { TOKEN(AVG); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 59 "preludedb-path-selection-parser.lex.l"
+#line 61 "preludedb-path-selection-parser.lex.l"
 { TOKEN(INTERVAL); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 60 "preludedb-path-selection-parser.lex.l"
+#line 62 "preludedb-path-selection-parser.lex.l"
 { TOKEN(EXTRACT); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 62 "preludedb-path-selection-parser.lex.l"
+#line 64 "preludedb-path-selection-parser.lex.l"
 { TOKEN(YEAR); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 63 "preludedb-path-selection-parser.lex.l"
+#line 65 "preludedb-path-selection-parser.lex.l"
 { TOKEN(QUARTER); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 64 "preludedb-path-selection-parser.lex.l"
+#line 66 "preludedb-path-selection-parser.lex.l"
 { TOKEN(MONTH); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 65 "preludedb-path-selection-parser.lex.l"
+#line 67 "preludedb-path-selection-parser.lex.l"
 { TOKEN(WEEK); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 66 "preludedb-path-selection-parser.lex.l"
+#line 68 "preludedb-path-selection-parser.lex.l"
 { TOKEN(YDAY); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 67 "preludedb-path-selection-parser.lex.l"
+#line 69 "preludedb-path-selection-parser.lex.l"
 { TOKEN(MDAY); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 68 "preludedb-path-selection-parser.lex.l"
+#line 70 "preludedb-path-selection-parser.lex.l"
 { TOKEN(WDAY); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 69 "preludedb-path-selection-parser.lex.l"
+#line 71 "preludedb-path-selection-parser.lex.l"
 { TOKEN(HOUR); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 70 "preludedb-path-selection-parser.lex.l"
+#line 72 "preludedb-path-selection-parser.lex.l"
 { TOKEN(MIN); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 71 "preludedb-path-selection-parser.lex.l"
+#line 73 "preludedb-path-selection-parser.lex.l"
 { TOKEN(SEC); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 72 "preludedb-path-selection-parser.lex.l"
+#line 74 "preludedb-path-selection-parser.lex.l"
 { TOKEN(MSEC); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 73 "preludedb-path-selection-parser.lex.l"
+#line 75 "preludedb-path-selection-parser.lex.l"
 { TOKEN(USEC); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 76 "preludedb-path-selection-parser.lex.l"
+#line 78 "preludedb-path-selection-parser.lex.l"
 { TOKEN(ORDER_ASC); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 77 "preludedb-path-selection-parser.lex.l"
+#line 79 "preludedb-path-selection-parser.lex.l"
 { TOKEN(ORDER_DESC); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 78 "preludedb-path-selection-parser.lex.l"
+#line 80 "preludedb-path-selection-parser.lex.l"
 { TOKEN(GROUP_BY); }
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 80 "preludedb-path-selection-parser.lex.l"
+#line 82 "preludedb-path-selection-parser.lex.l"
 {
         int ret;
 
@@ -1037,46 +1041,46 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 92 "preludedb-path-selection-parser.lex.l"
+#line 94 "preludedb-path-selection-parser.lex.l"
 { TOKEN(LPAREN); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 93 "preludedb-path-selection-parser.lex.l"
+#line 95 "preludedb-path-selection-parser.lex.l"
 { TOKEN(RPAREN); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 94 "preludedb-path-selection-parser.lex.l"
+#line 96 "preludedb-path-selection-parser.lex.l"
 { TOKEN(COMMA); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 95 "preludedb-path-selection-parser.lex.l"
+#line 97 "preludedb-path-selection-parser.lex.l"
 { TOKEN(COLON); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 96 "preludedb-path-selection-parser.lex.l"
+#line 98 "preludedb-path-selection-parser.lex.l"
 { TOKEN(SLASH); }
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 97 "preludedb-path-selection-parser.lex.l"
+#line 99 "preludedb-path-selection-parser.lex.l"
 // skip whitespace
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 98 "preludedb-path-selection-parser.lex.l"
+#line 100 "preludedb-path-selection-parser.lex.l"
 { fprintf(stderr, "Unknown token '%s'\n", yytext); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 100 "preludedb-path-selection-parser.lex.l"
+#line 102 "preludedb-path-selection-parser.lex.l"
 ECHO;
 	YY_BREAK
-#line 1080 "preludedb-path-selection-parser.lex.c"
+#line 1084 "preludedb-path-selection-parser.lex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1207,6 +1211,7 @@ case YY_STATE_EOF(INITIAL):
 			"fatal flex scanner internal error--no action found" );
 	} /* end of action switch */
 		} /* end of scanning one token */
+	} /* end of user's declarations */
 } /* end of yylex */
 
 /* yy_get_next_buffer - try to read in a new buffer
@@ -2202,7 +2207,7 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 100 "preludedb-path-selection-parser.lex.l"
+#line 102 "preludedb-path-selection-parser.lex.l"
 
 
 

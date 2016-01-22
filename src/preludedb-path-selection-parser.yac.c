@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -64,13 +64,14 @@
 /* Copy the first part of user declarations.  */
 #line 1 "preludedb-path-selection-parser.yac.y" /* yacc.c:339  */
 
+  #include "config.h"
   #include <stdio.h>
   #include <string.h>
   #include "preludedb-path-selection.h"
   #include "preludedb-path-selection-parser.yac.h"
   #include "preludedb-path-selection-parser.lex.h"
 
-#line 74 "preludedb-path-selection-parser.yac.c" /* yacc.c:339  */
+#line 75 "preludedb-path-selection-parser.yac.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -100,7 +101,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 14 "preludedb-path-selection-parser.yac.y" /* yacc.c:355  */
+#line 15 "preludedb-path-selection-parser.yac.y" /* yacc.c:355  */
 
 
 #ifndef YY_TYPEDEF_YY_SCANNER_T
@@ -108,7 +109,7 @@ extern int yydebug;
 typedef void* yyscan_t;
 #endif
 
-#line 112 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
+#line 113 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -183,10 +184,10 @@ typedef void* yyscan_t;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
-#line 22 "preludedb-path-selection-parser.yac.y" /* yacc.c:355  */
+#line 23 "preludedb-path-selection-parser.yac.y" /* yacc.c:355  */
 
         int val;
         int flags;
@@ -195,8 +196,10 @@ union YYSTYPE
         preludedb_selected_object_type_t type;
         preludedb_selected_object_t *object;
 
-#line 199 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
+#line 200 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -209,9 +212,9 @@ int yyparse (yyscan_t scanner, preludedb_selected_path_t *root);
 
 /* Copy the second part of user declarations.  */
 
-#line 213 "preludedb-path-selection-parser.yac.c" /* yacc.c:358  */
+#line 216 "preludedb-path-selection-parser.yac.c" /* yacc.c:358  */
 /* Unqualified %code blocks.  */
-#line 32 "preludedb-path-selection-parser.yac.y" /* yacc.c:359  */
+#line 33 "preludedb-path-selection-parser.yac.y" /* yacc.c:359  */
 
     static void yyerror(yyscan_t scanner, preludedb_selected_path_t *root, const char *msg)
     {
@@ -270,7 +273,7 @@ int yyparse (yyscan_t scanner, preludedb_selected_path_t *root);
             return get_filter((const struct filter_table *) &time_filter_table, str);
     }
 
-#line 274 "preludedb-path-selection-parser.yac.c" /* yacc.c:359  */
+#line 277 "preludedb-path-selection-parser.yac.c" /* yacc.c:359  */
 
 #ifdef short
 # undef short
@@ -570,10 +573,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,   119,   119,   123,   124,   126,   127,   128,   130,   131,
-     134,   135,   136,   137,   140,   147,   148,   175,   176,   204,
-     204,   204,   206,   207,   208,   209,   210,   211,   212,   213,
-     215,   215,   215,   215,   216,   245,   246
+       0,   120,   120,   124,   125,   127,   128,   129,   131,   132,
+     135,   136,   137,   138,   141,   148,   149,   176,   177,   205,
+     205,   205,   207,   208,   209,   210,   211,   212,   213,   214,
+     216,   216,   216,   216,   217,   246,   247
 };
 #endif
 
@@ -1389,99 +1392,99 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 119 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 120 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
                 preludedb_selected_path_set_object(root, (yyvsp[-2].object));
                 preludedb_selected_path_set_flags(root, (yyvsp[0].flags));
              }
-#line 1398 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1401 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 123 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 124 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { preludedb_selected_path_set_object(root, (yyvsp[0].object)); }
-#line 1404 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1407 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 124 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 125 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { return (errno < 0) ? errno : -1; }
-#line 1410 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1413 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 126 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 127 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_ASC; }
-#line 1416 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1419 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 127 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 128 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_DESC; }
-#line 1422 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1425 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 128 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 129 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_GROUP_BY; }
-#line 1428 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1431 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 130 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 131 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = (yyvsp[-2].flags)|(yyvsp[0].flags); }
-#line 1434 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1437 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 131 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 132 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = (yyvsp[0].flags); }
-#line 1440 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1443 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 134 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 135 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MIN; }
-#line 1446 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1449 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 135 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 136 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MAX; }
-#line 1452 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1455 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 136 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 137 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_COUNT; }
-#line 1458 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1461 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 137 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 138 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_AVG; }
-#line 1464 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1467 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 140 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 141 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         preludedb_selected_object_t *parent;
         preludedb_selected_object_new(&parent, (yyvsp[-3].type), NULL);
         preludedb_selected_object_push_arg(parent, (yyvsp[-1].object));
         (yyval.object) = parent;
 }
-#line 1475 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1478 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 147 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 148 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_EXTRACT; }
-#line 1481 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1484 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 148 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 149 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int tf;
         preludedb_selected_object_t *parent, *arg;
@@ -1508,17 +1511,17 @@ yyreduce:
         preludedb_selected_object_push_arg(parent, arg);
         (yyval.object) = parent;
 }
-#line 1512 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1515 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 175 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 176 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL; }
-#line 1518 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1521 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 176 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 177 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int tf;
         preludedb_selected_object_t *parent, *arg;
@@ -1546,59 +1549,59 @@ yyreduce:
         preludedb_selected_object_push_arg(parent, arg);
         (yyval.object) = parent;
 }
-#line 1550 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1553 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 206 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 207 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR; }
-#line 1556 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1559 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 207 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 208 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH; }
-#line 1562 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1565 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 208 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 209 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY; }
-#line 1568 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1571 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 209 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 210 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY; }
-#line 1574 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1577 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 210 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 211 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY; }
-#line 1580 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1583 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 211 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 212 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR; }
-#line 1586 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1589 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 212 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 213 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MIN; }
-#line 1592 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1595 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 213 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 214 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_SEC; }
-#line 1598 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1601 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 216 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 217 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int ret;
         preludedb_selected_object_t *f, *num;
@@ -1628,17 +1631,17 @@ yyreduce:
 
         (yyval.object) = f;
 }
-#line 1632 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1635 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 246 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 247 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { errno = (yyvsp[0].error); YYERROR; }
-#line 1638 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1641 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
 
-#line 1642 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1645 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1866,7 +1869,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 248 "preludedb-path-selection-parser.yac.y" /* yacc.c:1906  */
+#line 249 "preludedb-path-selection-parser.yac.y" /* yacc.c:1906  */
 
 
 int preludedb_path_selection_parse(preludedb_selected_path_t *root, const char *str)
