@@ -1,4 +1,4 @@
-PreludeDB Library (http://www.prelude-siem.com)
+PreludeDB Library (https://www.prelude-siem.org)
 PreludeDB is brought to you by CS-SI (http://www.c-s.fr).
 
 
@@ -17,14 +17,15 @@ Dependencies
 
    Libprelude must be installed first.
 
+
    For Redhat based systems (CentOS, Fedora, etc.)
        MySQL Plugin        :    mysql-devel
-       PostgresSQL Plugin  :    postgresql-devel
+       PostgreSQL Plugin   :    postgresql-devel
        SQLite Plugin       :    sqlite-devel
 
    For Debian systems
        MySQL Plugin        :    libmysqlclient-dev
-       PostgresSQL Plugin  :    libpq-dev
+       PostgreSQL Plugin   :    libpq-dev
        SQLite Plugin       :    libsqlite3-dev
 
 
