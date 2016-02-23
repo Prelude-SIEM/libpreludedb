@@ -487,15 +487,16 @@ static void cmd_count_help(void)
 
 static void print_help(char **argv)
 {
-        fprintf(stderr, "Usage: %s <count|copy|delete|load|move|print|save> <arguments>\n\n", argv[0]);
+        fprintf(stderr, "Usage: %s <count|copy|delete|load|move|print|save|optimize> <arguments>\n\n", argv[0]);
 
-        fprintf(stderr, "\tcount  - Retrieve event count from the database.\n");
-        fprintf(stderr, "\tcopy   - Make a copy of a Prelude database to another database.\n");
-        fprintf(stderr, "\tdelete - Delete content of a Prelude database.\n");
-        fprintf(stderr, "\tload   - Load a Prelude database from a file.\n");
-        fprintf(stderr, "\tmove   - Move content of a Prelude database to another database.\n");
-        fprintf(stderr, "\tprint  - Print message from a Prelude database.\n");
-        fprintf(stderr, "\tsave   - Save a Prelude database to a file.\n\n");
+        fprintf(stderr, "\tcount    - Retrieve event count from the database.\n");
+        fprintf(stderr, "\tcopy     - Make a copy of a Prelude database to another database.\n");
+        fprintf(stderr, "\tdelete   - Delete content of a Prelude database.\n");
+        fprintf(stderr, "\tload     - Load a Prelude database from a file.\n");
+        fprintf(stderr, "\tmove     - Move content of a Prelude database to another database.\n");
+        fprintf(stderr, "\tprint    - Print message from a Prelude database.\n");
+        fprintf(stderr, "\tsave     - Save a Prelude database to a file.\n");
+        fprintf(stderr, "\toptimize - Optimize a Prelude database.\n\n");
 }
 
 
