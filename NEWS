@@ -1,3 +1,21 @@
+* 2016-03-01, libpreludedb-1.3.0beta1:
+
+Author: Yoann Vandoorselaere
+
+- preludedb_sql_field_t conversion performance improvement
+
+- Missing config.h inclusion
+
+Author: Louis-David Gabet
+
+- Document the "optimize" command
+
+Author: Abdel Elmili
+
+- Fix URL and spelling mistakes
+
+
+
 * 2016-01-11, libpreludedb-1.3.0alpha1:
 
 Author: Yoann Vandoorselaere

@@ -1,7 +1,7 @@
 m4_define([libpreludedb_major_version], [1])
 m4_define([libpreludedb_minor_version], [3])
 m4_define([libpreludedb_micro_version], [0])
-m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_ALPHA])
+m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_BETA])
 m4_define([libpreludedb_serial_version], [1])
 
 m4_define([serial_string], ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_ALPHA, alpha,
@@ -27,11 +27,11 @@ LIBPRELUDEDB_LEVEL_VERSION=libpreludedb_level_version
 LIBPRELUDEDB_SERIAL_VERSION=libpreludedb_serial_version
 
 dnl **********************************************************
-dnl * Library soname (http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91)
+dnl * Library soname (https://www.sourceware.org/autobook/autobook/autobook_61.html#Library-Versioning)
 dnl **********************************************************
 libpreludedb_current=8
 libpreludedb_revision=0
-libpreludedb_age=0
+libpreludedb_age=1
 LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 
 libpreludedbcpp_current=3
@@ -132,7 +132,7 @@ dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
 
-AM_PATH_LIBPRELUDE(1.3.0alpha1, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
+AM_PATH_LIBPRELUDE(1.3.0beta1, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
 
 
 dnl ***************************************************
