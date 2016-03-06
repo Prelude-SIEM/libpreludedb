@@ -132,21 +132,22 @@ typedef void* yyscan_t;
     tINTERVAL = 271,
     tAVG = 272,
     tEXTRACT = 273,
-    tYEAR = 274,
-    tQUARTER = 275,
-    tMONTH = 276,
-    tWEEK = 277,
-    tYDAY = 278,
-    tMDAY = 279,
-    tWDAY = 280,
-    tDAY = 281,
-    tHOUR = 282,
-    tSEC = 283,
-    tMSEC = 284,
-    tUSEC = 285,
-    tORDER_ASC = 286,
-    tORDER_DESC = 287,
-    tGROUP_BY = 288
+    tTIMEZONE = 274,
+    tYEAR = 275,
+    tQUARTER = 276,
+    tMONTH = 277,
+    tWEEK = 278,
+    tYDAY = 279,
+    tMDAY = 280,
+    tWDAY = 281,
+    tDAY = 282,
+    tHOUR = 283,
+    tSEC = 284,
+    tMSEC = 285,
+    tUSEC = 286,
+    tORDER_ASC = 287,
+    tORDER_DESC = 288,
+    tGROUP_BY = 289
   };
 #endif
 /* Tokens.  */
@@ -166,21 +167,22 @@ typedef void* yyscan_t;
 #define tINTERVAL 271
 #define tAVG 272
 #define tEXTRACT 273
-#define tYEAR 274
-#define tQUARTER 275
-#define tMONTH 276
-#define tWEEK 277
-#define tYDAY 278
-#define tMDAY 279
-#define tWDAY 280
-#define tDAY 281
-#define tHOUR 282
-#define tSEC 283
-#define tMSEC 284
-#define tUSEC 285
-#define tORDER_ASC 286
-#define tORDER_DESC 287
-#define tGROUP_BY 288
+#define tTIMEZONE 274
+#define tYEAR 275
+#define tQUARTER 276
+#define tMONTH 277
+#define tWEEK 278
+#define tYDAY 279
+#define tMDAY 280
+#define tWDAY 281
+#define tDAY 282
+#define tHOUR 283
+#define tSEC 284
+#define tMSEC 285
+#define tUSEC 286
+#define tORDER_ASC 287
+#define tORDER_DESC 288
+#define tGROUP_BY 289
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -196,7 +198,7 @@ union YYSTYPE
         preludedb_selected_object_type_t type;
         preludedb_selected_object_t *object;
 
-#line 200 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
+#line 202 "preludedb-path-selection-parser.yac.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -212,7 +214,7 @@ int yyparse (yyscan_t scanner, preludedb_selected_path_t *root);
 
 /* Copy the second part of user declarations.  */
 
-#line 216 "preludedb-path-selection-parser.yac.c" /* yacc.c:358  */
+#line 218 "preludedb-path-selection-parser.yac.c" /* yacc.c:358  */
 /* Unqualified %code blocks.  */
 #line 33 "preludedb-path-selection-parser.yac.y" /* yacc.c:359  */
 
@@ -273,7 +275,7 @@ int yyparse (yyscan_t scanner, preludedb_selected_path_t *root);
             return get_filter((const struct filter_table *) &time_filter_table, str);
     }
 
-#line 277 "preludedb-path-selection-parser.yac.c" /* yacc.c:359  */
+#line 279 "preludedb-path-selection-parser.yac.c" /* yacc.c:359  */
 
 #ifdef short
 # undef short
@@ -513,23 +515,23 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  22
+#define YYFINAL  25
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   51
+#define YYLAST   58
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  34
+#define YYNTOKENS  35
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  14
+#define YYNNTS  16
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  36
+#define YYNRULES  39
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  56
+#define YYNSTATES  64
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   288
+#define YYMAXUTOK   289
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -566,17 +568,17 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
-       0,   120,   120,   124,   125,   127,   128,   129,   131,   132,
-     135,   136,   137,   138,   141,   148,   149,   176,   177,   205,
-     205,   205,   207,   208,   209,   210,   211,   212,   213,   214,
-     216,   216,   216,   216,   217,   246,   247
+       0,   122,   122,   126,   127,   129,   130,   131,   133,   134,
+     137,   138,   139,   140,   143,   150,   151,   178,   179,   207,
+     208,   220,   220,   220,   220,   222,   223,   224,   225,   226,
+     227,   228,   229,   231,   231,   231,   231,   232,   261,   262
 };
 #endif
 
@@ -587,11 +589,12 @@ static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "tSTRING", "tIDMEF", "tNUMBER", "tERROR",
   "tLPAREN", "tRPAREN", "tCOLON", "tCOMMA", "tSLASH", "tMIN", "tMAX",
-  "tSUM", "tCOUNT", "tINTERVAL", "tAVG", "tEXTRACT", "tYEAR", "tQUARTER",
-  "tMONTH", "tWEEK", "tYDAY", "tMDAY", "tWDAY", "tDAY", "tHOUR", "tSEC",
-  "tMSEC", "tUSEC", "tORDER_ASC", "tORDER_DESC", "tGROUP_BY", "$accept",
-  "expressions", "option", "expression_option", "oneargfunc", "onearg",
-  "extract", "extractfunc", "interval", "intervalfunc", "func", "modifier",
+  "tSUM", "tCOUNT", "tINTERVAL", "tAVG", "tEXTRACT", "tTIMEZONE", "tYEAR",
+  "tQUARTER", "tMONTH", "tWEEK", "tYDAY", "tMDAY", "tWDAY", "tDAY",
+  "tHOUR", "tSEC", "tMSEC", "tUSEC", "tORDER_ASC", "tORDER_DESC",
+  "tGROUP_BY", "$accept", "expressions", "option", "expression_option",
+  "oneargfunc", "onearg", "extract", "extractfunc", "interval",
+  "intervalfunc", "timezone", "timezonefunc", "func", "modifier",
   "valuetype", "value", YY_NULLPTR
 };
 #endif
@@ -604,14 +607,14 @@ static const yytype_uint16 yytoknum[] =
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288
+     285,   286,   287,   288,   289
 };
 # endif
 
-#define YYPACT_NINF -24
+#define YYPACT_NINF -27
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-24)))
+  (!!((Yystate) == (-27)))
 
 #define YYTABLE_NINF -1
 
@@ -622,12 +625,13 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       2,   -24,   -24,   -24,   -24,   -24,   -24,   -24,   -24,   -24,
-     -24,   -24,    12,    -3,   -24,     6,   -24,    14,   -24,   -24,
-      13,    15,   -24,    30,    30,    30,     4,   -22,    22,    27,
-      28,   -24,   -24,   -24,   -24,   -24,   -24,   -24,   -24,   -24,
-     -24,   -24,   -24,   -24,    29,   -24,    37,    30,   -22,    33,
-      34,   -24,   -24,    46,    42,   -24
+       3,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,
+     -27,   -27,   -27,    13,    -2,   -27,     7,   -27,    16,   -27,
+      17,   -27,   -27,    19,    21,   -27,    32,    32,    32,    32,
+       5,   -22,    31,    30,    33,    36,   -27,   -27,   -27,   -27,
+     -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,    42,
+     -27,    38,    32,    39,   -22,    45,    44,    47,   -27,   -27,
+      53,   -27,    49,   -27
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -635,26 +639,27 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     4,    31,    30,    32,    36,    10,    11,    12,    17,
-      13,    15,     0,     0,    19,     0,    21,     0,    20,    33,
-      35,     3,     1,     0,     0,     0,     0,     0,     0,     0,
-       0,    28,    22,    23,    24,    25,    26,    27,    29,    34,
-       5,     6,     7,     9,     2,    14,     0,     0,     0,     0,
-       0,     8,    16,     0,     0,    18
+       0,     4,    34,    33,    35,    39,    10,    11,    12,    17,
+      13,    15,    19,     0,     0,    21,     0,    23,     0,    22,
+       0,    24,    36,    38,     3,     1,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,    31,    25,    26,    27,
+      28,    29,    30,    32,    37,     5,     6,     7,     9,     2,
+      14,     0,     0,     0,     0,     0,     0,     0,     8,    16,
+       0,    20,     0,    18
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -24,   -24,     3,   -24,   -24,   -24,   -24,   -24,   -24,   -24,
-     -24,   -24,   -24,   -23
+     -27,   -27,     4,   -27,   -27,   -27,   -27,   -27,   -27,   -27,
+     -27,   -27,   -27,   -27,   -27,   -26
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,    12,    43,    44,    13,    14,    15,    16,    17,    18,
-      19,    39,    20,    21
+      -1,    13,    48,    49,    14,    15,    16,    17,    18,    19,
+      20,    21,    22,    44,    23,    24
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -662,22 +667,22 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      28,    29,    30,     1,    23,     2,     3,     4,     5,    40,
-      41,    42,    22,    24,     6,     7,    31,     8,     9,    10,
-      11,    25,    26,    32,    50,    33,    27,    34,    35,    36,
-      45,    37,    38,     2,     3,     4,     5,    46,    47,    48,
-      49,    52,     6,     7,    53,     8,     9,    10,    11,    54,
-      55,    51
+      32,    33,    34,    35,     1,    26,     2,     3,     4,     5,
+      45,    46,    47,    25,    27,     6,     7,    36,     8,     9,
+      10,    11,    12,    28,    29,    37,    56,    38,    30,    39,
+      40,    41,    31,    42,    43,     2,     3,     4,     5,    50,
+      51,    55,    57,    52,     6,     7,    53,     8,     9,    10,
+      11,    12,    54,    59,    60,    61,    62,    63,    58
 };
 
 static const yytype_uint8 yycheck[] =
 {
-      23,    24,    25,     1,     7,     3,     4,     5,     6,    31,
-      32,    33,     0,     7,    12,    13,    12,    15,    16,    17,
-      18,     7,     9,    19,    47,    21,    11,    23,    24,    25,
-       8,    27,    28,     3,     4,     5,     6,    10,    10,    10,
-       3,     8,    12,    13,    10,    15,    16,    17,    18,     3,
-       8,    48
+      26,    27,    28,    29,     1,     7,     3,     4,     5,     6,
+      32,    33,    34,     0,     7,    12,    13,    12,    15,    16,
+      17,    18,    19,     7,     7,    20,    52,    22,     9,    24,
+      25,    26,    11,    28,    29,     3,     4,     5,     6,     8,
+      10,     3,     3,    10,    12,    13,    10,    15,    16,    17,
+      18,    19,    10,     8,    10,     8,     3,     8,    54
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -685,20 +690,21 @@ static const yytype_uint8 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,     1,     3,     4,     5,     6,    12,    13,    15,    16,
-      17,    18,    35,    38,    39,    40,    41,    42,    43,    44,
-      46,    47,     0,     7,     7,     7,     9,    11,    47,    47,
-      47,    12,    19,    21,    23,    24,    25,    27,    28,    45,
-      31,    32,    33,    36,    37,     8,    10,    10,    10,     3,
-      47,    36,     8,    10,     3,     8
+      17,    18,    19,    36,    39,    40,    41,    42,    43,    44,
+      45,    46,    47,    49,    50,     0,     7,     7,     7,     7,
+       9,    11,    50,    50,    50,    50,    12,    20,    22,    24,
+      25,    26,    28,    29,    48,    32,    33,    34,    37,    38,
+       8,    10,    10,    10,    10,     3,    50,     3,    37,     8,
+      10,     8,     3,     8
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    34,    35,    35,    35,    36,    36,    36,    37,    37,
-      38,    38,    38,    38,    39,    40,    41,    42,    43,    44,
-      44,    44,    45,    45,    45,    45,    45,    45,    45,    45,
-      46,    46,    46,    46,    47,    47,    47
+       0,    35,    36,    36,    36,    37,    37,    37,    38,    38,
+      39,    39,    39,    39,    40,    41,    42,    43,    44,    45,
+      46,    47,    47,    47,    47,    48,    48,    48,    48,    48,
+      48,    48,    48,    49,    49,    49,    49,    50,    50,    50
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -706,8 +712,8 @@ static const yytype_uint8 yyr2[] =
 {
        0,     2,     3,     1,     1,     1,     1,     1,     3,     1,
        1,     1,     1,     1,     4,     1,     6,     1,     8,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     3,     1,     1
+       6,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     3,     1,     1
 };
 
 
@@ -1392,99 +1398,99 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 120 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 122 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
                 preludedb_selected_path_set_object(root, (yyvsp[-2].object));
                 preludedb_selected_path_set_flags(root, (yyvsp[0].flags));
              }
-#line 1401 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
-    break;
-
-  case 3:
-#line 124 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { preludedb_selected_path_set_object(root, (yyvsp[0].object)); }
 #line 1407 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 4:
-#line 125 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { return (errno < 0) ? errno : -1; }
+  case 3:
+#line 126 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { preludedb_selected_path_set_object(root, (yyvsp[0].object)); }
 #line 1413 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 5:
+  case 4:
 #line 127 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_ASC; }
+    { return (errno < 0) ? errno : -1; }
 #line 1419 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 6:
-#line 128 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_DESC; }
+  case 5:
+#line 129 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_ASC; }
 #line 1425 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 7:
-#line 129 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_GROUP_BY; }
+  case 6:
+#line 130 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_DESC; }
 #line 1431 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 8:
+  case 7:
 #line 131 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = (yyvsp[-2].flags)|(yyvsp[0].flags); }
+    { (yyval.flags) = PRELUDEDB_SELECTED_PATH_FLAGS_GROUP_BY; }
 #line 1437 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 9:
-#line 132 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = (yyvsp[0].flags); }
+  case 8:
+#line 133 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = (yyvsp[-2].flags)|(yyvsp[0].flags); }
 #line 1443 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 10:
-#line 135 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MIN; }
+  case 9:
+#line 134 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = (yyvsp[0].flags); }
 #line 1449 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 11:
-#line 136 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MAX; }
+  case 10:
+#line 137 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MIN; }
 #line 1455 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 12:
-#line 137 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_COUNT; }
+  case 11:
+#line 138 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_MAX; }
 #line 1461 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 13:
-#line 138 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_AVG; }
+  case 12:
+#line 139 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_COUNT; }
 #line 1467 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
+  case 13:
+#line 140 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_AVG; }
+#line 1473 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
   case 14:
-#line 141 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 143 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         preludedb_selected_object_t *parent;
         preludedb_selected_object_new(&parent, (yyvsp[-3].type), NULL);
         preludedb_selected_object_push_arg(parent, (yyvsp[-1].object));
         (yyval.object) = parent;
 }
-#line 1478 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
-    break;
-
-  case 15:
-#line 148 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_EXTRACT; }
 #line 1484 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
+  case 15:
+#line 150 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_EXTRACT; }
+#line 1490 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
   case 16:
-#line 149 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 151 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int tf;
         preludedb_selected_object_t *parent, *arg;
@@ -1511,17 +1517,17 @@ yyreduce:
         preludedb_selected_object_push_arg(parent, arg);
         (yyval.object) = parent;
 }
-#line 1515 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
-    break;
-
-  case 17:
-#line 176 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL; }
 #line 1521 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
+  case 17:
+#line 178 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL; }
+#line 1527 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
   case 18:
-#line 177 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+#line 179 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int tf;
         preludedb_selected_object_t *parent, *arg;
@@ -1549,59 +1555,81 @@ yyreduce:
         preludedb_selected_object_push_arg(parent, arg);
         (yyval.object) = parent;
 }
-#line 1553 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
-    break;
-
-  case 22:
-#line 207 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR; }
 #line 1559 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 23:
-#line 208 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH; }
+  case 19:
+#line 207 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.type) = PRELUDEDB_SELECTED_OBJECT_TYPE_TIMEZONE; }
 #line 1565 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 24:
-#line 209 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY; }
-#line 1571 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+  case 20:
+#line 208 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    {
+        preludedb_selected_object_t *parent;
+
+        errno = preludedb_selected_object_new(&parent, (yyvsp[-5].type), NULL);
+        if ( errno < 0 )
+                YYERROR;
+
+        preludedb_selected_object_push_arg(parent, (yyvsp[-3].object));
+        preludedb_selected_object_push_arg(parent, (yyvsp[-1].object));
+        (yyval.object) = parent;
+}
+#line 1581 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 210 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY; }
-#line 1577 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 222 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR; }
+#line 1587 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 211 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY; }
-#line 1583 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 223 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH; }
+#line 1593 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 212 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR; }
-#line 1589 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 224 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_YDAY; }
+#line 1599 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 213 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MIN; }
-#line 1595 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 225 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MDAY; }
+#line 1605 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 214 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
-    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_SEC; }
-#line 1601 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 226 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY; }
+#line 1611 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 34:
-#line 217 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+  case 30:
+#line 227 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR; }
+#line 1617 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
+  case 31:
+#line 228 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_MIN; }
+#line 1623 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
+  case 32:
+#line 229 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+    { (yyval.flags) = PRELUDEDB_SQL_TIME_CONSTRAINT_SEC; }
+#line 1629 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+    break;
+
+  case 37:
+#line 232 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     {
         int ret;
         preludedb_selected_object_t *f, *num;
@@ -1631,17 +1659,17 @@ yyreduce:
 
         (yyval.object) = f;
 }
-#line 1635 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1663 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
-  case 36:
-#line 247 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
+  case 39:
+#line 262 "preludedb-path-selection-parser.yac.y" /* yacc.c:1646  */
     { errno = (yyvsp[0].error); YYERROR; }
-#line 1641 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1669 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
     break;
 
 
-#line 1645 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
+#line 1673 "preludedb-path-selection-parser.yac.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1869,7 +1897,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 249 "preludedb-path-selection-parser.yac.y" /* yacc.c:1906  */
+#line 264 "preludedb-path-selection-parser.yac.y" /* yacc.c:1906  */
 
 
 int preludedb_path_selection_parse(preludedb_selected_path_t *root, const char *str)

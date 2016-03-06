@@ -53,6 +53,8 @@ typedef int (*preludedb_plugin_sql_fetch_field_func_t)(void *session, preludedb_
 typedef int (*preludedb_plugin_sql_build_time_extract_string_func_t)(prelude_string_t *output, const char *field,
                                                                      preludedb_sql_time_constraint_type_t type, int gmt_offset);
 
+typedef int (*preludedb_plugin_sql_build_time_timezone_string_func_t)(prelude_string_t *output, const char *field, const char *tzvalue);
+
 typedef int (*preludedb_plugin_sql_build_time_constraint_string_func_t)(prelude_string_t *output, const char *field,
                                                                         preludedb_sql_time_constraint_type_t type,
                                                                         idmef_criterion_operator_t operator, int value, int gmt_offset);
@@ -141,6 +143,14 @@ void preludedb_plugin_sql_set_build_time_extract_string_func(preludedb_plugin_sq
 int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plugin,
                                                     prelude_string_t *output, const char *field,
                                                     preludedb_sql_time_constraint_type_t type, int gmt_offset);
+
+void preludedb_plugin_sql_set_build_time_timezone_string_func(preludedb_plugin_sql_t *plugin,
+                                                              preludedb_plugin_sql_build_time_timezone_string_func_t func);
+
+
+int _preludedb_plugin_sql_build_time_timezone_string(preludedb_plugin_sql_t *plugin,
+                                                     prelude_string_t *output, const char *field, const char *tzvalue);
+
 
 void preludedb_plugin_sql_set_build_time_constraint_string_func(preludedb_plugin_sql_t *plugin,
                                                                 preludedb_plugin_sql_build_time_constraint_string_func_t func);

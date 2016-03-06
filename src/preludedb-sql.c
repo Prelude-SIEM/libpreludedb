@@ -1583,6 +1583,14 @@ int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_strin
 
 
 
+int preludedb_sql_build_time_timezone_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field, const char *tzvalue)
+{
+        return _preludedb_plugin_sql_build_time_timezone_string(sql->plugin, output, field, tzvalue);
+}
+
+
+
+
 /**
  * preludedb_sql_build_criterion_string:
  * @sql: Pointer to a sql object.

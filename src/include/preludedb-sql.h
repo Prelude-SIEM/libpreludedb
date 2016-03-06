@@ -170,6 +170,8 @@ int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_strin
 int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type, int gmt_offset);
 
+int preludedb_sql_build_time_timezone_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field, const char *tzvalue);
+
 int preludedb_sql_build_criterion_string(preludedb_sql_t *sql,
                                          prelude_string_t *output,
                                          const char *field,

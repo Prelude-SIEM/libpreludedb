@@ -79,7 +79,7 @@ static const char *func_to_string(preludedb_selected_object_type_t type)
 
 
 static int preludedb_selected_object_to_string(preludedb_sql_select_t *select, preludedb_selected_path_t *selected,
-                                               preludedb_selected_object_t *object, prelude_string_t *out, void *data)
+                                               preludedb_selected_object_t *object, prelude_string_t *out, void *data, int depth)
 {
         int ret = 0;
         preludedb_selected_object_type_t type;
@@ -101,15 +101,12 @@ static int preludedb_selected_object_to_string(preludedb_sql_select_t *select, p
                 if ( ret < 0 )
                         goto error;
 
-                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), tmp1, data);
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), tmp1, data, depth + 1);
                 if ( ret < 0 )
                         goto error;
 
                 ret = preludedb_sql_build_time_extract_string(preludedb_get_sql(select->db), out, prelude_string_get_string(tmp1),
                                                               *(const int *) preludedb_selected_object_get_data(preludedb_selected_object_get_arg(object, 1)), 0);
-
-                if ( select->flags & PRELUDEDB_SQL_SELECT_FLAGS_ALIAS_FUNCTION )
-                        prelude_string_sprintf(out, " AS FUNC%u", select->index++);
         }
 
         else if ( type == PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL ) {
@@ -121,29 +118,46 @@ static int preludedb_selected_object_to_string(preludedb_sql_select_t *select, p
                 if ( ret < 0 )
                         goto error;
 
-                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), tmp1, data);
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), tmp1, data, depth + 1);
                 if ( ret < 0 )
                         goto error;
 
-                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 1), tmp2, data);
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 1), tmp2, data, depth + 1);
                 if ( ret < 0 )
                         goto error;
 
                 ret = preludedb_sql_build_time_interval_string(preludedb_get_sql(select->db), out, prelude_string_get_string(tmp1), prelude_string_get_string(tmp2),
                                                                *(const int *) preludedb_selected_object_get_data(preludedb_selected_object_get_arg(object, 2)));
+        }
 
-                if ( select->flags & PRELUDEDB_SQL_SELECT_FLAGS_ALIAS_FUNCTION )
-                        prelude_string_sprintf(out, " AS FUNC%u", select->index++);
+       else if ( type == PRELUDEDB_SELECTED_OBJECT_TYPE_TIMEZONE ) {
+                ret = prelude_string_new(&tmp1);
+                if ( ret < 0 )
+                        goto error;
+
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), tmp1, data, depth + 1);
+                if ( ret < 0 )
+                        goto error;
+
+                ret = preludedb_sql_build_time_timezone_string(preludedb_get_sql(select->db), out, prelude_string_get_string(tmp1),
+                                                               preludedb_selected_object_get_data(preludedb_selected_object_get_arg(object, 1)));
         }
 
         else if ( preludedb_selected_object_is_function(object) ) {
-                prelude_string_sprintf(out, "%s(", func_to_string(type));
-                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), out, data);
-                prelude_string_cat(out, ")");
+                const char *func = func_to_string(type);
 
-                if ( select->flags & PRELUDEDB_SQL_SELECT_FLAGS_ALIAS_FUNCTION )
-                        prelude_string_sprintf(out, " AS FUNC%u", select->index++);
+                if ( ! func ) {
+                        ret = preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Unknown function enumeration '%d'", type);
+                        goto error;
+                }
+
+                prelude_string_sprintf(out, "%s(", func);
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), out, data, depth + 1);
+                prelude_string_cat(out, ")");
         }
+
+        if ( select->flags & PRELUDEDB_SQL_SELECT_FLAGS_ALIAS_FUNCTION && depth == 0 )
+                prelude_string_sprintf(out, " AS FUNC%u", select->index++);
 
     error:
         if ( tmp1 )
@@ -283,7 +297,7 @@ int preludedb_sql_select_add_selected(preludedb_sql_select_t *select, preludedb_
                         return ret;
         }
 
-        ret = preludedb_selected_object_to_string(select, selpath, preludedb_selected_path_get_object(selpath), select->fields, data);
+        ret = preludedb_selected_object_to_string(select, selpath, preludedb_selected_path_get_object(selpath), select->fields, data, 0);
         if ( ret < 0 )
                 return ret;
 

@@ -478,6 +478,15 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
         return preludedb_error(PRELUDEDB_ERROR_GENERIC);
 }
 
+
+
+static int sql_build_time_timezone_string(prelude_string_t *output, const char *field, const char *tzvalue)
+{
+        return prelude_string_sprintf(output, "timezone('%s', timezone('UTC', %s))", tzvalue, field);
+
+}
+
+
 static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type,
                                             idmef_criterion_operator_t operator, int value, int gmt_offset)
@@ -583,6 +592,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_fetch_field_func(plugin, sql_fetch_field);
         preludedb_plugin_sql_set_build_constraint_string_func(plugin, sql_build_constraint_string);
         preludedb_plugin_sql_set_build_time_extract_string_func(plugin, sql_build_time_extract_string);
+        preludedb_plugin_sql_set_build_time_timezone_string_func(plugin, sql_build_time_timezone_string);
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);

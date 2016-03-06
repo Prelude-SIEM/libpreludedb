@@ -336,7 +336,7 @@ extern int yylex \
 #undef YY_DECL
 #endif
 
-#line 102 "preludedb-path-selection-parser.lex.l"
+#line 103 "preludedb-path-selection-parser.lex.l"
 
 
 #line 343 "preludedb-path-selection-parser.lex.h"

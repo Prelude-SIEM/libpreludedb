@@ -61,6 +61,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_build_timestamp_string_func_t build_timestamp_string;
         preludedb_plugin_sql_get_server_version_func_t get_server_version;
         preludedb_plugin_sql_get_last_insert_ident_func_t get_last_insert_ident;
+        preludedb_plugin_sql_build_time_timezone_string_func_t build_time_timezone_string;
 };
 
 
@@ -339,6 +340,24 @@ int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plug
         return plugin->build_time_extract_string(output, field, type, gmt_offset);
 }
 
+
+
+void preludedb_plugin_sql_set_build_time_timezone_string_func(preludedb_plugin_sql_t *plugin,
+                                                              preludedb_plugin_sql_build_time_timezone_string_func_t func)
+{
+        plugin->build_time_timezone_string = func;
+}
+
+
+
+int _preludedb_plugin_sql_build_time_timezone_string(preludedb_plugin_sql_t *plugin,
+                                                     prelude_string_t *output, const char *field, const char *tzvalue)
+{
+        if ( ! plugin->build_time_timezone_string )
+                return PRELUDEDB_ENOTSUP("build_time_timezone_string");
+
+        return plugin->build_time_timezone_string(output, field, tzvalue);
+}
 
 
 void preludedb_plugin_sql_set_build_time_constraint_string_func(preludedb_plugin_sql_t *plugin,

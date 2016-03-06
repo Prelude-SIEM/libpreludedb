@@ -151,17 +151,13 @@ int preludedb_selected_object_new(preludedb_selected_object_t **object, preluded
                         (*object)->data.ival = *(const int *) data;
                         break;
 
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_MIN:
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_MAX:
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_AVG:
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_COUNT:
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_EXTRACT:
-                case PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL:
-                        (*object)->data.args = NULL;
-                        break;
-
                 default:
-                        return -1;
+                        if ( preludedb_selected_object_is_function(*object) ) {
+                                (*object)->data.args = NULL;
+                                break;
+                        }
+
+                        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Unknown selected object type '%d'", type);
         }
 
         return 0;
@@ -360,6 +356,7 @@ idmef_value_type_id_t preludedb_selected_object_get_value_type(preludedb_selecte
                         return preludedb_selected_object_get_value_type(object->data.args[0], data, dtype);
 
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL:
+                case PRELUDEDB_SELECTED_OBJECT_TYPE_TIMEZONE:
                         *dtype = object->type;
                         *data = NULL;
                         return IDMEF_VALUE_TYPE_TIME;

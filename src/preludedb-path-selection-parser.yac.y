@@ -93,7 +93,7 @@ typedef void* yyscan_t;
 
 %token tSTRING tIDMEF tNUMBER tERROR
 %token tLPAREN tRPAREN tCOLON tCOMMA tSLASH
-%token tMIN tMAX tSUM tCOUNT tINTERVAL tAVG tEXTRACT
+%token tMIN tMAX tSUM tCOUNT tINTERVAL tAVG tEXTRACT tTIMEZONE
 %token tYEAR tQUARTER tMONTH tWEEK tYDAY tMDAY tWDAY tDAY tHOUR tSEC tMSEC tUSEC
 %token tORDER_ASC tORDER_DESC tGROUP_BY
 
@@ -106,10 +106,12 @@ typedef void* yyscan_t;
 %type<object> onearg
 %type<object> intervalfunc
 %type<object> extractfunc
+%type<object> timezonefunc
 %type<val> expressions
 %type<type> oneargfunc
 %type<type> extract
 %type<type> interval
+%type<type> timezone
 %type<flags> option
 %type<flags> expression_option
 %type<flags> modifier
@@ -202,7 +204,20 @@ intervalfunc: interval tLPAREN value tCOMMA value tCOMMA tSTRING tRPAREN {
         $$ = parent;
 }
 
-func: onearg | intervalfunc | extractfunc
+timezone: tTIMEZONE { $$ = PRELUDEDB_SELECTED_OBJECT_TYPE_TIMEZONE; }
+timezonefunc: timezone tLPAREN value tCOMMA tSTRING tRPAREN {
+        preludedb_selected_object_t *parent;
+
+        errno = preludedb_selected_object_new(&parent, $1, NULL);
+        if ( errno < 0 )
+                YYERROR;
+
+        preludedb_selected_object_push_arg(parent, $3);
+        preludedb_selected_object_push_arg(parent, $5);
+        $$ = parent;
+}
+
+func: onearg | intervalfunc | extractfunc | timezonefunc
 
 modifier:  tYEAR { $$ = PRELUDEDB_SQL_TIME_CONSTRAINT_YEAR; }
          | tMONTH { $$ = PRELUDEDB_SQL_TIME_CONSTRAINT_MONTH; }
