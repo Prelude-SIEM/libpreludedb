@@ -396,7 +396,7 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
                         return prelude_string_sprintf(output, "STRFTIME('%%d', %s) + 0", buf);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
-                        return prelude_string_sprintf(output, "STRFTIME('%%w', %s) + 0", buf);
+                        return prelude_string_sprintf(output, "((STRFTIME('%%w', %s) + 6) %% 7)", buf);
 
                 case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
                         return prelude_string_sprintf(output, "STRFTIME('%%H', %s) + 0", buf);

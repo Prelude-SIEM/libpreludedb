@@ -476,7 +476,7 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
                 return prelude_string_sprintf(output, "DAYOFMONTH(%s)", buf);
 
         case PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY:
-                return prelude_string_sprintf(output, "DAYOFWEEK(%s)", buf);
+                return prelude_string_sprintf(output, "WEEKDAY(%s)", buf);
 
         case PRELUDEDB_SQL_TIME_CONSTRAINT_HOUR:
                 return prelude_string_sprintf(output, "EXTRACT(HOUR FROM %s)", buf);
