@@ -1,3 +1,11 @@
+* 2016-04-01, libpreludedb-1.3.0rc2:
+
+Author: Yoann Vandoorselaere
+
+- Standardize day of week extraction (monday=0, sunday=6)
+
+
+
 * 2016-03-25, libpreludedb-1.3.0rc1:
 
 - No new changes.
