@@ -356,6 +356,7 @@ int preludedb_sql_select_add_field(preludedb_sql_select_t *select, const char *s
         if ( ret < 0 )
                 return ret;
 
+        select->field_count++;
         return 0;
 }
 
