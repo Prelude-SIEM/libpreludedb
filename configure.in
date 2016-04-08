@@ -2,7 +2,7 @@ m4_define([libpreludedb_major_version], [1])
 m4_define([libpreludedb_minor_version], [3])
 m4_define([libpreludedb_micro_version], [0])
 m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_RC])
-m4_define([libpreludedb_serial_version], [2])
+m4_define([libpreludedb_serial_version], [3])
 
 m4_define([serial_string], ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_ALPHA, alpha,
                                   ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_BETA, beta,
@@ -132,7 +132,7 @@ dnl **************************************************
 dnl * Check for libprelude                           *
 dnl **************************************************
 
-AM_PATH_LIBPRELUDE(1.3.0rc2, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
+AM_PATH_LIBPRELUDE(1.3.0rc3, , AC_MSG_ERROR(Cannot find libprelude: Is libprelude-config in the path?), no)
 
 
 dnl ***************************************************
