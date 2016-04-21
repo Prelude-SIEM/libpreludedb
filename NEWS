@@ -1,6 +1,14 @@
-* 2016-04-15, libpreludedb-3.0.0rc4:
+* 2016-04-22, libpreludedb-3.0.0:
 
 No new changes.
+
+
+
+* 2016-04-15, libpreludedb-3.0.0rc4:
+
+Author: Yoann Vandoorselaere
+
+- Update SWIG bindings
 
 
 
