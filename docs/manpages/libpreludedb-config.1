@@ -1,0 +1,74 @@
+.TH "libpreludedb-config" 1 "2 May 2016"
+.SH NAME
+libpreludedb\-config \- helper script for building with libpreludedb
+.LP
+.SH SYNOPSIS
+.B libpreludedb\-config
+[options]
+.SH DESCRIPTION
+.B libpreludedb\-config
+is a simple shell script used to determine the compiler and linker flags that
+should be used to compile and link programs that use the libpreludedb library.
+.SH OPTIONS
+.TP 15
+.PD 0
+.B \-\-prefix
+If specified, use dir instead of the installation prefix that the library was
+built with, when computing the output for the
+.B \-\-cflags
+and
+.B \-\-libs
+options.
+This option must be specified before any
+.B\-\-libs
+or
+.B \-\-cflags
+options. This
+option is also used for the exec prefix if the
+.B \-\-exec-prefix
+option is not specified.
+.TP
+.PD 0
+.B \-\-exec\-prefix
+If specified, use dir instead of the exec installation prefix that the library
+was built with, when computing the output for the
+.B \-\-cflags
+and
+.B \-\-libs
+options. This option must be specified before any
+.B \-\-libs
+or
+.B \-\-cflags
+options.
+.TP
+.PD 0
+.B \-\-version
+Print the currently installed version of the library on the standard output.
+.TP
+.PD 0
+.B \-\-thread
+If specified, add the thread library used by libpreludedb to the
+.B \-\-libs
+or
+.B \-\-cflags
+options.
+.TP
+.PD 0
+.B \-\-libs
+Print the linker flags that are necessary to link with the specified library.
+.TP
+.PD 0
+.B \-\-ldflags
+Print the LDflags that are necessary to compile a program using the specified
+library.
+.TP
+.PD 0
+.B \-\-cflags
+Print the compiler flags that are necessary to compile a program using the
+specified library.
+.TP
+.PD 0
+.B \-\-plugin\-dir
+Print the directory where libpreludedb plugins are installed.
+.SH AUTHOR
+This man page has been written by CS-SI
