@@ -1,6 +1,6 @@
 ## DO NOT EDIT! GENERATED AUTOMATICALLY!
 ## Process this file with automake to produce Makefile.in.
-# Copyright (C) 2002-2014 Free Software Foundation, Inc.
+# Copyright (C) 2002-2016 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -350,6 +350,37 @@ EXTRA_DIST += test-snprintf.c signature.h macros.h
 
 ## end   gnulib module snprintf-tests
 
+## begin gnulib module stdalign
+
+BUILT_SOURCES += $(STDALIGN_H)
+
+# We need the following in order to create <stdalign.h> when the system
+# doesn't have one that works.
+if GL_GENERATE_STDALIGN_H
+stdalign.h: stdalign.in.h $(top_builddir)/config.status
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  cat $(srcdir)/stdalign.in.h; \
+	} > $@-t && \
+	mv $@-t $@
+else
+stdalign.h: $(top_builddir)/config.status
+	rm -f $@
+endif
+MOSTLYCLEANFILES += stdalign.h stdalign.h-t
+
+EXTRA_DIST += stdalign.in.h
+
+## end   gnulib module stdalign
+
+## begin gnulib module stdalign-tests
+
+TESTS += test-stdalign
+check_PROGRAMS += test-stdalign
+EXTRA_DIST += test-stdalign.c macros.h
+
+## end   gnulib module stdalign-tests
+
 ## begin gnulib module stdbool
 
 BUILT_SOURCES += $(STDBOOL_H)
@@ -499,6 +530,11 @@ EXTRA_DIST += test-vasnprintf.c macros.h
 TESTS_ENVIRONMENT += MAKE='$(MAKE)'
 TESTS += test-verify test-verify.sh
 check_PROGRAMS += test-verify
+
+# This test expects compilation of test-verify.c to fail, and
+# each time it fails, the makefile rule does not perform the usual
+#  "mv -f $name.Tpo $name.po, so tell make clean to remove that file.
+MOSTLYCLEANFILES += .deps/test-verify.Tpo
 EXTRA_DIST += test-verify.c test-verify.sh
 
 ## end   gnulib module verify-tests

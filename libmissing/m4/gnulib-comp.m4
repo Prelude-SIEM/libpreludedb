@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2014 Free Software Foundation, Inc.
+# Copyright (C) 2002-2016 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,11 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_ES$])dnl a valid locale name
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
+
+  # Pre-early section.
+  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   AC_REQUIRE([gl_PROG_AR_RANLIB])
+
   AC_REQUIRE([AM_PROG_CC_C_O])
   # Code from module absolute-header:
   # Code from module alloca-opt:
@@ -45,7 +49,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module errno:
   # Code from module errno-tests:
   # Code from module extensions:
-  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
   # Code from module fdopen:
   # Code from module fdopen-tests:
@@ -85,6 +88,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module snprintf:
   # Code from module snprintf-tests:
   # Code from module ssize_t:
+  # Code from module stdalign:
+  # Code from module stdalign-tests:
   # Code from module stdbool:
   # Code from module stdbool-tests:
   # Code from module stddef:
@@ -289,10 +294,11 @@ changequote([, ])dnl
   gl_FUNC_MMAP_ANON
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
-  gl_MSVC_INVAL
+  AC_REQUIRE([gl_MSVC_INVAL])
   if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
     AC_LIBOBJ([msvc-inval])
   fi
+  gl_STDALIGN_H
   AM_STDBOOL_H
   AC_REQUIRE([gt_TYPE_WCHAR_T])
   AC_REQUIRE([gt_TYPE_WINT_T])
@@ -477,6 +483,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/size_max.m4
   m4/snprintf.m4
   m4/ssize_t.m4
+  m4/stdalign.m4
   m4/stdbool.m4
   m4/stddef_h.m4
   m4/stdint.m4
@@ -522,6 +529,7 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-memchr.c
   tests/test-memrchr.c
   tests/test-snprintf.c
+  tests/test-stdalign.c
   tests/test-stdbool.c
   tests/test-stddef.c
   tests/test-stdint.c
@@ -552,5 +560,6 @@ AC_DEFUN([gl_FILE_LIST], [
   tests=lib/inttypes.in.h
   tests=lib/msvc-inval.c
   tests=lib/msvc-inval.h
+  tests=lib/stdalign.in.h
   tests=lib/stdbool.in.h
 ])
