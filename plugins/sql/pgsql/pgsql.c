@@ -139,6 +139,55 @@ static int sql_get_last_insert_ident(void *session, uint64_t *ident)
 
 
 
+static int check_settings(PGconn *session)
+{
+        int ret;
+        size_t size;
+        PGresult *result;
+        unsigned char *unescaped;
+        const char *original = "0xd3adb33f", *hex_escaped = "\\x30786433616462333366";
+
+        unescaped = PQunescapeBytea((const unsigned char *) hex_escaped, &size);
+        if ( ! unescaped )
+                return preludedb_error_from_errno(errno);
+
+        ret = -1;
+        if ( strlen(original) == size )
+                ret = memcmp(unescaped, original, size);
+
+        free(unescaped);
+
+        /*
+         * If PQunescapeBytea successfully unescaped our hex string, we are running libpq >= 9.0
+         * and no further check are required.
+         */
+        if ( ret == 0 )
+                return 0;
+
+        /*
+         * libpq < 9.0 cannot handle hexadecimal bytea output, which is the default for PostgreSQL 9.0 server.
+         * Check the setting value.
+         */
+        result = PQexec(session, "SELECT setting FROM pg_settings WHERE name = 'bytea_output' AND setting = 'hex';");
+        if ( ! result || PQresultStatus(result) != PGRES_TUPLES_OK ) {
+                if ( result )
+                        PQclear(result);
+
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        }
+
+        ret = PQntuples(result);
+        PQclear(result);
+
+        if ( ret == 0 )
+                return ret;
+
+        return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "PostgreSQL server >= 9.0 uses 'hex' mode for bytea output whereas libpq < 9.0 does not support it. "
+                                       "You may upgrade libpq to a newer version, or change the PostgreSQL server 'bytea_output' setting to 'escape' mode");
+}
+
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
@@ -154,6 +203,12 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 
         if ( PQstatus(conn) == CONNECTION_BAD ) {
                 ret = handle_error(PRELUDEDB_ERROR_CONNECTION, conn);
+                PQfinish(conn);
+                return ret;
+        }
+
+        ret = check_settings(conn);
+        if ( ret < 0 ) {
                 PQfinish(conn);
                 return ret;
         }
