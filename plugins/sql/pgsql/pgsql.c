@@ -80,33 +80,52 @@ static int handle_error(prelude_error_code_t code, PGconn *conn)
 }
 
 
+static int _sql_query(void *session, const char *query, PGresult **result)
+{
+        int status, ntuple;
+
+        *result = PQexec(session, query);
+        if ( ! *result )
+                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+
+        status = PQresultStatus(*result);
+        if ( status == PGRES_TUPLES_OK ) {
+                ntuple = PQntuples(*result);
+                if ( ntuple == 0 )
+                        PQclear(*result);
+
+                return ntuple;
+        }
+
+        PQclear(*result);
+        if ( status == PGRES_COMMAND_OK )
+                return 0;
+
+        return handle_error(PRELUDEDB_ERROR_QUERY, session);
+}
+
+
 
 static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
         int ret;
         PGresult *result;
 
-        result = PQexec(session, query);
-        if ( ! result )
-                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        ret = _sql_query(session, query, &result);
+        if ( ret <= 0 )
+                return ret;
 
-        ret = PQresultStatus(result);
-        if ( ret == PGRES_TUPLES_OK && PQntuples(result) != 0 ) {
+        if ( ! table )
+                PQclear(result);
+        else {
                 ret = preludedb_sql_table_new(table, result);
                 if ( ret < 0 ) {
                         PQclear(result);
                         return ret;
                 }
-
-                return 1;
         }
 
-        PQclear(result);
-
-        if ( ret == PGRES_TUPLES_OK || ret == PGRES_COMMAND_OK )
-                return 0;
-
-        return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        return 1;
 }
 
 
@@ -117,23 +136,22 @@ static int sql_get_last_insert_ident(void *session, uint64_t *ident)
         char *value;
         PGresult *result;
 
-        result = PQexec(session, "SELECT lastval();");
-        if ( ! result )
-                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        ret = _sql_query(session, "SELECT lastval();", &result);
+        if ( ret < 0 )
+                return ret;
 
-        ret = PQresultStatus(result);
-        if ( ret != PGRES_TUPLES_OK || PQntuples(result) <= 0 )
-                return handle_error(PRELUDEDB_ERROR_QUERY, session);
+        else if ( ret == 0 )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_VALUE, "sequence selection returned no data");
 
         value = PQgetvalue(result, 0, 0);
+        PQclear(result);
         if ( ! value )
-                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_VALUE, "retrieved sequence value is empty");
 
         ret = sscanf(value, "%" PRELUDE_SCNu64, ident);
         if ( ret <= 0 )
-                return preludedb_error(PRELUDEDB_ERROR_INVALID_VALUE);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_INVALID_VALUE, "retrieved sequence value is invalid");
 
-        PQclear(result);
         return 0;
 }
 
@@ -168,20 +186,11 @@ static int check_settings(PGconn *session)
          * libpq < 9.0 cannot handle hexadecimal bytea output, which is the default for PostgreSQL 9.0 server.
          * Check the setting value.
          */
-        result = PQexec(session, "SELECT setting FROM pg_settings WHERE name = 'bytea_output' AND setting = 'hex';");
-        if ( ! result || PQresultStatus(result) != PGRES_TUPLES_OK ) {
-                if ( result )
-                        PQclear(result);
-
-                return handle_error(PRELUDEDB_ERROR_QUERY, session);
-        }
-
-        ret = PQntuples(result);
-        PQclear(result);
-
-        if ( ret == 0 )
+        ret = _sql_query(session, "SELECT setting FROM pg_settings WHERE name = 'bytea_output' AND setting = 'hex';", &result);
+        if ( ret <= 0 )
                 return ret;
 
+        PQclear(result);
         return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "PostgreSQL server >= 9.0 uses 'hex' mode for bytea output whereas libpq < 9.0 does not support it. "
                                        "You may upgrade libpq to a newer version, or change the PostgreSQL server 'bytea_output' setting to 'escape' mode");
 }
