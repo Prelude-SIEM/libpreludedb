@@ -48,6 +48,7 @@
 
 static sig_atomic_t stop_processing = 0;
 static const char *query_logging = NULL;
+static prelude_bool_t delete_run_optimize = FALSE;
 static prelude_bool_t have_query_logging = FALSE;
 
 static uint64_t cur_count = 0;
@@ -310,6 +311,14 @@ static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents
 }
 
 
+
+static int set_delete_optimize(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
+{
+        delete_run_optimize = TRUE;
+        return 0;
+}
+
+
 static int set_criteria(prelude_option_t *opt, const char *optarg, prelude_string_t *err, void *context)
 {
         int ret;
@@ -407,6 +416,8 @@ static void cmd_delete_help(void)
         fprintf(stderr, "Delete messages from <database>.\n\n");
 
         cmd_generic_help();
+        fprintf(stderr, "  --optimize                      : Run OPTIMIZE after delete operation.\n");
+
 }
 
 
@@ -752,6 +763,9 @@ static int cmd_delete(int argc, char **argv)
         stat_item_t *stat_delete = stat_item_new("delete");
         stat_item_t *stat_optimize = stat_item_new("optimize");
 
+        prelude_option_add(NULL, NULL, PRELUDE_OPTION_TYPE_CLI, 'o', "optimize",
+                           NULL, PRELUDE_OPTION_ARGUMENT_NONE, set_delete_optimize, NULL);
+
         idx = setup_generic_options(&argc, argv);
         if ( idx < 0 || argc != 3 ) {
                 cmd_delete_help();
@@ -768,6 +782,9 @@ static int cmd_delete(int argc, char **argv)
                 fprintf(stderr, "No criteria provided for deletion.\n");
                 return -1;
         }
+
+        if ( ! delete_run_optimize )
+                fprintf(stderr, "WARNING: Orphan data may remain. Please run OPTIMIZE command to complete the process.\n");
 
         ret = db_new_from_string(&db, argv[idx]);
         if ( ret < 0 )
@@ -788,7 +805,7 @@ static int cmd_delete(int argc, char **argv)
 
         transaction_end(db, ret, event_no);
 
-        if ( ret >= 0 ) {
+        if ( ret >= 0 && delete_run_optimize ) {
                 stat_compute(stat_optimize, ret = preludedb_optimize(db), 1);
 
                 if ( ret < 0 ) {
