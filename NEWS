@@ -1,3 +1,28 @@
+* 2016-08-05, libpreludedb-3.1.0rc1:
+
+Author: Thomas Andrejak
+
+- Rename configure.in to configure.ac
+
+Author: Yoann Vandoorselaere
+
+- Add --optimize delete operation parameter
+
+- Code cleanup, error handling improvement
+
+- Check libpq / PostgreSQL server compatibility
+
+    libpq < 9.0 is not capable of unescaping hexadecimal bytea output,
+    which is the default in PostgreSQL server 9.0 and newer.
+
+- Update SWIG and GnuLib code
+
+Author: Sélim Menouar
+
+- Add libpreludedb-config man page
+
+
+
 * 2016-04-22, libpreludedb-3.0.0:
 
 No new changes.
