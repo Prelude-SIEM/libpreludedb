@@ -1,5 +1,7 @@
 
 %{
+  #define YYSTYPE _PRELUDEDBYYSTYPE
+
   #include "config.h"
 
   #include <stdio.h>
@@ -10,7 +12,7 @@
   #define TOKEN(id) return t##id
 %}
 
-
+%option prefix="_preludedbyy"
 %option reentrant bison-bridge
 %option noyywrap nounput noinput
 

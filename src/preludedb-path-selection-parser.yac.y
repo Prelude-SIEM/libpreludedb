@@ -11,6 +11,7 @@
 %lex-param {yyscan_t scanner}
 %parse-param {yyscan_t scanner}{preludedb_selected_path_t *root}
 %define parse.error verbose
+%define api.prefix {_preludedbyy}
 
 %code requires {
 
@@ -268,10 +269,10 @@ int preludedb_path_selection_parse(preludedb_selected_path_t *root, const char *
         int ret;
         yyscan_t myscanner;
 
-        yylex_init(&myscanner);
-        yy_scan_string(str, myscanner);
-        ret = yyparse(myscanner, root);
-        yylex_destroy(myscanner);
+        _preludedbyylex_init(&myscanner);
+        _preludedbyy_scan_string(str, myscanner);
+        ret = _preludedbyyparse(myscanner, root);
+        _preludedbyylex_destroy(myscanner);
 
         return ret;
 }

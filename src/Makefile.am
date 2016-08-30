@@ -29,9 +29,11 @@ libpreludedb_la_LIBADD = @LIBPRELUDE_LIBS@ $(LTLIBTHREAD) ../libmissing/libmissi
 
 AM_YFLAGS = -d
 AM_LFLAGS = --header-file=preludedb-path-selection-parser.lex.h
-LEX_OUTPUT_ROOT = lex.yy
+LEX_OUTPUT_ROOT = lex._preludedbyy
 
 noinst_HEADERS = preludedb-path-selection-parser.lex.h
+DISTCLEANFILES = preludedb-path-selection-parser.lex.h preludedb-path-selection-parser.lex.c preludedb-path-selection-parser.yac.h preludedb-path-selection-parser.yac.c
+
 
 libpreludedb_la_SOURCES =		\
 	preludedb.c			\

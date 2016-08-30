@@ -30,17 +30,25 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED
-# define YY_YY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED
+#ifndef YY__PRELUDEDBYY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED
+# define YY__PRELUDEDBYY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED
 /* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+#ifndef _PRELUDEDBYYDEBUG
+# if defined YYDEBUG
 #if YYDEBUG
-extern int yydebug;
+#   define _PRELUDEDBYYDEBUG 1
+#  else
+#   define _PRELUDEDBYYDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define _PRELUDEDBYYDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined _PRELUDEDBYYDEBUG */
+#if _PRELUDEDBYYDEBUG
+extern int _preludedbyydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 15 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
+#line 16 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
 
 
 #ifndef YY_TYPEDEF_YY_SCANNER_T
@@ -48,12 +56,12 @@ extern int yydebug;
 typedef void* yyscan_t;
 #endif
 
-#line 52 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
+#line 60 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
 
 /* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
+#ifndef _PRELUDEDBYYTOKENTYPE
+# define _PRELUDEDBYYTOKENTYPE
+  enum _preludedbyytokentype
   {
     tSTRING = 258,
     tIDMEF = 259,
@@ -124,11 +132,11 @@ typedef void* yyscan_t;
 #define tGROUP_BY 289
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#if ! defined _PRELUDEDBYYSTYPE && ! defined _PRELUDEDBYYSTYPE_IS_DECLARED
 
-union YYSTYPE
+union _PRELUDEDBYYSTYPE
 {
-#line 23 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
+#line 24 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
 
         int val;
         int flags;
@@ -137,16 +145,16 @@ union YYSTYPE
         preludedb_selected_object_type_t type;
         preludedb_selected_object_t *object;
 
-#line 141 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
+#line 149 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
 };
 
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+typedef union _PRELUDEDBYYSTYPE _PRELUDEDBYYSTYPE;
+# define _PRELUDEDBYYSTYPE_IS_TRIVIAL 1
+# define _PRELUDEDBYYSTYPE_IS_DECLARED 1
 #endif
 
 
 
-int yyparse (yyscan_t scanner, preludedb_selected_path_t *root);
+int _preludedbyyparse (yyscan_t scanner, preludedb_selected_path_t *root);
 
-#endif /* !YY_YY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED  */
+#endif /* !YY__PRELUDEDBYY_PRELUDEDB_PATH_SELECTION_PARSER_YAC_H_INCLUDED  */
