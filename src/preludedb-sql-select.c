@@ -72,6 +72,9 @@ static const char *func_to_string(preludedb_selected_object_type_t type)
             case PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL:
                 return "INTERVAL";
 
+            case PRELUDEDB_SELECTED_OBJECT_TYPE_DISTINCT:
+                return "DISTINCT";
+
             default:
                 return NULL;
     }

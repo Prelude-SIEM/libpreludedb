@@ -63,6 +63,7 @@ NUMBER [0-9](_[0-9]|[0-9])*
 "interval" { TOKEN(INTERVAL); }
 "extract" { TOKEN(EXTRACT); }
 "timezone" { TOKEN(TIMEZONE); }
+"distinct" { TOKEN(DISTINCT); }
 
 "year" { TOKEN(YEAR); }
 "quarter" { TOKEN(QUARTER); }

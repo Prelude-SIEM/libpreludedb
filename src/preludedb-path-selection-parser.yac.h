@@ -80,21 +80,22 @@ typedef void* yyscan_t;
     tAVG = 272,
     tEXTRACT = 273,
     tTIMEZONE = 274,
-    tYEAR = 275,
-    tQUARTER = 276,
-    tMONTH = 277,
-    tWEEK = 278,
-    tYDAY = 279,
-    tMDAY = 280,
-    tWDAY = 281,
-    tDAY = 282,
-    tHOUR = 283,
-    tSEC = 284,
-    tMSEC = 285,
-    tUSEC = 286,
-    tORDER_ASC = 287,
-    tORDER_DESC = 288,
-    tGROUP_BY = 289
+    tDISTINCT = 275,
+    tYEAR = 276,
+    tQUARTER = 277,
+    tMONTH = 278,
+    tWEEK = 279,
+    tYDAY = 280,
+    tMDAY = 281,
+    tWDAY = 282,
+    tDAY = 283,
+    tHOUR = 284,
+    tSEC = 285,
+    tMSEC = 286,
+    tUSEC = 287,
+    tORDER_ASC = 288,
+    tORDER_DESC = 289,
+    tGROUP_BY = 290
   };
 #endif
 /* Tokens.  */
@@ -115,21 +116,22 @@ typedef void* yyscan_t;
 #define tAVG 272
 #define tEXTRACT 273
 #define tTIMEZONE 274
-#define tYEAR 275
-#define tQUARTER 276
-#define tMONTH 277
-#define tWEEK 278
-#define tYDAY 279
-#define tMDAY 280
-#define tWDAY 281
-#define tDAY 282
-#define tHOUR 283
-#define tSEC 284
-#define tMSEC 285
-#define tUSEC 286
-#define tORDER_ASC 287
-#define tORDER_DESC 288
-#define tGROUP_BY 289
+#define tDISTINCT 275
+#define tYEAR 276
+#define tQUARTER 277
+#define tMONTH 278
+#define tWEEK 279
+#define tYDAY 280
+#define tMDAY 281
+#define tWDAY 282
+#define tDAY 283
+#define tHOUR 284
+#define tSEC 285
+#define tMSEC 286
+#define tUSEC 287
+#define tORDER_ASC 288
+#define tORDER_DESC 289
+#define tGROUP_BY 290
 
 /* Value type.  */
 #if ! defined _PRELUDEDBYYSTYPE && ! defined _PRELUDEDBYYSTYPE_IS_DECLARED
@@ -145,7 +147,7 @@ union _PRELUDEDBYYSTYPE
         preludedb_selected_object_type_t type;
         preludedb_selected_object_t *object;
 
-#line 149 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
+#line 151 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
 };
 
 typedef union _PRELUDEDBYYSTYPE _PRELUDEDBYYSTYPE;

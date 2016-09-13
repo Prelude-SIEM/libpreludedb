@@ -353,6 +353,7 @@ idmef_value_type_id_t preludedb_selected_object_get_value_type(preludedb_selecte
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_AVG:
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_MAX:
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_MIN:
+                case PRELUDEDB_SELECTED_OBJECT_TYPE_DISTINCT:
                         return preludedb_selected_object_get_value_type(object->data.args[0], data, dtype);
 
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL:

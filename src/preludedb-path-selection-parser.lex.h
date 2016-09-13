@@ -349,7 +349,7 @@ extern int _preludedbyylex \
 #undef YY_DECL
 #endif
 
-#line 105 "preludedb-path-selection-parser.lex.l"
+#line 106 "preludedb-path-selection-parser.lex.l"
 
 
 #line 356 "preludedb-path-selection-parser.lex.h"
