@@ -313,6 +313,19 @@ SQL::~SQL()
 }
 
 
+
+long SQL::getServerVersion()
+{
+        long ret;
+
+        ret = preludedb_sql_get_server_version(_sql);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+
+        return ret;
+}
+
+
 SQL::Table SQL::query(const std::string &query)
 {
         int ret;

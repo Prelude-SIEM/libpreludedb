@@ -11607,6 +11607,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_SQL_getServerVersion(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  long result;
+  
+  if (!SWIG_Python_UnpackTuple(args,"SQL_getServerVersion",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__SQL, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_getServerVersion" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  
+  try {
+    result = (long)(arg1)->getServerVersion();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_SQL_query(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
@@ -15672,6 +15703,7 @@ SwigPyBuiltin__PreludeDB__SQL_richcompare(PyObject *self, PyObject *other, int o
 }
 
 SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__SQL_methods[] = {
+  { "getServerVersion", (PyCFunction) _wrap_SQL_getServerVersion, METH_NOARGS, (char*) "" },
   { "query", (PyCFunction) _wrap_SQL_query, METH_O, (char*) "" },
   { "transactionStart", (PyCFunction) _wrap_SQL_transactionStart, METH_NOARGS, (char*) "" },
   { "transactionEnd", (PyCFunction) _wrap_SQL_transactionEnd, METH_NOARGS, (char*) "" },

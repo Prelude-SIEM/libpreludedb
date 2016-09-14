@@ -80,6 +80,8 @@ namespace PreludeDB {
                 SQL(const char *settings);
                 SQL(const std::map<std::string,std::string> &settings);
 
+                long getServerVersion();
+
                 SQL::Table query(const std::string &query);
                 void transactionStart(void);
                 void transactionEnd(void);
