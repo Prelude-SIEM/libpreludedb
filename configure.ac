@@ -199,8 +199,9 @@ dnl * Swig support                                   *
 dnl **************************************************
 
 AC_ARG_WITH(swig, AC_HELP_STRING(--with-swig@<:@=PATH@:>@, Re-generate python bindings sources @<:@default=auto@:>@),
-            [swig_required=true; if test x$withval = xyes; then with_swig="swig"; fi], with_swig="swig")
+            [swig_required=true; if test x$withval = xyes; then with_swig="swig"; fi], with_swig="no")
 
+SWIG="no"
 if test x$with_swig != xno; then
    AC_PATH_PROG(SWIG, `basename $with_swig`, no, `dirname $with_swig`:$PATH)
 
