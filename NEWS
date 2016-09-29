@@ -1,3 +1,11 @@
+* 2016-09-29, libpreludedb-3.1.1:
+
+Author: Antoine Luong
+
+- Do not automatically regenerate SWIG bindings by default
+
+
+
 * 2016-09-14, libpreludedb-3.1.0:
 
 Author: Yoann Vandoorselaere
