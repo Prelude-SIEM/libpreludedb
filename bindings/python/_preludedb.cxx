@@ -11869,6 +11869,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_SQL_getLastInsertIdent(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint64_t result;
+  
+  if (!SWIG_Python_UnpackTuple(args,"SQL_getLastInsertIdent",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__SQL, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_getLastInsertIdent" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  
+  try {
+    result = (uint64_t)(arg1)->getLastInsertIdent();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_From_unsigned_SS_long_SS_long(static_cast< unsigned long long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_SQL_getType(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
@@ -15710,6 +15741,7 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__SQL_methods[] = {
   { "transactionAbort", (PyCFunction) _wrap_SQL_transactionAbort, METH_NOARGS, (char*) "" },
   { "escape", (PyCFunction) _wrap_SQL_escape, METH_O, (char*) "" },
   { "escapeBinary", (PyCFunction) _wrap_SQL_escapeBinary, METH_O, (char*) "" },
+  { "getLastInsertIdent", (PyCFunction) _wrap_SQL_getLastInsertIdent, METH_NOARGS, (char*) "" },
   { "getType", (PyCFunction) _wrap_SQL_getType, METH_NOARGS, (char*) "" },
   { NULL, NULL, 0, NULL } /* Sentinel */
 };

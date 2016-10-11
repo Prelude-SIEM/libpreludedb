@@ -420,6 +420,18 @@ std::string SQL::escape(const char *str)
 }
 
 
+uint64_t SQL::getLastInsertIdent()
+{
+    int ret;
+    uint64_t ident;
+
+    ret = preludedb_sql_get_last_insert_ident(_sql, &ident);
+    if ( ret < 0 )
+            throw PreludeDBError(ret);
+
+    return ident;
+}
+
 
 SQL::operator preludedb_sql_t *() const
 {
