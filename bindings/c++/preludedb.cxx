@@ -479,6 +479,20 @@ Prelude::IDMEF DB::getHeartbeat(uint64_t ident)
 }
 
 
+void DB::remove(Prelude::IDMEFCriteria *criteria)
+{
+        int ret;
+        idmef_criteria_t *ccriteria = NULL;
+
+        if ( criteria )
+                ccriteria = *criteria;
+
+        ret = preludedb_delete(_db, ccriteria);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
 void DB::deleteAlert(uint64_t ident)
 {
         int ret;

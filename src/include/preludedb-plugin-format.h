@@ -49,6 +49,7 @@ typedef int (*preludedb_plugin_format_get_message_ident_func_t)(void *res, unsig
 typedef void (*preludedb_plugin_format_destroy_message_idents_resource_func_t)(void *res);
 typedef int (*preludedb_plugin_format_get_alert_func_t)(preludedb_t *db, uint64_t ident, idmef_message_t **message);
 typedef int (*preludedb_plugin_format_get_heartbeat_func_t)(preludedb_t *db, uint64_t ident, idmef_message_t **message);
+typedef int (*preludedb_plugin_format_delete_func_t)(preludedb_t *db, idmef_criteria_t *criteria);
 typedef int (*preludedb_plugin_format_delete_alert_func_t)(preludedb_t *db, uint64_t ident);
 typedef ssize_t (*preludedb_plugin_format_delete_alert_from_list_func_t)(preludedb_t *db, uint64_t *idents, size_t size);
 typedef ssize_t (*preludedb_plugin_format_delete_alert_from_result_idents_func_t)(preludedb_t *db,
@@ -109,6 +110,8 @@ void preludedb_plugin_format_set_destroy_message_idents_resource_func(preludedb_
 void preludedb_plugin_format_set_get_alert_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_alert_func_t func);
 
 void preludedb_plugin_format_set_get_heartbeat_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_get_heartbeat_func_t func);
+
+void preludedb_plugin_format_set_delete_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_func_t func);
 
 void preludedb_plugin_format_set_delete_alert_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_alert_func_t func);
 

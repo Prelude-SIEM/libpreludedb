@@ -100,6 +100,10 @@ namespace PreludeDB {
  * a vector of unsigned long long, to a vector of unsigned long.
  */
 #define _VECTOR_UINT64_TYPE unsigned long long int
+                /*
+                 * delete is a reserved keyword
+                 */
+                void remove(Prelude::IDMEFCriteria *criteria);
 
                 void deleteAlert(uint64_t ident);
                 void deleteAlert(ResultIdents &idents);

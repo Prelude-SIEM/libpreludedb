@@ -86,6 +86,12 @@ void preludedb_plugin_format_set_get_heartbeat_func(preludedb_plugin_format_t *p
 }
 
 
+void preludedb_plugin_format_set_delete_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_func_t func)
+{
+        plugin->delete = func;
+}
+
+
 void preludedb_plugin_format_set_delete_alert_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_delete_alert_func_t func)
 {
         plugin->delete_alert = func;

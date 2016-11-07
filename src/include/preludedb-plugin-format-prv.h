@@ -37,6 +37,7 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_destroy_message_idents_resource_func_t destroy_message_idents_resource;
         preludedb_plugin_format_get_alert_func_t get_alert;
         preludedb_plugin_format_get_heartbeat_func_t get_heartbeat;
+        preludedb_plugin_format_delete_func_t delete;
         preludedb_plugin_format_delete_alert_func_t delete_alert;
         preludedb_plugin_format_delete_alert_from_list_func_t delete_alert_from_list;
         preludedb_plugin_format_delete_alert_from_result_idents_func_t delete_alert_from_result_idents;

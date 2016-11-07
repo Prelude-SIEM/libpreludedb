@@ -9264,6 +9264,69 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_DB_remove(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
+  Prelude::IDMEFCriteria *arg2 = (Prelude::IDMEFCriteria *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__DB, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_remove" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
+  {
+    int ret, alloc = 0;
+    void *crit = NULL;
+    char *strin = NULL;
+    
+    ret = SWIG_AsCharPtrAndSize(swig_obj[0], &strin, NULL, &alloc);
+    if ( SWIG_IsOK(ret) ) {
+      if ( strin ) {
+        try {
+          arg2 = new Prelude::IDMEFCriteria(strin);
+        } catch (Prelude::PreludeError &err) {
+          SWIG_exception_fail(SWIG_ArgError(res1), err);
+        }
+      }
+    } else {
+      ret = SWIG_ConvertPtr(swig_obj[0], &crit, SWIGTYPE_p_Prelude__IDMEFCriteria, 0);
+      if ( SWIG_IsOK(ret) )
+      arg2 = new Prelude::IDMEFCriteria(*(Prelude::IDMEFCriteria *) crit);
+    }
+    
+    if ( ! SWIG_IsOK(ret) )
+    SWIG_exception_fail(SWIG_ArgError(res1), "Input should be a Prelude::IDMEFCriteria or string");
+  }
+  
+  try {
+    (arg1)->remove(arg2);
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  {
+    if ( arg2 )
+    delete(arg2);
+  }
+  return resultobj;
+fail:
+  {
+    if ( arg2 )
+    delete(arg2);
+  }
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_DB_deleteAlert__SWIG_0(PyObject *self, int nobjs, PyObject **swig_obj) {
   PyObject *resultobj = 0;
   PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
@@ -14708,6 +14771,7 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__DB_methods[] = {
   { "insert", (PyCFunction) _wrap_DB_insert, METH_O, (char*) "" },
   { "getAlert", (PyCFunction) _wrap_DB_getAlert, METH_O, (char*) "" },
   { "getHeartbeat", (PyCFunction) _wrap_DB_getHeartbeat, METH_O, (char*) "" },
+  { "remove", (PyCFunction) _wrap_DB_remove, METH_O, (char*) "" },
   { "deleteAlert", (PyCFunction) _wrap_DB_deleteAlert, METH_VARARGS, (char*) "" },
   { "deleteHeartbeat", (PyCFunction) _wrap_DB_deleteHeartbeat, METH_VARARGS, (char*) "" },
   { "updateFromList", (PyCFunction) _wrap_DB_updateFromList, METH_VARARGS, (char*) "" },

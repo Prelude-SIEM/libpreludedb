@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <libprelude/prelude.h>
+#include <libprelude/idmef-criteria.h>
 
 
 #include "preludedb-error.h"
@@ -745,6 +746,51 @@ ssize_t preludedb_delete_heartbeat_from_result_idents(preludedb_t *db, preludedb
 {
         prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return _preludedb_plugin_format_delete_heartbeat_from_result_idents(db->plugin, db, result);
+}
+
+
+
+/**
+ * preludedb_delete:
+ * @db: Pointer to a db object.
+ * @criteria: Pointer to a criteria object.
+ *
+ * Delete all database object matching @criteria.
+ *
+ * Returns: a negative value if an error occured.
+ */
+int preludedb_delete(preludedb_t *db, idmef_criteria_t *criteria)
+{
+        int ret;
+        preludedb_result_idents_t *result;
+
+        prelude_return_val_if_fail(db, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        if ( db->plugin->delete )
+                return db->plugin->delete(db, criteria);
+
+        ret = idmef_criteria_get_class(criteria);
+        if ( ret < 0 )
+                return ret;
+
+        if ( ret == IDMEF_CLASS_ID_ALERT ) {
+                ret = preludedb_get_alert_idents(db, criteria, -1, 0, 0, &result);
+                if ( ret <= 0 )
+                        return ret;
+
+                ret = preludedb_delete_alert_from_result_idents(db, result);
+        }
+
+        else if ( IDMEF_CLASS_ID_HEARTBEAT ) {
+                ret = preludedb_get_heartbeat_idents(db, criteria, -1, 0, 0, &result);
+                if ( ret <= 0 )
+                        return ret;
+
+                ret = preludedb_delete_heartbeat_from_result_idents(db, result);
+        }
+
+        preludedb_result_idents_destroy(result);
+        return ret;
 }
 
 
