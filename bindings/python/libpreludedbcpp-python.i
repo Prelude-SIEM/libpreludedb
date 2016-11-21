@@ -3,6 +3,7 @@
 
 %begin %{
 #pragma GCC diagnostic ignored "-Wunused-variable"
+# define SWIG_PYTHON_2_UNICODE
 # define TARGET_LANGUAGE_SELF PyObject *
 # define TARGET_LANGUAGE_OUTPUT_TYPE PyObject **
 %}
@@ -210,6 +211,11 @@
 # define _SWIG_PY_SLICE_OBJECT PySliceObject
 #endif
 
+void python2_return_unicode(int enabled)
+{
+    _PYTHON2_RETURN_UNICODE = enabled;
+}
+
         extern "C" {
                 int data_to_python(void **out, void *data, size_t size, idmef_value_type_id_t type);
         }
@@ -367,5 +373,3 @@
 %template(ResultValuesIterator) GenericIterator<PreludeDB::DB::ResultValues, PreludeDB::DB::ResultValues::ResultValuesRow>;
 %template(ResultValuesDRowIterator) GenericDirectIterator<PreludeDB::DB::ResultValues::ResultValuesRow, PyObject>;
 %template(ResultValuesRowIterator) GenericIterator<PreludeDB::DB::ResultValues::ResultValuesRow, Prelude::IDMEFValue>;
-
-
