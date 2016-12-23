@@ -1,3 +1,24 @@
+* 2016-12-23, libpreludedb-4.0.0beta1:
+
+Author: Yoann Vandoorselaere
+
+- Implement preludedb_delete()
+
+- Implement preludedb.return_unicode(flags)
+
+    When enabled, string returned from SWIG wrapped function will be
+    converted to unicode.
+
+- Add missing getServerVersion method to PreludeDB::SQL
+
+Author: Antoine Luong
+
+- Add binding for preludedb_get_last_insert_ident()
+
+- Do not automatically regenerate SWIG bindings by default
+
+
+
 * 2016-09-14, libpreludedb-3.1.0:
 
 Author: Yoann Vandoorselaere
