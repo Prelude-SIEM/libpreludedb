@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2016 Free Software Foundation, Inc.
+# Copyright (C) 2002-2017 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 # other built files.
 
 
-# This macro should be invoked from ./configure.in, in the section
+# This macro should be invoked from ./configure.ac, in the section
 # "Checks for programs", right after AC_PROG_CC, and certainly before
 # any checks for libraries, header files, types and library functions.
 AC_DEFUN([gl_EARLY],
@@ -71,6 +71,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module inttypes:
   # Code from module inttypes-incomplete:
   # Code from module inttypes-tests:
+  # Code from module limits-h:
+  # Code from module limits-h-tests:
   # Code from module lock:
   # Code from module lock-tests:
   # Code from module malloc-posix:
@@ -133,7 +135,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module yield:
 ])
 
-# This macro should be invoked from ./configure.in, in the section
+# This macro should be invoked from ./configure.ac, in the section
 # "Check for header files, types and library functions".
 AC_DEFUN([gl_INIT],
 [
@@ -163,6 +165,7 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_GETTIMEOFDAY
   fi
   gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
+  gl_LIMITS_H
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
   gl_FUNC_MALLOC_POSIX
@@ -416,6 +419,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/glthread/lock.h
   lib/glthread/threadlib.c
   lib/itold.c
+  lib/limits.in.h
   lib/malloc.c
   lib/memchr.c
   lib/memchr.valgrind
@@ -468,6 +472,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-ld.m4
   m4/lib-link.m4
   m4/lib-prefix.m4
+  m4/limits-h.m4
   m4/lock.m4
   m4/longlong.m4
   m4/malloc.m4
@@ -525,6 +530,7 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-init.sh
   tests/test-intprops.c
   tests/test-inttypes.c
+  tests/test-limits-h.c
   tests/test-lock.c
   tests/test-memchr.c
   tests/test-memrchr.c
