@@ -184,6 +184,12 @@ void preludedb_plugin_sql_set_get_last_insert_ident_func(preludedb_plugin_sql_t 
 
 int _preludedb_plugin_sql_get_last_insert_ident(preludedb_plugin_sql_t *plugin, void *session, uint64_t *ident)
 {
+        if ( ! plugin->get_last_insert_ident )
+                return PRELUDEDB_ENOTSUP("get_last_insert_ident");
+
+        if ( ! session )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "could not retrieve last insert ID: session not initialized");
+
         return plugin->get_last_insert_ident(session, ident);
 }
 
