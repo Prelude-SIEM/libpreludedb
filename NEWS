@@ -1,3 +1,11 @@
+* 2017-01-27, libpreludedb-4.0.0rc1:
+
+Author: Yoann Vandoorselaere
+
+- Fix getLastInsertIdent() crash on uninitialized session
+
+
+
 * 2017-01-12, libpreludedb-4.0.0beta2:
 
 Author: Yoann Vandoorselaere
