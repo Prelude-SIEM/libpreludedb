@@ -1457,7 +1457,7 @@ static int build_criterion_fixed_value(preludedb_sql_t *sql,
         if ( ret < 0 )
                 goto err;
 
-        ret = _preludedb_plugin_sql_build_constraint_string(sql->plugin, output, field, operator, prelude_string_get_string(value_str));
+        ret = _preludedb_plugin_sql_build_constraint_string(sql->plugin, sql->session, output, field, operator, prelude_string_get_string(value_str));
 
  err:
         prelude_string_destroy(value_str);
@@ -1505,7 +1505,7 @@ static int build_criterion_broken_down_time_equal(preludedb_sql_t *sql, prelude_
                                 return ret;
                 }
 
-                ret = _preludedb_plugin_sql_build_time_constraint_string(sql->plugin, output, field, tbl[i].type,
+                ret = _preludedb_plugin_sql_build_time_constraint_string(sql->plugin, sql->session, output, field, tbl[i].type,
                                                                          op, *tbl[i].field_ptr, 0);
                 if ( ret < 0 )
                         return ret;
@@ -1559,7 +1559,7 @@ static int build_criterion_regex(preludedb_sql_t *sql, prelude_string_t *output,
         if ( ret < 0 )
                 return ret;
 
-        ret = _preludedb_plugin_sql_build_constraint_string(sql->plugin, output, field, op, escaped);
+        ret = _preludedb_plugin_sql_build_constraint_string(sql->plugin, sql->session, output, field, op, escaped);
         free(escaped);
 
         return ret;
@@ -1570,7 +1570,7 @@ static int build_criterion_regex(preludedb_sql_t *sql, prelude_string_t *output,
 int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type, int gmt_offset)
 {
-        return _preludedb_plugin_sql_build_time_extract_string(sql->plugin, output, field, type, gmt_offset);
+        return _preludedb_plugin_sql_build_time_extract_string(sql->plugin, sql->session, output, field, type, gmt_offset);
 }
 
 
@@ -1578,14 +1578,14 @@ int preludedb_sql_build_time_extract_string(preludedb_sql_t *sql, prelude_string
 int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
                                              const char *value, preludedb_selected_object_interval_t unit)
 {
-        return _preludedb_plugin_sql_build_time_interval_string(sql->plugin, output, field, value, unit);
+        return _preludedb_plugin_sql_build_time_interval_string(sql->plugin, sql->session, output, field, value, unit);
 }
 
 
 
 int preludedb_sql_build_time_timezone_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field, const char *tzvalue)
 {
-        return _preludedb_plugin_sql_build_time_timezone_string(sql->plugin, output, field, tzvalue);
+        return _preludedb_plugin_sql_build_time_timezone_string(sql->plugin, sql->session, output, field, tzvalue);
 }
 
 
@@ -1725,7 +1725,7 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
         if ( ! gmtime_r(&t, &utc) )
                 return prelude_error_from_errno(errno);
 
-        ret = _preludedb_plugin_sql_build_timestamp_string(sql->plugin, &utc, time_buf, time_buf_size);
+        ret = _preludedb_plugin_sql_build_timestamp_string(sql->plugin, sql->session, &utc, time_buf, time_buf_size);
         if ( ret < 0 )
                 return ret;
 

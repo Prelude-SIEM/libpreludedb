@@ -335,7 +335,7 @@ void preludedb_plugin_sql_set_build_time_extract_string_func(preludedb_plugin_sq
 
 
 
-int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plugin,
+int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plugin, void *session,
                                                     prelude_string_t *output, const char *field,
                                                     preludedb_sql_time_constraint_type_t type,
                                                    int gmt_offset)
@@ -343,7 +343,7 @@ int _preludedb_plugin_sql_build_time_extract_string(preludedb_plugin_sql_t *plug
         if ( ! plugin->build_time_extract_string )
                 return PRELUDEDB_ENOTSUP("build_time_extract_string");
 
-        return plugin->build_time_extract_string(output, field, type, gmt_offset);
+        return plugin->build_time_extract_string(session, output, field, type, gmt_offset);
 }
 
 
@@ -356,13 +356,13 @@ void preludedb_plugin_sql_set_build_time_timezone_string_func(preludedb_plugin_s
 
 
 
-int _preludedb_plugin_sql_build_time_timezone_string(preludedb_plugin_sql_t *plugin,
+int _preludedb_plugin_sql_build_time_timezone_string(preludedb_plugin_sql_t *plugin, void *session,
                                                      prelude_string_t *output, const char *field, const char *tzvalue)
 {
         if ( ! plugin->build_time_timezone_string )
                 return PRELUDEDB_ENOTSUP("build_time_timezone_string");
 
-        return plugin->build_time_timezone_string(output, field, tzvalue);
+        return plugin->build_time_timezone_string(session, output, field, tzvalue);
 }
 
 
@@ -373,7 +373,7 @@ void preludedb_plugin_sql_set_build_time_constraint_string_func(preludedb_plugin
 }
 
 
-int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *plugin,
+int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *plugin, void *session,
                                                        prelude_string_t *output, const char *field,
                                                        preludedb_sql_time_constraint_type_t type,
                                                        idmef_criterion_operator_t operator, int value, int gmt_offset)
@@ -381,7 +381,7 @@ int _preludedb_plugin_sql_build_time_constraint_string(preludedb_plugin_sql_t *p
         if ( ! plugin->build_time_constraint_string )
                 return PRELUDEDB_ENOTSUP("build_time_constraint_string");
 
-        return plugin->build_time_constraint_string(output, field, type, operator, value, gmt_offset);
+        return plugin->build_time_constraint_string(session, output, field, type, operator, value, gmt_offset);
 }
 
 
@@ -393,12 +393,12 @@ void preludedb_plugin_sql_set_build_time_interval_string_func(preludedb_plugin_s
 }
 
 
-int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin, prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
+int _preludedb_plugin_sql_build_time_interval_string(preludedb_plugin_sql_t *plugin,  void *session, prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
 {
         if ( ! plugin->build_time_interval_string )
                 return PRELUDEDB_ENOTSUP("build_time_interval_string");
 
-        return plugin->build_time_interval_string(output, field, value, unit);
+        return plugin->build_time_interval_string(session, output, field, value, unit);
 }
 
 
@@ -426,14 +426,14 @@ void preludedb_plugin_sql_set_build_constraint_string_func(preludedb_plugin_sql_
 }
 
 
-int _preludedb_plugin_sql_build_constraint_string(preludedb_plugin_sql_t *plugin,
+int _preludedb_plugin_sql_build_constraint_string(preludedb_plugin_sql_t *plugin, void *session,
                                                   prelude_string_t *out, const char *field,
                                                   idmef_criterion_operator_t operator, const char *value)
 {
         if ( ! plugin->build_constraint_string )
                 return PRELUDEDB_ENOTSUP("build_constraint_string");
 
-        return plugin->build_constraint_string(out, field, operator, value);
+        return plugin->build_constraint_string(session, out, field, operator, value);
 }
 
 
@@ -456,12 +456,12 @@ void preludedb_plugin_sql_set_build_timestamp_string_func(preludedb_plugin_sql_t
 }
 
 
-int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin, const struct tm *lt, char *out, size_t size)
+int _preludedb_plugin_sql_build_timestamp_string(preludedb_plugin_sql_t *plugin, void *session, const struct tm *lt, char *out, size_t size)
 {
         int ret;
 
         if ( plugin->build_timestamp_string )
-                return plugin->build_timestamp_string(lt, out, size);
+                return plugin->build_timestamp_string(session, lt, out, size);
 
         ret = snprintf(out, size, "'%d-%.2d-%.2d %.2d:%.2d:%.2d'",
                        lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,

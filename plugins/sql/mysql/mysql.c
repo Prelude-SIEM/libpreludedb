@@ -64,6 +64,12 @@ typedef struct {
 } mysql_row_data_t;
 
 
+typedef struct {
+        MYSQL session;
+        int support_timezone;
+} mysql_session_t;
+
+
 
 int mysql_LTX_prelude_plugin_version(void);
 int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data);
@@ -105,17 +111,49 @@ static int handle_error(void *session, prelude_error_code_t code)
 
 
 
+static int check_timezone_support(void *session)
+{
+        int ret;
+        MYSQL_ROW row;
+        MYSQL_RES *results;
+
+        ret = mysql_query(session, "SELECT CONVERT_TZ(NOW(), 'SYSTEM', 'UTC');");
+        if ( ret != 0 )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "timezone table check query error");
+
+        results = mysql_store_result(session);
+        if ( ! results )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "timezone table check returned no results");
+
+        row = mysql_fetch_row(results);
+        if ( ! row ) {
+                mysql_free_result(results);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "timezone table check returned no rows");
+        }
+
+        ((mysql_session_t *) session)->support_timezone = (row[0] != NULL);
+        mysql_free_result(results);
+
+        return 0;
+}
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
         unsigned int port = 0;
 
-        if ( preludedb_sql_settings_get_port(settings) )
-                port = atoi(preludedb_sql_settings_get_port(settings));
-
-        *session = mysql_init(NULL);
+        *session = malloc(sizeof(mysql_session_t));
         if ( ! *session )
                 return preludedb_error_from_errno(errno);
+
+        if ( ! mysql_init(*session) ) {
+                free(*session);
+                return preludedb_error_from_errno(errno);
+        }
+
+        if ( preludedb_sql_settings_get_port(settings) )
+                port = atoi(preludedb_sql_settings_get_port(settings));
 
         if ( ! mysql_real_connect(*session,
                                   preludedb_sql_settings_get_host(settings),
@@ -132,7 +170,7 @@ static int sql_open(preludedb_sql_settings_t *settings, void **session)
 
         mysql_query(*session, "SET SESSION wait_timeout=" WAIT_TIMEOUT_VALUE);
 
-        return 0;
+        return check_timezone_support(*session);
 }
 
 
@@ -429,7 +467,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
 
 
 
-static int sql_build_constraint_string(prelude_string_t *out, const char *field,
+static int sql_build_constraint_string(void *session, prelude_string_t *out, const char *field,
                                        idmef_criterion_operator_t operator, const char *value)
 {
         const char *op_str;
@@ -446,7 +484,7 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
 
 
 
-static int sql_build_time_extract_string(prelude_string_t *output, const char *field, preludedb_sql_time_constraint_type_t type, int gmt_offset)
+static int sql_build_time_extract_string(void *session, prelude_string_t *output, const char *field, preludedb_sql_time_constraint_type_t type, int gmt_offset)
 {
         int ret;
         char buf[128];
@@ -499,20 +537,23 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
 
 
 
-static int sql_build_time_timezone_string(prelude_string_t *output, const char *field, const char *tzvalue)
+static int sql_build_time_timezone_string(void *session, prelude_string_t *output, const char *field, const char *tzvalue)
 {
+        if ( ! ((mysql_session_t *) session)->support_timezone )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "MySQL timezones are not configured (mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql)");
+
         return prelude_string_sprintf(output, "CONVERT_TZ(%s, 'GMT', '%s')", field, tzvalue);
 }
 
 
-static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
+static int sql_build_time_constraint_string(void *session, prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type,
                                             idmef_criterion_operator_t operator, int value, int gmt_offset)
 {
         const char *sql_operator;
         int ret;
 
-        ret = sql_build_time_extract_string(output, field, type, gmt_offset);
+        ret = sql_build_time_extract_string(session, output, field, type, gmt_offset);
         if ( ret < 0 )
                 return ret;
 
@@ -528,7 +569,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 
 
 
-static int sql_build_time_interval_string(prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
+static int sql_build_time_interval_string(void *session, prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
 {
         const char *sunit;
 

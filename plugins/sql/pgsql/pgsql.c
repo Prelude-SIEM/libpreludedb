@@ -465,7 +465,7 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
 
 
 
-static int sql_build_constraint_string(prelude_string_t *out, const char *field,
+static int sql_build_constraint_string(void *session, prelude_string_t *out, const char *field,
                                        idmef_criterion_operator_t operator, const char *value)
 {
         const char *op_str;
@@ -488,7 +488,7 @@ static int sql_build_constraint_string(prelude_string_t *out, const char *field,
 
 
 
-static int sql_build_time_extract_string(prelude_string_t *output, const char *field,
+static int sql_build_time_extract_string(void *session, prelude_string_t *output, const char *field,
                                          preludedb_sql_time_constraint_type_t type, int gmt_offset)
 {
         int ret;
@@ -544,21 +544,21 @@ static int sql_build_time_extract_string(prelude_string_t *output, const char *f
 
 
 
-static int sql_build_time_timezone_string(prelude_string_t *output, const char *field, const char *tzvalue)
+static int sql_build_time_timezone_string(void *session, prelude_string_t *output, const char *field, const char *tzvalue)
 {
         return prelude_string_sprintf(output, "timezone('%s', timezone('UTC', %s))", tzvalue, field);
 
 }
 
 
-static int sql_build_time_constraint_string(prelude_string_t *output, const char *field,
+static int sql_build_time_constraint_string(void *session, prelude_string_t *output, const char *field,
                                             preludedb_sql_time_constraint_type_t type,
                                             idmef_criterion_operator_t operator, int value, int gmt_offset)
 {
         const char *sql_operator;
         int ret;
 
-        ret = sql_build_time_extract_string(output, field, type, gmt_offset);
+        ret = sql_build_time_extract_string(session, output, field, type, gmt_offset);
         if ( ret < 0 )
                 return ret;
 
@@ -573,7 +573,7 @@ static int sql_build_time_constraint_string(prelude_string_t *output, const char
 }
 
 
-static int sql_build_time_interval_string(prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
+static int sql_build_time_interval_string(void *session, prelude_string_t *output, const char *field, const char *value, preludedb_selected_object_interval_t unit)
 {
         char *end;
         const char *sunit;
