@@ -1,3 +1,11 @@
+* 2017-02-12, libpreludedb-4.0.0rc3:
+
+Author: Yoann Vandoorselaere
+
+- Raise an error if timezone convertion is not supported
+
+
+
 * 2017-02-03, libpreludedb-4.0.0rc2:
 
 No new changes.
