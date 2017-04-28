@@ -197,6 +197,34 @@ static int check_settings(PGconn *session)
 
 
 
+static int sql_lock_table(void *session, const char *table_name)
+{
+        int ret;
+        prelude_string_t *query;
+
+        ret = prelude_string_new(&query);
+        if ( ret < 0 )
+                return ret;
+
+        ret = prelude_string_sprintf(query, "LOCK TABLE %s IN EXCLUSIVE MODE;", table_name);
+        if ( ret < 0 )
+                return ret;
+
+        return sql_query(session, prelude_string_get_string(query), NULL);
+}
+
+
+
+static int sql_unlock_tables(void *session)
+{
+        /* PostgreSQL does not have an UNLOCK TABLE command;
+         * locks are always released at transaction end.
+         */
+        return 0;
+}
+
+
+
 static int sql_open(preludedb_sql_settings_t *settings, void **session)
 {
         int ret;
@@ -661,6 +689,8 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
         preludedb_plugin_sql_set_get_last_insert_ident_func(plugin, sql_get_last_insert_ident);
+        preludedb_plugin_sql_set_lock_table_func(plugin, sql_lock_table);
+        preludedb_plugin_sql_set_unlock_tables_func(plugin, sql_unlock_tables);
 
         return 0;
 }

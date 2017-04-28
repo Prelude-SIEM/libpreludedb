@@ -294,6 +294,42 @@ static int sql_get_last_insert_ident(void *session, uint64_t *ident)
 }
 
 
+
+static int sql_lock_table(void *session, const char *table_name)
+{
+        int ret;
+        prelude_string_t *query;
+
+        ret = prelude_string_new(&query);
+        if ( ret < 0 )
+                return ret;
+
+        ret = prelude_string_sprintf(query, "LOCK TABLES %s WRITE;", table_name);
+        if ( ret < 0 )
+                return ret;
+
+        ret = mysql_query(session, prelude_string_get_string(query));
+        if ( ret != 0 )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "could not lock table");
+
+        return 0;
+}
+
+
+
+static int sql_unlock_tables(void *session)
+{
+        int ret;
+
+        ret = mysql_query(session, "UNLOCK TABLES;");
+        if ( ret != 0 )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "could not unlock tables");
+
+        return 0;
+}
+
+
+
 static void sql_table_destroy(void *session, preludedb_sql_table_t *table)
 {
         mysql_free_result(preludedb_sql_table_get_data(table));
@@ -651,6 +687,8 @@ int mysql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_build_time_timezone_string_func(plugin, sql_build_time_timezone_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
         preludedb_plugin_sql_set_get_last_insert_ident_func(plugin, sql_get_last_insert_ident);
+        preludedb_plugin_sql_set_lock_table_func(plugin, sql_lock_table);
+        preludedb_plugin_sql_set_unlock_tables_func(plugin, sql_unlock_tables);
 
         return 0;
 }

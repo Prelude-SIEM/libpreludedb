@@ -61,6 +61,8 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_build_timestamp_string_func_t build_timestamp_string;
         preludedb_plugin_sql_get_server_version_func_t get_server_version;
         preludedb_plugin_sql_get_last_insert_ident_func_t get_last_insert_ident;
+        preludedb_plugin_sql_lock_table_func_t lock_table;
+        preludedb_plugin_sql_unlock_tables_func_t unlock_tables;
         preludedb_plugin_sql_build_time_timezone_string_func_t build_time_timezone_string;
 };
 
@@ -191,6 +193,36 @@ int _preludedb_plugin_sql_get_last_insert_ident(preludedb_plugin_sql_t *plugin, 
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "could not retrieve last insert ID: session not initialized");
 
         return plugin->get_last_insert_ident(session, ident);
+}
+
+
+void preludedb_plugin_sql_set_lock_table_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_lock_table_func_t func)
+{
+        plugin->lock_table = func;
+}
+
+
+int _preludedb_plugin_sql_lock_table(preludedb_plugin_sql_t *plugin, void *session, const char *table_name)
+{
+        if ( ! plugin->lock_table )
+                return PRELUDEDB_ENOTSUP("lock_table");
+
+        return plugin->lock_table(session, table_name);
+}
+
+
+void preludedb_plugin_sql_set_unlock_tables_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_unlock_tables_func_t func)
+{
+        plugin->unlock_tables = func;
+}
+
+
+int _preludedb_plugin_sql_unlock_tables(preludedb_plugin_sql_t *plugin, void *session)
+{
+        if ( ! plugin->unlock_tables )
+                return PRELUDEDB_ENOTSUP("unlock_tables");
+
+        return plugin->unlock_tables(session);
 }
 
 

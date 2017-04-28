@@ -122,6 +122,9 @@ int preludedb_sql_insert(preludedb_sql_t *sql, const char *table, const char *fi
 
 int preludedb_sql_get_last_insert_ident(preludedb_sql_t *sql, uint64_t *ident);
 
+int preludedb_sql_lock_table(preludedb_sql_t *sql, const char *table_name);
+int preludedb_sql_unlock_tables(preludedb_sql_t *sql);
+
 int preludedb_sql_build_limit_offset_string(preludedb_sql_t *sql, int limit, int offset, prelude_string_t *output);
 
 int preludedb_sql_transaction_start(preludedb_sql_t *sql);

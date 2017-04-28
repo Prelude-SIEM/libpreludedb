@@ -69,6 +69,8 @@ typedef const char *(*preludedb_plugin_sql_get_operator_string_func_t)(idmef_cri
 typedef int (*preludedb_plugin_sql_build_timestamp_string_func_t)(void *session, const struct tm *t, char *out, size_t size);
 typedef long (*preludedb_plugin_sql_get_server_version_func_t)(void *session);
 typedef int (*preludedb_plugin_sql_get_last_insert_ident_func_t)(void *session, uint64_t *ident);
+typedef int (*preludedb_plugin_sql_lock_table_func_t)(void *session, const char *table_name);
+typedef int (*preludedb_plugin_sql_unlock_tables_func_t)(void *session);
 
 
 void preludedb_plugin_sql_set_open_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_open_func_t func);
@@ -197,6 +199,14 @@ long _preludedb_plugin_sql_get_server_version(preludedb_plugin_sql_t *plugin, vo
 void preludedb_plugin_sql_set_get_last_insert_ident_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_get_last_insert_ident_func_t func);
 
 int _preludedb_plugin_sql_get_last_insert_ident(preludedb_plugin_sql_t *plugin, void *session, uint64_t *ident);
+
+void preludedb_plugin_sql_set_lock_table_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_lock_table_func_t func);
+
+int _preludedb_plugin_sql_lock_table(preludedb_plugin_sql_t *plugin, void *session, const char *table_name);
+
+void preludedb_plugin_sql_set_unlock_tables_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_unlock_tables_func_t func);
+
+int _preludedb_plugin_sql_unlock_tables(preludedb_plugin_sql_t *plugin, void *session);
 
 int preludedb_plugin_sql_new(preludedb_plugin_sql_t **plugin);
 

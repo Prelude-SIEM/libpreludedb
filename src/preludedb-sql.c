@@ -640,6 +640,37 @@ int preludedb_sql_transaction_abort(preludedb_sql_t *sql)
 
 
 /**
+ * preludedb_sql_lock_table:
+ * @sql: Pointer to a sql object.
+ * @table_name: Name of the table to lock.
+ *
+ * Lock a table.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_lock_table(preludedb_sql_t *sql, const char *table_name)
+{
+        return _preludedb_plugin_sql_lock_table(sql->plugin, sql->session, table_name);
+}
+
+
+
+/**
+ * preludedb_sql_unlock_tables:
+ * @sql: Pointer to a sql object.
+ *
+ * Unlock tables.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_unlock_tables(preludedb_sql_t *sql)
+{
+        return _preludedb_plugin_sql_unlock_tables(sql->plugin, sql->session);
+}
+
+
+
+/**
  * preludedb_sql_escape_fast:
  * @sql: Pointer to a sql object.
  * @input: Buffer to escape
