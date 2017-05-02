@@ -1,3 +1,11 @@
+* 2017-05-02, libpreludedb-4.0.1:
+
+Author: Antoine Luong
+
+- Implement table locking
+
+
+
 * 2017-02-16, libpreludedb-4.0.0:
 
 No new changes.
