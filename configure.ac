@@ -1,6 +1,6 @@
 m4_define([libpreludedb_major_version], [3])
 m4_define([libpreludedb_minor_version], [1])
-m4_define([libpreludedb_micro_version], [1])
+m4_define([libpreludedb_micro_version], [2])
 m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_FINAL])
 m4_define([libpreludedb_serial_version], [0])
 
