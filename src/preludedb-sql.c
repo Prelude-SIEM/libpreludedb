@@ -1748,8 +1748,14 @@ int preludedb_sql_time_to_timestamp(preludedb_sql_t *sql,
  *
  * Returns: A negative value if an error occur, the version number otherwise.
  */
-long preludedb_sql_get_server_version(const preludedb_sql_t *sql)
+long preludedb_sql_get_server_version(preludedb_sql_t *sql)
 {
+        gl_recursive_lock_lock(sql->mutex);
+
+        assert_connected(sql);
+
+        gl_recursive_lock_unlock(sql->mutex);
+
         return _preludedb_plugin_sql_get_server_version(sql->plugin, sql->session);
 }
 
