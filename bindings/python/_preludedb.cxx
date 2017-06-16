@@ -9942,22 +9942,21 @@ SWIGINTERN PyObject *_wrap_DB_updateFromList__SWIG_0(PyObject *self, int nobjs, 
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
-    int ret, alloc = 1;
+    int ret, alloc = 1, error = FALSE;
     char *str = NULL;
     Prelude::IDMEFPath *path;
     arg2 = new std::vector<Prelude::IDMEFPath>();
+    PyObject *item, *iterator = PyObject_GetIter(swig_obj[1]);
     
-    for ( unsigned int i = 0; i < PyObject_Length(swig_obj[1]); i++ ) {
-      PyObject *o = PyList_GetItem(swig_obj[1], i);
-      
-      ret = SWIG_ConvertPtr(o, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
+    while ( (! error) && (item = PyIter_Next(iterator)) ) {
+      ret = SWIG_ConvertPtr(item, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
       if ( SWIG_IsOK(ret) )
       arg2->push_back(*path);
       else {
-        ret = SWIG_AsCharPtrAndSize(o, &str, NULL, &alloc);
+        ret = SWIG_AsCharPtrAndSize(item, &str, NULL, &alloc);
         if ( ! SWIG_IsOK(ret) ) {
           SWIG_exception_fail(SWIG_ArgError(res1), "Input should be a list of Prelude::IDMEFPath or string");
-          SWIG_fail;
+          error = TRUE;
         }
         try {
           arg2->push_back(Prelude::IDMEFPath(str));
@@ -9965,10 +9964,16 @@ SWIGINTERN PyObject *_wrap_DB_updateFromList__SWIG_0(PyObject *self, int nobjs, 
           SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
               SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
             "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-          SWIG_fail;
+          error = TRUE;
         }
       }
+      
+      Py_DECREF(item);
     }
+    
+    Py_DECREF(iterator);
+    if ( error )
+    SWIG_fail;
   }
   {
     std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *ptr = (std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *)0;
@@ -10035,22 +10040,21 @@ SWIGINTERN PyObject *_wrap_DB_updateFromList__SWIG_1(PyObject *self, int nobjs, 
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
-    int ret, alloc = 1;
+    int ret, alloc = 1, error = FALSE;
     char *str = NULL;
     Prelude::IDMEFPath *path;
     arg2 = new std::vector<Prelude::IDMEFPath>();
+    PyObject *item, *iterator = PyObject_GetIter(swig_obj[1]);
     
-    for ( unsigned int i = 0; i < PyObject_Length(swig_obj[1]); i++ ) {
-      PyObject *o = PyList_GetItem(swig_obj[1], i);
-      
-      ret = SWIG_ConvertPtr(o, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
+    while ( (! error) && (item = PyIter_Next(iterator)) ) {
+      ret = SWIG_ConvertPtr(item, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
       if ( SWIG_IsOK(ret) )
       arg2->push_back(*path);
       else {
-        ret = SWIG_AsCharPtrAndSize(o, &str, NULL, &alloc);
+        ret = SWIG_AsCharPtrAndSize(item, &str, NULL, &alloc);
         if ( ! SWIG_IsOK(ret) ) {
           SWIG_exception_fail(SWIG_ArgError(res1), "Input should be a list of Prelude::IDMEFPath or string");
-          SWIG_fail;
+          error = TRUE;
         }
         try {
           arg2->push_back(Prelude::IDMEFPath(str));
@@ -10058,10 +10062,16 @@ SWIGINTERN PyObject *_wrap_DB_updateFromList__SWIG_1(PyObject *self, int nobjs, 
           SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
               SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
             "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-          SWIG_fail;
+          error = TRUE;
         }
       }
+      
+      Py_DECREF(item);
     }
+    
+    Py_DECREF(iterator);
+    if ( error )
+    SWIG_fail;
   }
   {
     std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *ptr = (std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *)0;
@@ -10180,22 +10190,21 @@ SWIGINTERN PyObject *_wrap_DB_update(PyObject *self, PyObject *args, PyObject *k
   }
   arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
   {
-    int ret, alloc = 1;
+    int ret, alloc = 1, error = FALSE;
     char *str = NULL;
     Prelude::IDMEFPath *path;
     arg2 = new std::vector<Prelude::IDMEFPath>();
+    PyObject *item, *iterator = PyObject_GetIter(obj1);
     
-    for ( unsigned int i = 0; i < PyObject_Length(obj1); i++ ) {
-      PyObject *o = PyList_GetItem(obj1, i);
-      
-      ret = SWIG_ConvertPtr(o, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
+    while ( (! error) && (item = PyIter_Next(iterator)) ) {
+      ret = SWIG_ConvertPtr(item, (void **) &path, SWIGTYPE_Prelude__IDMEFPath, 0);
       if ( SWIG_IsOK(ret) )
       arg2->push_back(*path);
       else {
-        ret = SWIG_AsCharPtrAndSize(o, &str, NULL, &alloc);
+        ret = SWIG_AsCharPtrAndSize(item, &str, NULL, &alloc);
         if ( ! SWIG_IsOK(ret) ) {
           SWIG_exception_fail(SWIG_ArgError(res1), "Input should be a list of Prelude::IDMEFPath or string");
-          SWIG_fail;
+          error = TRUE;
         }
         try {
           arg2->push_back(Prelude::IDMEFPath(str));
@@ -10203,10 +10212,16 @@ SWIGINTERN PyObject *_wrap_DB_update(PyObject *self, PyObject *args, PyObject *k
           SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
               SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
             "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
-          SWIG_fail;
+          error = TRUE;
         }
       }
+      
+      Py_DECREF(item);
     }
+    
+    Py_DECREF(iterator);
+    if ( error )
+    SWIG_fail;
   }
   {
     std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *ptr = (std::vector< Prelude::IDMEFValue,std::allocator< Prelude::IDMEFValue > > *)0;
