@@ -358,8 +358,17 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
         gettimeofday(&start, NULL);
 
         ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, table);
-        if ( ret < 0 )
+        if ( ret < 0 ) {
                 update_sql_from_errno(sql, ret);
+
+                if ( ! (sql->status & PRELUDEDB_SQL_STATUS_CONNECTED) ) {
+                        assert_connected(sql);
+
+                        ret = _preludedb_plugin_sql_query(sql->plugin, sql->session, query, table);
+                        if ( ret < 0 )
+                                update_sql_from_errno(sql, ret);
+                }
+        }
 
         gettimeofday(&end, NULL);
         gl_recursive_lock_unlock(sql->mutex);
