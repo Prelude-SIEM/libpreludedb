@@ -62,8 +62,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module fread-tests:
   # Code from module fwrite-tests:
   # Code from module getpagesize:
-  # Code from module gettimeofday:
-  # Code from module gettimeofday-tests:
   # Code from module havelib:
   # Code from module include_next:
   # Code from module intprops:
@@ -83,6 +81,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module msvc-inval:
   # Code from module multiarch:
   # Code from module size_max:
+  # Code from module sleep:
+  # Code from module sleep-tests:
   # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
@@ -108,8 +108,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module strndup:
   # Code from module strnlen:
   # Code from module strnlen-tests:
-  # Code from module sys_time:
-  # Code from module sys_time-tests:
   # Code from module sys_types:
   # Code from module sys_types-tests:
   # Code from module test-framework-sh:
@@ -123,6 +121,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module time_r:
   # Code from module unistd:
   # Code from module unistd-tests:
+  # Code from module usleep:
+  # Code from module usleep-tests:
   # Code from module vasnprintf:
   # Code from module vasnprintf-tests:
   # Code from module verify:
@@ -159,12 +159,6 @@ AC_DEFUN([gl_INIT],
   if test $REPLACE_ITOLD = 1; then
     AC_LIBOBJ([itold])
   fi
-  gl_FUNC_GETTIMEOFDAY
-  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
-    AC_LIBOBJ([gettimeofday])
-    gl_PREREQ_GETTIMEOFDAY
-  fi
-  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_LIMITS_H
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
@@ -213,8 +207,6 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_STRNLEN
   fi
   gl_STRING_MODULE_INDICATOR([strnlen])
-  gl_HEADER_SYS_TIME_H
-  AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_THREADLIB
@@ -290,6 +282,7 @@ changequote([, ])dnl
   gl_UNISTD_MODULE_INDICATOR([getpagesize])
   gl_INTTYPES_H
   gl_INTTYPES_INCOMPLETE
+  AC_CHECK_HEADERS_ONCE([semaphore.h])
   dnl Check for prerequisites for memory fence checks.
   gl_FUNC_MMAP_ANON
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
@@ -301,6 +294,12 @@ changequote([, ])dnl
   if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
     AC_LIBOBJ([msvc-inval])
   fi
+  gl_FUNC_SLEEP
+  if test $HAVE_SLEEP = 0 || test $REPLACE_SLEEP = 1; then
+    AC_LIBOBJ([sleep])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([sleep])
+  AC_CHECK_DECLS_ONCE([alarm])
   gl_STDALIGN_H
   AM_STDBOOL_H
   AC_REQUIRE([gt_TYPE_WCHAR_T])
@@ -310,6 +309,11 @@ changequote([, ])dnl
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
   gl_THREAD
+  gl_FUNC_USLEEP
+  if test $HAVE_USLEEP = 0 || test $REPLACE_USLEEP = 1; then
+    AC_LIBOBJ([usleep])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([usleep])
   gl_YIELD
   m4_popdef([gl_MODULE_INDICATOR_CONDITION])
   m4_ifval(gltests_LIBSOURCES_LIST, [
@@ -404,17 +408,15 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/config.rpath
-  build-aux/snippet/_Noreturn.h
-  build-aux/snippet/arg-nonnull.h
-  build-aux/snippet/c++defs.h
-  build-aux/snippet/warn-on-use.h
+  lib/_Noreturn.h
   lib/alloca.in.h
+  lib/arg-nonnull.h
   lib/asnprintf.c
+  lib/c++defs.h
   lib/errno.in.h
   lib/float+.h
   lib/float.c
   lib/float.in.h
-  lib/gettimeofday.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
@@ -438,7 +440,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/string.in.h
   lib/strndup.c
   lib/strnlen.c
-  lib/sys_time.in.h
   lib/sys_types.in.h
   lib/time.in.h
   lib/time_r.c
@@ -448,6 +449,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vasnprintf.h
   lib/verify.h
   lib/vsnprintf.c
+  lib/warn-on-use.h
   lib/wchar.in.h
   lib/xsize.c
   lib/xsize.h
@@ -462,7 +464,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/float_h.m4
   m4/fpieee.m4
   m4/getpagesize.m4
-  m4/gettimeofday.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/intmax_t.m4
@@ -485,7 +486,9 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/off_t.m4
   m4/onceonly.m4
   m4/printf.m4
+  m4/pthread_rwlock_rdlock.m4
   m4/size_max.m4
+  m4/sleep.m4
   m4/snprintf.m4
   m4/ssize_t.m4
   m4/stdalign.m4
@@ -499,14 +502,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/string_h.m4
   m4/strndup.m4
   m4/strnlen.m4
-  m4/sys_socket_h.m4
-  m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/thread.m4
   m4/threadlib.m4
   m4/time_h.m4
   m4/time_r.m4
   m4/unistd_h.m4
+  m4/usleep.m4
   m4/vasnprintf.m4
   m4/vsnprintf.m4
   m4/warn-on-use.m4
@@ -526,7 +528,6 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-fputc.c
   tests/test-fread.c
   tests/test-fwrite.c
-  tests/test-gettimeofday.c
   tests/test-init.sh
   tests/test-intprops.c
   tests/test-inttypes.c
@@ -534,6 +535,8 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-lock.c
   tests/test-memchr.c
   tests/test-memrchr.c
+  tests/test-rwlock1.c
+  tests/test-sleep.c
   tests/test-snprintf.c
   tests/test-stdalign.c
   tests/test-stdbool.c
@@ -543,19 +546,23 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-stdlib.c
   tests/test-string.c
   tests/test-strnlen.c
-  tests/test-sys_time.c
   tests/test-sys_types.c
   tests/test-sys_wait.h
   tests/test-thread_create.c
   tests/test-thread_self.c
   tests/test-time.c
   tests/test-unistd.c
+  tests/test-usleep.c
   tests/test-vasnprintf.c
+  tests/test-verify-try.c
   tests/test-verify.c
   tests/test-verify.sh
   tests/test-vsnprintf.c
   tests/test-wchar.c
   tests/zerosize-ptr.h
+  tests=lib/_Noreturn.h
+  tests=lib/arg-nonnull.h
+  tests=lib/c++defs.h
   tests=lib/fdopen.c
   tests=lib/fpucw.h
   tests=lib/getpagesize.c
@@ -566,6 +573,9 @@ AC_DEFUN([gl_FILE_LIST], [
   tests=lib/inttypes.in.h
   tests=lib/msvc-inval.c
   tests=lib/msvc-inval.h
+  tests=lib/sleep.c
   tests=lib/stdalign.in.h
   tests=lib/stdbool.in.h
+  tests=lib/usleep.c
+  tests=lib/warn-on-use.h
 ])
