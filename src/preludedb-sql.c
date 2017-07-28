@@ -345,7 +345,7 @@ void *preludedb_sql_table_get_data(preludedb_sql_table_t *table)
  *
  * Execute a SQL query.
  *
- * Returns: 1 if result are available, 0 for no result, -1 if an error occured.
+ * Returns: number of affected rows, -1 if an error occured.
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
@@ -384,8 +384,10 @@ int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_t
         if ( ret <= 0 )
                 return ret;
 
-        (*table)->sql = preludedb_sql_ref(sql);
-        return 1;
+        if ( table && *table )
+                (*table)->sql = preludedb_sql_ref(sql);
+
+        return ret;
 }
 
 

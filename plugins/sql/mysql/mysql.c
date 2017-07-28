@@ -237,6 +237,7 @@ static int sql_build_limit_offset_string(void *session, int limit, int offset, p
 static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
         int ret;
+        unsigned long long afrows;
         MYSQL_RES *result;
 
         ret = mysql_query(session, query);
@@ -245,6 +246,7 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
 
         do {
                 result = mysql_store_result(session);
+                afrows = mysql_affected_rows(session);
                 if ( ! result && mysql_field_count(session) > 0 )
                         return handle_error(session, PRELUDEDB_ERROR_QUERY);
 
@@ -266,9 +268,9 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
          * Last result
          */
         if ( ! result )
-                return 0;
+                return (int) afrows;
 
-        if ( mysql_num_rows(result) == 0 ) {
+        if ( afrows == 0 ) {
                 mysql_free_result(result);
                 return 0;
         }
@@ -279,7 +281,7 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
                 return ret;
         }
 
-        return 1;
+        return (int) afrows;
 }
 
 

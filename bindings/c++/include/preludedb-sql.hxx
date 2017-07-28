@@ -22,6 +22,8 @@ namespace PreludeDB {
                         preludedb_sql_table_t *_table;
 
                     public:
+                        unsigned int affected_rows;
+
                         class Row {
                             private:
                                 preludedb_sql_row_t *_row;
@@ -55,9 +57,9 @@ namespace PreludeDB {
                         };
 
                         ~Table();
-                        Table(preludedb_sql_table_t *table);
+                        Table(preludedb_sql_table_t *table, unsigned int affected_rows);
                         Table(const Table &table);
-                        Table(void) { _table = NULL; };
+                        Table(void) { _table = NULL; affected_rows = 0; };
 
                         const char *getColumnName(unsigned int column_num);
                         int getColumnNum(const std::string &column_name);

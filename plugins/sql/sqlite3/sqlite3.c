@@ -220,6 +220,7 @@ static int sql_query(void *session, const char *query, preludedb_sql_table_t **t
                 if ( ret != SQLITE_OK )
                         return preludedb_error_verbose(PRELUDEDB_ERROR_QUERY, sqlite3_errmsg(session));
 
+                return sqlite3_changes(session);
         } else {
                 ret = sqlite3_prepare(session, query, strlen(query), &statement, &unparsed);
                 if ( ret != SQLITE_OK )

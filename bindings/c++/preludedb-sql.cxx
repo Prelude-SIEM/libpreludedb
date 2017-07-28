@@ -117,15 +117,17 @@ const char *SQL::Table::Row::getField(const std::string &name)
 
 /**/
 
-SQL::Table::Table(preludedb_sql_table_t *table)
+SQL::Table::Table(preludedb_sql_table_t *table, unsigned int afrows)
 {
         _table = table;
+        affected_rows = afrows;
 }
 
 
 SQL::Table::Table(const Table &table)
 {
         _table = (table._table) ? preludedb_sql_table_ref(table._table) : NULL;
+        affected_rows = table.affected_rows;
 }
 
 
@@ -248,6 +250,7 @@ SQL::Table &SQL::Table::operator = (const SQL::Table &table)
                 _table = (table._table) ? preludedb_sql_table_ref(table._table) : NULL;
         }
 
+        affected_rows = table.affected_rows;
         return *this;
 }
 
@@ -335,7 +338,7 @@ SQL::Table SQL::query(const std::string &query)
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 
-        return SQL::Table(table);
+        return SQL::Table(table, ret);
 }
 
 

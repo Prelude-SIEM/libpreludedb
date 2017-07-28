@@ -82,7 +82,8 @@ static int handle_error(prelude_error_code_t code, PGconn *conn)
 
 static int _sql_query(void *session, const char *query, PGresult **result)
 {
-        int status, ntuple;
+        char *tmp;
+        int status, ntuple = 0;
 
         *result = PQexec(session, query);
         if ( ! *result )
@@ -97,9 +98,14 @@ static int _sql_query(void *session, const char *query, PGresult **result)
                 return ntuple;
         }
 
+        tmp = PQcmdTuples(*result);
+        if ( tmp )
+                ntuple = atoi(tmp);
+
         PQclear(*result);
+        *result = NULL;
         if ( status == PGRES_COMMAND_OK )
-                return 0;
+                return ntuple;
 
         return handle_error(PRELUDEDB_ERROR_QUERY, session);
 }
@@ -108,24 +114,24 @@ static int _sql_query(void *session, const char *query, PGresult **result)
 
 static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
-        int ret;
-        PGresult *result;
+        int ret, ret2;
+        PGresult *result = NULL;
 
         ret = _sql_query(session, query, &result);
-        if ( ret <= 0 )
+        if ( ret <= 0 || ! result )
                 return ret;
 
         if ( ! table )
                 PQclear(result);
         else {
-                ret = preludedb_sql_table_new(table, result);
-                if ( ret < 0 ) {
+                ret2 = preludedb_sql_table_new(table, result);
+                if ( ret2 < 0 ) {
                         PQclear(result);
-                        return ret;
+                        return ret2;
                 }
         }
 
-        return 1;
+        return ret;
 }
 
 
