@@ -1,4 +1,4 @@
-DROP TABLE _format;
+DROP TABLE IF EXISTS _format;
 
 CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE _format (
 );
 INSERT INTO _format (name, version) VALUES('classic', '14.7');
 
-DROP TABLE Prelude_Alert;
+DROP TABLE IF EXISTS Prelude_Alert;
 
 CREATE TABLE Prelude_Alert (
  _ident BIGSERIAL PRIMARY KEY,
@@ -16,7 +16,7 @@ CREATE TABLE Prelude_Alert (
 CREATE INDEX prelude_alert_messageid ON Prelude_Alert (messageid);
 
 
-DROP TABLE Prelude_Alertident;
+DROP TABLE IF EXISTS Prelude_Alertident;
 
 CREATE TABLE Prelude_Alertident (
  _message_ident INT8 NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE Prelude_Alertident (
 
 
 
-DROP TABLE Prelude_ToolAlert;
+DROP TABLE IF EXISTS Prelude_ToolAlert;
 
 CREATE TABLE Prelude_ToolAlert (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -39,7 +39,7 @@ CREATE TABLE Prelude_ToolAlert (
 
 
 
-DROP TABLE Prelude_CorrelationAlert;
+DROP TABLE IF EXISTS Prelude_CorrelationAlert;
 
 CREATE TABLE Prelude_CorrelationAlert (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -48,7 +48,7 @@ CREATE TABLE Prelude_CorrelationAlert (
 
 
 
-DROP TABLE Prelude_OverflowAlert;
+DROP TABLE IF EXISTS Prelude_OverflowAlert;
 
 CREATE TABLE Prelude_OverflowAlert (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -59,7 +59,7 @@ CREATE TABLE Prelude_OverflowAlert (
 
 
 
-DROP TABLE Prelude_Heartbeat;
+DROP TABLE IF EXISTS Prelude_Heartbeat;
 
 CREATE TABLE Prelude_Heartbeat (
  _ident BIGSERIAL PRIMARY KEY,
@@ -69,7 +69,7 @@ CREATE TABLE Prelude_Heartbeat (
 
 
 
-DROP TABLE Prelude_Analyzer;
+DROP TABLE IF EXISTS Prelude_Analyzer;
 
 CREATE TABLE Prelude_Analyzer (
  _message_ident INT8 NOT NULL,
@@ -91,7 +91,7 @@ CREATE INDEX prelude_analyzer_index_model ON Prelude_Analyzer (_parent_type,_ind
 
 
 
-DROP TABLE Prelude_Classification;
+DROP TABLE IF EXISTS Prelude_Classification;
 
 CREATE TABLE Prelude_Classification (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -103,7 +103,7 @@ CREATE INDEX prelude_classification_index_text ON Prelude_Classification (text);
 
 
 
-DROP TABLE Prelude_Reference;
+DROP TABLE IF EXISTS Prelude_Reference;
 
 CREATE TABLE Prelude_Reference (
  _message_ident INT8 NOT NULL,
@@ -119,7 +119,7 @@ CREATE INDEX prelude_reference_index_name ON Prelude_Reference (name);
 
 
 
-DROP TABLE Prelude_Source;
+DROP TABLE IF EXISTS Prelude_Source;
 
 CREATE TABLE Prelude_Source (
  _message_ident INT8 NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE Prelude_Source (
 
 
 
-DROP TABLE Prelude_Target;
+DROP TABLE IF EXISTS Prelude_Target;
 
 CREATE TABLE Prelude_Target (
  _message_ident INT8 NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE Prelude_Target (
 
 
 
-DROP TABLE Prelude_File;
+DROP TABLE IF EXISTS Prelude_File;
 
 CREATE TABLE Prelude_File (
  _message_ident INT8 NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE Prelude_File (
 
 
 
-DROP TABLE Prelude_FileAccess;
+DROP TABLE IF EXISTS Prelude_FileAccess;
 
 CREATE TABLE Prelude_FileAccess (
  _message_ident INT8 NOT NULL,
@@ -182,7 +182,7 @@ CREATE TABLE Prelude_FileAccess (
 
 
 
-DROP TABLE Prelude_FileAccess_Permission;
+DROP TABLE IF EXISTS Prelude_FileAccess_Permission;
 
 CREATE TABLE Prelude_FileAccess_Permission (
  _message_ident INT8 NOT NULL,
@@ -196,7 +196,7 @@ CREATE TABLE Prelude_FileAccess_Permission (
 
 
 
-DROP TABLE Prelude_Linkage;
+DROP TABLE IF EXISTS Prelude_Linkage;
 
 CREATE TABLE Prelude_Linkage (
  _message_ident INT8 NOT NULL,
@@ -211,7 +211,7 @@ CREATE TABLE Prelude_Linkage (
 
 
 
-DROP TABLE Prelude_Inode;
+DROP TABLE IF EXISTS Prelude_Inode;
 
 CREATE TABLE Prelude_Inode (
  _message_ident INT8 NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE Prelude_Inode (
 
 
 
-DROP TABLE Prelude_Checksum;
+DROP TABLE IF EXISTS Prelude_Checksum;
 
 CREATE TABLE Prelude_Checksum (
  _message_ident INT8 NOT NULL,
@@ -243,7 +243,7 @@ CREATE TABLE Prelude_Checksum (
 ) ;
 
 
-DROP TABLE Prelude_Impact;
+DROP TABLE IF EXISTS Prelude_Impact;
 
 CREATE TABLE Prelude_Impact (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -259,7 +259,7 @@ CREATE INDEX prelude_impact_index_type ON Prelude_Impact (type);
 
 
 
-DROP TABLE Prelude_Action;
+DROP TABLE IF EXISTS Prelude_Action;
 
 CREATE TABLE Prelude_Action (
  _message_ident INT8 NOT NULL,
@@ -271,7 +271,7 @@ CREATE TABLE Prelude_Action (
 
 
 
-DROP TABLE Prelude_Confidence;
+DROP TABLE IF EXISTS Prelude_Confidence;
 
 CREATE TABLE Prelude_Confidence (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -281,7 +281,7 @@ CREATE TABLE Prelude_Confidence (
 
 
 
-DROP TABLE Prelude_Assessment;
+DROP TABLE IF EXISTS Prelude_Assessment;
 
 CREATE TABLE Prelude_Assessment (
  _message_ident INT8 NOT NULL PRIMARY KEY
@@ -289,7 +289,7 @@ CREATE TABLE Prelude_Assessment (
 
 
 
-DROP TABLE Prelude_AdditionalData;
+DROP TABLE IF EXISTS Prelude_AdditionalData;
 
 CREATE TABLE Prelude_AdditionalData (
  _message_ident INT8 NOT NULL,
@@ -303,7 +303,7 @@ CREATE TABLE Prelude_AdditionalData (
 
 
 
-DROP TABLE Prelude_CreateTime;
+DROP TABLE IF EXISTS Prelude_CreateTime;
 
 CREATE TABLE Prelude_CreateTime (
  _message_ident INT8 NOT NULL,
@@ -317,7 +317,7 @@ CREATE TABLE Prelude_CreateTime (
 CREATE INDEX prelude_createtime_index ON Prelude_CreateTime (_parent_type,time);
 
 
-DROP TABLE Prelude_DetectTime;
+DROP TABLE IF EXISTS Prelude_DetectTime;
 
 CREATE TABLE Prelude_DetectTime (
  _message_ident INT8 NOT NULL PRIMARY KEY,
@@ -329,7 +329,7 @@ CREATE TABLE Prelude_DetectTime (
 CREATE INDEX prelude_detecttime_index ON Prelude_DetectTime (time);
 
 
-DROP TABLE Prelude_AnalyzerTime;
+DROP TABLE IF EXISTS Prelude_AnalyzerTime;
 
 CREATE TABLE Prelude_AnalyzerTime (
  _message_ident INT8 NOT NULL,
@@ -344,7 +344,7 @@ CREATE INDEX prelude_analyzertime_index ON Prelude_AnalyzerTime (_parent_type,ti
 
 
 
-DROP TABLE Prelude_Node;
+DROP TABLE IF EXISTS Prelude_Node;
 
 CREATE TABLE Prelude_Node (
  _message_ident INT8 NOT NULL,
@@ -362,7 +362,7 @@ CREATE INDEX prelude_node_index_name ON Prelude_Node (_parent_type,_parent0_inde
 
 
 
-DROP TABLE Prelude_Address;
+DROP TABLE IF EXISTS Prelude_Address;
 
 CREATE TABLE Prelude_Address (
  _message_ident INT8 NOT NULL,
@@ -382,7 +382,7 @@ CREATE INDEX prelude_address_index_address ON Prelude_Address (_parent_type,_par
 
 
 
-DROP TABLE Prelude_User;
+DROP TABLE IF EXISTS Prelude_User;
 
 CREATE TABLE Prelude_User (
  _message_ident INT8 NOT NULL,
@@ -395,7 +395,7 @@ CREATE TABLE Prelude_User (
 
 
 
-DROP TABLE Prelude_UserId;
+DROP TABLE IF EXISTS Prelude_UserId;
 
 CREATE TABLE Prelude_UserId (
  _message_ident INT8 NOT NULL,
@@ -414,7 +414,7 @@ CREATE TABLE Prelude_UserId (
 
 
 
-DROP TABLE Prelude_Process;
+DROP TABLE IF EXISTS Prelude_Process;
 
 CREATE TABLE Prelude_Process (
  _message_ident INT8 NOT NULL,
@@ -429,7 +429,7 @@ CREATE TABLE Prelude_Process (
 
 
 
-DROP TABLE Prelude_ProcessArg;
+DROP TABLE IF EXISTS Prelude_ProcessArg;
 
 CREATE TABLE Prelude_ProcessArg (
  _message_ident INT8 NOT NULL,
@@ -442,7 +442,7 @@ CREATE TABLE Prelude_ProcessArg (
 
 
 
-DROP TABLE Prelude_ProcessEnv;
+DROP TABLE IF EXISTS Prelude_ProcessEnv;
 
 CREATE TABLE Prelude_ProcessEnv (
  _message_ident INT8 NOT NULL,
@@ -455,7 +455,7 @@ CREATE TABLE Prelude_ProcessEnv (
 
 
 
-DROP TABLE Prelude_Service;
+DROP TABLE IF EXISTS Prelude_Service;
 
 CREATE TABLE Prelude_Service (
  _message_ident INT8 NOT NULL,
@@ -477,7 +477,7 @@ CREATE INDEX prelude_service_index_protocol_name ON Prelude_Service (_parent_typ
 
 
 
-DROP TABLE Prelude_WebService;
+DROP TABLE IF EXISTS Prelude_WebService;
 
 CREATE TABLE Prelude_WebService (
  _message_ident INT8 NOT NULL,
@@ -491,7 +491,7 @@ CREATE TABLE Prelude_WebService (
 
 
 
-DROP TABLE Prelude_WebServiceArg;
+DROP TABLE IF EXISTS Prelude_WebServiceArg;
 
 CREATE TABLE Prelude_WebServiceArg (
  _message_ident INT8 NOT NULL,
@@ -504,7 +504,7 @@ CREATE TABLE Prelude_WebServiceArg (
 
 
 
-DROP TABLE Prelude_SnmpService;
+DROP TABLE IF EXISTS Prelude_SnmpService;
 
 CREATE TABLE Prelude_SnmpService (
  _message_ident INT8 NOT NULL,
