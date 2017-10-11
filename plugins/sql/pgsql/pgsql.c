@@ -264,8 +264,10 @@ static int sql_escape(void *session, const char *input, size_t input_size, char 
 
 #ifdef HAVE_PQESCAPESTRINGCONN
         rsize = PQescapeStringConn(session, (*output) + 1, input, input_size, &error);
-        if ( error )
+        if ( error ) {
+                free(*output);
                 return handle_error(PRELUDEDB_ERROR_GENERIC, session);
+        }
 #else
         rsize = PQescapeString((*output) + 1, input, input_size);
 #endif
