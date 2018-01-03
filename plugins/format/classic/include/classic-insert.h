@@ -1,8 +1,8 @@
 /*****
 *
-* Copyright (C) 2001-2004 Yoann Vandoorselaere <yoann@mandrakesoft.com>
-* Copyright (C) 2003-2005 Nicolas Delon <nicolas@prelude-ids.org>
-* All Rights Reserved
+* Copyright (C) 2001-2018 CS-SI. All Rights Reserved.
+* Author: Yoann Vandoorselaere <yoann@mandrakesoft.com>
+* Author: Nicolas Delon <nicolas@prelude-ids.org>
 *
 * This file is part of the Prelude program.
 *
