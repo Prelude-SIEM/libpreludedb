@@ -1,3 +1,21 @@
+* 2018-02-09, libpreludedb-4.2.0rc1:
+
+Author: Antoine Luong
+
+- Fix the encoding error handler for Python 2
+
+- Use 'DROP TABLE IF EXISTS' for PostgreSQL
+
+Author: Yoann Vandoorselaere
+
+- Fix memory leak in case of PQescapeStringConn() error
+
+- preludedb_sql_query() now return the number of affected rows
+
+    High level bindings return the information through the Table.affected_rows member.
+
+
+
 * 2017-07-21, libpreludedb-4.1.0:
 
 No new changes.
