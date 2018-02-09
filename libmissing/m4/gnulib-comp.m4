@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2017 Free Software Foundation, Inc.
+# Copyright (C) 2002-2018 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this file.  If not, see <http://www.gnu.org/licenses/>.
+# along with this file.  If not, see <https://www.gnu.org/licenses/>.
 #
 # As a special exception to the GNU General Public License,
 # this file may be distributed as part of a program that
@@ -63,6 +63,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module fwrite-tests:
   # Code from module getpagesize:
   # Code from module havelib:
+  # Code from module host-cpu-c-abi:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module intprops-tests:
@@ -80,6 +81,14 @@ AC_DEFUN([gl_EARLY],
   # Code from module memrchr-tests:
   # Code from module msvc-inval:
   # Code from module multiarch:
+  # Code from module pthread_sigmask:
+  # Code from module pthread_sigmask-tests:
+  # Code from module raise:
+  # Code from module raise-tests:
+  # Code from module signal-h:
+  # Code from module signal-h-tests:
+  # Code from module sigprocmask:
+  # Code from module sigprocmask-tests:
   # Code from module size_max:
   # Code from module sleep:
   # Code from module sleep-tests:
@@ -159,6 +168,7 @@ AC_DEFUN([gl_INIT],
   if test $REPLACE_ITOLD = 1; then
     AC_LIBOBJ([itold])
   fi
+  AC_REQUIRE([gl_HOST_CPU_C_ABI])
   gl_LIMITS_H
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
@@ -294,6 +304,25 @@ changequote([, ])dnl
   if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
     AC_LIBOBJ([msvc-inval])
   fi
+  gl_FUNC_PTHREAD_SIGMASK
+  if test $HAVE_PTHREAD_SIGMASK = 0 || test $REPLACE_PTHREAD_SIGMASK = 1; then
+    AC_LIBOBJ([pthread_sigmask])
+    gl_PREREQ_PTHREAD_SIGMASK
+  fi
+  gl_SIGNAL_MODULE_INDICATOR([pthread_sigmask])
+  gl_FUNC_RAISE
+  if test $HAVE_RAISE = 0 || test $REPLACE_RAISE = 1; then
+    AC_LIBOBJ([raise])
+    gl_PREREQ_RAISE
+  fi
+  gl_SIGNAL_MODULE_INDICATOR([raise])
+  gl_SIGNAL_H
+  gl_SIGNALBLOCKING
+  if test $HAVE_POSIX_SIGNALBLOCKING = 0; then
+    AC_LIBOBJ([sigprocmask])
+    gl_PREREQ_SIGPROCMASK
+  fi
+  gl_SIGNAL_MODULE_INDICATOR([sigprocmask])
   gl_FUNC_SLEEP
   if test $HAVE_SLEEP = 0 || test $REPLACE_SLEEP = 1; then
     AC_LIBOBJ([sleep])
@@ -456,6 +485,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/alloca.m4
+  m4/asm-underscore.m4
   m4/errno_h.m4
   m4/exponentd.m4
   m4/extensions.m4
@@ -465,6 +495,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/fpieee.m4
   m4/getpagesize.m4
   m4/gnulib-common.m4
+  m4/host-cpu-c-abi.m4
   m4/include_next.m4
   m4/intmax_t.m4
   m4/inttypes-pri.m4
@@ -487,6 +518,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/onceonly.m4
   m4/printf.m4
   m4/pthread_rwlock_rdlock.m4
+  m4/pthread_sigmask.m4
+  m4/raise.m4
+  m4/signal_h.m4
+  m4/signalblocking.m4
   m4/size_max.m4
   m4/sleep.m4
   m4/snprintf.m4
@@ -535,7 +570,12 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-lock.c
   tests/test-memchr.c
   tests/test-memrchr.c
+  tests/test-pthread_sigmask1.c
+  tests/test-pthread_sigmask2.c
+  tests/test-raise.c
   tests/test-rwlock1.c
+  tests/test-signal-h.c
+  tests/test-sigprocmask.c
   tests/test-sleep.c
   tests/test-snprintf.c
   tests/test-stdalign.c
@@ -573,6 +613,10 @@ AC_DEFUN([gl_FILE_LIST], [
   tests=lib/inttypes.in.h
   tests=lib/msvc-inval.c
   tests=lib/msvc-inval.h
+  tests=lib/pthread_sigmask.c
+  tests=lib/raise.c
+  tests=lib/signal.in.h
+  tests=lib/sigprocmask.c
   tests=lib/sleep.c
   tests=lib/stdalign.in.h
   tests=lib/stdbool.in.h
