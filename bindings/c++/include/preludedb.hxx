@@ -14,12 +14,6 @@ namespace PreludeDB {
                 preludedb_t *_db;
 
             public:
-                enum ResultIdentsOrderByEnum {
-                        NONE     = PRELUDEDB_RESULT_IDENTS_ORDER_BY_NONE,
-                        ORDER_BY_CREATE_TIME_ASC   = PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_ASC,
-                        ORDER_BY_CREATE_TIME_DESC  = PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC,
-                };
-
                 class ResultIdents {
                    public:
                         preludedb_result_idents_t *_result;
@@ -78,8 +72,8 @@ namespace PreludeDB {
                 DB &operator = (const DB &db);
                 DB(PreludeDB::SQL &sql);
 
-                ResultIdents getAlertIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, ResultIdentsOrderByEnum order=ORDER_BY_CREATE_TIME_DESC);
-                ResultIdents getHeartbeatIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, ResultIdentsOrderByEnum order=ORDER_BY_CREATE_TIME_DESC);
+                ResultIdents getAlertIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, const std::vector<std::string> &order=std::vector<std::string>(1, "alert.create_time/order_desc"));
+                ResultIdents getHeartbeatIdents(Prelude::IDMEFCriteria *criteria=NULL, int limit=-1, int offset=-1, const std::vector<std::string> &order=std::vector<std::string>(1, "heartbeat.create_time/order_desc"));
                 ResultValues getValues(const std::vector<std::string> &selection, const Prelude::IDMEFCriteria *criteria=NULL, bool distinct=0, int limit=-1, int offset=-1);
 
                 std::string getFormatName(void);

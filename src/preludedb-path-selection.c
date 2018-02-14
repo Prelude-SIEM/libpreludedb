@@ -432,7 +432,7 @@ int preludedb_selected_path_get_column_index(preludedb_selected_path_t *selected
 }
 
 
-int preludedb_path_selection_get_selected(preludedb_path_selection_t *selection, preludedb_selected_path_t **selected, unsigned int index)
+int preludedb_path_selection_get_selected(const preludedb_path_selection_t *selection, preludedb_selected_path_t **selected, unsigned int index)
 {
         if ( index >= selection->count )
                 return preludedb_error_verbose(PRELUDEDB_ERROR_INDEX, "Invalid index '%u' for path selection", index);
@@ -512,7 +512,7 @@ int preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
 
 
 
-preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
+preludedb_selected_path_t *preludedb_path_selection_get_next(const preludedb_path_selection_t *path_selection,
                                                              preludedb_selected_path_t *selected_path)
 {
         int ret;

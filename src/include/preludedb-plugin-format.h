@@ -37,11 +37,11 @@ typedef struct preludedb_plugin_format preludedb_plugin_format_t;
 typedef int (*preludedb_plugin_format_check_schema_version_func_t)(const char *version);
 
 typedef int (*preludedb_plugin_format_get_alert_idents_func_t)(preludedb_t *db, idmef_criteria_t *criteria,
-                                                               int limit, int offset, preludedb_result_idents_order_t order,
+                                                               int limit, int offset, const preludedb_path_selection_t *order,
                                                                void **res);
 
 typedef int (*preludedb_plugin_format_get_heartbeat_idents_func_t)(preludedb_t *db, idmef_criteria_t *criteria,
-                                                                   int limit, int offset, preludedb_result_idents_order_t order,
+                                                                   int limit, int offset, const preludedb_path_selection_t *order,
                                                                    void **res);
 
 typedef size_t (*preludedb_plugin_format_get_message_ident_count_func_t)(void *res);

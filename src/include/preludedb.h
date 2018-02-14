@@ -102,10 +102,18 @@ int preludedb_insert_message(preludedb_t *db, idmef_message_t *message);
 int preludedb_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
                                int limit, int offset,
                                preludedb_result_idents_order_t order,
+                               preludedb_result_idents_t **result) PRELUDE_DEPRECATED;
+int preludedb_get_alert_idents2(preludedb_t *db, idmef_criteria_t *criteria,
+                               int limit, int offset,
+                               const preludedb_path_selection_t *order,
                                preludedb_result_idents_t **result);
 int preludedb_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
                                    int limit, int offset,
                                    preludedb_result_idents_order_t order,
+                                   preludedb_result_idents_t **result) PRELUDE_DEPRECATED;
+int preludedb_get_heartbeat_idents2(preludedb_t *db, idmef_criteria_t *criteria,
+                                   int limit, int offset,
+                                   const preludedb_path_selection_t *order,
                                    preludedb_result_idents_t **result);
 
 int preludedb_get_alert(preludedb_t *db, uint64_t ident, idmef_message_t **message);

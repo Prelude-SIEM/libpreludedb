@@ -8993,15 +8993,15 @@ SWIGINTERN PyObject *_wrap_DB_getAlertIdents(PyObject *self, PyObject *args, PyO
   Prelude::IDMEFCriteria *arg2 = (Prelude::IDMEFCriteria *) NULL ;
   int arg3 = (int) -1 ;
   int arg4 = (int) -1 ;
-  PreludeDB::DB::ResultIdentsOrderByEnum arg5 = (PreludeDB::DB::ResultIdentsOrderByEnum) PreludeDB::DB::ORDER_BY_CREATE_TIME_DESC ;
+  std::vector< std::string,std::allocator< std::string > > const &arg5_defvalue = std::vector< std::string >(1, "alert.create_time/order_desc") ;
+  std::vector< std::string,std::allocator< std::string > > *arg5 = (std::vector< std::string,std::allocator< std::string > > *) &arg5_defvalue ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
+  int res5 = SWIG_OLDOBJ ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
@@ -9057,17 +9057,23 @@ SWIGINTERN PyObject *_wrap_DB_getAlertIdents(PyObject *self, PyObject *args, PyO
     arg4 = static_cast< int >(val4);
   }
   if (obj4) {
-    ecode5 = SWIG_AsVal_int(obj4, &val5);
-    if (!SWIG_IsOK(ecode5)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "DB_getAlertIdents" "', argument " "5"" of type '" "PreludeDB::DB::ResultIdentsOrderByEnum""'");
-    } 
-    arg5 = static_cast< PreludeDB::DB::ResultIdentsOrderByEnum >(val5);
+    {
+      std::vector< std::string,std::allocator< std::string > > *ptr = (std::vector< std::string,std::allocator< std::string > > *)0;
+      res5 = swig::asptr(obj4, &ptr);
+      if (!SWIG_IsOK(res5)) {
+        SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "DB_getAlertIdents" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_getAlertIdents" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      arg5 = ptr;
+    }
   }
   
   try {
     {
       SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (arg1)->getAlertIdents(arg2,arg3,arg4,arg5);
+      result = (arg1)->getAlertIdents(arg2,arg3,arg4,(std::vector< std::string,std::allocator< std::string > > const &)*arg5);
       SWIG_PYTHON_THREAD_END_ALLOW;
     }
   } catch (PreludeDBError &e) {
@@ -9082,12 +9088,14 @@ SWIGINTERN PyObject *_wrap_DB_getAlertIdents(PyObject *self, PyObject *args, PyO
     if ( arg2 )
     delete(arg2);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return resultobj;
 fail:
   {
     if ( arg2 )
     delete(arg2);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return NULL;
 }
 
@@ -9098,15 +9106,15 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeatIdents(PyObject *self, PyObject *args,
   Prelude::IDMEFCriteria *arg2 = (Prelude::IDMEFCriteria *) NULL ;
   int arg3 = (int) -1 ;
   int arg4 = (int) -1 ;
-  PreludeDB::DB::ResultIdentsOrderByEnum arg5 = (PreludeDB::DB::ResultIdentsOrderByEnum) PreludeDB::DB::ORDER_BY_CREATE_TIME_DESC ;
+  std::vector< std::string,std::allocator< std::string > > const &arg5_defvalue = std::vector< std::string >(1, "heartbeat.create_time/order_desc") ;
+  std::vector< std::string,std::allocator< std::string > > *arg5 = (std::vector< std::string,std::allocator< std::string > > *) &arg5_defvalue ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
+  int res5 = SWIG_OLDOBJ ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
@@ -9162,17 +9170,23 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeatIdents(PyObject *self, PyObject *args,
     arg4 = static_cast< int >(val4);
   }
   if (obj4) {
-    ecode5 = SWIG_AsVal_int(obj4, &val5);
-    if (!SWIG_IsOK(ecode5)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "DB_getHeartbeatIdents" "', argument " "5"" of type '" "PreludeDB::DB::ResultIdentsOrderByEnum""'");
-    } 
-    arg5 = static_cast< PreludeDB::DB::ResultIdentsOrderByEnum >(val5);
+    {
+      std::vector< std::string,std::allocator< std::string > > *ptr = (std::vector< std::string,std::allocator< std::string > > *)0;
+      res5 = swig::asptr(obj4, &ptr);
+      if (!SWIG_IsOK(res5)) {
+        SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "DB_getHeartbeatIdents" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "DB_getHeartbeatIdents" "', argument " "5"" of type '" "std::vector< std::string,std::allocator< std::string > > const &""'"); 
+      }
+      arg5 = ptr;
+    }
   }
   
   try {
     {
       SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-      result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,arg5);
+      result = (arg1)->getHeartbeatIdents(arg2,arg3,arg4,(std::vector< std::string,std::allocator< std::string > > const &)*arg5);
       SWIG_PYTHON_THREAD_END_ALLOW;
     }
   } catch (PreludeDBError &e) {
@@ -9187,12 +9201,14 @@ SWIGINTERN PyObject *_wrap_DB_getHeartbeatIdents(PyObject *self, PyObject *args,
     if ( arg2 )
     delete(arg2);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return resultobj;
 fail:
   {
     if ( arg2 )
     delete(arg2);
   }
+  if (SWIG_IsNewObj(res5)) delete arg5;
   return NULL;
 }
 
@@ -17919,9 +17935,6 @@ SWIG_init(void) {
   /* type 'PreludeDB::DB' */
   builtin_pytype = (PyTypeObject *)&SwigPyBuiltin__PreludeDB__DB_type;
   builtin_pytype->tp_dict = d = PyDict_New();
-  SWIG_Python_SetConstant(d, d == md ? public_interface : NULL, "NONE",SWIG_From_int(static_cast< int >(PreludeDB::DB::NONE)));
-  SWIG_Python_SetConstant(d, d == md ? public_interface : NULL, "ORDER_BY_CREATE_TIME_ASC",SWIG_From_int(static_cast< int >(PreludeDB::DB::ORDER_BY_CREATE_TIME_ASC)));
-  SWIG_Python_SetConstant(d, d == md ? public_interface : NULL, "ORDER_BY_CREATE_TIME_DESC",SWIG_From_int(static_cast< int >(PreludeDB::DB::ORDER_BY_CREATE_TIME_DESC)));
   SwigPyBuiltin_SetMetaType(builtin_pytype, metatype);
   builtin_pytype->tp_new = PyType_GenericNew;
   builtin_base_count = 0;

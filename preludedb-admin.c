@@ -84,7 +84,7 @@ ssize_t (*delete_message_from_list)(preludedb_t *db, uint64_t *idents, size_t si
 int (*get_message)(preludedb_t *db, uint64_t ident, idmef_message_t **message) = NULL;
 int (*get_message_idents)(preludedb_t *db, idmef_criteria_t *criteria,
                           int limit, int offset,
-                          preludedb_result_idents_order_t order,
+                          const preludedb_path_selection_t *order,
                           preludedb_result_idents_t **result) = NULL;
 
 
@@ -296,7 +296,7 @@ static int fetch_message_idents_limited(preludedb_t *db, preludedb_result_idents
 
         local_limit = (limit_copy < 0) ? events_per_transaction : MIN(events_per_transaction, limit_copy);
 
-        count = get_message_idents(db, criteria, (int) local_limit, (int) offset + ((no_increment) ? 0 : cur_count), 0, result);
+        count = get_message_idents(db, criteria, (int) local_limit, (int) offset + ((no_increment) ? 0 : cur_count), NULL, result);
         if ( count <= 0 )
                 return count;
 
@@ -551,14 +551,14 @@ static int setup_message_type(const char *type)
 {
         if ( strcasecmp(type, "alert") == 0 ) {
                 get_message = preludedb_get_alert;
-                get_message_idents = preludedb_get_alert_idents;
+                get_message_idents = preludedb_get_alert_idents2;
                 delete_message_from_list = preludedb_delete_alert_from_list;
                 delete_message_from_result_idents = preludedb_delete_alert_from_result_idents;
         }
 
         else if ( strcasecmp(type, "heartbeat") == 0 ) {
                 get_message = preludedb_get_heartbeat;
-                get_message_idents = preludedb_get_heartbeat_idents;
+                get_message_idents = preludedb_get_heartbeat_idents2;
                 delete_message_from_list = preludedb_delete_heartbeat_from_list;
                 delete_message_from_result_idents = preludedb_delete_heartbeat_from_result_idents;
         }

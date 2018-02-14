@@ -535,15 +535,47 @@ int preludedb_result_values_get_field_direct(preludedb_result_values_t *result, 
 }
 
 
+static int get_message_idents_prepare_order(preludedb_t *db, idmef_class_id_t message_type,
+                                            preludedb_result_idents_order_t order,
+                                            preludedb_path_selection_t **path_selection)
+{
+        int ret;
+        preludedb_selected_path_t *selected_path;
+        const char *path = (message_type == IDMEF_CLASS_ID_ALERT) ? "alert.create_time": "heartbeat.create_time";
+
+        ret = preludedb_path_selection_new(db, path_selection);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_selected_path_new_string(&selected_path, path);
+        if ( ret < 0 ) {
+                preludedb_path_selection_destroy(*path_selection);
+                return ret;
+        }
+
+        preludedb_selected_path_set_flags(selected_path,
+                                          (order == PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC) ?
+                                           PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_DESC : PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_ASC);
+
+        ret = preludedb_path_selection_add(*path_selection, selected_path);
+        if ( ret < 0 ) {
+                preludedb_path_selection_destroy(*path_selection);
+                preludedb_selected_path_destroy(selected_path);
+        }
+
+        return ret;
+}
+
+
 static int
 preludedb_get_message_idents(preludedb_t *db,
                              idmef_criteria_t *criteria,
                              int (*get_idents)(preludedb_t *db, idmef_criteria_t *criteria,
                                                int limit, int offset,
-                                               preludedb_result_idents_order_t order,
+                                               const preludedb_path_selection_t *order,
                                                void **res),
                              int limit, int offset,
-                             preludedb_result_idents_order_t order,
+                             const preludedb_path_selection_t *order,
                              preludedb_result_idents_t **result)
 {
         int ret;
@@ -582,6 +614,39 @@ int preludedb_get_alert_idents(preludedb_t *db,
                                preludedb_result_idents_order_t order,
                                preludedb_result_idents_t **result)
 {
+        int ret;
+        preludedb_path_selection_t *order_selection;
+
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        ret = get_message_idents_prepare_order(db, IDMEF_CLASS_ID_ALERT, order, &order_selection);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order_selection, result);
+        preludedb_path_selection_destroy(order_selection);
+
+        return ret;
+}
+
+
+
+/**
+ * preludedb_get_alert_idents2:
+ * @db: Pointer to a db object.
+ * @criteria: Pointer to an idmef criteria.
+ * @limit: Limit of results or -1 if no limit.
+ * @offset: Offset in results or -1 if no offset.
+ * @order: Result order.
+ * @result: Idents result.
+ *
+ * Returns: the number of result or a negative value if an error occured.
+ */
+int preludedb_get_alert_idents2(preludedb_t *db,
+                                idmef_criteria_t *criteria, int limit, int offset,
+                                const preludedb_path_selection_t *order,
+                                preludedb_result_idents_t **result)
+{
         prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return preludedb_get_message_idents(db, criteria, db->plugin->get_alert_idents, limit, offset, order, result);
 }
@@ -603,6 +668,39 @@ int preludedb_get_heartbeat_idents(preludedb_t *db,
                                    idmef_criteria_t *criteria, int limit, int offset,
                                    preludedb_result_idents_order_t order,
                                    preludedb_result_idents_t **result)
+{
+        int ret;
+        preludedb_path_selection_t *order_selection;
+
+        prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
+
+        ret = get_message_idents_prepare_order(db, IDMEF_CLASS_ID_HEARTBEAT, order, &order_selection);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_get_message_idents(db, criteria, db->plugin->get_heartbeat_idents, limit, offset, order_selection, result);
+        preludedb_path_selection_destroy(order_selection);
+
+        return ret;
+}
+
+
+
+/**
+ * preludedb_get_heartbeat_idents2:
+ * @db: Pointer to a db object.
+ * @criteria: Pointer to an idmef criteria.
+ * @limit: Limit of results or -1 if no limit.
+ * @offset: Offset in results or -1 if no offset.
+ * @order: Result order.
+ * @result: Idents result.
+ *
+ * Returns: the number of result or a negative value if an error occured.
+ */
+int preludedb_get_heartbeat_idents2(preludedb_t *db,
+                                    idmef_criteria_t *criteria, int limit, int offset,
+                                    const preludedb_path_selection_t *order,
+                                    preludedb_result_idents_t **result)
 {
         prelude_return_val_if_fail(db && result, prelude_error(PRELUDE_ERROR_ASSERTION));
         return preludedb_get_message_idents(db, criteria, db->plugin->get_heartbeat_idents, limit, offset, order, result);
@@ -774,7 +872,7 @@ int preludedb_delete(preludedb_t *db, idmef_criteria_t *criteria)
                 return ret;
 
         if ( ret == IDMEF_CLASS_ID_ALERT ) {
-                ret = preludedb_get_alert_idents(db, criteria, -1, 0, 0, &result);
+                ret = preludedb_get_alert_idents2(db, criteria, -1, 0, NULL, &result);
                 if ( ret <= 0 )
                         return ret;
 
@@ -782,7 +880,7 @@ int preludedb_delete(preludedb_t *db, idmef_criteria_t *criteria)
         }
 
         else if ( IDMEF_CLASS_ID_HEARTBEAT ) {
-                ret = preludedb_get_heartbeat_idents(db, criteria, -1, 0, 0, &result);
+                ret = preludedb_get_heartbeat_idents2(db, criteria, -1, 0, NULL, &result);
                 if ( ret <= 0 )
                         return ret;
 

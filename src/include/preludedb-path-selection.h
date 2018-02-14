@@ -70,7 +70,7 @@ int preludedb_selected_object_new_string(preludedb_selected_object_t **object, c
 int preludedb_selected_object_new(preludedb_selected_object_t **object, preludedb_selected_object_type_t type, const void *data);
 preludedb_selected_object_t *preludedb_selected_object_ref(preludedb_selected_object_t *object);
 
-int preludedb_path_selection_get_selected(preludedb_path_selection_t *selection, preludedb_selected_path_t **selected, unsigned int index);
+int preludedb_path_selection_get_selected(const preludedb_path_selection_t *selection, preludedb_selected_path_t **selected, unsigned int index);
 int preludedb_selected_path_get_column_index(preludedb_selected_path_t *selected);
 
 int preludedb_path_selection_parse(preludedb_selected_path_t *selected, const char *str);
@@ -95,7 +95,7 @@ void preludedb_path_selection_destroy(preludedb_path_selection_t *path_selection
 int preludedb_path_selection_add(preludedb_path_selection_t *path_selection,
                                  preludedb_selected_path_t *selected_path);
 
-preludedb_selected_path_t *preludedb_path_selection_get_next(preludedb_path_selection_t *path_selection,
+preludedb_selected_path_t *preludedb_path_selection_get_next(const preludedb_path_selection_t *path_selection,
                                                                  preludedb_selected_path_t *selected_path);
 unsigned int preludedb_path_selection_get_count(preludedb_path_selection_t *path_selection);
 unsigned int preludedb_path_selection_get_column_count(preludedb_path_selection_t *path_selection);

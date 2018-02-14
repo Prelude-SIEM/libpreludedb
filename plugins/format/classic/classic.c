@@ -109,41 +109,26 @@ int classic_unescape_binary_safe(preludedb_sql_t *sql, preludedb_sql_field_t *fi
 }
 
 
-static int get_message_idents_set_order(idmef_class_id_t message_type, preludedb_result_idents_order_t order,
+static int get_message_idents_set_order(idmef_class_id_t message_type, const preludedb_path_selection_t *order,
                                         classic_sql_join_t *join, preludedb_sql_select_t *select)
 {
-        preludedb_selected_object_t *object;
-        preludedb_selected_path_t *selected_path;
+        preludedb_selected_path_t *selected_path = NULL;
         int ret;
 
-        if ( message_type == IDMEF_CLASS_ID_ALERT )
-                ret = preludedb_selected_object_new(&object, PRELUDEDB_SELECTED_OBJECT_TYPE_IDMEFPATH, "alert.create_time");
-        else
-                ret = preludedb_selected_object_new(&object, PRELUDEDB_SELECTED_OBJECT_TYPE_IDMEFPATH, "heartbeat.create_time");
-
-        if ( ret < 0 )
-                return ret;
-
-        ret = preludedb_selected_path_new(&selected_path, object,
-                                          (order == PRELUDEDB_RESULT_IDENTS_ORDER_BY_CREATE_TIME_DESC ?
-                                           PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_DESC :
-                                           PRELUDEDB_SELECTED_PATH_FLAGS_ORDER_ASC));
-        if ( ret < 0 ) {
-                preludedb_selected_object_destroy(object);
-                return ret;
+        while ( (selected_path = preludedb_path_selection_get_next(order, selected_path)) ) {
+                ret = preludedb_sql_select_add_selected(select, selected_path, join);
+                if ( ret < 0 )
+                        return ret;
         }
 
-        ret = preludedb_sql_select_add_selected(select, selected_path, join);
-        preludedb_selected_path_destroy(selected_path);
-
-        return ret;
+        return 0;
 }
 
 
 
 static int get_message_idents(preludedb_t *db, idmef_class_id_t message_type,
                               idmef_criteria_t *criteria, int limit, int offset,
-                              preludedb_result_idents_order_t order,
+                              const preludedb_path_selection_t *order,
                               preludedb_sql_table_t **table)
 {
         prelude_string_t *query;
@@ -244,7 +229,7 @@ static int get_message_idents(preludedb_t *db, idmef_class_id_t message_type,
 
 
 static int classic_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
-                                    int limit, int offset, preludedb_result_idents_order_t order,
+                                    int limit, int offset, const preludedb_path_selection_t *order,
                                     void **res)
 {
         return get_message_idents(db, IDMEF_CLASS_ID_ALERT, criteria, limit, offset, order,
@@ -254,7 +239,7 @@ static int classic_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
 
 
 static int classic_get_heartbeat_idents(preludedb_t *db, idmef_criteria_t *criteria,
-                                        int limit, int offset, preludedb_result_idents_order_t order,
+                                        int limit, int offset, const preludedb_path_selection_t *order,
                                         void **res)
 {
         return get_message_idents(db, IDMEF_CLASS_ID_HEARTBEAT, criteria, limit, offset, order,

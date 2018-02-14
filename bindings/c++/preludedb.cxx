@@ -394,16 +394,23 @@ DB::ResultValues DB::getValues(const std::vector<std::string> &selection, const 
 
 
 
-DB::ResultIdents DB::getAlertIdents(Prelude::IDMEFCriteria *criteria, int limit, int offset, ResultIdentsOrderByEnum order)
+DB::ResultIdents DB::getAlertIdents(Prelude::IDMEFCriteria *criteria, int limit, int offset, const std::vector<std::string> &order)
 {
         int ret;
+        preludedb_path_selection_t *corder = NULL;
         idmef_criteria_t *ccriteria = NULL;
         preludedb_result_idents_t *result;
 
         if ( criteria )
                 ccriteria = *criteria;
 
-        ret = preludedb_get_alert_idents(_db, ccriteria, limit, offset, (preludedb_result_idents_order_t) order, &result);
+        corder = _getSelection(_db, order);
+
+        ret = preludedb_get_alert_idents2(_db, ccriteria, limit, offset, corder, &result);
+
+        if ( corder )
+                preludedb_path_selection_destroy(corder);
+
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 
@@ -411,16 +418,23 @@ DB::ResultIdents DB::getAlertIdents(Prelude::IDMEFCriteria *criteria, int limit,
 }
 
 
-DB::ResultIdents DB::getHeartbeatIdents(Prelude::IDMEFCriteria *criteria, int limit, int offset, ResultIdentsOrderByEnum order)
+DB::ResultIdents DB::getHeartbeatIdents(Prelude::IDMEFCriteria *criteria, int limit, int offset, const std::vector<std::string> &order)
 {
         int ret;
+        preludedb_path_selection_t *corder = NULL;
         idmef_criteria_t *ccriteria = NULL;
         preludedb_result_idents_t *result;
 
         if ( criteria )
                 ccriteria = *criteria;
 
-        ret = preludedb_get_heartbeat_idents(_db, ccriteria, limit, offset, (preludedb_result_idents_order_t) order, &result);
+        corder = _getSelection(_db, order);
+
+        ret = preludedb_get_heartbeat_idents2(_db, ccriteria, limit, offset, corder, &result);
+
+        if ( corder )
+                preludedb_path_selection_destroy(corder);
+
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 
