@@ -1638,82 +1638,86 @@ static int get_additional_data(preludedb_sql_t *sql,
 
                 svalue_need_free = TRUE;
                 switch ( type ) {
-                case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER: {
-                        idmef_data_set_char(data, (char) *svalue);
-                        break;
-                }
+                        case IDMEF_ADDITIONAL_DATA_TYPE_CHARACTER: {
+                                idmef_data_set_char(data, (char) *svalue);
+                                break;
+                        }
 
-                case IDMEF_ADDITIONAL_DATA_TYPE_REAL: {
-                        float value;
+                        case IDMEF_ADDITIONAL_DATA_TYPE_REAL: {
+                                float value;
 
-                        ret = sscanf(svalue, "%f", &value);
-                        if ( ret <= 0 )
+                                ret = sscanf(svalue, "%f", &value);
+                                if ( ret <= 0 )
+                                        break;
+
+                                idmef_data_set_float(data, value);
+                                break;
+                        }
+
+                        case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
+                        case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: {
+                                uint8_t value;
+
+                                ret = sscanf(svalue, "%" PRELUDE_SCNu8, &value);
+                                if ( ret <= 0 )
+                                        break;
+
+                                idmef_data_set_byte(data, value);
+                                break;
+                        }
+
+                        case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER: {
+                                int64_t value;
+
+                                ret = sscanf(svalue, "%" PRELUDE_SCNd64, &value);
+                                if ( ret <= 0 )
+                                        break;
+
+                                idmef_data_set_int(data, value);
+                                break;
+                        }
+
+                        case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP: {
+                                uint64_t value;
+
+                                ret = sscanf(svalue, "%" PRELUDE_SCNu64, &value);
+                                if ( ret <= 0 )
+                                        break;
+
+                                idmef_data_set_int(data, value);
+                                break;
+                        }
+
+                        case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
+                                ret = idmef_data_set_byte_string_nodup(data, (unsigned char *) svalue, svalue_size);
+                                if ( ret >= 0 )
+                                        svalue_need_free = FALSE;
                                 break;
 
-                        idmef_data_set_float(data, value);
-                        break;
-                }
+                        case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME: {
+                                idmef_time_t *time;
 
-                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE:
-                case IDMEF_ADDITIONAL_DATA_TYPE_BOOLEAN: {
-                        uint8_t value;
+                                ret = idmef_time_new_from_string(&time, svalue);
+                                if ( ret < 0 )
+                                        break;
 
-                        ret = sscanf(svalue, "%" PRELUDE_SCNu8, &value);
-                        if ( ret <= 0 )
+                                idmef_data_set_time(data, time);
                                 break;
+                        }
 
-                        idmef_data_set_byte(data, value);
-                        break;
+                        case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
+                        case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
+                        case IDMEF_ADDITIONAL_DATA_TYPE_XML:
+                        case IDMEF_ADDITIONAL_DATA_TYPE_ERROR:
+                                ret = -1;
                 }
 
-                case IDMEF_ADDITIONAL_DATA_TYPE_INTEGER: {
-                        int64_t value;
-
-                        ret = sscanf(svalue, "%" PRELUDE_SCNd64, &value);
-                        if ( ret <= 0 )
-                                break;
-
-                        idmef_data_set_int(data, value);
-                        break;
-                }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_NTPSTAMP: {
-                        uint64_t value;
-
-                        ret = sscanf(svalue, "%" PRELUDE_SCNu64, &value);
-                        if ( ret <= 0 )
-                                break;
-
-                        idmef_data_set_int(data, value);
-                        break;
-                }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_BYTE_STRING:
-                        svalue_need_free = FALSE;
-                        ret = idmef_data_set_byte_string_nodup(data, (unsigned char *) svalue, svalue_size);
-                        break;
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_PORTLIST:
-                case IDMEF_ADDITIONAL_DATA_TYPE_STRING:
-                case IDMEF_ADDITIONAL_DATA_TYPE_XML: {
-                        svalue_need_free = FALSE;
+                if ( ret < 0 ) {
                         ret = idmef_data_set_char_string_nodup_fast(data, (char *) svalue, svalue_size);
-                        break;
-                }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_DATE_TIME: {
-                        idmef_time_t *time;
-
-                        ret = idmef_time_new_from_string(&time, svalue);
-                        if ( ret < 0 )
-                                return ret;
-
-                        idmef_data_set_time(data, time);
-                        break;
-                }
-
-                case IDMEF_ADDITIONAL_DATA_TYPE_ERROR:
-                        ret = -1;
+                        if ( ret >= 0 ) {
+                                idmef_additional_data_set_type(additional_data, IDMEF_ADDITIONAL_DATA_TYPE_STRING);
+                                svalue_need_free = FALSE;
+                        }
                 }
 
                 if ( svalue_need_free )
@@ -1725,7 +1729,6 @@ static int get_additional_data(preludedb_sql_t *sql,
 
  error:
         preludedb_sql_table_destroy(table);
-
         return ret;
 }
 
