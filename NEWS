@@ -1,3 +1,11 @@
+* 2018-03-05, libpreludedb-4.1.2:
+
+Author: Yoann Vandoorselaere
+
+- Support attaching data to preludedb_t and preludedb_sql_t object
+
+
+
 * 2018-01-03, libpreludedb-4.1.1:
 
 Author: Antoine Luong
