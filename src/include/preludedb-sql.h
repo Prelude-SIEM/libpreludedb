@@ -191,6 +191,10 @@ const char *preludedb_sql_get_type(const preludedb_sql_t *sql);
 const preludedb_sql_settings_t *preludedb_sql_get_settings(const preludedb_sql_t *sql);
 
 
+void preludedb_sql_set_data(preludedb_sql_t *sql, void *data);
+
+void *preludedb_sql_get_data(preludedb_sql_t *sql);
+
 /*
  * Deprecated, use preludedb_strerror()
  */

@@ -57,6 +57,7 @@ struct preludedb_plugin_format {
         preludedb_plugin_format_path_resolve_func_t path_resolve;
         preludedb_plugin_format_init_func_t init;
         preludedb_plugin_format_init_func_t optimize;
+        preludedb_plugin_format_destroy_func_t destroy_func;
 };
 
 #endif

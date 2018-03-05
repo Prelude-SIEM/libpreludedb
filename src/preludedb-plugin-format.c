@@ -232,6 +232,19 @@ void preludedb_plugin_format_set_init_func(preludedb_plugin_format_t *plugin, pr
 }
 
 
+/**
+ * preludedb_plugin_format_set_destroy_func
+ * @plugin: Plugin object the @func function applies to
+ * @func: Pointer to a destruction function
+ *
+ * Setter for plugin supporting destruction
+ */
+void preludedb_plugin_format_set_destroy_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_destroy_func_t func)
+{
+        plugin->destroy_func = func;
+}
+
+
 
 /**
  * preludedb_plugin_format_set_optimize_func

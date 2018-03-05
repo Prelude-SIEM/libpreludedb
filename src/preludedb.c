@@ -50,6 +50,7 @@ struct preludedb {
         char *format_version;
         preludedb_sql_t *sql;
         preludedb_plugin_format_t *plugin;
+        void *data;
 };
 
 struct preludedb_result_idents {
@@ -186,6 +187,22 @@ static int preludedb_autodetect_format(preludedb_t *db)
 
 
 
+void preludedb_set_data(preludedb_t *db, void *data)
+{
+        prelude_return_if_fail(db);
+        db->data = data;
+}
+
+
+
+void *preludedb_get_data(preludedb_t *db)
+{
+        prelude_return_val_if_fail(db, NULL);
+        return db->data;
+}
+
+
+
 /**
  * preludedb_new:
  * @db: Pointer to a db object to initialize.
@@ -261,6 +278,9 @@ void preludedb_destroy(preludedb_t *db)
 {
         if ( --db->refcount != 0 )
                 return;
+
+        if ( db->plugin && db->plugin->destroy_func )
+                db->plugin->destroy_func(db);
 
         preludedb_sql_destroy(db->sql);
         free(db->format_version);

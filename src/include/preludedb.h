@@ -99,6 +99,10 @@ char *preludedb_get_error(preludedb_t *db, preludedb_error_t error, char *errbuf
 
 int preludedb_insert_message(preludedb_t *db, idmef_message_t *message);
 
+void preludedb_set_data(preludedb_t *db, void *data);
+
+void *preludedb_get_data(preludedb_t *db);
+
 int preludedb_get_alert_idents(preludedb_t *db, idmef_criteria_t *criteria,
                                int limit, int offset,
                                preludedb_result_idents_order_t order,

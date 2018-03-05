@@ -86,6 +86,8 @@ typedef int (*preludedb_plugin_format_path_resolve_func_t)(preludedb_selected_pa
 
 typedef int (*preludedb_plugin_format_init_func_t)(preludedb_t *db);
 
+typedef void (*preludedb_plugin_format_destroy_func_t)(preludedb_t *db);
+
 typedef int (*preludedb_plugin_format_optimize_func_t)(preludedb_t *db);
 
 
@@ -176,6 +178,8 @@ void preludedb_plugin_format_set_destroy_values_resource_func(preludedb_plugin_f
                                                               preludedb_plugin_format_destroy_values_resource_func_t func);
 
 void preludedb_plugin_format_set_init_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_init_func_t func);
+
+void preludedb_plugin_format_set_destroy_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_destroy_func_t func);
 
 void preludedb_plugin_format_set_optimize_func(preludedb_plugin_format_t *plugin, preludedb_plugin_format_optimize_func_t func);
 
