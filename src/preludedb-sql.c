@@ -98,6 +98,7 @@ struct preludedb_sql {
         prelude_bool_t internal_transaction_disabled;
         gl_recursive_lock_t mutex;
         int refcount;
+        void *data;
 };
 
 struct preludedb_sql_table {
@@ -155,6 +156,20 @@ static inline void update_sql_from_errno(preludedb_sql_t *sql, preludedb_error_t
         }
 }
 
+
+void preludedb_sql_set_data(preludedb_sql_t *sql, void *data)
+{
+        prelude_return_if_fail(sql);
+        sql->data = data;
+}
+
+
+
+void *preludedb_sql_get_data(preludedb_sql_t *sql)
+{
+        prelude_return_val_if_fail(sql, NULL);
+        return sql->data;
+}
 
 
 /**
