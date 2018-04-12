@@ -1,3 +1,21 @@
+* 2018-04-13, libpreludedb-5.0.0beta1:
+
+Author: Antoine Luong
+
+- Update GnuLib code
+
+- Fully support sorting in preludedb_get_message_idents()
+
+Author: Yoann Vandoorselaere
+
+- Support attaching data to preludedb_t and preludedb_sql_t object
+
+Author: Thomas Andrejak
+
+- Add python 3.6 support
+
+
+
 * 2018-02-09, libpreludedb-4.2.0rc1:
 
 Author: Antoine Luong
