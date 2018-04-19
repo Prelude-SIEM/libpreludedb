@@ -1,9 +1,10 @@
 
 CREATE TABLE _format (
  name TEXT NOT NULL,
- version TEXT NOT NULL
+ version TEXT NOT NULL,
+ uuid TEXT NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.7');
+INSERT INTO _format (name, version) VALUES('classic', '14.8');
 
 
 CREATE TABLE Prelude_Alert (

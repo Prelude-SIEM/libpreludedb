@@ -101,6 +101,7 @@ struct preludedb_sql {
         void *data;
 };
 
+
 struct preludedb_sql_table {
         preludedb_sql_t *sql;
         void *data;
@@ -128,6 +129,16 @@ struct preludedb_sql_row {
         uint32_t index;
         uint32_t refcount;
         preludedb_sql_field_t fields[1];
+};
+
+
+struct preludedb_sql_query {
+        int refcount;
+        char *string;
+
+        int64_t limit;
+        int64_t offset;
+        int for_update;
 };
 
 
@@ -352,15 +363,216 @@ void *preludedb_sql_table_get_data(preludedb_sql_table_t *table)
 
 
 /**
- * preludedb_sql_query:
+ * preludedb_sql_query_set_option:
+ * @query: Pointer to a query object.
+ * @cmd: The code of the option to set.
+ * @...: Variable argument list containing the value.
+ *
+ * Set the value of the specified option for the query @query.
+ * This value needs to be cast to the appropriate type by the caller.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_query_set_option(preludedb_sql_query_t *query, int cmd, ...)
+{
+        va_list va;
+
+        va_start(va, cmd);
+
+        switch (cmd) {
+                case PRELUDEDB_SQL_QUERY_OPTION_LIMIT:
+                    query->limit = va_arg(va, int64_t);
+                    break;
+
+                case PRELUDEDB_SQL_QUERY_OPTION_OFFSET:
+                    query->offset = va_arg(va, int64_t);
+                    break;
+
+                case PRELUDEDB_SQL_QUERY_OPTION_FOR_UPDATE:
+                    query->for_update = TRUE;
+                    break;
+
+                default:
+                    return prelude_error_verbose(PRELUDE_ERROR_GENERIC, "could not set query option: unknown value '%d'", cmd);
+        }
+
+        va_end(va);
+
+        return 0;
+}
+
+
+
+/**
+ * preludedb_sql_query_get_option:
+ * @query: Pointer to a query object.
+ * @cmd: The code of the option to retrieve.
+ * @ret: Pointer to an address where to store the option value.
+ *
+ * Get the value of the specified option for the query @query.
+ * This value will need to be cast to the appropriate type by the caller.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_query_get_option(preludedb_sql_query_t *query, int cmd, void *ret)
+{
+        switch (cmd) {
+                case PRELUDEDB_SQL_QUERY_OPTION_LIMIT:
+                    if ( ret )
+                            (*(int64_t *) ret) = query->limit;
+
+                    return (query->limit != -1) ? 1 : 0;
+
+                case PRELUDEDB_SQL_QUERY_OPTION_OFFSET:
+                    if ( ret )
+                            (*(int64_t *) ret) = query->offset;
+                    return (query->offset != -1) ? 1 : 0;
+
+                case PRELUDEDB_SQL_QUERY_OPTION_FOR_UPDATE:
+                    if ( ret )
+                            (*(int *) ret) = query->for_update;
+
+                    return (query->for_update) ? 1 : 0;
+
+                default:
+                    return prelude_error_verbose(PRELUDE_ERROR_GENERIC, "could not get query option: unknown value '%d'", cmd);
+        }
+
+        return 0;
+}
+
+
+
+/**
+ * preludedb_sql_query_new:
+ * @new: Pointer to a query object to initialize.
+ * @querystr: The SQL query.
+ *
+ * This function initialize the @new object.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_query_new(preludedb_sql_query_t **new, const char *querystr)
+{
+        *new = calloc(sizeof(**new), 1);
+        if ( ! *new )
+                return preludedb_error_from_errno(errno);
+
+        (*new)->string = strdup(querystr);
+        if ( ! (*new)->string ) {
+                free(*new);
+                return preludedb_error_from_errno(errno);
+        }
+
+        (*new)->limit = (*new)->offset = -1;
+        (*new)->refcount = 1;
+
+        return 0;
+}
+
+
+
+preludedb_sql_query_t *preludedb_sql_query_ref(preludedb_sql_query_t *query)
+{
+        query->refcount++;
+        return query;
+}
+
+
+
+/**
+ * preludedb_sql_query_get_string:
  * @sql: Pointer to a sql object.
- * @query: The SQL query to execute.
- * @table: Pointer to a table where the query result will be stored if the type of query return
- * results (i.e a SELECT can results, but an INSERT never results) and if the query is sucessfull.
+ * @query: Pointer to a query object.
+ *
+ * Get the original query string for the query @query.
+ *
+ * Returns: a pointer to the query string.
+ */
+const char *preludedb_sql_query_get_string(preludedb_sql_query_t *query)
+{
+        return query->string;
+}
+
+
+
+/**
+ * preludedb_sql_query_prepare:
+ * @sql: Pointer to a sql object.
+ * @query: Pointer to a query object.
+ * @output: Where the final query string will be stored.
+ *
+ * Get the final query string for the query @query.
+ *
+ * Returns: 0 on success or a negative value if an error occurs.
+ */
+int preludedb_sql_query_prepare(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output)
+{
+        return _preludedb_plugin_sql_query_prepare(sql, query, output);
+}
+
+
+
+/**
+ * preludedb_sql_query_execute:
+ * @sql: Pointer to a sql object.
+ * @query: Pointer to a query object.
+ * @table: Pointer to a table where the query result will be stored if the type of query returns
+ * results (i.e a SELECT can result, but an INSERT never results) and if the query is successful.
  *
  * Execute a SQL query.
  *
  * Returns: number of affected rows, -1 if an error occured.
+ */
+int preludedb_sql_query_execute(preludedb_sql_t *sql, preludedb_sql_query_t *query, preludedb_sql_table_t **table)
+{
+        int ret;
+        prelude_string_t *output;
+
+        ret = prelude_string_new(&output);
+        if ( ret < 0 )
+                return ret;
+
+        ret = preludedb_sql_query_prepare(sql, query, output);
+        if ( ret < 0 ) {
+                prelude_string_destroy(output);
+                return ret;
+        }
+
+        ret = preludedb_sql_query(sql, prelude_string_get_string(output), table);
+        prelude_string_destroy(output);
+        return ret;
+}
+
+
+
+/**
+ * preludedb_sql_query_destroy:
+ * @table: Pointer to a query object.
+ *
+ * Destroy the @query object.
+ */
+void preludedb_sql_query_destroy(preludedb_sql_query_t *query)
+{
+        if ( --query->refcount > 0 )
+                return;
+
+        free(query->string);
+        free(query);
+}
+
+
+
+/**
+ * preludedb_sql_query:
+ * @sql: Pointer to a sql object.
+ * @query: The SQL query to execute.
+ * @table: Pointer to a table where the query result will be stored if the type of query returns
+ * results (i.e a SELECT can results, but an INSERT never results) and if the query is successful.
+ *
+ * Execute a SQL query.
+ *
+ * Returns: number of affected rows, -1 if an error occurred.
  */
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table)
 {
@@ -1866,4 +2078,17 @@ void _preludedb_sql_enable_internal_transaction(preludedb_sql_t *sql)
 void _preludedb_sql_disable_internal_transaction(preludedb_sql_t *sql)
 {
         sql->internal_transaction_disabled = TRUE;
+}
+
+
+
+void *_preludedb_sql_get_plugin(preludedb_sql_t *sql)
+{
+        return sql->plugin;
+}
+
+
+void *_preludedb_sql_get_session(preludedb_sql_t *sql)
+{
+        return sql->session;
 }

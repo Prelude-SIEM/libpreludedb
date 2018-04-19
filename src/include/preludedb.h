@@ -83,6 +83,7 @@ void preludedb_destroy(preludedb_t *db);
 
 const char *preludedb_get_format_name(preludedb_t *db);
 const char *preludedb_get_format_version(preludedb_t *db);
+const char *preludedb_get_format_uuid(preludedb_t *db);
 
 int preludedb_set_format(preludedb_t *db, const char *format_name);
 

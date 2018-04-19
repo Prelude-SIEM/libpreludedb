@@ -75,7 +75,15 @@ typedef enum {
 } preludedb_selected_object_interval_t;
 
 
+typedef enum {
+        PRELUDEDB_SQL_QUERY_OPTION_LIMIT      = 1,
+        PRELUDEDB_SQL_QUERY_OPTION_OFFSET     = 2,
+        PRELUDEDB_SQL_QUERY_OPTION_FOR_UPDATE = 3,
+} preludedb_sql_query_option_t;
+
+
 typedef struct preludedb_sql preludedb_sql_t;
+typedef struct preludedb_sql_query preludedb_sql_query_t;
 
 typedef struct preludedb_sql_table preludedb_sql_table_t;
 typedef struct preludedb_sql_row preludedb_sql_row_t;
@@ -113,6 +121,15 @@ int preludedb_sql_enable_query_logging(preludedb_sql_t *sql, const char *filenam
 void preludedb_sql_disable_query_logging(preludedb_sql_t *sql);
 
 int preludedb_sql_query(preludedb_sql_t *sql, const char *query, preludedb_sql_table_t **table);
+int preludedb_sql_query_new(preludedb_sql_query_t **query, const char *querystr);
+int preludedb_sql_query_set_option(preludedb_sql_query_t *query, int cmd, ...);
+int preludedb_sql_query_get_option(preludedb_sql_query_t *query, int cmd, void *data);
+
+preludedb_sql_query_t *preludedb_sql_query_ref(preludedb_sql_query_t *query);
+const char *preludedb_sql_query_get_string(preludedb_sql_query_t *query);
+int preludedb_sql_query_prepare(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output);
+int preludedb_sql_query_execute(preludedb_sql_t *sql, preludedb_sql_query_t *query, preludedb_sql_table_t **table);
+void preludedb_sql_query_destroy(preludedb_sql_query_t *query);
 
 int preludedb_sql_query_sprintf(preludedb_sql_t *sql, preludedb_sql_table_t **table, const char *format, ...)
                                 __attribute__ ((__format__ (__printf__, 3, 4)));
@@ -196,6 +213,9 @@ const preludedb_sql_settings_t *preludedb_sql_get_settings(const preludedb_sql_t
 void preludedb_sql_set_data(preludedb_sql_t *sql, void *data);
 
 void *preludedb_sql_get_data(preludedb_sql_t *sql);
+
+void *_preludedb_sql_get_plugin(preludedb_sql_t *sql);
+void *_preludedb_sql_get_session(preludedb_sql_t *sql);
 
 /*
  * Deprecated, use preludedb_strerror()

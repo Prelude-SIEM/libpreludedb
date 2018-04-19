@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <libprelude/prelude.h>
+#include <libprelude/prelude-ident.h>
 #include <libprelude/idmef-criteria.h>
 
 
@@ -48,6 +49,7 @@
 struct preludedb {
         int refcount;
         char *format_version;
+        char *format_uuid;
         preludedb_sql_t *sql;
         preludedb_plugin_format_t *plugin;
         void *data;
@@ -142,17 +144,61 @@ void preludedb_deinit(void)
 
 
 
-static int preludedb_autodetect_format(preludedb_t *db)
+static int generate_uuid(preludedb_sql_t *sql, char **out)
 {
+        int ret;
+        prelude_ident_t *ident;
+        prelude_string_t *uuid;
+
+        ret = prelude_ident_new(&ident);
+        if ( ret < 0 )
+                return ret;
+
+        ret = prelude_string_new(&uuid);
+        if ( ret < 0 ) {
+                prelude_ident_destroy(ident);
+                return ret;
+        }
+
+        ret = prelude_ident_generate(ident, uuid);
+        if ( ret < 0 )
+                goto error;
+
+        ret = prelude_string_get_string_released(uuid, out);
+        if ( ret < 0 )
+                goto error;
+
+        ret = preludedb_sql_query_sprintf(sql, NULL, "UPDATE _format SET uuid = '%s'", *out);
+
+ error:
+        prelude_ident_destroy(ident);
+        prelude_string_destroy(uuid);
+
+        return ret;
+}
+
+
+static int _preludedb_autodetect_format(preludedb_t *db)
+{
+        int ret;
+        preludedb_sql_query_t *query;
         preludedb_sql_table_t *table;
         preludedb_sql_row_t *row;
         preludedb_sql_field_t *format_name;
         preludedb_sql_field_t *format_version;
-        int ret;
+        preludedb_sql_field_t *format_uuid;
 
-        ret = preludedb_sql_query(db->sql, "SELECT name, version from _format", &table);
-        if ( ret <= 0 )
+        ret = preludedb_sql_query_new(&query, "SELECT name, version, uuid FROM _format");
+        if ( ret < 0 )
+                return ret;
+
+        preludedb_sql_query_set_option(query, PRELUDEDB_SQL_QUERY_OPTION_FOR_UPDATE);
+
+        ret = preludedb_sql_query_execute(db->sql, query, &table);
+        if ( ret <= 0 ) {
+                preludedb_sql_query_destroy(query);
                 return (ret < 0) ? ret : -1;
+        }
 
         ret = preludedb_sql_table_fetch_row(table, &row);
         if ( ret < 0 )
@@ -175,14 +221,46 @@ static int preludedb_autodetect_format(preludedb_t *db)
                 goto error;
 
         db->format_version = strdup(preludedb_sql_field_get_value(format_version));
-        if ( ! db->format_version )
+        if ( ! db->format_version ) {
                 ret = prelude_error_from_errno(errno);
+                goto error;
+        }
+
+        ret = preludedb_sql_row_get_field(row, 2, &format_uuid);
+        if ( ret < 0 )
+                goto error;
+
+        if ( format_uuid )
+                db->format_uuid = strdup(preludedb_sql_field_get_value(format_uuid));
+        else {
+                ret = generate_uuid(db->sql, &db->format_uuid);
+        }
 
  error:
+        preludedb_sql_query_destroy(query);
         preludedb_sql_table_destroy(table);
 
         return ret;
 
+}
+
+
+static int preludedb_autodetect_format(preludedb_t *db)
+{
+        int ret, tmp;
+
+        ret = preludedb_transaction_start(db);
+        if ( ret < 0 ) {
+                return ret;
+        }
+
+        ret = _preludedb_autodetect_format(db);
+        if ( ret < 0 ) {
+                tmp = preludedb_transaction_abort(db);
+                return (tmp < 0) ? tmp : ret;
+        }
+
+        return preludedb_transaction_end(db);
 }
 
 
@@ -228,29 +306,25 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
         *db = calloc(1, sizeof (**db));
         if ( ! *db ) {
                 ret = preludedb_error_from_errno(errno);
-                snprintf(errbuf, size, "%s", preludedb_strerror(ret));
                 return ret;
         }
 
         (*db)->refcount = 1;
         (*db)->sql = preludedb_sql_ref(sql);
 
-        if ( format_name )
-                ret = preludedb_set_format(*db, format_name);
-        else
-                ret = preludedb_autodetect_format(*db);
+        ret = preludedb_autodetect_format(*db);
 
         if ( ret >= 0 && (*db)->plugin->init )
                 ret = (*db)->plugin->init(*db);
 
         if ( ret < 0 ) {
-                if ( errbuf )
-                        preludedb_get_error(*db, ret, errbuf, size);
-
                 preludedb_sql_destroy(sql);
 
                 if ( (*db)->format_version )
                         free((*db)->format_version);
+
+                if ( (*db)->format_uuid )
+                        free((*db)->format_uuid);
 
                 free(*db);
         }
@@ -286,6 +360,7 @@ void preludedb_destroy(preludedb_t *db)
 
         preludedb_sql_destroy(db->sql);
         free(db->format_version);
+        free(db->format_uuid);
         free(db);
 }
 
@@ -317,6 +392,19 @@ const char *preludedb_get_format_version(preludedb_t *db)
         return db->format_version;
 }
 
+
+
+/**
+ * preludedb_get_format_uuid:
+ * @db: Pointer to a db object.
+ *
+ * Returns: the UUID for this database.
+ */
+const char *preludedb_get_format_uuid(preludedb_t *db)
+{
+        prelude_return_val_if_fail(db, NULL);
+        return db->format_uuid;
+}
 
 
 /**

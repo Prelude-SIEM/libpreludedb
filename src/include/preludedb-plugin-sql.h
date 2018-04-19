@@ -38,6 +38,7 @@ typedef void (*preludedb_plugin_sql_close_func_t)(void *session);
 typedef int (*preludedb_plugin_sql_escape_func_t)(void *session, const char *input, size_t input_size, char **output);
 typedef int (*preludedb_plugin_sql_escape_binary_func_t)(void *session, const unsigned char *input, size_t input_size, char **output);
 typedef int (*preludedb_plugin_sql_unescape_binary_func_t)(void *session, const char *input, unsigned char **output, size_t *output_size);
+typedef int (*preludedb_plugin_sql_query_prepare_func_t)(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output);
 typedef int (*preludedb_plugin_sql_query_func_t)(void *session, const char *query, preludedb_sql_table_t **res);
 typedef unsigned int (*preludedb_plugin_sql_get_column_count_func_t)(void *session, preludedb_sql_table_t *table);
 typedef unsigned int (*preludedb_plugin_sql_get_row_count_func_t)(void *session, preludedb_sql_table_t *table);
@@ -93,6 +94,10 @@ void preludedb_plugin_sql_set_unescape_binary_func(preludedb_plugin_sql_t *plugi
 
 int _preludedb_plugin_sql_unescape_binary(preludedb_plugin_sql_t *plugin, void *session, const char *input,
                                           size_t input_size, unsigned char **output, size_t *output_size);
+
+void preludedb_plugin_sql_set_query_prepare_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_query_prepare_func_t func);
+
+int _preludedb_plugin_sql_query_prepare(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output);
 
 void preludedb_plugin_sql_set_query_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_query_func_t func);
 

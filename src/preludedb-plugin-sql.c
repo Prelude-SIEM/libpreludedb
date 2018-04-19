@@ -42,6 +42,7 @@ struct preludedb_plugin_sql {
         preludedb_plugin_sql_escape_func_t escape;
         preludedb_plugin_sql_escape_binary_func_t escape_binary;
         preludedb_plugin_sql_unescape_binary_func_t unescape_binary;
+        preludedb_plugin_sql_query_prepare_func_t query_prepare;
         preludedb_plugin_sql_query_func_t query;
         preludedb_plugin_sql_get_column_count_func_t get_column_count;
         preludedb_plugin_sql_get_row_count_func_t get_row_count;
@@ -191,6 +192,32 @@ int _preludedb_plugin_sql_get_last_insert_ident(preludedb_plugin_sql_t *plugin, 
                 return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "could not retrieve last insert ID: session not initialized");
 
         return plugin->get_last_insert_ident(session, ident);
+}
+
+
+void preludedb_plugin_sql_set_query_prepare_func(preludedb_plugin_sql_t *plugin, preludedb_plugin_sql_query_prepare_func_t func)
+{
+        plugin->query_prepare = func;
+}
+
+
+int _preludedb_plugin_sql_query_prepare(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output)
+{
+        int ret;
+        int64_t limit = -1, offset = -1;
+        preludedb_plugin_sql_t *plugin = _preludedb_sql_get_plugin(sql);
+
+        if ( plugin->query_prepare )
+                return plugin->query_prepare(sql, query, output);
+
+        ret = prelude_string_sprintf(output, "%s", preludedb_sql_query_get_string(query));
+        if ( ret < 0 )
+                return ret;
+
+        preludedb_sql_query_get_option(query, PRELUDEDB_SQL_QUERY_OPTION_LIMIT, &limit);
+        preludedb_sql_query_get_option(query, PRELUDEDB_SQL_QUERY_OPTION_OFFSET, &offset);
+
+        return preludedb_sql_build_limit_offset_string(sql, limit, offset, output);
 }
 
 

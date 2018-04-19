@@ -2,9 +2,10 @@ DROP TABLE IF EXISTS _format;
 
 CREATE TABLE _format (
  name VARCHAR(255) NOT NULL,
- version VARCHAR(255) NOT NULL
+ version VARCHAR(255) NOT NULL,
+ uuid VARCHAR(23) NULL
 );
-INSERT INTO _format (name, version) VALUES('classic', '14.7');
+INSERT INTO _format (name, version) VALUES('classic', '14.8');
 
 DROP TABLE IF EXISTS Prelude_Alert;
 

@@ -112,6 +112,29 @@ static int _sql_query(void *session, const char *query, PGresult **result)
 
 
 
+static int sql_query_prepare(preludedb_sql_t *sql, preludedb_sql_query_t *query, prelude_string_t *output)
+{
+        int ret;
+        int64_t limit = -1, offset = -1;
+
+        ret = prelude_string_cat(output, preludedb_sql_query_get_string(query));
+        if ( ret < 0 )
+                return ret;
+
+        if ( preludedb_sql_query_get_option(query, PRELUDEDB_SQL_QUERY_OPTION_FOR_UPDATE, NULL) ) {
+                ret = prelude_string_cat(output, " FOR UPDATE");
+                if ( ret < 0 )
+                        return ret;
+        }
+
+        preludedb_sql_query_get_option(query, PRELUDEDB_SQL_QUERY_OPTION_LIMIT, &limit);
+        preludedb_sql_query_get_option(query, PRELUDEDB_SQL_QUERY_OPTION_OFFSET, &offset);
+
+        return preludedb_sql_build_limit_offset_string(sql, limit, offset, output);
+}
+
+
+
 static int sql_query(void *session, const char *query, preludedb_sql_table_t **table)
 {
         int ret, ret2;
@@ -652,6 +675,7 @@ int pgsql_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_escape_func(plugin, sql_escape);
         preludedb_plugin_sql_set_escape_binary_func(plugin, sql_escape_binary);
         preludedb_plugin_sql_set_unescape_binary_func(plugin, sql_unescape_binary);
+        preludedb_plugin_sql_set_query_prepare_func(plugin, sql_query_prepare);
         preludedb_plugin_sql_set_query_func(plugin, sql_query);
         preludedb_plugin_sql_set_get_server_version_func(plugin, sql_get_server_version);
         preludedb_plugin_sql_set_table_destroy_func(plugin, sql_table_destroy);
