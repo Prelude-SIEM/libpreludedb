@@ -247,6 +247,8 @@ int preludedb_new(preludedb_t **db, preludedb_sql_t *sql, const char *format_nam
                 if ( errbuf )
                         preludedb_get_error(*db, ret, errbuf, size);
 
+                preludedb_sql_destroy(sql);
+
                 if ( (*db)->format_version )
                         free((*db)->format_version);
 
