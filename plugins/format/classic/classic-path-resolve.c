@@ -320,8 +320,10 @@ static int _classic_path_resolve(const idmef_path_t *path, int field_context, vo
         char *table_name;
         int ret;
 
-        if ( idmef_path_get_depth(path) == 2 && idmef_path_get_value_type(path, 1) != IDMEF_VALUE_TYPE_TIME )
+        if ( idmef_path_get_depth(path) == 2 && idmef_path_get_value_type(path, 1) != IDMEF_VALUE_TYPE_TIME ) {
+                classic_sql_join_set_top_class(join, idmef_path_get_class(path, 0));
                 return default_field_name_resolver(path, field_context, "top_table", output);
+        }
 
         class = search_path(path);
 
