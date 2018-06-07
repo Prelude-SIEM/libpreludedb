@@ -1323,6 +1323,26 @@ int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t
 }
 
 
+/**
+ * preludedb_sql_criteria_operator_to_string:
+ * @op: Boolean operator
+ *
+ * Get the SQL string representation of @op.
+ *
+ * Returns: the operator string or NULL if the operator @op could not be found.
+ */
+const char *preludedb_sql_criteria_operator_to_string(idmef_criteria_operator_t op)
+{
+        if ( op == IDMEF_CRITERIA_OPERATOR_AND )
+                return "AND";
+
+        else if ( op == IDMEF_CRITERIA_OPERATOR_OR )
+                return "OR";
+
+        return NULL;
+}
+
+
 static int build_criterion_fixed_sql_time_value(preludedb_sql_t *sql,
                                                 const idmef_value_t *value, char *buf, size_t size)
 {

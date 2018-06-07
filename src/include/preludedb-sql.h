@@ -164,6 +164,8 @@ int preludedb_sql_field_to_float(preludedb_sql_field_t *field, float *value);
 int preludedb_sql_field_to_double(preludedb_sql_field_t *field, double *value);
 int preludedb_sql_field_to_string(preludedb_sql_field_t *field, prelude_string_t *output);
 
+const char *preludedb_sql_criteria_operator_to_string(idmef_criteria_operator_t op);
+
 int preludedb_sql_build_time_interval_string(preludedb_sql_t *sql, prelude_string_t *output, const char *field,
                                              const char *value, preludedb_selected_object_interval_t unit);
 

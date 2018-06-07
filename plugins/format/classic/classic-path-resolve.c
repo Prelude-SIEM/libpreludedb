@@ -29,6 +29,7 @@
 #include <stdarg.h>
 
 #include <libprelude/prelude.h>
+#include <libprelude/idmef-criteria.h>
 
 #include "preludedb-path-selection.h"
 #include "preludedb-sql-settings.h"
@@ -353,7 +354,7 @@ int classic_path_resolve(preludedb_selected_path_t *selpath, preludedb_selected_
 
 
 static int classic_path_resolve_criterion(preludedb_sql_t *sql,
-                                          idmef_criterion_t *criterion,
+                                          idmef_criteria_t *criterion,
                                           classic_sql_join_t *join, prelude_string_t *output)
 {
         prelude_string_t *field_name;
@@ -363,14 +364,14 @@ static int classic_path_resolve_criterion(preludedb_sql_t *sql,
         if ( ret < 0 )
                 return ret;
 
-        ret = _classic_path_resolve(idmef_criterion_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
+        ret = _classic_path_resolve(idmef_criteria_get_path(criterion), FIELD_CONTEXT_WHERE, join, field_name);
         if ( ret < 0 )
                 goto error;
 
         ret = preludedb_sql_build_criterion_string(sql, output,
                                                    prelude_string_get_string(field_name),
-                                                   idmef_criterion_get_operator(criterion),
-                                                   idmef_criterion_get_value(criterion));
+                                                   idmef_criteria_get_operator(criterion),
+                                                   idmef_criteria_get_value(criterion));
 
  error:
         prelude_string_destroy(field_name);
@@ -385,44 +386,38 @@ int classic_path_resolve_criteria(preludedb_sql_t *sql,
                                   classic_sql_join_t *join, prelude_string_t *output)
 {
         int ret;
-        idmef_criteria_t *or, *and;
+        const char *operator;
+        idmef_criteria_t *left, *right;
 
-        or = idmef_criteria_get_or(criteria);
-        and = idmef_criteria_get_and(criteria);
+        if ( idmef_criteria_is_criterion(criteria) )
+                return classic_path_resolve_criterion(sql, criteria, join, output);
 
-        if ( or ) {
-                ret = prelude_string_cat(output, "((");
-                if ( ret < 0 )
-                        return ret;
-        }
+        left = idmef_criteria_get_left(criteria);
+        right = idmef_criteria_get_right(criteria);
 
-        ret = classic_path_resolve_criterion(sql, idmef_criteria_get_criterion(criteria), join, output);
+        ret = prelude_string_cat(output, "(");
         if ( ret < 0 )
                 return ret;
 
-        if ( and ) {
-                ret = prelude_string_cat(output, " AND ");
-                if ( ret < 0 )
-                        return ret;
+        ret = classic_path_resolve_criteria(sql, left, join, output);
+        if ( ret < 0 )
+                return ret;
 
-                ret = classic_path_resolve_criteria(sql, and, join, output);
-                if ( ret < 0 )
-                        return ret;
-        }
+        operator = preludedb_sql_criteria_operator_to_string(idmef_criteria_get_operator(criteria));
+        if ( ! operator )
+                return -1;
 
-        if ( or ) {
-                ret = prelude_string_cat(output, ") OR (");
-                if ( ret < 0 )
-                        return ret;
+        ret = prelude_string_sprintf(output, " %s ", operator);
+        if ( ret < 0 )
+                return ret;
 
-                ret = classic_path_resolve_criteria(sql, or, join, output);
-                if ( ret < 0 )
-                        return ret;
+        ret = classic_path_resolve_criteria(sql, right, join, output);
+        if ( ret < 0 )
+                return ret;
 
-                ret = prelude_string_cat(output, "))");
-                if ( ret < 0 )
-                        return ret;
-        }
+        ret = prelude_string_cat(output, ")");
+        if ( ret < 0 )
+                return ret;
 
         return 0;
 
