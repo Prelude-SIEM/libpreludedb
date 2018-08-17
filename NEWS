@@ -1,3 +1,19 @@
+* 2018-08-17, libpreludedb-5.0.0rc1:
+
+Author: Antoine Luong
+
+- Add a unique identifier in the _format table
+
+- Fix SQL connection leak
+
+Author: Yoann Vandoorselaere
+
+- Properly set top_class when there is no JOIN
+
+- Prevent failure on additional data type mismatch
+
+
+
 * 2018-05-04, libpreludedb-5.0.0beta2:
 
 No new changes.
