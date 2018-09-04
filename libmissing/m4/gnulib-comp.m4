@@ -570,6 +570,7 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-lock.c
   tests/test-memchr.c
   tests/test-memrchr.c
+  tests/test-once.c
   tests/test-pthread_sigmask1.c
   tests/test-pthread_sigmask2.c
   tests/test-raise.c

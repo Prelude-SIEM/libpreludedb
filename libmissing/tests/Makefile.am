@@ -192,6 +192,7 @@ inttypes.h: inttypes.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(WARN_ON_U
 	      -e 's/@''HAVE_DECL_IMAXDIV''@/$(HAVE_DECL_IMAXDIV)/g' \
 	      -e 's/@''HAVE_DECL_STRTOIMAX''@/$(HAVE_DECL_STRTOIMAX)/g' \
 	      -e 's/@''HAVE_DECL_STRTOUMAX''@/$(HAVE_DECL_STRTOUMAX)/g' \
+	      -e 's/@''HAVE_IMAXDIV_T''@/$(HAVE_IMAXDIV_T)/g' \
 	      -e 's/@''REPLACE_STRTOIMAX''@/$(REPLACE_STRTOIMAX)/g' \
 	      -e 's/@''REPLACE_STRTOUMAX''@/$(REPLACE_STRTOUMAX)/g' \
 	      -e 's/@''INT32_MAX_LT_INTMAX_MAX''@/$(INT32_MAX_LT_INTMAX_MAX)/g' \
@@ -228,11 +229,15 @@ EXTRA_DIST += test-limits-h.c
 
 ## begin gnulib module lock-tests
 
-TESTS += test-rwlock1 test-lock
-check_PROGRAMS += test-rwlock1 test-lock
+TESTS += test-rwlock1 test-lock test-once1 test-once2
+check_PROGRAMS += test-rwlock1 test-lock test-once1 test-once2
 test_rwlock1_LDADD = $(LDADD) @LIBMULTITHREAD@ @YIELD_LIB@
 test_lock_LDADD = $(LDADD) @LIBMULTITHREAD@ @YIELD_LIB@
-EXTRA_DIST += test-rwlock1.c test-lock.c
+test_once1_SOURCES = test-once.c
+test_once1_LDADD = $(LDADD) @LIBTHREAD@
+test_once2_SOURCES = test-once.c
+test_once2_LDADD = $(LDADD) @LIBMULTITHREAD@
+EXTRA_DIST += test-rwlock1.c test-lock.c test-once.c
 
 ## end   gnulib module lock-tests
 
