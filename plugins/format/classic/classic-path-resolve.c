@@ -395,21 +395,23 @@ int classic_path_resolve_criteria(preludedb_sql_t *sql,
         left = idmef_criteria_get_left(criteria);
         right = idmef_criteria_get_right(criteria);
 
-        ret = prelude_string_cat(output, "(");
+        ret = prelude_string_sprintf(output, "%s(", (idmef_criteria_get_operator(criteria) == IDMEF_CRITERION_OPERATOR_NOT) ? "NOT" : "");
         if ( ret < 0 )
                 return ret;
 
-        ret = classic_path_resolve_criteria(sql, left, join, output);
-        if ( ret < 0 )
-                return ret;
+        if ( left ) {
+                ret = classic_path_resolve_criteria(sql, left, join, output);
+                if ( ret < 0 )
+                        return ret;
 
-        operator = preludedb_sql_criteria_operator_to_string(idmef_criteria_get_operator(criteria));
-        if ( ! operator )
-                return -1;
+                operator = preludedb_sql_criteria_operator_to_string(idmef_criteria_get_operator(criteria) & (~IDMEF_CRITERION_OPERATOR_NOT));
+                if ( ! operator )
+                        return -1;
 
-        ret = prelude_string_sprintf(output, " %s ", operator);
-        if ( ret < 0 )
-                return ret;
+                ret = prelude_string_sprintf(output, " %s ", operator);
+                if ( ret < 0 )
+                        return ret;
+        }
 
         ret = classic_path_resolve_criteria(sql, right, join, output);
         if ( ret < 0 )
