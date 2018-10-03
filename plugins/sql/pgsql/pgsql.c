@@ -464,7 +464,9 @@ static const char *get_operator_string(idmef_criterion_operator_t operator)
                 const char *name;
         } tbl[] = {
                 { IDMEF_CRITERION_OPERATOR_EQUAL,             "="           },
+                { IDMEF_CRITERION_OPERATOR_EQUAL_NOCASE,      "="           },
                 { IDMEF_CRITERION_OPERATOR_NOT_EQUAL,         "!="          },
+                { IDMEF_CRITERION_OPERATOR_NOT_EQUAL_NOCASE,  "!="          },
 
                 { IDMEF_CRITERION_OPERATOR_GREATER,           ">"           },
                 { IDMEF_CRITERION_OPERATOR_GREATER_OR_EQUAL,  ">="          },
@@ -505,16 +507,13 @@ static int sql_build_constraint_string(void *session, prelude_string_t *out, con
                 value = "";
 
         op_str = get_operator_string(operator);
-        if ( op_str )
-                return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
+        if ( ! op_str )
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Could not map operator to string");
 
-        else if ( operator == IDMEF_CRITERION_OPERATOR_EQUAL_NOCASE )
-                return prelude_string_sprintf(out, "lower(%s) = lower(%s)", field, value);
+        if ( operator == IDMEF_CRITERION_OPERATOR_EQUAL_NOCASE || operator == IDMEF_CRITERION_OPERATOR_NOT_EQUAL_NOCASE )
+                return prelude_string_sprintf(out, "lower(%s) %s lower(%s)", field, op_str, value);
 
-        else if ( operator == IDMEF_CRITERION_OPERATOR_NOT_EQUAL_NOCASE )
-                return prelude_string_sprintf(out, "lower(%s) != lower(%s)", field, value);
-
-        return -1;
+        return prelude_string_sprintf(out, "%s %s %s", field, op_str, value);
 }
 
 
@@ -595,7 +594,7 @@ static int sql_build_time_constraint_string(void *session, prelude_string_t *out
 
         sql_operator = get_operator_string(operator);
         if ( ! sql_operator )
-                return preludedb_error(PRELUDEDB_ERROR_GENERIC);
+                return preludedb_error_verbose(PRELUDEDB_ERROR_GENERIC, "Could not map operator to string");
 
         if ( type == PRELUDEDB_SQL_TIME_CONSTRAINT_WDAY )
                 value = value % 7 + 1;
