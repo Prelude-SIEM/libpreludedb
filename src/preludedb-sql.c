@@ -111,7 +111,7 @@ struct preludedb_sql_table {
         unsigned int row_count;
         unsigned int column_count;
 
-        uint16_t refcount;
+        uint32_t refcount;
         uint8_t done;
 };
 
