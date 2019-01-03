@@ -1,6 +1,6 @@
 /*****
  *
- * Copyright (C) 2005-2018 CS-SI. All Rights Reserved.
+ * Copyright (C) 2005-2019 CS-SI. All Rights Reserved.
  * Author: Rob Holland <rob@inversepath.com>
  *
  * This file is part of the PreludeDB library.
