@@ -1,3 +1,15 @@
+* 2019-03-15, libpreludedb-5.1.0alpha1:
+
+Author: Yoann Vandoorselaere
+
+- Fix overflow for selection with > 65535 rows
+
+- Add missing =*, !=* operators
+
+- Support NOT criterion
+
+
+
 * 2018-09-07, libpreludedb-5.0.0:
 
 Author: Antoine Luong

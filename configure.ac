@@ -1,8 +1,8 @@
 m4_define([libpreludedb_major_version], [5])
-m4_define([libpreludedb_minor_version], [0])
+m4_define([libpreludedb_minor_version], [1])
 m4_define([libpreludedb_micro_version], [0])
-m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_FINAL])
-m4_define([libpreludedb_serial_version], [0])
+m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_ALPHA])
+m4_define([libpreludedb_serial_version], [1])
 
 m4_define([serial_string], ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_ALPHA, alpha,
                                   ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_BETA, beta,
@@ -30,12 +30,12 @@ dnl **********************************************************
 dnl * Library soname (https://www.sourceware.org/autobook/autobook/autobook_61.html#Library-Versioning)
 dnl **********************************************************
 libpreludedb_current=10
-libpreludedb_revision=0
+libpreludedb_revision=1
 libpreludedb_age=3
 LIBPRELUDEDB_SONAME=$libpreludedb_current:$libpreludedb_revision:$libpreludedb_age
 
 libpreludedbcpp_current=5
-libpreludedbcpp_revision=0
+libpreludedbcpp_revision=1
 libpreludedbcpp_age=3
 LIBPRELUDEDBCPP_SONAME=$libpreludedbcpp_current:$libpreludedbcpp_revision:$libpreludedbcpp_age
 
