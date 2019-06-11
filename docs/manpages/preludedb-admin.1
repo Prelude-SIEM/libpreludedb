@@ -3,17 +3,20 @@
 preludedb-admin \- tool to copy, move, delete, save or restore a prelude database
 .SH SYNOPSIS
 .B preludedb-admin
-\fIcopy|move|delete|load|save\fR \fIarguments\fR
+\fIcopy|count|delete|load|move|optimize|save|update\fR \fIarguments\fR
 .SH DESCRIPTION
 .\" Add any additional description here
 .PP
-preludedb-admin can be used to copy, move, delete, save or restore a prelude
-database, partly or in whole, while preserving IDMEF data consistency.
+preludedb-admin can be used to copy, move, delete, save, update or restore
+a Prelude database, partly or in whole, while preserving IDMEF data consistency.
 .PP
 Mandatory arguments
 .TP
 \fBcopy\fR
 Make a copy of a Prelude database to another database.
+.TP
+\fBcount\fR
+Count the number of events in a Prelude database.
 .TP
 \fBdelete\fR
 Delete content of a Prelude database.
@@ -24,8 +27,14 @@ Load a Prelude database from a file.
 \fBmove\fR
 Move content of a Prelude database to another database.
 .TP
+\fBoptimize\fR
+Optimize a Prelude database by deleting orphaned data.
+.TP
 \fBsave\fR
 Save a Prelude database to a file.
+.TP
+\fBupdate\fR
+Update data in a Prelude database.
 .PP
 Running a command without providing arguments will display a detailed help.
 .SH EXAMPLES

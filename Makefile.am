@@ -26,14 +26,8 @@ MAINTAINERCLEANFILES = \
 
 
 bin_SCRIPTS = $(top_builddir)/libpreludedb-config
+dist_bin_SCRIPTS = $(top_srcdir)/preludedb-admin
 distuninstallcheck_listfiles = find . -type f -print | $(GREP) -v 'perl' | $(GREP) -v '3pm' | $(GREP) -v 'egg-info' | $(GREP) -v 'cpython'
-
-AM_CPPFLAGS = @PCFLAGS@ -I$(top_srcdir)/src/include -I$(top_srcdir)/libmissing @LIBPRELUDE_CFLAGS@
-bin_PROGRAMS = preludedb-admin
-
-preludedb_admin_LDFLAGS = @LIBPRELUDE_LDFLAGS@
-preludedb_admin_LDADD = $(top_builddir)/src/libpreludedb.la @LIBPRELUDE_LIBS@
-preludedb_admin_SOURCES = preludedb-admin.c
 
 dist-hook:
 	@if test -d "$(srcdir)/.git"; then      \
