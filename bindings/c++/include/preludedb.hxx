@@ -117,6 +117,10 @@ namespace PreludeDB {
                             int limit=-1, int offset=-1);
 
                 void optimize(void);
+                void transaction_start();
+                void transaction_end();
+                void transaction_abort();
+
         };
 };
 

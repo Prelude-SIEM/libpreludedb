@@ -666,3 +666,34 @@ void DB::optimize(void)
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 }
+
+
+
+void DB::transaction_start()
+{
+        int ret;
+
+        ret = preludedb_transaction_start(_db);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
+void DB::transaction_end()
+{
+        int ret;
+
+        ret = preludedb_transaction_end(_db);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
+void DB::transaction_abort()
+{
+        int ret;
+
+        ret = preludedb_transaction_abort(_db);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}

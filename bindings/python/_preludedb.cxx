@@ -10368,6 +10368,96 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_DB_transaction_start(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!SWIG_Python_UnpackTuple(args,"DB_transaction_start",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__DB, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_transaction_start" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
+  
+  try {
+    (arg1)->transaction_start();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_DB_transaction_end(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!SWIG_Python_UnpackTuple(args,"DB_transaction_end",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__DB, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_transaction_end" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
+  
+  try {
+    (arg1)->transaction_end();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_DB_transaction_abort(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!SWIG_Python_UnpackTuple(args,"DB_transaction_abort",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__DB, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_transaction_abort" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
+  
+  try {
+    (arg1)->transaction_abort();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGPY_DESTRUCTOR_CLOSURE(_wrap_delete_DB) /* defines _wrap_delete_DB_destructor_closure */
 
 SWIGINTERN PyObject *_wrap_ResultIdents__result_set(PyObject *self, PyObject *args) {
@@ -15171,6 +15261,9 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__DB_methods[] = {
   { "updateFromList", (PyCFunction) _wrap_DB_updateFromList, METH_VARARGS, (char *) "" },
   { "update", (PyCFunction) _wrap_DB_update, METH_VARARGS|METH_KEYWORDS, (char *) "" },
   { "optimize", (PyCFunction) _wrap_DB_optimize, METH_NOARGS, (char *) "" },
+  { "transaction_start", (PyCFunction) _wrap_DB_transaction_start, METH_NOARGS, (char *) "" },
+  { "transaction_end", (PyCFunction) _wrap_DB_transaction_end, METH_NOARGS, (char *) "" },
+  { "transaction_abort", (PyCFunction) _wrap_DB_transaction_abort, METH_NOARGS, (char *) "" },
   { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
