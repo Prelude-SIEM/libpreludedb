@@ -281,6 +281,17 @@ error:
 }
 
 
+SQL::SQL(void)
+{
+        _sql = NULL;
+}
+
+
+SQL::SQL(SQL &sql)
+{
+        _sql = preludedb_sql_ref(sql);
+}
+
 
 SQL::SQL(const char *settings)
 {
@@ -294,6 +305,12 @@ SQL::SQL(const char *settings)
         ret = preludedb_sql_new(&_sql, NULL, dbconfig);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
+}
+
+
+SQL::SQL(preludedb_sql_t *sql)
+{
+        _sql = preludedb_sql_ref(sql);
 }
 
 
@@ -312,7 +329,8 @@ SQL &SQL::operator = (const SQL &sql)
 
 SQL::~SQL()
 {
-        preludedb_sql_destroy(_sql);
+        if (_sql)
+                preludedb_sql_destroy(_sql);
 }
 
 

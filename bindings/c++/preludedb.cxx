@@ -697,3 +697,10 @@ void DB::transaction_abort()
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 }
+
+
+
+PreludeDB::SQL DB::get_sql(void)
+{
+        return SQL(preludedb_get_sql(_db));
+}

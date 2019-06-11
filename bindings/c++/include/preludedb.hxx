@@ -121,6 +121,7 @@ namespace PreludeDB {
                 void transaction_end();
                 void transaction_abort();
 
+                PreludeDB::SQL get_sql(void);
         };
 };
 

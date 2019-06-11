@@ -14,7 +14,7 @@ using namespace std;
 namespace PreludeDB {
         class SQL {
             private:
-                preludedb_sql_t *_sql;
+                preludedb_sql_t *_sql = NULL;
 
             public:
                 class Table {
@@ -80,7 +80,11 @@ namespace PreludeDB {
                 ~SQL();
                 SQL &operator = (const SQL &sql);
                 SQL(const char *settings);
+                SQL(void);
                 SQL(const std::map<std::string,std::string> &settings);
+                SQL(preludedb_sql_t *sql);
+
+                SQL(SQL &sql);
 
                 long getServerVersion();
 

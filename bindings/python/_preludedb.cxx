@@ -3777,22 +3777,23 @@ SwigPyBuiltin_iternextfunc_closure(SwigPyWrapperFunction wrapper, PyObject *a) {
 #define SWIGTYPE_p_preludedb_result_values_get_field_cb_func_t swig_types[31]
 #define SWIGTYPE_p_preludedb_result_values_t swig_types[32]
 #define SWIGTYPE_p_preludedb_sql_row_t swig_types[33]
-#define SWIGTYPE_p_preludedb_sql_table_t swig_types[34]
-#define SWIGTYPE_p_reference swig_types[35]
-#define SWIGTYPE_p_short swig_types[36]
-#define SWIGTYPE_p_size_type swig_types[37]
-#define SWIGTYPE_p_ssize_t swig_types[38]
-#define SWIGTYPE_p_std__exception swig_types[39]
-#define SWIGTYPE_p_std__invalid_argument swig_types[40]
-#define SWIGTYPE_p_swig__SwigPyIterator swig_types[41]
-#define SWIGTYPE_p_unsigned_char swig_types[42]
-#define SWIGTYPE_p_unsigned_int swig_types[43]
-#define SWIGTYPE_p_unsigned_long_long swig_types[44]
-#define SWIGTYPE_p_unsigned_short swig_types[45]
-#define SWIGTYPE_p_value_type swig_types[46]
-#define SWIGTYPE_p_void swig_types[47]
-static swig_type_info *swig_types[49];
-static swig_module_info swig_module = {swig_types, 48, 0, 0, 0, 0};
+#define SWIGTYPE_p_preludedb_sql_t swig_types[34]
+#define SWIGTYPE_p_preludedb_sql_table_t swig_types[35]
+#define SWIGTYPE_p_reference swig_types[36]
+#define SWIGTYPE_p_short swig_types[37]
+#define SWIGTYPE_p_size_type swig_types[38]
+#define SWIGTYPE_p_ssize_t swig_types[39]
+#define SWIGTYPE_p_std__exception swig_types[40]
+#define SWIGTYPE_p_std__invalid_argument swig_types[41]
+#define SWIGTYPE_p_swig__SwigPyIterator swig_types[42]
+#define SWIGTYPE_p_unsigned_char swig_types[43]
+#define SWIGTYPE_p_unsigned_int swig_types[44]
+#define SWIGTYPE_p_unsigned_long_long swig_types[45]
+#define SWIGTYPE_p_unsigned_short swig_types[46]
+#define SWIGTYPE_p_value_type swig_types[47]
+#define SWIGTYPE_p_void swig_types[48]
+static swig_type_info *swig_types[50];
+static swig_module_info swig_module = {swig_types, 49, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -10458,6 +10459,37 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_DB_get_sql(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::DB *arg1 = (PreludeDB::DB *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  PreludeDB::SQL result;
+  
+  if (!SWIG_Python_UnpackTuple(args,"DB_get_sql",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__DB, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "DB_get_sql" "', argument " "1"" of type '" "PreludeDB::DB *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::DB * >(argp1);
+  
+  try {
+    result = (arg1)->get_sql();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj((new PreludeDB::SQL(static_cast< const PreludeDB::SQL& >(result))), SWIGTYPE_p_PreludeDB__SQL, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGPY_DESTRUCTOR_CLOSURE(_wrap_delete_DB) /* defines _wrap_delete_DB_destructor_closure */
 
 SWIGINTERN PyObject *_wrap_ResultIdents__result_set(PyObject *self, PyObject *args) {
@@ -12055,7 +12087,29 @@ fail:
 }
 
 
-SWIGINTERN int _wrap_new_SQL__SWIG_1(PyObject *self, int nobjs, PyObject **swig_obj) {
+SWIGINTERN int _wrap_new_SQL__SWIG_1(PyObject *self, int nobjs, PyObject **SWIGUNUSEDPARM(swig_obj)) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *result = 0 ;
+  
+  if ((nobjs < 0) || (nobjs > 0)) SWIG_fail;
+  
+  try {
+    result = (PreludeDB::SQL *)new PreludeDB::SQL();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL, SWIG_BUILTIN_INIT |  0 );
+  return resultobj == Py_None ? -1 : 0;
+fail:
+  return -1;
+}
+
+
+SWIGINTERN int _wrap_new_SQL__SWIG_2(PyObject *self, int nobjs, PyObject **swig_obj) {
   PyObject *resultobj = 0;
   std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > *arg1 = 0 ;
   int res1 = SWIG_OLDOBJ ;
@@ -12092,6 +12146,69 @@ fail:
 }
 
 
+SWIGINTERN int _wrap_new_SQL__SWIG_3(PyObject *self, int nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  preludedb_sql_t *arg1 = (preludedb_sql_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PreludeDB::SQL *result = 0 ;
+  
+  if ((nobjs < 1) || (nobjs > 1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_preludedb_sql_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_SQL" "', argument " "1"" of type '" "preludedb_sql_t *""'"); 
+  }
+  arg1 = reinterpret_cast< preludedb_sql_t * >(argp1);
+  
+  try {
+    result = (PreludeDB::SQL *)new PreludeDB::SQL(arg1);
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL, SWIG_BUILTIN_INIT |  0 );
+  return resultobj == Py_None ? -1 : 0;
+fail:
+  return -1;
+}
+
+
+SWIGINTERN int _wrap_new_SQL__SWIG_4(PyObject *self, int nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PreludeDB::SQL *result = 0 ;
+  
+  if ((nobjs < 1) || (nobjs > 1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1, SWIGTYPE_p_PreludeDB__SQL,  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_SQL" "', argument " "1"" of type '" "PreludeDB::SQL &""'"); 
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_SQL" "', argument " "1"" of type '" "PreludeDB::SQL &""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  
+  try {
+    result = (PreludeDB::SQL *)new PreludeDB::SQL(*arg1);
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_PreludeDB__SQL, SWIG_BUILTIN_INIT |  0 );
+  return resultobj == Py_None ? -1 : 0;
+fail:
+  return -1;
+}
+
+
 SWIGINTERN int _wrap_new_SQL(PyObject *self, PyObject *args) {
   Py_ssize_t argc;
   PyObject *argv[2] = {
@@ -12100,26 +12217,56 @@ SWIGINTERN int _wrap_new_SQL(PyObject *self, PyObject *args) {
   
   if (!(argc = SWIG_Python_UnpackTuple(args,"new_SQL",0,1,argv))) SWIG_fail;
   --argc;
+  if (argc == 0) {
+    return _wrap_new_SQL__SWIG_1(self, argc, argv);
+  }
+  if (argc == 1) {
+    int _v = 0;
+    {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_preludedb_sql_t, 0);
+      _v = SWIG_CheckState(res);
+    }
+    if (!_v) goto check_2;
+    return _wrap_new_SQL__SWIG_3(self, argc, argv);
+  }
+check_2:
+  
+  if (argc == 1) {
+    int _v = 0;
+    {
+      void *vptr = 0;
+      int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_PreludeDB__SQL, 0);
+      _v = SWIG_CheckState(res);
+    }
+    if (!_v) goto check_3;
+    return _wrap_new_SQL__SWIG_4(self, argc, argv);
+  }
+check_3:
+  
   if (argc == 1) {
     int _v = 0;
     {
       int res = SWIG_AsCharPtrAndSize(argv[0], 0, NULL, 0);
       _v = SWIG_CheckState(res);
     }
-    if (!_v) goto check_1;
+    if (!_v) goto check_4;
     return _wrap_new_SQL__SWIG_0(self, argc, argv);
   }
-check_1:
+check_4:
   
   if (argc == 1) {
-    return _wrap_new_SQL__SWIG_1(self, argc, argv);
+    return _wrap_new_SQL__SWIG_2(self, argc, argv);
   }
   
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_SQL'.\n"
     "  Possible C/C++ prototypes are:\n"
     "    PreludeDB::SQL::SQL(char const *)\n"
-    "    PreludeDB::SQL::SQL(std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)\n");
+    "    PreludeDB::SQL::SQL()\n"
+    "    PreludeDB::SQL::SQL(std::map< std::string,std::string,std::less< std::string >,std::allocator< std::pair< std::string const,std::string > > > const &)\n"
+    "    PreludeDB::SQL::SQL(preludedb_sql_t *)\n"
+    "    PreludeDB::SQL::SQL(PreludeDB::SQL &)\n");
   return -1;
 }
 
@@ -15264,6 +15411,7 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__DB_methods[] = {
   { "transaction_start", (PyCFunction) _wrap_DB_transaction_start, METH_NOARGS, (char *) "" },
   { "transaction_end", (PyCFunction) _wrap_DB_transaction_end, METH_NOARGS, (char *) "" },
   { "transaction_abort", (PyCFunction) _wrap_DB_transaction_abort, METH_NOARGS, (char *) "" },
+  { "get_sql", (PyCFunction) _wrap_DB_get_sql, METH_NOARGS, (char *) "" },
   { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
@@ -17059,6 +17207,7 @@ static swig_type_info _swigt__p_preludedb_result_idents_t = {"_p_preludedb_resul
 static swig_type_info _swigt__p_preludedb_result_values_get_field_cb_func_t = {"_p_preludedb_result_values_get_field_cb_func_t", "preludedb_result_values_get_field_cb_func_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_preludedb_result_values_t = {"_p_preludedb_result_values_t", "preludedb_result_values_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_preludedb_sql_row_t = {"_p_preludedb_sql_row_t", "preludedb_sql_row_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_preludedb_sql_t = {"_p_preludedb_sql_t", "preludedb_sql_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_preludedb_sql_table_t = {"_p_preludedb_sql_table_t", "preludedb_sql_table_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_reference = {"_p_reference", "reference *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_short = {"_p_short", "short *|int16_t *", 0, 0, (void*)0, 0};
@@ -17109,6 +17258,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_preludedb_result_values_get_field_cb_func_t,
   &_swigt__p_preludedb_result_values_t,
   &_swigt__p_preludedb_sql_row_t,
+  &_swigt__p_preludedb_sql_t,
   &_swigt__p_preludedb_sql_table_t,
   &_swigt__p_reference,
   &_swigt__p_short,
@@ -17159,6 +17309,7 @@ static swig_cast_info _swigc__p_preludedb_result_idents_t[] = {  {&_swigt__p_pre
 static swig_cast_info _swigc__p_preludedb_result_values_get_field_cb_func_t[] = {  {&_swigt__p_preludedb_result_values_get_field_cb_func_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_preludedb_result_values_t[] = {  {&_swigt__p_preludedb_result_values_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_preludedb_sql_row_t[] = {  {&_swigt__p_preludedb_sql_row_t, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_preludedb_sql_t[] = {  {&_swigt__p_preludedb_sql_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_preludedb_sql_table_t[] = {  {&_swigt__p_preludedb_sql_table_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_reference[] = {  {&_swigt__p_reference, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_short[] = {  {&_swigt__p_short, 0, 0, 0},{0, 0, 0, 0}};
@@ -17209,6 +17360,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_preludedb_result_values_get_field_cb_func_t,
   _swigc__p_preludedb_result_values_t,
   _swigc__p_preludedb_sql_row_t,
+  _swigc__p_preludedb_sql_t,
   _swigc__p_preludedb_sql_table_t,
   _swigc__p_reference,
   _swigc__p_short,
