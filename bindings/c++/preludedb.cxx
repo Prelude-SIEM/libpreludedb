@@ -384,7 +384,8 @@ DB::ResultValues DB::getValues(const std::vector<std::string> &selection, const 
 
         ret = preludedb_get_values(_db, c_selection, crit, (prelude_bool_t) distinct, limit, offset, &res);
 
-        preludedb_path_selection_destroy(c_selection);
+        if ( c_selection )
+                preludedb_path_selection_destroy(c_selection);
 
         if ( ret < 0 )
                 throw PreludeDBError(ret);
