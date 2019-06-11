@@ -2466,25 +2466,22 @@ SWIG_Python_ConvertFunctionPtr(PyObject *obj, void **ptr, swig_type_info *ty) {
     return SWIG_ConvertPtr(obj, ptr, ty, 0);
   } else {
     void *vptr = 0;
-    
+    swig_cast_info *tc;
+
     /* here we get the method pointer for callbacks */
     const char *doc = (((PyCFunctionObject *)obj) -> m_ml -> ml_doc);
     const char *desc = doc ? strstr(doc, "swig_ptr: ") : 0;
     if (desc)
       desc = ty ? SWIG_UnpackVoidPtr(desc + 10, &vptr, ty->name) : 0;
-    if (!desc) 
+    if (!desc)
       return SWIG_ERROR;
-    if (ty) {
-      swig_cast_info *tc = SWIG_TypeCheck(desc,ty);
-      if (tc) {
-        int newmemory = 0;
-        *ptr = SWIG_TypeCast(tc,vptr,&newmemory);
-        assert(!newmemory); /* newmemory handling not yet implemented */
-      } else {
-        return SWIG_ERROR;
-      }
+    tc = SWIG_TypeCheck(desc,ty);
+    if (tc) {
+      int newmemory = 0;
+      *ptr = SWIG_TypeCast(tc,vptr,&newmemory);
+      assert(!newmemory); /* newmemory handling not yet implemented */
     } else {
-      *ptr = vptr;
+      return SWIG_ERROR;
     }
     return SWIG_OK;
   }
@@ -4950,7 +4947,7 @@ namespace swig {
         typename Sequence::const_iterator isit = is.begin();
         typename Sequence::iterator it = self->begin();
         std::advance(it,ii);
-        for (size_t rc=0; rc<replacecount; ++rc) {
+        for (size_t rc=0; rc<replacecount && it != self->end(); ++rc) {
           *it++ = *isit++;
           for (Py_ssize_t c=0; c<(step-1) && it != self->end(); ++c)
             it++;
@@ -4966,7 +4963,7 @@ namespace swig {
       typename Sequence::const_iterator isit = is.begin();
       typename Sequence::reverse_iterator it = self->rbegin();
       std::advance(it,size-ii-1);
-      for (size_t rc=0; rc<replacecount; ++rc) {
+      for (size_t rc=0; rc<replacecount && it != self->rend(); ++rc) {
         *it++ = *isit++;
         for (Py_ssize_t c=0; c<(-step-1) && it != self->rend(); ++c)
           it++;
@@ -12209,6 +12206,66 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_SQL_connect(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!SWIG_Python_UnpackTuple(args,"SQL_connect",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__SQL, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_connect" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  
+  try {
+    (arg1)->connect();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SQL_close(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!SWIG_Python_UnpackTuple(args,"SQL_close",0,0,0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__SQL, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_close" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  
+  try {
+    (arg1)->close();
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_SQL_escape(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
@@ -16216,6 +16273,8 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__SQL_methods[] = {
   { "transactionStart", (PyCFunction) _wrap_SQL_transactionStart, METH_NOARGS, (char *) "" },
   { "transactionEnd", (PyCFunction) _wrap_SQL_transactionEnd, METH_NOARGS, (char *) "" },
   { "transactionAbort", (PyCFunction) _wrap_SQL_transactionAbort, METH_NOARGS, (char *) "" },
+  { "connect", (PyCFunction) _wrap_SQL_connect, METH_NOARGS, (char *) "" },
+  { "close", (PyCFunction) _wrap_SQL_close, METH_NOARGS, (char *) "" },
   { "escape", (PyCFunction) _wrap_SQL_escape, METH_O, (char *) "" },
   { "escapeBinary", (PyCFunction) _wrap_SQL_escapeBinary, METH_O, (char *) "" },
   { "getLastInsertIdent", (PyCFunction) _wrap_SQL_getLastInsertIdent, METH_NOARGS, (char *) "" },
@@ -17613,9 +17672,9 @@ extern "C" {
             char *ndoc = (char*)malloc(ldoc + lptr + 10);
             if (ndoc) {
               char *buff = ndoc;
-              strncpy(buff, methods[i].ml_doc, ldoc);
+              memcpy(buff, methods[i].ml_doc, ldoc);
               buff += ldoc;
-              strncpy(buff, "swig_ptr: ", 10);
+              memcpy(buff, "swig_ptr: ", 10);
               buff += 10;
               SWIG_PackVoidPtr(buff, ptr, ty->name, lptr);
               methods[i].ml_doc = ndoc;

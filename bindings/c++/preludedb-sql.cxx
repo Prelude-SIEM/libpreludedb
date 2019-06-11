@@ -423,6 +423,26 @@ std::string SQL::escape(const char *str)
 }
 
 
+void SQL::connect(void)
+{
+        int ret;
+
+        ret = preludedb_sql_connect(_sql);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
+void SQL::close(void)
+{
+        int ret;
+
+        ret = preludedb_sql_close(_sql);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+}
+
+
 uint64_t SQL::getLastInsertIdent()
 {
     int ret;

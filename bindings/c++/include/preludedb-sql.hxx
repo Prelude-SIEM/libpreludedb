@@ -88,6 +88,8 @@ namespace PreludeDB {
                 void transactionStart(void);
                 void transactionEnd(void);
                 void transactionAbort(void);
+                void connect(void);
+                void close(void);
                 std::string escape(const char *str);
                 std::string escape(const std::string &str);
                 std::string escapeBinary(const std::string &str);

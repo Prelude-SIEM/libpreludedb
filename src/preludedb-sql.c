@@ -321,9 +321,27 @@ void preludedb_sql_disable_query_logging(preludedb_sql_t *sql)
 
 
 
-static int preludedb_sql_connect(preludedb_sql_t *sql)
+
+int preludedb_sql_close(preludedb_sql_t *sql)
+{
+        if ( sql->status & PRELUDEDB_SQL_STATUS_CONNECTED ) {
+                _preludedb_plugin_sql_close(sql->plugin, sql->session);
+                sql->status &= ~PRELUDEDB_SQL_STATUS_CONNECTED;
+        }
+
+        return 0;
+}
+
+
+
+int preludedb_sql_connect(preludedb_sql_t *sql)
 {
         int ret;
+
+        if ( sql->status & PRELUDEDB_SQL_STATUS_CONNECTED ) {
+                _preludedb_plugin_sql_close(sql->plugin, sql->session);
+                sql->status &= ~PRELUDEDB_SQL_STATUS_CONNECTED;
+        }
 
         ret = _preludedb_plugin_sql_open(sql->plugin, sql->settings, &sql->session);
         if ( ret < 0 )
