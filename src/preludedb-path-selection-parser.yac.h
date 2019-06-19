@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.0.5.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
 extern int _preludedbyydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 16 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
+#line 39 "preludedb-path-selection-parser.yac.y" /* yacc.c:1910  */
 
 
 #ifndef YY_TYPEDEF_YY_SCANNER_T
@@ -56,7 +56,7 @@ extern int _preludedbyydebug;
 typedef void* yyscan_t;
 #endif
 
-#line 60 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
+#line 60 "preludedb-path-selection-parser.yac.h" /* yacc.c:1910  */
 
 /* Token type.  */
 #ifndef _PRELUDEDBYYTOKENTYPE
@@ -138,7 +138,7 @@ typedef void* yyscan_t;
 
 union _PRELUDEDBYYSTYPE
 {
-#line 24 "preludedb-path-selection-parser.yac.y" /* yacc.c:1909  */
+#line 47 "preludedb-path-selection-parser.yac.y" /* yacc.c:1910  */
 
         int val;
         int flags;
@@ -147,7 +147,7 @@ union _PRELUDEDBYYSTYPE
         preludedb_selected_object_type_t type;
         preludedb_selected_object_t *object;
 
-#line 151 "preludedb-path-selection-parser.yac.h" /* yacc.c:1909  */
+#line 151 "preludedb-path-selection-parser.yac.h" /* yacc.c:1910  */
 };
 
 typedef union _PRELUDEDBYYSTYPE _PRELUDEDBYYSTYPE;

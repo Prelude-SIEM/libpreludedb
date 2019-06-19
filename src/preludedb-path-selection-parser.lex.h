@@ -2,7 +2,7 @@
 #define _preludedbyyHEADER_H 1
 #define _preludedbyyIN_HEADER 1
 
-#line 6 "preludedb-path-selection-parser.lex.h"
+#line 5 "preludedb-path-selection-parser.lex.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -11,9 +11,231 @@
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
 #define YY_FLEX_MINOR_VERSION 6
-#define YY_FLEX_SUBMINOR_VERSION 0
+#define YY_FLEX_SUBMINOR_VERSION 4
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
+#endif
+
+#ifdef yy_create_buffer
+#define _preludedbyy_create_buffer_ALREADY_DEFINED
+#else
+#define yy_create_buffer _preludedbyy_create_buffer
+#endif
+
+#ifdef yy_delete_buffer
+#define _preludedbyy_delete_buffer_ALREADY_DEFINED
+#else
+#define yy_delete_buffer _preludedbyy_delete_buffer
+#endif
+
+#ifdef yy_scan_buffer
+#define _preludedbyy_scan_buffer_ALREADY_DEFINED
+#else
+#define yy_scan_buffer _preludedbyy_scan_buffer
+#endif
+
+#ifdef yy_scan_string
+#define _preludedbyy_scan_string_ALREADY_DEFINED
+#else
+#define yy_scan_string _preludedbyy_scan_string
+#endif
+
+#ifdef yy_scan_bytes
+#define _preludedbyy_scan_bytes_ALREADY_DEFINED
+#else
+#define yy_scan_bytes _preludedbyy_scan_bytes
+#endif
+
+#ifdef yy_init_buffer
+#define _preludedbyy_init_buffer_ALREADY_DEFINED
+#else
+#define yy_init_buffer _preludedbyy_init_buffer
+#endif
+
+#ifdef yy_flush_buffer
+#define _preludedbyy_flush_buffer_ALREADY_DEFINED
+#else
+#define yy_flush_buffer _preludedbyy_flush_buffer
+#endif
+
+#ifdef yy_load_buffer_state
+#define _preludedbyy_load_buffer_state_ALREADY_DEFINED
+#else
+#define yy_load_buffer_state _preludedbyy_load_buffer_state
+#endif
+
+#ifdef yy_switch_to_buffer
+#define _preludedbyy_switch_to_buffer_ALREADY_DEFINED
+#else
+#define yy_switch_to_buffer _preludedbyy_switch_to_buffer
+#endif
+
+#ifdef yypush_buffer_state
+#define _preludedbyypush_buffer_state_ALREADY_DEFINED
+#else
+#define yypush_buffer_state _preludedbyypush_buffer_state
+#endif
+
+#ifdef yypop_buffer_state
+#define _preludedbyypop_buffer_state_ALREADY_DEFINED
+#else
+#define yypop_buffer_state _preludedbyypop_buffer_state
+#endif
+
+#ifdef yyensure_buffer_stack
+#define _preludedbyyensure_buffer_stack_ALREADY_DEFINED
+#else
+#define yyensure_buffer_stack _preludedbyyensure_buffer_stack
+#endif
+
+#ifdef yylex
+#define _preludedbyylex_ALREADY_DEFINED
+#else
+#define yylex _preludedbyylex
+#endif
+
+#ifdef yyrestart
+#define _preludedbyyrestart_ALREADY_DEFINED
+#else
+#define yyrestart _preludedbyyrestart
+#endif
+
+#ifdef yylex_init
+#define _preludedbyylex_init_ALREADY_DEFINED
+#else
+#define yylex_init _preludedbyylex_init
+#endif
+
+#ifdef yylex_init_extra
+#define _preludedbyylex_init_extra_ALREADY_DEFINED
+#else
+#define yylex_init_extra _preludedbyylex_init_extra
+#endif
+
+#ifdef yylex_destroy
+#define _preludedbyylex_destroy_ALREADY_DEFINED
+#else
+#define yylex_destroy _preludedbyylex_destroy
+#endif
+
+#ifdef yyget_debug
+#define _preludedbyyget_debug_ALREADY_DEFINED
+#else
+#define yyget_debug _preludedbyyget_debug
+#endif
+
+#ifdef yyset_debug
+#define _preludedbyyset_debug_ALREADY_DEFINED
+#else
+#define yyset_debug _preludedbyyset_debug
+#endif
+
+#ifdef yyget_extra
+#define _preludedbyyget_extra_ALREADY_DEFINED
+#else
+#define yyget_extra _preludedbyyget_extra
+#endif
+
+#ifdef yyset_extra
+#define _preludedbyyset_extra_ALREADY_DEFINED
+#else
+#define yyset_extra _preludedbyyset_extra
+#endif
+
+#ifdef yyget_in
+#define _preludedbyyget_in_ALREADY_DEFINED
+#else
+#define yyget_in _preludedbyyget_in
+#endif
+
+#ifdef yyset_in
+#define _preludedbyyset_in_ALREADY_DEFINED
+#else
+#define yyset_in _preludedbyyset_in
+#endif
+
+#ifdef yyget_out
+#define _preludedbyyget_out_ALREADY_DEFINED
+#else
+#define yyget_out _preludedbyyget_out
+#endif
+
+#ifdef yyset_out
+#define _preludedbyyset_out_ALREADY_DEFINED
+#else
+#define yyset_out _preludedbyyset_out
+#endif
+
+#ifdef yyget_leng
+#define _preludedbyyget_leng_ALREADY_DEFINED
+#else
+#define yyget_leng _preludedbyyget_leng
+#endif
+
+#ifdef yyget_text
+#define _preludedbyyget_text_ALREADY_DEFINED
+#else
+#define yyget_text _preludedbyyget_text
+#endif
+
+#ifdef yyget_lineno
+#define _preludedbyyget_lineno_ALREADY_DEFINED
+#else
+#define yyget_lineno _preludedbyyget_lineno
+#endif
+
+#ifdef yyset_lineno
+#define _preludedbyyset_lineno_ALREADY_DEFINED
+#else
+#define yyset_lineno _preludedbyyset_lineno
+#endif
+
+#ifdef yyget_column
+#define _preludedbyyget_column_ALREADY_DEFINED
+#else
+#define yyget_column _preludedbyyget_column
+#endif
+
+#ifdef yyset_column
+#define _preludedbyyset_column_ALREADY_DEFINED
+#else
+#define yyset_column _preludedbyyset_column
+#endif
+
+#ifdef yywrap
+#define _preludedbyywrap_ALREADY_DEFINED
+#else
+#define yywrap _preludedbyywrap
+#endif
+
+#ifdef yyget_lval
+#define _preludedbyyget_lval_ALREADY_DEFINED
+#else
+#define yyget_lval _preludedbyyget_lval
+#endif
+
+#ifdef yyset_lval
+#define _preludedbyyset_lval_ALREADY_DEFINED
+#else
+#define yyset_lval _preludedbyyset_lval
+#endif
+
+#ifdef yyalloc
+#define _preludedbyyalloc_ALREADY_DEFINED
+#else
+#define yyalloc _preludedbyyalloc
+#endif
+
+#ifdef yyrealloc
+#define _preludedbyyrealloc_ALREADY_DEFINED
+#else
+#define yyrealloc _preludedbyyrealloc
+#endif
+
+#ifdef yyfree
+#define _preludedbyyfree_ALREADY_DEFINED
+#else
+#define yyfree _preludedbyyfree
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -86,29 +308,23 @@ typedef unsigned int flex_uint32_t;
 #define UINT32_MAX             (4294967295U)
 #endif
 
+#ifndef SIZE_MAX
+#define SIZE_MAX               (~(size_t)0)
+#endif
+
 #endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
-#ifdef __cplusplus
+/* begin standard C++ headers. */
 
-/* The "const" storage-class-modifier is valid. */
-#define YY_USE_CONST
-
-#else	/* ! __cplusplus */
-
-/* C99 requires __STDC__ to be defined as 1. */
-#if defined (__STDC__)
-
-#define YY_USE_CONST
-
-#endif	/* defined (__STDC__) */
-#endif	/* ! __cplusplus */
-
-#ifdef YY_USE_CONST
+/* TODO: this is always defined, so inline it */
 #define yyconst const
+
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define yynoreturn __attribute__((__noreturn__))
 #else
-#define yyconst
+#define yynoreturn
 #endif
 
 /* An opaque pointer. */
@@ -163,12 +379,12 @@ struct yy_buffer_state
 	/* Size of input buffer in bytes, not including room for EOB
 	 * characters.
 	 */
-	yy_size_t yy_buf_size;
+	int yy_buf_size;
 
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	yy_size_t yy_n_chars;
+	int yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -191,7 +407,7 @@ struct yy_buffer_state
 
     int yy_bs_lineno; /**< The line count. */
     int yy_bs_column; /**< The column count. */
-    
+
 	/* Whether to try to fill the input buffer when we reach the
 	 * end of it.
 	 */
@@ -202,21 +418,21 @@ struct yy_buffer_state
 	};
 #endif /* !YY_STRUCT_YY_BUFFER_STATE */
 
-void _preludedbyyrestart (FILE *input_file ,yyscan_t yyscanner );
-void _preludedbyy_switch_to_buffer (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-YY_BUFFER_STATE _preludedbyy_create_buffer (FILE *file,int size ,yyscan_t yyscanner );
-void _preludedbyy_delete_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void _preludedbyy_flush_buffer (YY_BUFFER_STATE b ,yyscan_t yyscanner );
-void _preludedbyypush_buffer_state (YY_BUFFER_STATE new_buffer ,yyscan_t yyscanner );
-void _preludedbyypop_buffer_state (yyscan_t yyscanner );
+void yyrestart ( FILE *input_file , yyscan_t yyscanner );
+void yy_switch_to_buffer ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size , yyscan_t yyscanner );
+void yy_delete_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void yy_flush_buffer ( YY_BUFFER_STATE b , yyscan_t yyscanner );
+void yypush_buffer_state ( YY_BUFFER_STATE new_buffer , yyscan_t yyscanner );
+void yypop_buffer_state ( yyscan_t yyscanner );
 
-YY_BUFFER_STATE _preludedbyy_scan_buffer (char *base,yy_size_t size ,yyscan_t yyscanner );
-YY_BUFFER_STATE _preludedbyy_scan_string (yyconst char *yy_str ,yyscan_t yyscanner );
-YY_BUFFER_STATE _preludedbyy_scan_bytes (yyconst char *bytes,yy_size_t len ,yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_buffer ( char *base, yy_size_t size , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_string ( const char *yy_str , yyscan_t yyscanner );
+YY_BUFFER_STATE yy_scan_bytes ( const char *bytes, int len , yyscan_t yyscanner );
 
-void *_preludedbyyalloc (yy_size_t ,yyscan_t yyscanner );
-void *_preludedbyyrealloc (void *,yy_size_t ,yyscan_t yyscanner );
-void _preludedbyyfree (void * ,yyscan_t yyscanner );
+void *yyalloc ( yy_size_t , yyscan_t yyscanner );
+void *yyrealloc ( void *, yy_size_t , yyscan_t yyscanner );
+void yyfree ( void * , yyscan_t yyscanner );
 
 /* Begin user sect3 */
 
@@ -242,46 +458,46 @@ void _preludedbyyfree (void * ,yyscan_t yyscanner );
 #define YY_EXTRA_TYPE void *
 #endif
 
-int _preludedbyylex_init (yyscan_t* scanner);
+int yylex_init (yyscan_t* scanner);
 
-int _preludedbyylex_init_extra (YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
+int yylex_init_extra ( YY_EXTRA_TYPE user_defined, yyscan_t* scanner);
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int _preludedbyylex_destroy (yyscan_t yyscanner );
+int yylex_destroy ( yyscan_t yyscanner );
 
-int _preludedbyyget_debug (yyscan_t yyscanner );
+int yyget_debug ( yyscan_t yyscanner );
 
-void _preludedbyyset_debug (int debug_flag ,yyscan_t yyscanner );
+void yyset_debug ( int debug_flag , yyscan_t yyscanner );
 
-YY_EXTRA_TYPE _preludedbyyget_extra (yyscan_t yyscanner );
+YY_EXTRA_TYPE yyget_extra ( yyscan_t yyscanner );
 
-void _preludedbyyset_extra (YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
+void yyset_extra ( YY_EXTRA_TYPE user_defined , yyscan_t yyscanner );
 
-FILE *_preludedbyyget_in (yyscan_t yyscanner );
+FILE *yyget_in ( yyscan_t yyscanner );
 
-void _preludedbyyset_in  (FILE * _in_str ,yyscan_t yyscanner );
+void yyset_in  ( FILE * _in_str , yyscan_t yyscanner );
 
-FILE *_preludedbyyget_out (yyscan_t yyscanner );
+FILE *yyget_out ( yyscan_t yyscanner );
 
-void _preludedbyyset_out  (FILE * _out_str ,yyscan_t yyscanner );
+void yyset_out  ( FILE * _out_str , yyscan_t yyscanner );
 
-yy_size_t _preludedbyyget_leng (yyscan_t yyscanner );
+			int yyget_leng ( yyscan_t yyscanner );
 
-char *_preludedbyyget_text (yyscan_t yyscanner );
+char *yyget_text ( yyscan_t yyscanner );
 
-int _preludedbyyget_lineno (yyscan_t yyscanner );
+int yyget_lineno ( yyscan_t yyscanner );
 
-void _preludedbyyset_lineno (int _line_number ,yyscan_t yyscanner );
+void yyset_lineno ( int _line_number , yyscan_t yyscanner );
 
-int _preludedbyyget_column  (yyscan_t yyscanner );
+int yyget_column  ( yyscan_t yyscanner );
 
-void _preludedbyyset_column (int _column_no ,yyscan_t yyscanner );
+void yyset_column ( int _column_no , yyscan_t yyscanner );
 
-YYSTYPE * _preludedbyyget_lval (yyscan_t yyscanner );
+YYSTYPE * yyget_lval ( yyscan_t yyscanner );
 
-void _preludedbyyset_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
+void yyset_lval ( YYSTYPE * yylval_param , yyscan_t yyscanner );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -289,18 +505,18 @@ void _preludedbyyset_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int _preludedbyywrap (yyscan_t yyscanner );
+extern "C" int yywrap ( yyscan_t yyscanner );
 #else
-extern int _preludedbyywrap (yyscan_t yyscanner );
+extern int yywrap ( yyscan_t yyscanner );
 #endif
 #endif
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int ,yyscan_t yyscanner);
+static void yy_flex_strncpy ( char *, const char *, int , yyscan_t yyscanner);
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
+static int yy_flex_strlen ( const char * , yyscan_t yyscanner);
 #endif
 
 #ifndef YY_NO_INPUT
@@ -328,10 +544,10 @@ static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #ifndef YY_DECL
 #define YY_DECL_IS_OURS 1
 
-extern int _preludedbyylex \
-               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
+extern int yylex \
+               (YYSTYPE * yylval_param , yyscan_t yyscanner);
 
-#define YY_DECL int _preludedbyylex \
+#define YY_DECL int yylex \
                (YYSTYPE * yylval_param , yyscan_t yyscanner)
 #endif /* !YY_DECL */
 
@@ -349,9 +565,154 @@ extern int _preludedbyylex \
 #undef YY_DECL
 #endif
 
-#line 106 "preludedb-path-selection-parser.lex.l"
+#ifndef _preludedbyy_create_buffer_ALREADY_DEFINED
+#undef yy_create_buffer
+#endif
+#ifndef _preludedbyy_delete_buffer_ALREADY_DEFINED
+#undef yy_delete_buffer
+#endif
+#ifndef _preludedbyy_scan_buffer_ALREADY_DEFINED
+#undef yy_scan_buffer
+#endif
+#ifndef _preludedbyy_scan_string_ALREADY_DEFINED
+#undef yy_scan_string
+#endif
+#ifndef _preludedbyy_scan_bytes_ALREADY_DEFINED
+#undef yy_scan_bytes
+#endif
+#ifndef _preludedbyy_init_buffer_ALREADY_DEFINED
+#undef yy_init_buffer
+#endif
+#ifndef _preludedbyy_flush_buffer_ALREADY_DEFINED
+#undef yy_flush_buffer
+#endif
+#ifndef _preludedbyy_load_buffer_state_ALREADY_DEFINED
+#undef yy_load_buffer_state
+#endif
+#ifndef _preludedbyy_switch_to_buffer_ALREADY_DEFINED
+#undef yy_switch_to_buffer
+#endif
+#ifndef _preludedbyypush_buffer_state_ALREADY_DEFINED
+#undef yypush_buffer_state
+#endif
+#ifndef _preludedbyypop_buffer_state_ALREADY_DEFINED
+#undef yypop_buffer_state
+#endif
+#ifndef _preludedbyyensure_buffer_stack_ALREADY_DEFINED
+#undef yyensure_buffer_stack
+#endif
+#ifndef _preludedbyylex_ALREADY_DEFINED
+#undef yylex
+#endif
+#ifndef _preludedbyyrestart_ALREADY_DEFINED
+#undef yyrestart
+#endif
+#ifndef _preludedbyylex_init_ALREADY_DEFINED
+#undef yylex_init
+#endif
+#ifndef _preludedbyylex_init_extra_ALREADY_DEFINED
+#undef yylex_init_extra
+#endif
+#ifndef _preludedbyylex_destroy_ALREADY_DEFINED
+#undef yylex_destroy
+#endif
+#ifndef _preludedbyyget_debug_ALREADY_DEFINED
+#undef yyget_debug
+#endif
+#ifndef _preludedbyyset_debug_ALREADY_DEFINED
+#undef yyset_debug
+#endif
+#ifndef _preludedbyyget_extra_ALREADY_DEFINED
+#undef yyget_extra
+#endif
+#ifndef _preludedbyyset_extra_ALREADY_DEFINED
+#undef yyset_extra
+#endif
+#ifndef _preludedbyyget_in_ALREADY_DEFINED
+#undef yyget_in
+#endif
+#ifndef _preludedbyyset_in_ALREADY_DEFINED
+#undef yyset_in
+#endif
+#ifndef _preludedbyyget_out_ALREADY_DEFINED
+#undef yyget_out
+#endif
+#ifndef _preludedbyyset_out_ALREADY_DEFINED
+#undef yyset_out
+#endif
+#ifndef _preludedbyyget_leng_ALREADY_DEFINED
+#undef yyget_leng
+#endif
+#ifndef _preludedbyyget_text_ALREADY_DEFINED
+#undef yyget_text
+#endif
+#ifndef _preludedbyyget_lineno_ALREADY_DEFINED
+#undef yyget_lineno
+#endif
+#ifndef _preludedbyyset_lineno_ALREADY_DEFINED
+#undef yyset_lineno
+#endif
+#ifndef _preludedbyyget_column_ALREADY_DEFINED
+#undef yyget_column
+#endif
+#ifndef _preludedbyyset_column_ALREADY_DEFINED
+#undef yyset_column
+#endif
+#ifndef _preludedbyywrap_ALREADY_DEFINED
+#undef yywrap
+#endif
+#ifndef _preludedbyyget_lval_ALREADY_DEFINED
+#undef yyget_lval
+#endif
+#ifndef _preludedbyyset_lval_ALREADY_DEFINED
+#undef yyset_lval
+#endif
+#ifndef _preludedbyyget_lloc_ALREADY_DEFINED
+#undef yyget_lloc
+#endif
+#ifndef _preludedbyyset_lloc_ALREADY_DEFINED
+#undef yyset_lloc
+#endif
+#ifndef _preludedbyyalloc_ALREADY_DEFINED
+#undef yyalloc
+#endif
+#ifndef _preludedbyyrealloc_ALREADY_DEFINED
+#undef yyrealloc
+#endif
+#ifndef _preludedbyyfree_ALREADY_DEFINED
+#undef yyfree
+#endif
+#ifndef _preludedbyytext_ALREADY_DEFINED
+#undef yytext
+#endif
+#ifndef _preludedbyyleng_ALREADY_DEFINED
+#undef yyleng
+#endif
+#ifndef _preludedbyyin_ALREADY_DEFINED
+#undef yyin
+#endif
+#ifndef _preludedbyyout_ALREADY_DEFINED
+#undef yyout
+#endif
+#ifndef _preludedbyy_flex_debug_ALREADY_DEFINED
+#undef yy_flex_debug
+#endif
+#ifndef _preludedbyylineno_ALREADY_DEFINED
+#undef yylineno
+#endif
+#ifndef _preludedbyytables_fload_ALREADY_DEFINED
+#undef yytables_fload
+#endif
+#ifndef _preludedbyytables_destroy_ALREADY_DEFINED
+#undef yytables_destroy
+#endif
+#ifndef _preludedbyyTABLES_NAME_ALREADY_DEFINED
+#undef yyTABLES_NAME
+#endif
+
+#line 128 "preludedb-path-selection-parser.lex.l"
 
 
-#line 356 "preludedb-path-selection-parser.lex.h"
+#line 716 "preludedb-path-selection-parser.lex.h"
 #undef _preludedbyyIN_HEADER
 #endif /* _preludedbyyHEADER_H */

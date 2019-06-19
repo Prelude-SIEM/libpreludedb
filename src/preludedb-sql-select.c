@@ -69,6 +69,9 @@ static const char *func_to_string(preludedb_selected_object_type_t type)
             case PRELUDEDB_SELECTED_OBJECT_TYPE_MIN:
                 return "MIN";
 
+            case PRELUDEDB_SELECTED_OBJECT_TYPE_SUM:
+                return "SUM";
+
             case PRELUDEDB_SELECTED_OBJECT_TYPE_INTERVAL:
                 return "INTERVAL";
 

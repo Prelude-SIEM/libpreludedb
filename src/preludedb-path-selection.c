@@ -345,6 +345,24 @@ idmef_value_type_id_t preludedb_selected_object_get_value_type(preludedb_selecte
                         *dtype = object->type;
                         return IDMEF_VALUE_TYPE_UINT32;
 
+                case PRELUDEDB_SELECTED_OBJECT_TYPE_SUM:
+                        switch(preludedb_selected_object_get_value_type(object->data.args[0], data, dtype)) {
+                                case IDMEF_VALUE_TYPE_INT8:
+                                case IDMEF_VALUE_TYPE_INT16:
+                                case IDMEF_VALUE_TYPE_INT32:
+                                case IDMEF_VALUE_TYPE_INT64:
+                                        return IDMEF_VALUE_TYPE_INT64;
+
+                                case IDMEF_VALUE_TYPE_UINT8:
+                                case IDMEF_VALUE_TYPE_UINT16:
+                                case IDMEF_VALUE_TYPE_UINT32:
+                                case IDMEF_VALUE_TYPE_UINT64:
+                                        return IDMEF_VALUE_TYPE_UINT64;
+
+                                default:
+                                        return IDMEF_VALUE_TYPE_DOUBLE;
+                        }
+
                 case PRELUDEDB_SELECTED_OBJECT_TYPE_STRING:
                         *dtype = object->type;
                         *data = object->data.sval;
