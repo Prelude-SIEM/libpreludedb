@@ -199,6 +199,13 @@ static void sql_field_destroy(void *session, preludedb_sql_table_t *table, prelu
 }
 
 
+static int sql_get_last_insert_ident(void *session, uint64_t *ident)
+{
+        *ident = sqlite3_last_insert_rowid(session);
+        return 0;
+}
+
+
 static void sql_table_destroy(void *session, preludedb_sql_table_t *table)
 {
         sqlite3_finalize(preludedb_sql_table_get_data(table));
@@ -514,6 +521,7 @@ int sqlite3_LTX_preludedb_plugin_init(prelude_plugin_entry_t *pe, void *data)
         preludedb_plugin_sql_set_build_time_constraint_string_func(plugin, sql_build_time_constraint_string);
         preludedb_plugin_sql_set_build_time_interval_string_func(plugin, sql_build_time_interval_string);
         preludedb_plugin_sql_set_build_limit_offset_string_func(plugin, sql_build_limit_offset_string);
+        preludedb_plugin_sql_set_get_last_insert_ident_func(plugin, sql_get_last_insert_ident);
 
         return 0;
 }
