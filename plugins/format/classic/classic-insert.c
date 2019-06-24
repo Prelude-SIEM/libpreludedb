@@ -1765,37 +1765,6 @@ static int insert_correlation_alert(preludedb_sql_t *sql, uint64_t message_ident
 
 
 
-static int get_last_insert_ident(preludedb_sql_t *sql, const char *table_name, uint64_t *result)
-{
-        preludedb_sql_table_t *table;
-        preludedb_sql_row_t *row;
-        preludedb_sql_field_t *field;
-        int ret;
-
-        ret = preludedb_sql_query_sprintf(sql, &table, "SELECT max(_ident) FROM %s;", table_name);
-        if ( ret < 0 )
-                return ret;
-
-        ret = preludedb_sql_table_fetch_row(table, &row);
-        if ( ret < 0 )
-                goto error;
-
-        ret = preludedb_sql_row_get_field(row, 0, &field);
-        if ( ret < 0 )
-                goto error;
-
-        ret = preludedb_sql_field_to_uint64(field, result);
-        if ( ret < 0 )
-                goto error;
-
- error:
-        preludedb_sql_table_destroy(table);
-
-        return ret;
-}
-
-
-
 static int insert_message_messageid(preludedb_sql_t *sql, const char *table_name,
                                     prelude_string_t *messageid, uint64_t *result)
 {
@@ -1811,7 +1780,7 @@ static int insert_message_messageid(preludedb_sql_t *sql, const char *table_name
         if ( ret < 0 )
                 return ret;
 
-        return get_last_insert_ident(sql, table_name, result);
+        return preludedb_sql_get_last_insert_ident(sql, result);
 }
 
 
@@ -1979,7 +1948,7 @@ static int insert_heartbeat(preludedb_sql_t *sql, idmef_heartbeat_t *heartbeat)
         if ( ret < 0 )
                 return ret;
 
-        ret = get_last_insert_ident(sql, "Prelude_Heartbeat", &ident);
+        ret = preludedb_sql_get_last_insert_ident(sql, &ident);
         if ( ret < 0 )
                 return ret;
 
