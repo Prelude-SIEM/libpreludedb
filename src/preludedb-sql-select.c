@@ -149,6 +149,38 @@ static int preludedb_selected_object_to_string(preludedb_sql_select_t *select, p
                                                                preludedb_selected_object_get_data(preludedb_selected_object_get_arg(object, 1)));
         }
 
+        else if ( type == PRELUDEDB_SELECTED_OBJECT_TYPE_AVG ) {
+                const void *d;
+                preludedb_selected_object_type_t datatype;
+                prelude_bool_t is_integer;
+                switch(preludedb_selected_object_get_value_type(object, &d, &datatype)) {
+                        case IDMEF_VALUE_TYPE_INT8:
+                        case IDMEF_VALUE_TYPE_INT16:
+                        case IDMEF_VALUE_TYPE_INT32:
+                        case IDMEF_VALUE_TYPE_INT64:
+                        case IDMEF_VALUE_TYPE_UINT8:
+                        case IDMEF_VALUE_TYPE_UINT16:
+                        case IDMEF_VALUE_TYPE_UINT32:
+                        case IDMEF_VALUE_TYPE_UINT64:
+                                is_integer = TRUE;
+                                break;
+                        default:
+                                is_integer = FALSE;
+                }
+
+                if ( is_integer )
+                        prelude_string_cat(out, "ROUND(AVG(");
+                else
+                        prelude_string_cat(out, "AVG(");
+
+                ret = preludedb_selected_object_to_string(select, selected, preludedb_selected_object_get_arg(object, 0), out, data, depth + 1);
+
+                if ( is_integer )
+                        prelude_string_cat(out, "))");
+                else
+                        prelude_string_cat(out, ")");
+        }
+
         else if ( preludedb_selected_object_is_function(object) ) {
                 const char *func = func_to_string(type);
 
