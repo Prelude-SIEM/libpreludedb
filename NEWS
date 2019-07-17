@@ -1,3 +1,15 @@
+* 2019-07-17, libpreludedb-5.1.0beta1:
+
+Author: Yoann Vandoorselaere
+
+- Classic is now multiprocess safe
+
+- get_last_insert_ident support for sqlite3
+
+- Fix invalid free with NULL selection
+
+
+
 * 2019-03-15, libpreludedb-5.1.0alpha1:
 
 Author: Yoann Vandoorselaere

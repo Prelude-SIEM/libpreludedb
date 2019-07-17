@@ -1,7 +1,7 @@
 m4_define([libpreludedb_major_version], [5])
 m4_define([libpreludedb_minor_version], [1])
 m4_define([libpreludedb_micro_version], [0])
-m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_ALPHA])
+m4_define([libpreludedb_level_version], [LIBPRELUDEDB_RELEASE_LEVEL_BETA])
 m4_define([libpreludedb_serial_version], [1])
 
 m4_define([serial_string], ifelse(libpreludedb_level_version, LIBPRELUDEDB_RELEASE_LEVEL_ALPHA, alpha,
