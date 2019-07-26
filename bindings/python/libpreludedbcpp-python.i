@@ -33,6 +33,19 @@
 %feature("python:slot", "tp_iternext", functype="unaryfunc") GenericIterator::next;
 %feature("python:slot", "tp_iternext", functype="unaryfunc") GenericDirectIterator::next;
 
+%typemap(out) bytestring {
+    $result = PyBytes_FromStringAndSize($1.c_str(), $1.size());
+}
+
+
+%typemap(in) (const unsigned char *bytes, size_t size) {
+    int ret;
+
+    ret = PyBytes_AsStringAndSize($input, (char **) &$1, (Py_ssize_t *) &$2);
+    if ( ret < 0 )
+        SWIG_fail;
+}
+
 
 %typemap(out) _VECTOR_UINT64_TYPE *next {
         if ( ! $1 )

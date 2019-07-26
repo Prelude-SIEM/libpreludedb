@@ -3452,15 +3452,16 @@ SWIGINTERN PyObject *SWIG_PyStaticMethod_New(PyObject *SWIGUNUSEDPARM(self), PyO
 #define SWIGTYPE_p_ssize_t swig_types[37]
 #define SWIGTYPE_p_std__exception swig_types[38]
 #define SWIGTYPE_p_std__invalid_argument swig_types[39]
-#define SWIGTYPE_p_swig__SwigPyIterator swig_types[40]
-#define SWIGTYPE_p_unsigned_char swig_types[41]
-#define SWIGTYPE_p_unsigned_int swig_types[42]
-#define SWIGTYPE_p_unsigned_long_long swig_types[43]
-#define SWIGTYPE_p_unsigned_short swig_types[44]
-#define SWIGTYPE_p_value_type swig_types[45]
-#define SWIGTYPE_p_void swig_types[46]
-static swig_type_info *swig_types[48];
-static swig_module_info swig_module = {swig_types, 47, 0, 0, 0, 0};
+#define SWIGTYPE_p_std__string swig_types[40]
+#define SWIGTYPE_p_swig__SwigPyIterator swig_types[41]
+#define SWIGTYPE_p_unsigned_char swig_types[42]
+#define SWIGTYPE_p_unsigned_int swig_types[43]
+#define SWIGTYPE_p_unsigned_long_long swig_types[44]
+#define SWIGTYPE_p_unsigned_short swig_types[45]
+#define SWIGTYPE_p_value_type swig_types[46]
+#define SWIGTYPE_p_void swig_types[47]
+static swig_type_info *swig_types[49];
+static swig_module_info swig_module = {swig_types, 48, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -12266,10 +12267,10 @@ fail:
 SWIGINTERN PyObject *_wrap_SQL_escapeBinary(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
-  std::string *arg2 = 0 ;
+  unsigned char *arg2 = (unsigned char *) 0 ;
+  size_t arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  int res2 = SWIG_OLDOBJ ;
   PyObject *swig_obj[2] ;
   std::string result;
   
@@ -12281,19 +12282,15 @@ SWIGINTERN PyObject *_wrap_SQL_escapeBinary(PyObject *self, PyObject *args) {
   }
   arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
   {
-    std::string *ptr = (std::string *)0;
-    res2 = SWIG_AsPtr_std_string(swig_obj[0], &ptr);
-    if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "SQL_escapeBinary" "', argument " "2"" of type '" "std::string const &""'"); 
-    }
-    if (!ptr) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "SQL_escapeBinary" "', argument " "2"" of type '" "std::string const &""'"); 
-    }
-    arg2 = ptr;
+    int ret;
+    
+    ret = PyBytes_AsStringAndSize(swig_obj[0], (char **) &arg2, (Py_ssize_t *) &arg3);
+    if ( ret < 0 )
+    SWIG_fail;
   }
   
   try {
-    result = (arg1)->escapeBinary((std::string const &)*arg2);
+    result = (arg1)->escapeBinary((unsigned char const *)arg2,arg3);
   } catch (PreludeDBError &e) {
     SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
         SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
@@ -12302,6 +12299,53 @@ SWIGINTERN PyObject *_wrap_SQL_escapeBinary(PyObject *self, PyObject *args) {
   }
   
   resultobj = SWIG_From_std_string(static_cast< std::string >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SQL_unescapeBinary(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  PreludeDB::SQL *arg1 = (PreludeDB::SQL *) 0 ;
+  std::string *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject *swig_obj[2] ;
+  bytestring result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_PreludeDB__SQL, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SQL_unescapeBinary" "', argument " "1"" of type '" "PreludeDB::SQL *""'"); 
+  }
+  arg1 = reinterpret_cast< PreludeDB::SQL * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(swig_obj[0], &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "SQL_unescapeBinary" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "SQL_unescapeBinary" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    arg2 = ptr;
+  }
+  
+  try {
+    result = (arg1)->unescapeBinary((std::string const &)*arg2);
+  } catch (PreludeDBError &e) {
+    SWIG_Python_Raise(SWIG_NewPointerObj(new PreludeDBError(e),
+        SWIGTYPE_p_PreludeDB__PreludeDBError, SWIG_POINTER_OWN),
+      "PreludeDBError", SWIGTYPE_p_PreludeDB__PreludeDBError);
+    SWIG_fail;
+  }
+  
+  {
+    resultobj = PyBytes_FromStringAndSize((&result)->c_str(), (&result)->size());
+  }
   if (SWIG_IsNewObj(res2)) delete arg2;
   return resultobj;
 fail:
@@ -16145,6 +16189,7 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__PreludeDB__SQL_methods[] = {
   { "close", _wrap_SQL_close, METH_NOARGS, "" },
   { "escape", _wrap_SQL_escape, METH_O, "" },
   { "escapeBinary", _wrap_SQL_escapeBinary, METH_O, "" },
+  { "unescapeBinary", _wrap_SQL_unescapeBinary, METH_O, "" },
   { "getLastInsertIdent", _wrap_SQL_getLastInsertIdent, METH_NOARGS, "" },
   { "getType", _wrap_SQL_getType, METH_NOARGS, "" },
   { NULL, NULL, 0, NULL } /* Sentinel */
@@ -16813,6 +16858,7 @@ static swig_type_info _swigt__p_size_type = {"_p_size_type", "size_type *", 0, 0
 static swig_type_info _swigt__p_ssize_t = {"_p_ssize_t", "ssize_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__exception = {"_p_std__exception", "std::exception *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__invalid_argument = {"_p_std__invalid_argument", "std::invalid_argument *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *|bytestring *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_swig__SwigPyIterator = {"_p_swig__SwigPyIterator", "swig::SwigPyIterator *", 0, 0, (void*)&SwigPyBuiltin__swig__SwigPyIterator_clientdata, 0};
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *|uint8_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_unsigned_int = {"_p_unsigned_int", "uint32_t *|unsigned int *", 0, 0, (void*)0, 0};
@@ -16862,6 +16908,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ssize_t,
   &_swigt__p_std__exception,
   &_swigt__p_std__invalid_argument,
+  &_swigt__p_std__string,
   &_swigt__p_swig__SwigPyIterator,
   &_swigt__p_unsigned_char,
   &_swigt__p_unsigned_int,
@@ -16911,6 +16958,7 @@ static swig_cast_info _swigc__p_size_type[] = {  {&_swigt__p_size_type, 0, 0, 0}
 static swig_cast_info _swigc__p_ssize_t[] = {  {&_swigt__p_ssize_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__exception[] = {  {&_swigt__p_std__exception, 0, 0, 0},  {&_swigt__p_Prelude__PreludeError, _p_Prelude__PreludeErrorTo_p_std__exception, 0, 0},  {&_swigt__p_PreludeDB__PreludeDBError, _p_PreludeDB__PreludeDBErrorTo_p_std__exception, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__invalid_argument[] = {  {&_swigt__p_std__invalid_argument, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_swig__SwigPyIterator[] = {  {&_swigt__p_swig__SwigPyIterator, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_unsigned_int[] = {  {&_swigt__p_unsigned_int, 0, 0, 0},{0, 0, 0, 0}};
@@ -16960,6 +17008,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_ssize_t,
   _swigc__p_std__exception,
   _swigc__p_std__invalid_argument,
+  _swigc__p_std__string,
   _swigc__p_swig__SwigPyIterator,
   _swigc__p_unsigned_char,
   _swigc__p_unsigned_int,

@@ -390,17 +390,42 @@ void SQL::transactionAbort()
 }
 
 
-std::string SQL::escapeBinary(const std::string &str)
+
+std::string SQL::escapeBinary(const unsigned char *bytes, size_t size)
 {
         int ret;
         char *out;
         std::string retstr;
 
-        ret = preludedb_sql_escape_binary(_sql, (const unsigned char *) str.c_str(), str.size(), &out);
+        ret = preludedb_sql_escape_binary(_sql, bytes, size, &out);
         if ( ret < 0 )
                 throw PreludeDBError(ret);
 
         retstr = std::string(out);
+        free(out);
+
+        return retstr;
+}
+
+
+std::string SQL::escapeBinary(const std::string &str)
+{
+        return escapeBinary((const unsigned char *) str.c_str(), str.size());
+}
+
+
+std::string SQL::unescapeBinary(const std::string &str)
+{
+        int ret;
+        unsigned char *out;
+        size_t out_size;
+        std::string retstr;
+
+        ret = preludedb_sql_unescape_binary(_sql, (const char *) str.c_str(), str.size(), &out, &out_size);
+        if ( ret < 0 )
+                throw PreludeDBError(ret);
+
+        retstr = std::string((char *) out, out_size);
         free(out);
 
         return retstr;
