@@ -1,3 +1,25 @@
+* 2019-08-16, libpreludedb-5.1.0beta3:
+
+Author: Antoine Luong
+
+- Add binding for preludedb_sql_unescape_binary
+
+- Support AVG function on integer fields
+
+- Support the SUM function
+
+Author: Yoann Vandoorselaere
+
+- Update to SWIG 4
+
+- Implement DB::get_sql()
+
+- Provide bindings for DB object transaction
+
+- Make db->connect() and db->close() API public
+
+
+
 * 2019-07-17, libpreludedb-5.1.0beta1:
 
 Author: Yoann Vandoorselaere
