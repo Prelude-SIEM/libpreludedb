@@ -1,3 +1,11 @@
+* 2019-09-04, libpreludedb-5.1.0rc1:
+
+Author: Yoann Vandoorselaere
+
+- Rewrite preludedb-admin in python, multiprocess compatible
+
+
+
 * 2019-08-16, libpreludedb-5.1.0beta3:
 
 Author: Antoine Luong
