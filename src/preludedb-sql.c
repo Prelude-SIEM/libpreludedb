@@ -1595,7 +1595,6 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
         idmef_data_t *data;
         prelude_string_t *outbuf;
         const prelude_string_t *string;
-        prelude_bool_t escape_next = FALSE;
 
         if ( idmef_value_get_type(value) == IDMEF_VALUE_TYPE_DATA ) {
                 data = idmef_value_get_data(value);
@@ -1626,22 +1625,37 @@ static int build_criterion_fixed_sql_like_value(const idmef_value_t *value, char
                 return ret;
 
         for ( i = 0; i < len; i++ ) {
-
                 /*
-                 * Always escape %, since these are SQL specific.
+                 * Always escape % and _, since they are SQL specific.
                  */
                 if ( *input == '%' )
                         prelude_string_cat(outbuf, "\\%");
 
+                else if ( *input == '_' )
+                        prelude_string_cat(outbuf, "\\_");
+
+                else if ( *input == '\\' && (i + 1 < len) ) {
+                        input++;
+                        i++;
+                        if ( *input == '*' || *input == '?' ) {
+                                prelude_string_ncat(outbuf, input, 1);
+                        }
+                        else {
+                                char buf[2] = { '\\', *input };
+                                prelude_string_ncat(outbuf, buf, 2);
+                        }
+                }
                 /*
                  * Convert unescaped * to % character.
                  */
-                else if ( *input == '*' && ! escape_next )
+                else if ( *input == '*' )
                         prelude_string_cat(outbuf, "%");
+
+                else if ( *input == '?' )
+                        prelude_string_cat(outbuf, "_");
 
                 else prelude_string_ncat(outbuf, input, 1);
 
-                escape_next = (! escape_next && *input == '\\') ? TRUE : FALSE;
                 input++;
         }
 
@@ -1703,7 +1717,7 @@ static int build_criterion_fixed_sql_value(preludedb_sql_t *sql,
                 return ret;
         }
 
-        ret = preludedb_sql_escape(sql, prelude_string_get_string(string), &escaped);
+        ret = preludedb_sql_escape_fast(sql, prelude_string_get_string(string), prelude_string_get_len(string), &escaped);
         prelude_string_destroy(string);
         if ( ret < 0 )
                 return ret;
