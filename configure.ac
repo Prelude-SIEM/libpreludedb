@@ -16,8 +16,8 @@ m4_append([serial_string], ifelse(serial_string, [],
                                   ifelse(libpreludedb_serial_version, 0, , .libpreludedb_serial_version),
                                   libpreludedb_serial_version))
 
-AC_INIT(libpreludedb, m4_join([.], [libpreludedb_major_version],
-                                   [libpreludedb_minor_version],
+AC_INIT(libpreludedb, m4_join([.], libpreludedb_major_version,
+                                   libpreludedb_minor_version,
                                    m4_join([], libpreludedb_micro_version, serial_string)))
 
 LIBPRELUDEDB_MAJOR_VERSION=libpreludedb_major_version
