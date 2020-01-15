@@ -758,7 +758,7 @@ static const flex_int16_t yy_chk[285] =
 #line 1 "preludedb-path-selection-parser.lex.l"
 /*****
 *
-* Copyright (C) 2015-2019 CS-SI. All Rights Reserved.
+* Copyright (C) 2015-2020 CS-SI. All Rights Reserved.
 * Author: Yoann Vandoorselaere <yoannv@gmail.com>
 *
 * This file is part of the PreludeDB library.

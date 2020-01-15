@@ -1,6 +1,6 @@
 /*****
 *
-* Copyright (C) 2001-2019 CS-SI. All Rights Reserved.
+* Copyright (C) 2001-2020 CS-SI. All Rights Reserved.
 * Author: Yoann Vandoorselaere <yoann@mandrakesoft.com>
 * Author: Nicolas Delon <nicolas@prelude-ids.org>
 *
