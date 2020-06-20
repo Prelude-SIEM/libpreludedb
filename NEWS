@@ -1,3 +1,21 @@
+* 2020-06-19, libpreludedb-5.2.0beta1:
+
+Author: Francois Poirotte
+
+- Remove superfluous brackets in AC_INIT
+
+Author: Antoine Luong
+
+- Python 3.7/3.8 support
+
+- Update to SWIG 4.0.1
+
+Author: Yoann Vandoorselaere
+
+- Escaping fixes with LIKE operator
+
+
+
 * 2019-09-13, libpreludedb-5.1.0:
 
 No new changes.
