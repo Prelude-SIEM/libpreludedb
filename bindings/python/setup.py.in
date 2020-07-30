@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2005-2020 CS-SI. All Rights Reserved.
+# Copyright (C) 2005-2020 CS GROUP - France. All Rights Reserved.
 # Author: Yoann Vandoorselaere <yoann.v@prelude-ids.com>
 #
 # This file is part of the Prelude library.
@@ -99,7 +99,7 @@ if len(sys.argv) > 1 and sys.argv[1] in commands:
 setup(name="preludedb",
       version="@VERSION@",
       description="Python bindings for the PreludeDB Library",
-      author="CS-SI",
+      author="CS GROUP - France",
       url="https://www.prelude-siem.org",
       license="GPL V2.1",
       package_dir={'preludedb': '@top_srcdir@/bindings/python'},

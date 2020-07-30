@@ -1,7 +1,7 @@
 This directory and its children contain LibPreludeDB, a library for using
 the Prelude database.
 
-Copyright (C) 2005-2020 CS-SI. All rights reserved.
+Copyright (C) 2005-2020 CS GROUP - France. All rights reserved.
 
 This library is made available under a dual licensing scheme.
 
@@ -14,7 +14,7 @@ Free Software Foundation Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301, USA.
 
 For any other uses of LibPreludeDB, you must first obtain a commercial license 
-from CS-SI.  Please send a mail to contact.prelude@c-s.fr for
+from CS GROUP - France.  Please send a mail to contact.prelude@csgroup.eu for
 information about commercial licensing.
 
 Please also read the information in the file HACKING.README.
